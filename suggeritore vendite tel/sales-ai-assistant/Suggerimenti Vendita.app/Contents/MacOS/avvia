@@ -183,6 +183,13 @@ richiedi_api_key_pronte() {
 # quindi direttamente nei percorsi di installazione noti, verificando che
 # risponda davvero con una versione 3.x (non solo che il file esista).
 trova_python3_sistema() {
+  local log_debug="$LOG_DIR/python_debug.log"
+  mkdir -p "$LOG_DIR"
+  {
+    echo "--- ricerca python3: $(date '+%Y-%m-%d %H:%M:%S') ---"
+    echo "PATH corrente: $PATH"
+  } >> "$log_debug" 2>&1
+
   local candidati=(
     "/usr/local/bin/python3"
     "/opt/homebrew/bin/python3"
@@ -192,20 +199,33 @@ trova_python3_sistema() {
     "/Library/Frameworks/Python.framework/Versions/3.10/bin/python3"
     "/usr/bin/python3"
   )
-  local candidato
+  local candidato versione
   for candidato in "${candidati[@]}"; do
-    if [ -x "$candidato" ] && "$candidato" --version 2>&1 | grep -q "^Python 3\."; then
+    if [ ! -x "$candidato" ]; then
+      echo "candidato $candidato: non esiste o non eseguibile" >> "$log_debug"
+      continue
+    fi
+    versione=$("$candidato" --version 2>&1)
+    echo "candidato $candidato: --version -> [$versione]" >> "$log_debug"
+    if echo "$versione" | grep -q "^Python 3\."; then
+      echo "SCELTO: $candidato" >> "$log_debug"
       echo "$candidato"
       return 0
     fi
   done
   if command -v python3 &> /dev/null; then
     candidato=$(command -v python3)
-    if "$candidato" --version 2>&1 | grep -q "^Python 3\."; then
+    versione=$("$candidato" --version 2>&1)
+    echo "fallback PATH ($candidato): --version -> [$versione]" >> "$log_debug"
+    if echo "$versione" | grep -q "^Python 3\."; then
+      echo "SCELTO (fallback PATH): $candidato" >> "$log_debug"
       echo "$candidato"
       return 0
     fi
+  else
+    echo "fallback PATH: command -v python3 non trova nulla" >> "$log_debug"
   fi
+  echo "NESSUN PYTHON FUNZIONANTE TROVATO" >> "$log_debug"
   return 1
 }
 
