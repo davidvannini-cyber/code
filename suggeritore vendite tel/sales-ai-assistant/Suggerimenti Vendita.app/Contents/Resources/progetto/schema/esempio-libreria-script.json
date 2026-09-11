@@ -1,0 +1,74 @@
+[
+  {
+    "id": "apertura_standard",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "saluto_apertura",
+    "trigger_esempi": ["Pronto, chi parla?", "Sì, buongiorno, dica"],
+    "testo_suggerimento": "Presentati con nome, azienda e motivo della chiamata in una frase. Chiedi se è un buon momento per parlare 2 minuti.",
+    "condizioni_crm": { "stato_pipeline": ["nuovo_lead"] },
+    "priorita": 5,
+    "tags": ["apertura"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_prezzo_confronto_concorrenza",
+    "fase_chiamata": "obiezioni",
+    "trigger_categoria": "obiezione_prezzo",
+    "trigger_esempi": [
+      "Il vostro concorrente costa meno",
+      "Ho un preventivo più basso da un'altra parte",
+      "È troppo caro rispetto a quello che offrite"
+    ],
+    "testo_suggerimento": "Non svalutare il concorrente. Chiedi cosa include esattamente il preventivo ricevuto, poi mostra la differenza di valore (supporto, tempi, garanzie) prima di parlare di sconto.",
+    "testo_alternativo": "Proponi di isolare il budget disponibile prima di scontare: 'Se il prezzo fosse allineato, ci sono altri ostacoli alla decisione?'",
+    "condizioni_crm": { "stato_pipeline": ["proposta_inviata", "trattativa"] },
+    "priorita": 8,
+    "tags": ["prezzo", "concorrenza"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_tempo_non_ora",
+    "fase_chiamata": "obiezioni",
+    "trigger_categoria": "obiezione_tempo",
+    "trigger_esempi": [
+      "Non è il momento giusto",
+      "Richiamami tra qualche mese",
+      "Adesso non abbiamo tempo per valutare"
+    ],
+    "testo_suggerimento": "Non insistere sulla vendita immediata. Chiedi cosa cambierebbe tra qualche mese e fissa già un richiamo con data precisa.",
+    "condizioni_crm": {},
+    "priorita": 6,
+    "tags": ["tempo", "richiamo"],
+    "attivo": true
+  },
+  {
+    "id": "segnale_interesse_verso_demo",
+    "fase_chiamata": "presentazione",
+    "trigger_categoria": "segnale_interesse",
+    "trigger_esempi": [
+      "Interessante, come funziona nel dettaglio?",
+      "Potremmo vederlo in azione?",
+      "Chi altro lo sta già usando?"
+    ],
+    "testo_suggerimento": "Il cliente sta segnalando interesse: proponi subito una demo con data e orario, non continuare a descrivere altre funzionalità.",
+    "condizioni_crm": { "segmento": ["enterprise", "smb"] },
+    "priorita": 9,
+    "tags": ["interesse", "demo"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_autorita_serve_capo",
+    "fase_chiamata": "chiusura",
+    "trigger_categoria": "obiezione_autorita_decisionale",
+    "trigger_esempi": [
+      "Devo parlarne con il mio responsabile",
+      "Non decido da solo",
+      "Serve l'ok del mio socio"
+    ],
+    "testo_suggerimento": "Chiedi di coinvolgere direttamente il decisore in una breve call a tre invece di aspettare un riporto indiretto. Offri materiale sintetico da girare.",
+    "condizioni_crm": {},
+    "priorita": 7,
+    "tags": ["autorita", "decisore"],
+    "attivo": true
+  }
+]

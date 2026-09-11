@@ -1,0 +1,21 @@
+{
+  "lead": {
+    "id_crm": "CRM-00231",
+    "nome": "Marco Rossi",
+    "azienda": "Rossi Impianti Srl",
+    "settore": "impiantistica industriale",
+    "segmento": "smb",
+    "stato_pipeline": "trattativa",
+    "prodotto_interesse": ["piano_business", "supporto_prioritario"],
+    "budget_stimato": 4500,
+    "numero_chiamate_precedenti": 2,
+    "note_precedenti": "Alla prima chiamata era interessato ma preoccupato dai tempi di setup. Alla seconda ha chiesto un confronto con il preventivo di un concorrente."
+  },
+  "regole_operatore": {
+    "script_vietati": [],
+    "script_prioritari": ["obiezione_prezzo_confronto_concorrenza"],
+    "argomenti_da_evitare": ["problemi avuti con il vecchio fornitore, è in causa"],
+    "tono": "consulenziale",
+    "obiettivo_chiamata": "portare a firma entro questa chiamata o fissare data di firma precisa"
+  }
+}

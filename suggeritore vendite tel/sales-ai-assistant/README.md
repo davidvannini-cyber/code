@@ -8,24 +8,54 @@ confermato funzionante) al software completo.
 - **"Suggerimenti Vendita.app"** — un'app vera e propria, senza terminale:
   doppio click, e tutte le scelte (API key, device audio, avvio/stop) avvengono
   tramite finestre di dialogo. È il modo consigliato per l'uso quotidiano.
+  **È autosufficiente**: contiene al suo interno una copia di tutto il
+  codice (`audio-capture/`, `matching-engine/`, `server/`, `schema/`,
+  `overlay/`), quindi puoi spostarla ovunque — anche solo lei, senza il
+  resto della cartella — per esempio dentro **Applicazioni**, come una
+  normale app Mac. Resta lì pronta da riaprire quando serve.
 - **`avvia_sistema.command`** — versione a terminale, con più dettagli/log a
   video. Utile se qualcosa non funziona nell'app e vuoi vedere cosa succede
-  passo-passo (vedi "Risoluzione problemi" in fondo).
+  passo-passo (vedi "Risoluzione problemi" in fondo). Usa le cartelle
+  sorgenti qui accanto (`audio-capture/`, `server/`, ecc.), **non** la copia
+  dentro l'app — quindi questo script deve restare nella cartella principale
+  del progetto, allo stesso livello di `audio-capture/`, `server/`, ecc.
 
-Entrambi fanno esattamente le stesse cose e leggono/scrivono gli stessi file
-(`.env`, `venv/`, `logs/`) nella cartella del progetto: puoi passare
-dall'uno all'altro senza rifare il setup.
+I due modi non condividono gli stessi `.env`/`venv/`/`logs/`: l'app li tiene
+dentro di sé (`Suggerimenti Vendita.app/Contents/Resources/progetto/`), lo
+script da terminale li tiene qui nella cartella principale. Se usi entrambi,
+va fatto il setup ("Configura ambiente" + "Configura API key") una volta per
+ciascuno.
 
-**Importante**: sia l'app che lo script `.command` devono restare nella
-cartella principale del progetto, allo stesso livello di `audio-capture/`,
-`server/`, ecc. — usano percorsi relativi per trovare gli altri file.
+## Installazione come vera app Mac (consigliato)
+
+Per ottenere l'esperienza classica — un file `.dmg` che, aperto, mostra
+l'icona dell'app da trascinare nella cartella Applicazioni — esegui una
+volta (doppio click):
+
+```
+crea_installer.command
+```
+
+Crea `Suggerimenti Vendita.dmg` in questa cartella. Aprilo, trascina
+"Suggerimenti Vendita" sopra "Applicazioni": da quel momento l'app vive in
+Applicazioni come qualsiasi altra, pronta da riaprire (Launchpad, Spotlight,
+Dock) senza bisogno di questa cartella del progetto.
+
+Rilancia `crea_installer.command` ogni volta che modifichi il codice sorgente
+qui e vuoi rigenerare un installer aggiornato: risincronizza automaticamente
+`Suggerimenti Vendita.app` con le cartelle sorgenti (sovrascrivendo la
+libreria script già dentro l'app con `schema/esempio-libreria-script.json`
+di qui — se avevi fatto crescere la libreria usando un'app già installata e
+vuoi redistribuirla, copiala prima tu in questo file).
 
 ## Struttura dei file
 
 ```
 sales-ai-assistant/
-├── Suggerimenti Vendita.app/              # app da aprire con doppio click
-├── avvia_sistema.command                  # alternativa da terminale
+├── Suggerimenti Vendita.app/              # app autosufficiente, da aprire con doppio click
+│   └── Contents/Resources/progetto/       # copia interna di tutto il codice (vedi sotto)
+├── crea_installer.command                 # genera Suggerimenti Vendita.dmg
+├── avvia_sistema.command                  # alternativa da terminale (usa le cartelle qui sotto)
 ├── schema/
 │   ├── schema-libreria-script.json        # JSON Schema per gli script
 │   ├── schema-contesto-sessione.json      # JSON Schema per lead + regole operatore

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://internal/sales-ai-assistant/schema-contesto-sessione.json",
+  "title": "Contesto di Sessione Chiamata",
+  "description": "Oggetto compilato/caricato prima di ogni chiamata: dati CRM del lead + regole rigide dell'operatore. Alimenta sia il filtro condizioni_crm sugli script sia il system prompt del classificatore LLM.",
+  "type": "object",
+  "required": ["lead", "regole_operatore"],
+  "properties": {
+    "lead": {
+      "type": "object",
+      "description": "Dati del lead/cliente, tipicamente sincronizzati dal CRM.",
+      "required": ["id_crm", "nome", "segmento", "stato_pipeline"],
+      "properties": {
+        "id_crm": { "type": "string" },
+        "nome": { "type": "string" },
+        "azienda": { "type": "string" },
+        "settore": { "type": "string" },
+        "segmento": {
+          "type": "string",
+          "enum": ["enterprise", "smb", "startup"]
+        },
+        "stato_pipeline": {
+          "type": "string",
+          "enum": ["nuovo_lead", "qualificato", "proposta_inviata", "trattativa", "richiamo"]
+        },
+        "prodotto_interesse": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "budget_stimato": { "type": "number" },
+        "numero_chiamate_precedenti": { "type": "integer", "default": 0 },
+        "note_precedenti": {
+          "type": "string",
+          "description": "Riassunto libero delle interazioni passate, utile come contesto per il classificatore LLM."
+        }
+      }
+    },
+    "regole_operatore": {
+      "type": "object",
+      "description": "Vincoli rigidi impostati dall'operatore/responsabile vendite prima della chiamata. Filtrano o forzano gli script indipendentemente dalla similarità semantica.",
+      "properties": {
+        "script_vietati": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Elenco di id di script da non suggerire mai in questa sessione (es. una promozione già scaduta per questo lead)."
+        },
+        "script_prioritari": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Elenco di id di script da preferire a parità di pertinenza (es. campagna del mese)."
+        },
+        "argomenti_da_evitare": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Temi che l'operatore non deve toccare con questo specifico lead (es. \"non menzionare il vecchio fornitore, causa in corso\")."
+        },
+        "tono": {
+          "type": "string",
+          "enum": ["formale", "informale", "consulenziale"],
+          "default": "consulenziale"
+        },
+        "obiettivo_chiamata": {
+          "type": "string",
+          "description": "Obiettivo dichiarato di questa specifica chiamata (es. \"fissare demo\", \"chiudere contratto\", \"qualificare budget\"). Usato dal classificatore per pesare gli script di chiusura."
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

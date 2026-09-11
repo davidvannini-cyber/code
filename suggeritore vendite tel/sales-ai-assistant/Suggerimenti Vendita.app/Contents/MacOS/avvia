@@ -6,14 +6,19 @@
 # di dialogo (osascript). Fa esattamente quello che fa avvia_sistema.command,
 # ma in versione "app" da tenere nel Dock e riaprire quando serve.
 #
-# IMPORTANTE: questa app deve restare nella cartella principale del progetto
-# (sales-ai-assistant/), allo stesso livello di audio-capture/, server/, ecc.
-# Se la sposti altrove da sola, non troverà più gli altri file.
+# Autosufficiente: contiene una copia propria di audio-capture/,
+# matching-engine/, server/, schema/, overlay/ dentro Contents/Resources/
+# progetto/. Puoi spostarla ovunque, anche da sola (es. nella cartella
+# Applicazioni) — non serve tenerla accanto alle cartelle sorgenti.
 # ============================================================================
 
-# Radice del progetto = cartella che contiene questa .app
-# (Contents/MacOS/avvia -> risali di 3 livelli)
-PROJECT_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+# Radice del progetto = Contents/Resources/progetto DENTRO l'app stessa.
+# L'app è autosufficiente: contiene una copia di audio-capture/,
+# matching-engine/, server/, schema/, overlay/ — puoi spostare
+# "Suggerimenti Vendita.app" ovunque (es. nella cartella Applicazioni) e
+# continuerà a trovare tutto, senza bisogno delle cartelle sorgenti accanto.
+# (Contents/MacOS/avvia -> Contents/Resources/progetto)
+PROJECT_ROOT="$(cd "$(dirname "$0")/../Resources/progetto" && pwd)"
 cd "$PROJECT_ROOT"
 
 VENV_DIR="$PROJECT_ROOT/venv"

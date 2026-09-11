@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://internal/sales-ai-assistant/schema-libreria-script.json",
+  "title": "Libreria Script di Suggerimento",
+  "description": "Schema per una singola voce della libreria di script pre-scritti usati dal motore di suggerimento live. Il file libreria è un array di oggetti conformi a questo schema (vedi esempio-libreria-script.json).",
+  "type": "object",
+  "required": [
+    "id",
+    "fase_chiamata",
+    "trigger_categoria",
+    "trigger_esempi",
+    "testo_suggerimento",
+    "attivo"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identificativo univoco dello script. Stabile nel tempo: è l'unico valore che il classificatore LLM restituisce.",
+      "pattern": "^[a-z0-9_]+$",
+      "examples": ["obiezione_prezzo_confronto_concorrenza"]
+    },
+    "fase_chiamata": {
+      "type": "string",
+      "description": "Fase della chiamata in cui lo script è rilevante. Usata come primo filtro prima del retrieval semantico.",
+      "enum": ["apertura", "scoperta", "presentazione", "obiezioni", "chiusura"]
+    },
+    "trigger_categoria": {
+      "type": "string",
+      "description": "Categoria di innesco: cosa ha detto/fatto il cliente che rende pertinente questo script.",
+      "enum": [
+        "obiezione_prezzo",
+        "obiezione_tempo",
+        "obiezione_concorrenza",
+        "obiezione_autorita_decisionale",
+        "obiezione_fiducia",
+        "segnale_interesse",
+        "richiesta_informazioni",
+        "richiesta_referenze",
+        "silenzio_o_esitazione",
+        "tentativo_chiusura_cliente",
+        "saluto_apertura",
+        "altro"
+      ]
+    },
+    "trigger_esempi": {
+      "type": "array",
+      "description": "Frasi esempio realistiche che il cliente potrebbe dire in questa situazione. Servono come base per l'embedding di retrieval semantico (Decisione 1, step 1), NON sono mostrate all'operatore.",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "testo_suggerimento": {
+      "type": "string",
+      "description": "Testo principale mostrato a monitor come suggerimento di risposta."
+    },
+    "testo_alternativo": {
+      "type": "string",
+      "description": "Suggerimento alternativo, mostrato in seconda posizione nell'overlay (facoltativo)."
+    },
+    "condizioni_crm": {
+      "type": "object",
+      "description": "Condizioni sui dati CRM del lead che rendono lo script applicabile. Se un campo è assente, la condizione su quel campo non filtra (è sempre valida). Se presente, il valore corrente del lead deve comparire nell'array indicato.",
+      "properties": {
+        "segmento": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Es. [\"enterprise\", \"smb\", \"startup\"]"
+        },
+        "stato_pipeline": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Es. [\"nuovo_lead\", \"qualificato\", \"proposta_inviata\", \"trattativa\"]"
+        },
+        "settore": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "prodotto_interesse": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "numero_chiamate_precedenti": {
+          "type": "object",
+          "description": "Vincolo numerico opzionale, es. {\"min\": 1} per script utilizzabili solo da richiamo in poi.",
+          "properties": {
+            "min": { "type": "integer" },
+            "max": { "type": "integer" }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "priorita": {
+      "type": "integer",
+      "description": "Usata dal classificatore LLM come tie-break quando più script candidati hanno similarità semantica comparabile. Più alto = preferito.",
+      "default": 0
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Etichette libere per reportistica/analisi (es. quali script vengono suggeriti più spesso, quali portano a chiusura)."
+    },
+    "attivo": {
+      "type": "boolean",
+      "description": "Se false, lo script è escluso dal retrieval senza doverlo cancellare (utile per test A/B o script in revisione)."
+    },
+    "note_interne": {
+      "type": "string",
+      "description": "Note per chi cura la libreria, non mostrate all'operatore."
+    }
+  },
+  "additionalProperties": false
+}
