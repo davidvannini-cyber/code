@@ -410,12 +410,13 @@ miglioramenti, in ordine di utilità pratica:
   normale, sta scaricando e installando le dipendenze. Se dopo qualche
   minuto non è ancora arrivato il messaggio di conferma, apri
   `logs/setup.log` nella cartella del progetto per vedere a che punto è.
-- **"Mancano gli Strumenti da riga di comando di Apple"**: su Mac dove
-  Python non è mai stato usato, il comando `python3` di sistema esiste solo
-  come segnaposto che richiede Xcode Command Line Tools per funzionare
-  davvero. Lancia `xcode-select --install` dal Terminale, segui
-  l'installazione (qualche minuto, serve internet), poi riprova "Configura
-  ambiente".
+- **"Python non è installato correttamente"**: su Mac dove Python non è mai
+  stato usato, il comando `python3` di sistema esiste solo come segnaposto
+  che richiede Xcode Command Line Tools (1-3GB) per funzionare davvero.
+  Soluzione più leggera, se lo spazio è poco: installa Python da
+  [python.org/downloads/macos](https://www.python.org/downloads/macos/)
+  (~30MB, pacchetto autonomo, non richiede Xcode) invece di installare le
+  Command Line Tools — poi riprova "Configura ambiente".
 - **Qualcosa non funziona e non capisci perché**: tutti i log dettagliati
   sono nella cartella `logs/` dentro il progetto (`setup.log`,
   `server.log`, `test_audio.log`, `generazione.log` per la generazione AI

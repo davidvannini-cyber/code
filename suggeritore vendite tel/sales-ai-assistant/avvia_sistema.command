@@ -41,15 +41,14 @@ intestazione() {
 }
 
 verifica_python() {
-  if ! xcode-select -p &> /dev/null; then
-    echo "ERRORE: mancano gli \"Strumenti da riga di comando\" di Apple (Command Line Tools)."
-    echo "Senza, Python non funziona su questo Mac, anche se sembra installato."
-    echo "Apri un altro Terminale e lancia: xcode-select --install"
-    echo "Segui le istruzioni a schermo (qualche minuto, serve internet), poi rilancia questo script."
-    exit 1
-  fi
-  if ! command -v python3 &> /dev/null; then
-    echo "ERRORE: python3 non trovato. Installalo da python.org o con 'brew install python@3.11', poi riprova."
+  if ! command -v python3 &> /dev/null || ! python3 --version 2>&1 | grep -q "^Python 3\."; then
+    echo "ERRORE: Python non è installato correttamente su questo Mac (anche se il comando"
+    echo "\"python3\" esiste, non funziona davvero — succede quando mancano gli Strumenti da"
+    echo "riga di comando di Apple)."
+    echo ""
+    echo "Soluzione più leggera (circa 30MB, non serve Xcode): vai su python.org/downloads/macos,"
+    echo "scarica l'ultima versione stabile (va bene 3.11, 3.12 o 3.13), apri il file .pkg e"
+    echo "installa. Poi rilancia questo script."
     exit 1
   fi
   VERSIONE=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
