@@ -755,16 +755,30 @@ if [ "$1" = "--azione" ] && [ -n "$2" ]; then
   exit 0
 fi
 
+# Prova ad aprire il menu grafico; ritorna 0 (e il chiamante può uscire) se
+# ci è riuscito, 1 se non è disponibile (dipendenze mancanti) o non è
+# partito correttamente — in quel caso si resta/ripiega sul menu testuale.
 MENU_GRAFICO="$PROJECT_ROOT/menu/menu_finestra.py"
-if [ -x "$PY" ] && [ -f "$MENU_GRAFICO" ]; then
-  "$PY" "$MENU_GRAFICO" "$0" "$PROJECT_ROOT" "$VENV_DIR" "$ENV_FILE" > "$LOG_DIR/menu.log" 2>&1
-  if [ $? -eq 0 ]; then
-    exit 0
+tenta_menu_grafico() {
+  if [ -x "$PY" ] && [ -f "$MENU_GRAFICO" ]; then
+    "$PY" "$MENU_GRAFICO" "$0" "$PROJECT_ROOT" "$VENV_DIR" "$ENV_FILE" > "$LOG_DIR/menu.log" 2>&1
+    if [ $? -eq 0 ]; then
+      return 0
+    fi
+    echo "Menu grafico non partito correttamente, uso il menu testuale." >> "$LOG_DIR/menu.log"
   fi
-  echo "Menu grafico non partito correttamente, uso il menu testuale." >> "$LOG_DIR/menu.log"
+  return 1
+}
+
+if tenta_menu_grafico; then
+  exit 0
 fi
 
 # ---- ripiego: menu a lista testuale, se quello grafico non è disponibile ----
+
+if [ ! -x "$PY" ]; then
+  msg_info "Prima apertura: vedi questa lista invece dei pulsanti perché l'ambiente non è ancora configurato. Scegli \"Configura ambiente (prima volta)\" qui sotto — al termine il menu con i pulsanti si aprirà da solo, senza dover richiudere e riaprire l'app."
+fi
 
 OPZIONI=$'Avvia sistema per una chiamata\nRivedi frasi raccolte dalle chiamate\nAggiungi uno script alla libreria\nVedi gli script già in libreria\nConfigura profilo azienda (per generazione AI)\nConfigura ambiente (prima volta)\nConfigura API key (prima volta)\nTest: solo audio (senza matching)\nTest: solo motore di matching\nEsci'
 
@@ -777,7 +791,15 @@ while true; do
     "Aggiungi uno script alla libreria") aggiungi_script ;;
     "Vedi gli script già in libreria") visualizza_libreria ;;
     "Configura profilo azienda (per generazione AI)") configura_profilo_azienda ;;
-    "Configura ambiente (prima volta)") setup_ambiente ;;
+    "Configura ambiente (prima volta)")
+      setup_ambiente
+      # Appena installato l'ambiente, il menu grafico potrebbe ora essere
+      # disponibile: ci si passa subito, senza dover richiudere e riaprire
+      # l'app per vederlo.
+      if tenta_menu_grafico; then
+        exit 0
+      fi
+      ;;
     "Configura API key (prima volta)") configura_api_key ;;
     "Test: solo audio (senza matching)") test_audio ;;
     "Test: solo motore di matching") test_matching ;;
