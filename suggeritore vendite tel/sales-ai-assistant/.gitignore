@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+venv/
+logs/
+.env
+schema/profilo-azienda.json
