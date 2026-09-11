@@ -37,7 +37,7 @@ echo ""
 
 echo "Aggiorno il codice dentro l'app con quello di questa cartella..."
 RISORSE_APP="$APP/Contents/Resources/progetto"
-for CARTELLA in audio-capture matching-engine server schema overlay; do
+for CARTELLA in audio-capture matching-engine server schema overlay menu; do
   rm -rf "$RISORSE_APP/$CARTELLA"
   cp -R "$RADICE/$CARTELLA" "$RISORSE_APP/$CARTELLA"
 done

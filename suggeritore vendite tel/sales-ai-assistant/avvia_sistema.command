@@ -76,6 +76,7 @@ setup_ambiente() {
   pip install -r matching-engine/requirements.txt
   pip install -r server/requirements.txt
   pip install -r overlay/requirements.txt
+  pip install -r menu/requirements.txt
 
   echo ""
   echo "Setup completato."

@@ -192,6 +192,7 @@ setup_ambiente() {
     "$PIP" install -r "$PROJECT_ROOT/matching-engine/requirements.txt"
     "$PIP" install -r "$PROJECT_ROOT/server/requirements.txt"
     "$PIP" install -r "$PROJECT_ROOT/overlay/requirements.txt"
+    "$PIP" install -r "$PROJECT_ROOT/menu/requirements.txt"
   ) > "$LOG_DIR/setup.log" 2>&1
 
   if [ $? -eq 0 ]; then
@@ -723,8 +724,47 @@ avvia_chiamata() {
 }
 
 # ---------------------------------------------------------------------------
-# Menu principale
+# Punto d'ingresso
 # ---------------------------------------------------------------------------
+#
+# Con "--azione <nome>": esegue solo quella funzione ed esce. È così che il
+# menu grafico (menu/menu_finestra.py) rilancia questo stesso eseguibile per
+# ogni pulsante premuto — non è pensato per essere passato a mano.
+#
+# Senza argomenti: prova ad aprire il menu grafico; se non è disponibile
+# (dipendenze PyObjC non installate: è così finché non hai fatto "Configura
+# ambiente" almeno una volta), ripiega sul vecchio menu a lista testuale.
+
+esegui_azione() {
+  case "$1" in
+    avvia_chiamata) avvia_chiamata ;;
+    rivedi_frasi_raccolte) rivedi_frasi_raccolte ;;
+    aggiungi_script) aggiungi_script ;;
+    visualizza_libreria) visualizza_libreria ;;
+    configura_profilo_azienda) configura_profilo_azienda ;;
+    setup_ambiente) setup_ambiente ;;
+    configura_api_key) configura_api_key ;;
+    test_audio) test_audio ;;
+    test_matching) test_matching ;;
+    *) msg_errore "Azione sconosciuta: $1" ;;
+  esac
+}
+
+if [ "$1" = "--azione" ] && [ -n "$2" ]; then
+  esegui_azione "$2"
+  exit 0
+fi
+
+MENU_GRAFICO="$PROJECT_ROOT/menu/menu_finestra.py"
+if [ -x "$PY" ] && [ -f "$MENU_GRAFICO" ]; then
+  "$PY" "$MENU_GRAFICO" "$0" "$PROJECT_ROOT" "$VENV_DIR" "$ENV_FILE" > "$LOG_DIR/menu.log" 2>&1
+  if [ $? -eq 0 ]; then
+    exit 0
+  fi
+  echo "Menu grafico non partito correttamente, uso il menu testuale." >> "$LOG_DIR/menu.log"
+fi
+
+# ---- ripiego: menu a lista testuale, se quello grafico non è disponibile ----
 
 OPZIONI=$'Avvia sistema per una chiamata\nRivedi frasi raccolte dalle chiamate\nAggiungi uno script alla libreria\nVedi gli script già in libreria\nConfigura profilo azienda (per generazione AI)\nConfigura ambiente (prima volta)\nConfigura API key (prima volta)\nTest: solo audio (senza matching)\nTest: solo motore di matching\nEsci'
 

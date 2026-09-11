@@ -5,20 +5,30 @@ confermato funzionante) al software completo.
 
 ## Due modi per usare il sistema
 
-- **"Suggerimenti Vendita.app"** — un'app vera e propria, senza terminale:
-  doppio click, e tutte le scelte (API key, device audio, avvio/stop) avvengono
-  tramite finestre di dialogo. È il modo consigliato per l'uso quotidiano.
+- **"Suggerimenti Vendita.app"** — un'app vera e propria, senza terminale.
+  Il menu principale è una **finestra grafica con pulsanti cliccabili**
+  (icona, titolo, descrizione per ognuno), non una lista di frasi; le
+  singole azioni (aggiungere uno script, configurare le API key, ecc.)
+  continuano a usare finestre di dialogo per testo/liste/conferme dove
+  serve. È il modo consigliato per l'uso quotidiano.
   **È autosufficiente**: contiene al suo interno una copia di tutto il
   codice (`audio-capture/`, `matching-engine/`, `server/`, `schema/`,
-  `overlay/`), quindi puoi spostarla ovunque — anche solo lei, senza il
-  resto della cartella — per esempio dentro **Applicazioni**, come una
-  normale app Mac. Resta lì pronta da riaprire quando serve.
+  `overlay/`, `menu/`), quindi puoi spostarla ovunque — anche solo lei,
+  senza il resto della cartella — per esempio dentro **Applicazioni**, come
+  una normale app Mac. Resta lì pronta da riaprire quando serve.
+
+  Il menu grafico richiede le dipendenze in `menu/requirements.txt`
+  (installate da "Configura ambiente"): **al primissimo avvio, prima di
+  averle installate, l'app mostra automaticamente il vecchio menu a lista**
+  — è normale, non un errore; dal secondo avvio in poi (dopo aver fatto
+  "Configura ambiente" dalla lista) vedrai il menu grafico.
 - **`avvia_sistema.command`** — versione a terminale, con più dettagli/log a
-  video. Utile se qualcosa non funziona nell'app e vuoi vedere cosa succede
-  passo-passo (vedi "Risoluzione problemi" in fondo). Usa le cartelle
-  sorgenti qui accanto (`audio-capture/`, `server/`, ecc.), **non** la copia
-  dentro l'app — quindi questo script deve restare nella cartella principale
-  del progetto, allo stesso livello di `audio-capture/`, `server/`, ecc.
+  video e il vecchio menu numerato. Utile se qualcosa non funziona nell'app
+  e vuoi vedere cosa succede passo-passo (vedi "Risoluzione problemi" in
+  fondo). Usa le cartelle sorgenti qui accanto (`audio-capture/`, `server/`,
+  ecc.), **non** la copia dentro l'app — quindi questo script deve restare
+  nella cartella principale del progetto, allo stesso livello di
+  `audio-capture/`, `server/`, ecc.
 
 I due modi non condividono gli stessi `.env`/`venv/`/`logs/`: l'app li tiene
 dentro di sé (`Suggerimenti Vendita.app/Contents/Resources/progetto/`), lo
@@ -70,9 +80,13 @@ sales-ai-assistant/
 │   ├── server_suggerimenti.py             # collega audio + motore + overlay
 │   ├── contesto-sessione-esempio.json     # lead + regole di esempio
 │   └── requirements.txt
-└── overlay/
-    ├── index.html                         # pagina overlay (WebSocket client)
-    ├── overlay_finestra.py                # apre index.html in finestra flottante sempre in primo piano
+├── overlay/
+│   ├── index.html                         # pagina overlay (WebSocket client)
+│   ├── overlay_finestra.py                # apre index.html in finestra flottante sempre in primo piano
+│   └── requirements.txt
+└── menu/
+    ├── index.html                         # menu principale (pulsanti cliccabili)
+    ├── menu_finestra.py                   # apre index.html in finestra, smista i click alle azioni
     └── requirements.txt
 ```
 
@@ -128,6 +142,7 @@ pip install -r audio-capture/requirements.txt
 pip install -r matching-engine/requirements.txt
 pip install -r server/requirements.txt
 pip install -r overlay/requirements.txt
+pip install -r menu/requirements.txt
 ```
 
 Nota: `sentence-transformers` scaricherà al primo utilizzo un modello di
@@ -373,6 +388,10 @@ miglioramenti, in ordine di utilità pratica:
 
 ## Risoluzione problemi comuni
 
+- **L'app mostra la lista testuale invece del menu con i pulsanti**: mancano
+  le dipendenze PyObjC (`menu/requirements.txt`) — rifai "Configura
+  ambiente" dalla lista. Dettagli in `logs/menu.log`. Nel frattempo il
+  sistema funziona comunque, solo con il vecchio menu.
 - **L'overlay si apre nel browser invece che in una finestra flottante**:
   mancano le dipendenze PyObjC (`overlay/requirements.txt`) — rifai
   "Configura ambiente" dal menu (o `pip install -r overlay/requirements.txt`
