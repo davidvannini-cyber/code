@@ -74,7 +74,7 @@ sales-ai-assistant/
 │   ├── cattura_audio_stt.py               # cattura mic-in + streaming a Deepgram
 │   └── requirements.txt
 ├── matching-engine/
-│   ├── motore_suggerimenti.py             # retrieval semantico + classificatore LLM
+│   ├── motore_suggerimenti.py             # classificatore LLM (Claude Haiku) sulla libreria ammessa
 │   └── requirements.txt
 ├── server/
 │   ├── server_suggerimenti.py             # collega audio + motore + overlay
@@ -144,10 +144,6 @@ pip install -r server/requirements.txt
 pip install -r overlay/requirements.txt
 pip install -r menu/requirements.txt
 ```
-
-Nota: `sentence-transformers` scaricherà al primo utilizzo un modello di
-embedding (~470MB) e lo terrà in cache locale — serve una connessione
-internet la prima volta, poi funziona offline per questo step.
 
 ### 2.4 Procurati le due API key necessarie
 
@@ -264,7 +260,7 @@ Da qui in poi il flusso è automatico:
 
 ```
 voce cliente → mic-in Mac → Deepgram (trascrizione) →
-motore di matching (retrieval + LLM) → WebSocket → overlay a monitor
+motore di matching (classificatore LLM) → WebSocket → overlay a monitor
 ```
 
 Per fermare tutto, Ctrl+C sul terminale del server.
@@ -410,11 +406,16 @@ miglioramenti, in ordine di utilità pratica:
 - **macOS si rifiuta di aprire l'app o lo script** ("da uno sviluppatore non
   identificato"): tasto destro sul file → **Apri** → conferma nel dialogo.
   Va fatto solo la prima volta, dopo il download.
-- **L'app non mostra nulla per diversi minuti durante "Configura ambiente"**:
-  è normale, sta scaricando e installando le dipendenze (in particolare il
-  modello di embedding, ~470MB, alla primissima volta). Se dopo 10 minuti
-  non è ancora arrivato il messaggio di conferma, apri
+- **L'app non mostra nulla per un po' durante "Configura ambiente"**: è
+  normale, sta scaricando e installando le dipendenze. Se dopo qualche
+  minuto non è ancora arrivato il messaggio di conferma, apri
   `logs/setup.log` nella cartella del progetto per vedere a che punto è.
+- **"Mancano gli Strumenti da riga di comando di Apple"**: su Mac dove
+  Python non è mai stato usato, il comando `python3` di sistema esiste solo
+  come segnaposto che richiede Xcode Command Line Tools per funzionare
+  davvero. Lancia `xcode-select --install` dal Terminale, segui
+  l'installazione (qualche minuto, serve internet), poi riprova "Configura
+  ambiente".
 - **Qualcosa non funziona e non capisci perché**: tutti i log dettagliati
   sono nella cartella `logs/` dentro il progetto (`setup.log`,
   `server.log`, `test_audio.log`, `generazione.log` per la generazione AI

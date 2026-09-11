@@ -7,8 +7,8 @@ Cosa fa:
 - Invia i chunk audio via WebSocket a Deepgram in tempo reale.
 - Stampa a schermo (e mette a disposizione via callback) le trascrizioni
   parziali e finali, con timestamp, pronte per essere passate al motore di
-  matching script (Decisione 1: retrieval semantico + classificatore LLM),
-  che è il prossimo pezzo da costruire.
+  matching script (matching-engine/motore_suggerimenti.py: classificatore
+  LLM sulla libreria ammessa).
 
 Non serve BlackHole/Audio Hijack: un'unica app (questa) legge direttamente il
 mic-in di sistema, come da Decisione 2 del progetto.

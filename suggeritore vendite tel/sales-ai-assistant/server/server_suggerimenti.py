@@ -4,8 +4,8 @@ Server centrale del sistema di suggerimenti live.
 Cosa fa, in ordine:
 1. Avvia la cattura audio + STT streaming (riusa audio-capture/cattura_audio_stt.py).
 2. Ad ogni trascrizione FINALE della voce del cliente, interroga il motore
-   di matching (matching-engine/motore_suggerimenti.py: retrieval semantico
-   + classificatore LLM leggero).
+   di matching (matching-engine/motore_suggerimenti.py: classificatore LLM
+   leggero sulla libreria ammessa).
 3. Trasmette via WebSocket, a tutte le pagine overlay collegate, sia la
    trascrizione sia il suggerimento scelto (fase chiamata, testo principale,
    alternativa) e i dati CRM del lead.
