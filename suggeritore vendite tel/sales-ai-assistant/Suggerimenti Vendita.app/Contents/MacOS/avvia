@@ -37,14 +37,18 @@ CATEGORIE_TRIGGER=$'obiezione_prezzo\nobiezione_tempo\nobiezione_concorrenza\nob
 # ---------------------------------------------------------------------------
 
 msg_info() {
+  local escaped
+  escaped=$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')
   osascript <<EOF > /dev/null 2>&1
-display dialog "$1" with title "$TITOLO_APP" buttons {"OK"} default button "OK" with icon note
+display dialog "$escaped" with title "$TITOLO_APP" buttons {"OK"} default button "OK" with icon note
 EOF
 }
 
 msg_errore() {
+  local escaped
+  escaped=$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')
   osascript <<EOF > /dev/null 2>&1
-display dialog "$1" with title "$TITOLO_APP" buttons {"OK"} default button "OK" with icon stop
+display dialog "$escaped" with title "$TITOLO_APP" buttons {"OK"} default button "OK" with icon stop
 EOF
 }
 
@@ -511,14 +515,19 @@ rivedi_frasi_raccolte() {
       descrizione_script="Durante la chiamata era stato usato lo script \"$script_scelto\"."
     fi
 
+    local fase_escaped testo_breve_escaped descrizione_script_escaped
+    fase_escaped=$(printf '%s' "$fase" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    testo_breve_escaped=$(printf '%s' "$testo_breve" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    descrizione_script_escaped=$(printf '%s' "$descrizione_script" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
     local risposta
     risposta=$(osascript <<EOF 2>/dev/null
 try
-  set rispostaDialogo to display dialog "Frase rilevata durante una chiamata (fase: $fase):
+  set rispostaDialogo to display dialog "Frase rilevata durante una chiamata (fase: $fase_escaped):
 
-\"$testo_breve\"
+\"$testo_breve_escaped\"
 
-$descrizione_script
+$descrizione_script_escaped
 
 Cosa vuoi farne?" with title "$TITOLO_APP" buttons {"Interrompi", "Ignora", "Usa questa frase"} default button "Usa questa frase" cancel button "Interrompi"
   return button returned of rispostaDialogo
