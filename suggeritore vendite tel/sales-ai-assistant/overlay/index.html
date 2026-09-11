@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Suggerimenti Live</title>
+<style>
+  :root {
+    --colore-apertura: #3b82f6;
+    --colore-scoperta: #14b8a6;
+    --colore-presentazione: #8b5cf6;
+    --colore-obiezioni: #f59e0b;
+    --colore-chiusura: #22c55e;
+    --colore-default: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    background: #0f1115;
+    color: #f3f4f6;
+    padding: 24px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #stato-connessione {
+    position: fixed;
+    top: 10px;
+    right: 16px;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #374151;
+  }
+  #stato-connessione.connesso { background: #14532d; }
+  #stato-connessione.disconnesso { background: #7f1d1d; }
+
+  .riquadro {
+    background: #1b1e26;
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+
+  #lead-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #9ca3af;
+  }
+  #lead-info b { color: #f3f4f6; }
+
+  #fase-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--colore-default);
+    margin-bottom: 12px;
+  }
+
+  #suggerimento-principale {
+    font-size: 30px;
+    line-height: 1.35;
+    font-weight: 600;
+    min-height: 90px;
+  }
+
+  #suggerimento-alternativo {
+    margin-top: 10px;
+    font-size: 17px;
+    color: #a5b4fc;
+    min-height: 24px;
+  }
+  #suggerimento-alternativo:before {
+    content: "Alternativa: ";
+    color: #6b7280;
+  }
+
+  #trascrizioni {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 14px;
+    color: #9ca3af;
+  }
+  #trascrizioni .riga {
+    padding: 4px 0;
+    border-bottom: 1px solid #262a33;
+  }
+  #trascrizioni .riga:last-child {
+    color: #e5e7eb;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+  <div id="stato-connessione" class="disconnesso">disconnesso</div>
+
+  <div class="riquadro" id="lead-info">
+    <div><b id="lead-nome">—</b> · <span id="lead-azienda">—</span></div>
+    <div>Segmento: <b id="lead-segmento">—</b> · Pipeline: <b id="lead-pipeline">—</b></div>
+  </div>
+
+  <div class="riquadro">
+    <div id="fase-badge">in attesa</div>
+    <div id="suggerimento-principale">In attesa del primo suggerimento…</div>
+    <div id="suggerimento-alternativo" style="display:none;"></div>
+  </div>
+
+  <div class="riquadro" id="trascrizioni"></div>
+
+<script>
+  const COLORI_FASE = {
+    apertura: "var(--colore-apertura)",
+    scoperta: "var(--colore-scoperta)",
+    presentazione: "var(--colore-presentazione)",
+    obiezioni: "var(--colore-obiezioni)",
+    chiusura: "var(--colore-chiusura)",
+  };
+
+  const elStato = document.getElementById("stato-connessione");
+  const elFaseBadge = document.getElementById("fase-badge");
+  const elPrincipale = document.getElementById("suggerimento-principale");
+  const elAlternativo = document.getElementById("suggerimento-alternativo");
+  const elTrascrizioni = document.getElementById("trascrizioni");
+  const elLeadNome = document.getElementById("lead-nome");
+  const elLeadAzienda = document.getElementById("lead-azienda");
+  const elLeadSegmento = document.getElementById("lead-segmento");
+  const elLeadPipeline = document.getElementById("lead-pipeline");
+
+  function connetti() {
+    const ws = new WebSocket("ws://localhost:8765");
+
+    ws.onopen = () => {
+      elStato.textContent = "connesso";
+      elStato.className = "connesso";
+    };
+
+    ws.onclose = () => {
+      elStato.textContent = "disconnesso — nuovo tentativo tra 2s";
+      elStato.className = "disconnesso";
+      setTimeout(connetti, 2000);
+    };
+
+    ws.onerror = () => ws.close();
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.tipo === "init") {
+        const lead = msg.lead || {};
+        elLeadNome.textContent = lead.nome || "—";
+        elLeadAzienda.textContent = lead.azienda || "—";
+        elLeadSegmento.textContent = lead.segmento || "—";
+        elLeadPipeline.textContent = lead.stato_pipeline || "—";
+      }
+
+      if (msg.tipo === "trascrizione") {
+        const riga = document.createElement("div");
+        riga.className = "riga";
+        riga.textContent = msg.testo;
+        elTrascrizioni.appendChild(riga);
+        elTrascrizioni.scrollTop = elTrascrizioni.scrollHeight;
+      }
+
+      if (msg.tipo === "suggerimento") {
+        elFaseBadge.textContent = msg.fase_chiamata;
+        elFaseBadge.style.background = COLORI_FASE[msg.fase_chiamata] || "var(--colore-default)";
+        elPrincipale.textContent = msg.testo_suggerimento;
+        if (msg.testo_alternativo) {
+          elAlternativo.textContent = msg.testo_alternativo;
+          elAlternativo.style.display = "block";
+        } else {
+          elAlternativo.style.display = "none";
+        }
+      }
+
+      if (msg.tipo === "nessun_suggerimento") {
+        elPrincipale.textContent = "Nessuno script pertinente per l'ultima frase.";
+        elAlternativo.style.display = "none";
+      }
+    };
+  }
+
+  connetti();
+</script>
+
+</body>
+</html>

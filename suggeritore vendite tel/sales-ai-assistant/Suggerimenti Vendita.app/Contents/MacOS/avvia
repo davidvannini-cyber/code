@@ -1,0 +1,712 @@
+#!/bin/bash
+# ============================================================================
+# Eseguibile dell'app "Suggerimenti Vendita.app".
+#
+# Nessun terminale visibile: tutte le interazioni avvengono tramite finestre
+# di dialogo (osascript). Fa esattamente quello che fa avvia_sistema.command,
+# ma in versione "app" da tenere nel Dock e riaprire quando serve.
+#
+# IMPORTANTE: questa app deve restare nella cartella principale del progetto
+# (sales-ai-assistant/), allo stesso livello di audio-capture/, server/, ecc.
+# Se la sposti altrove da sola, non troverà più gli altri file.
+# ============================================================================
+
+# Radice del progetto = cartella che contiene questa .app
+# (Contents/MacOS/avvia -> risali di 3 livelli)
+PROJECT_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$PROJECT_ROOT"
+
+VENV_DIR="$PROJECT_ROOT/venv"
+ENV_FILE="$PROJECT_ROOT/.env"
+LOG_DIR="$PROJECT_ROOT/logs"
+PY="$VENV_DIR/bin/python3"
+PIP="$VENV_DIR/bin/pip"
+mkdir -p "$LOG_DIR"
+
+TITOLO_APP="Suggerimenti Vendita"
+LIBRERIA_SCRIPT="$PROJECT_ROOT/schema/esempio-libreria-script.json"
+PYMOD_FRASI="$PROJECT_ROOT/matching-engine/gestione_frasi_raccolte.py"
+PYMOD_GENERA="$PROJECT_ROOT/matching-engine/genera_testo_script.py"
+PROFILO_AZIENDA="$PROJECT_ROOT/schema/profilo-azienda.json"
+
+FASI_CHIAMATA=$'apertura\nscoperta\npresentazione\nobiezioni\nchiusura'
+CATEGORIE_TRIGGER=$'obiezione_prezzo\nobiezione_tempo\nobiezione_concorrenza\nobiezione_autorita_decisionale\nobiezione_fiducia\nsegnale_interesse\nrichiesta_informazioni\nrichiesta_referenze\nsilenzio_o_esitazione\ntentativo_chiusura_cliente\nsaluto_apertura\naltro'
+
+# ---------------------------------------------------------------------------
+# Helper: dialoghi grafici
+# ---------------------------------------------------------------------------
+
+msg_info() {
+  osascript <<EOF > /dev/null 2>&1
+display dialog "$1" with title "$TITOLO_APP" buttons {"OK"} default button "OK" with icon note
+EOF
+}
+
+msg_errore() {
+  osascript <<EOF > /dev/null 2>&1
+display dialog "$1" with title "$TITOLO_APP" buttons {"OK"} default button "OK" with icon stop
+EOF
+}
+
+# Chiede una stringa di testo. Ritorna vuoto se l'utente annulla.
+chiedi_testo() {
+  osascript <<EOF 2>/dev/null
+try
+  set rispostaDialogo to display dialog "$1" with title "$TITOLO_APP" default answer "" buttons {"Annulla", "OK"} default button "OK"
+  return text returned of rispostaDialogo
+on error
+  return ""
+end try
+EOF
+}
+
+# Come chiedi_testo, ma con un valore già pre-compilato (utile per modificare
+# un valore già salvato in precedenza, es. il profilo azienda).
+chiedi_testo_con_default() {
+  local prompt="$1"
+  local default_val="$2"
+  local escaped_default
+  escaped_default=$(printf '%s' "$default_val" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  osascript <<EOF 2>/dev/null
+try
+  set rispostaDialogo to display dialog "$prompt" with title "$TITOLO_APP" default answer "$escaped_default" buttons {"Annulla", "OK"} default button "OK"
+  return text returned of rispostaDialogo
+on error
+  return ""
+end try
+EOF
+}
+
+# Converte righe (stdin) in una lista AppleScript {"a","b",...}
+build_applescript_list() {
+  local items=()
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    local escaped
+    escaped=$(printf '%s' "$line" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    items+=("\"$escaped\"")
+  done
+  local joined
+  joined=$(IFS=,; echo "${items[*]}")
+  echo "{$joined}"
+}
+
+# Mostra una lista di scelta. Ritorna la voce scelta, o vuoto se annullato.
+scegli_da_lista() {
+  local elenco="$1"
+  local prompt="$2"
+  local as_list
+  as_list=$(printf '%s\n' "$elenco" | build_applescript_list)
+  osascript <<EOF 2>/dev/null
+try
+  set sceltaLista to choose from list $as_list with title "$TITOLO_APP" with prompt "$prompt"
+  if sceltaLista is false then
+    return ""
+  else
+    return item 1 of sceltaLista
+  end if
+on error
+  return ""
+end try
+EOF
+}
+
+# Mostra un testo pre-compilato e MODIFICABILE, con 3 pulsanti: Rigenera,
+# Annulla, Usa questo testo. Usato per rivedere le bozze generate dall'AI
+# prima di salvarle. Ritorna il testo (eventualmente modificato dall'utente),
+# oppure "###RIGENERA###" o "###ANNULLA###".
+rivedi_testo_generato() {
+  local prompt="$1"
+  local testo="$2"
+  local escaped
+  escaped=$(printf '%s' "$testo" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  osascript <<EOF 2>/dev/null
+try
+  set rispostaDialogo to display dialog "$prompt" with title "$TITOLO_APP" default answer "$escaped" buttons {"Rigenera", "Annulla", "Usa questo testo"} default button "Usa questo testo" cancel button "Annulla"
+  if button returned of rispostaDialogo is "Rigenera" then
+    return "###RIGENERA###"
+  else
+    return text returned of rispostaDialogo
+  end if
+on error
+  return "###ANNULLA###"
+end try
+EOF
+}
+
+# ---------------------------------------------------------------------------
+# Helper: stato ambiente
+# ---------------------------------------------------------------------------
+
+carica_env() {
+  [ -f "$ENV_FILE" ] || return 1
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+  [ -n "$DEEPGRAM_API_KEY" ] && [ -n "$ANTHROPIC_API_KEY" ]
+}
+
+richiedi_ambiente_pronto() {
+  if [ ! -x "$PY" ]; then
+    msg_errore "Devi prima usare \"Configura ambiente (prima volta)\" dal menu."
+    return 1
+  fi
+  return 0
+}
+
+richiedi_api_key_pronte() {
+  if ! carica_env; then
+    msg_errore "Devi prima usare \"Configura API key\" dal menu."
+    return 1
+  fi
+  return 0
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: setup ambiente (venv + dipendenze)
+# ---------------------------------------------------------------------------
+
+setup_ambiente() {
+  if ! command -v python3 &> /dev/null; then
+    msg_errore "Python 3 non è installato su questo Mac. Scaricalo da python.org (versione 3.10 o superiore), poi riprova."
+    return
+  fi
+
+  msg_info "Inizio l'installazione. Premi OK e attendi qualche minuto (soprattutto la prima volta): l'app non mostrerà nulla mentre lavora, è normale."
+
+  (
+    set -e
+    python3 -m venv "$VENV_DIR"
+    "$PIP" install --upgrade pip
+    "$PIP" install -r "$PROJECT_ROOT/audio-capture/requirements.txt"
+    "$PIP" install -r "$PROJECT_ROOT/matching-engine/requirements.txt"
+    "$PIP" install -r "$PROJECT_ROOT/server/requirements.txt"
+  ) > "$LOG_DIR/setup.log" 2>&1
+
+  if [ $? -eq 0 ]; then
+    msg_info "Setup completato con successo."
+  else
+    msg_errore "Si è verificato un problema durante il setup. Dettagli nel file logs/setup.log dentro la cartella del progetto."
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: configurazione API key
+# ---------------------------------------------------------------------------
+
+configura_api_key() {
+  local dg an
+  dg=$(chiedi_testo "Deepgram API key (da deepgram.com):")
+  [ -z "$dg" ] && { msg_errore "Operazione annullata."; return; }
+  an=$(chiedi_testo "Anthropic API key (da console.anthropic.com):")
+  [ -z "$an" ] && { msg_errore "Operazione annullata."; return; }
+
+  cat > "$ENV_FILE" <<EOF
+DEEPGRAM_API_KEY=$dg
+ANTHROPIC_API_KEY=$an
+EOF
+
+  msg_info "API key salvate."
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: configurare il profilo azienda (usato per generare i suggerimenti con l'AI)
+# ---------------------------------------------------------------------------
+
+configura_profilo_azienda() {
+  local nome descrizione strategia regole
+
+  local nome_attuale="" descrizione_attuale="" strategia_attuale="" regole_attuale=""
+  if [ -f "$PROFILO_AZIENDA" ]; then
+    nome_attuale=$("$PY" -c "import json; print(json.load(open('$PROFILO_AZIENDA')).get('nome_azienda',''))" 2>/dev/null)
+    descrizione_attuale=$("$PY" -c "import json; print(json.load(open('$PROFILO_AZIENDA')).get('descrizione_prodotti',''))" 2>/dev/null)
+    strategia_attuale=$("$PY" -c "import json; print(json.load(open('$PROFILO_AZIENDA')).get('strategia_commerciale',''))" 2>/dev/null)
+    regole_attuale=$("$PY" -c "import json; print(json.load(open('$PROFILO_AZIENDA')).get('regole_fisse',''))" 2>/dev/null)
+  fi
+
+  msg_info "Queste informazioni verranno usate ogni volta che chiedi all'AI di proporre il testo di un suggerimento: più sono precise, più le proposte saranno utili. Te le chiedo una alla volta."
+
+  nome=$(chiedi_testo_con_default "Nome dell'azienda:" "$nome_attuale")
+  descrizione=$(chiedi_testo_con_default "Prodotti/servizi e contesto azienda (a chi vendete, cosa vi differenzia):" "$descrizione_attuale")
+  strategia=$(chiedi_testo_con_default "Strategia commerciale da seguire (es. \"puntare sul valore, mai sul prezzo\", \"offrire sempre la demo prima dello sconto\"...):" "$strategia_attuale")
+  regole=$(chiedi_testo_con_default "Regole fisse da rispettare sempre (tono, cose da non promettere mai, ecc.):" "$regole_attuale")
+
+  NOME="$nome" DESCRIZIONE="$descrizione" STRATEGIA="$strategia" REGOLE="$regole" "$PY" - <<'PYEOF'
+import json, os
+profilo = {
+    "nome_azienda": os.environ.get("NOME", ""),
+    "descrizione_prodotti": os.environ.get("DESCRIZIONE", ""),
+    "strategia_commerciale": os.environ.get("STRATEGIA", ""),
+    "regole_fisse": os.environ.get("REGOLE", ""),
+}
+with open("schema/profilo-azienda.json", "w", encoding="utf-8") as f:
+    json.dump(profilo, f, ensure_ascii=False, indent=2)
+PYEOF
+
+  msg_info "Profilo azienda salvato."
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: aggiungere uno script alla libreria
+# ---------------------------------------------------------------------------
+#
+# Uno "script" è: alcune frasi che il CLIENTE potrebbe dire (trigger_esempi,
+# usate dall'AI per riconoscere la situazione) + il suggerimento che l'AI
+# deve mostrare/evidenziare a monitor quando le riconosce.
+
+aggiungi_script() {
+  richiedi_ambiente_pronto || return
+
+  local frase_iniziale="$1"
+  local id_frase_da_segnare="$2"
+
+  local fase categoria nome_breve id_script suggerimento alternativo priorita
+
+  fase=$(scegli_da_lista "$FASI_CHIAMATA" "In quale fase della chiamata si usa questo script?")
+  [ -z "$fase" ] && return
+
+  categoria=$(scegli_da_lista "$CATEGORIE_TRIGGER" "Quale situazione lo attiva (categoria di innesco)?")
+  [ -z "$categoria" ] && return
+
+  nome_breve=$(chiedi_testo "Dai un nome breve a questo script, es. \"obiezione prezzo sconto\" (userà solo lettere minuscole, numeri e underscore):")
+  [ -z "$nome_breve" ] && { msg_errore "Operazione annullata."; return; }
+  id_script=$(printf '%s' "$nome_breve" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '_' | sed 's/^_*//; s/_*$//')
+  if [ -z "$id_script" ]; then
+    msg_errore "Nome non valido, riprova."
+    return
+  fi
+
+  local esiste
+  esiste=$(ID_DA_CERCARE="$id_script" "$PY" - <<'PYEOF'
+import json, os
+with open("schema/esempio-libreria-script.json", encoding="utf-8") as f:
+    libreria = json.load(f)
+print("si" if any(s["id"] == os.environ["ID_DA_CERCARE"] for s in libreria) else "no")
+PYEOF
+)
+  if [ "$esiste" = "si" ]; then
+    msg_errore "Esiste già uno script chiamato \"$id_script\". Scegli un nome diverso."
+    return
+  fi
+
+  local file_frasi
+  file_frasi=$(mktemp)
+
+  if [ -n "$frase_iniziale" ]; then
+    echo "$frase_iniziale" >> "$file_frasi"
+    msg_info "Ho già inserito come primo esempio la frase raccolta dalla chiamata:
+
+\"$frase_iniziale\"
+
+Se vuoi, aggiungine altre (facoltativo, aiuta l'AI a generalizzare): te le chiedo una alla volta, lascia vuoto per continuare."
+  else
+    msg_info "Prima di tutto, scrivi alcune frasi che il CLIENTE potrebbe dire in questa situazione: sono quelle che l'AI userà per capire quando proporre questo script, e serviranno anche come contesto se vorrai far scrivere il suggerimento all'AI. Più ne dai (2-5), meglio riconosce la situazione anche se il cliente si esprime in modo diverso. Te le chiedo una alla volta: lascia vuoto quando hai finito."
+  fi
+
+  while true; do
+    local frase
+    frase=$(chiedi_testo "Frase di esempio del cliente (vuoto per terminare):")
+    [ -z "$frase" ] && break
+    echo "$frase" >> "$file_frasi"
+  done
+
+  if [ ! -s "$file_frasi" ]; then
+    msg_errore "Serve almeno una frase di esempio: senza, l'AI non può riconoscere quando usare questo script. Operazione annullata."
+    rm -f "$file_frasi"
+    return
+  fi
+
+  # ---- testo del suggerimento: scritto a mano oppure generato dall'AI ----
+
+  local modalita_suggerimento
+  modalita_suggerimento=$(osascript <<EOF 2>/dev/null
+try
+  set rispostaDialogo to display dialog "Come vuoi scrivere il testo del suggerimento?" with title "$TITOLO_APP" buttons {"Annulla", "Lo scrivo io", "Genera con l'AI"} default button "Genera con l'AI" cancel button "Annulla"
+  return button returned of rispostaDialogo
+on error
+  return "Annulla"
+end try
+EOF
+)
+
+  case "$modalita_suggerimento" in
+    "Annulla")
+      rm -f "$file_frasi"
+      return
+      ;;
+    "Lo scrivo io")
+      suggerimento=$(chiedi_testo "Cosa deve suggerire l'AI quando riconosce questa situazione? (il testo che verrà evidenziato a monitor)")
+      ;;
+    "Genera con l'AI")
+      richiedi_api_key_pronte || { rm -f "$file_frasi"; return; }
+      suggerimento=""
+      while true; do
+        local bozza
+        bozza=$(FASE="$fase" CATEGORIA="$categoria" FILE_FRASI="$file_frasi" ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" "$PY" "$PYMOD_GENERA" suggerimento 2>>"$LOG_DIR/generazione.log")
+        if [ -z "$bozza" ]; then
+          msg_errore "Non sono riuscito a generare una proposta (dettagli in logs/generazione.log). Scrivilo tu manualmente."
+          suggerimento=$(chiedi_testo "Testo del suggerimento:")
+          break
+        fi
+        local esito
+        esito=$(rivedi_testo_generato "Ecco la proposta dell'AI (basata sul profilo azienda, se configurato). Puoi modificarla liberamente prima di usarla:" "$bozza")
+        case "$esito" in
+          "###RIGENERA###") continue ;;
+          "###ANNULLA###") suggerimento=""; break ;;
+          *) suggerimento="$esito"; break ;;
+        esac
+      done
+      ;;
+  esac
+
+  if [ -z "$suggerimento" ]; then
+    msg_errore "Operazione annullata: serve almeno il testo del suggerimento."
+    rm -f "$file_frasi"
+    return
+  fi
+
+  # ---- alternativa: facoltativa, scritta a mano o generata ----
+
+  local modalita_alternativo
+  modalita_alternativo=$(osascript <<EOF 2>/dev/null
+try
+  set rispostaDialogo to display dialog "Vuoi anche un suggerimento alternativo (mostrato in seconda posizione)?" with title "$TITOLO_APP" buttons {"Salta", "Lo scrivo io", "Genera con l'AI"} default button "Salta"
+  return button returned of rispostaDialogo
+on error
+  return "Salta"
+end try
+EOF
+)
+
+  alternativo=""
+  case "$modalita_alternativo" in
+    "Lo scrivo io")
+      alternativo=$(chiedi_testo "Suggerimento alternativo:")
+      ;;
+    "Genera con l'AI")
+      if richiedi_api_key_pronte; then
+        while true; do
+          local bozza_alt
+          bozza_alt=$(FASE="$fase" CATEGORIA="$categoria" FILE_FRASI="$file_frasi" SUGGERIMENTO_PRINCIPALE="$suggerimento" ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" "$PY" "$PYMOD_GENERA" alternativa 2>>"$LOG_DIR/generazione.log")
+          if [ -z "$bozza_alt" ]; then
+            msg_errore "Non sono riuscito a generare un'alternativa. La salto."
+            break
+          fi
+          local esito_alt
+          esito_alt=$(rivedi_testo_generato "Ecco l'alternativa proposta dall'AI. Puoi modificarla liberamente:" "$bozza_alt")
+          case "$esito_alt" in
+            "###RIGENERA###") continue ;;
+            "###ANNULLA###") alternativo=""; break ;;
+            *) alternativo="$esito_alt"; break ;;
+          esac
+        done
+      fi
+      ;;
+  esac
+
+  priorita=$(chiedi_testo "Priorità da 1 a 10, usata solo per spareggi tra script ugualmente pertinenti (facoltativo, lascia vuoto per il valore standard 5):")
+  case "$priorita" in
+    ''|*[!0-9]*) priorita=5 ;;
+  esac
+
+  ID="$id_script" FASE="$fase" CATEGORIA="$categoria" SUGGERIMENTO="$suggerimento" \
+  ALTERNATIVO="$alternativo" PRIORITA="$priorita" FILE_FRASI="$file_frasi" \
+  "$PY" - <<'PYEOF'
+import json, os
+
+path = "schema/esempio-libreria-script.json"
+with open(path, encoding="utf-8") as f:
+    libreria = json.load(f)
+
+with open(os.environ["FILE_FRASI"], encoding="utf-8") as f:
+    trigger_esempi = [riga.strip() for riga in f if riga.strip()]
+
+nuovo_script = {
+    "id": os.environ["ID"],
+    "fase_chiamata": os.environ["FASE"],
+    "trigger_categoria": os.environ["CATEGORIA"],
+    "trigger_esempi": trigger_esempi,
+    "testo_suggerimento": os.environ["SUGGERIMENTO"],
+    "condizioni_crm": {},
+    "priorita": int(os.environ["PRIORITA"]),
+    "tags": [],
+    "attivo": True,
+}
+alternativo = os.environ.get("ALTERNATIVO", "").strip()
+if alternativo:
+    nuovo_script["testo_alternativo"] = alternativo
+
+libreria.append(nuovo_script)
+
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(libreria, f, ensure_ascii=False, indent=2)
+PYEOF
+
+  local numero_frasi
+  numero_frasi=$(wc -l < "$file_frasi" | tr -d ' ')
+  rm -f "$file_frasi"
+
+  if [ -n "$id_frase_da_segnare" ]; then
+    "$PY" "$PYMOD_FRASI" segna_creato_script "$id_frase_da_segnare" "$id_script" > /dev/null
+  fi
+
+  msg_info "Script \"$id_script\" aggiunto alla libreria ($numero_frasi frasi di esempio). Sarà attivo dalla prossima chiamata o test — non serve riavviare nient'altro.
+
+Nota: per condizioni CRM avanzate (es. \"solo per lead enterprise\") va ancora modificato a mano il file schema/esempio-libreria-script.json — dimmelo se vuoi che aggiunga anche quello ai dialoghi."
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: visualizzare gli script già presenti in libreria
+# ---------------------------------------------------------------------------
+
+visualizza_libreria() {
+  richiedi_ambiente_pronto || return
+
+  local elenco
+  elenco=$("$PY" - <<'PYEOF'
+import json
+with open("schema/esempio-libreria-script.json", encoding="utf-8") as f:
+    libreria = json.load(f)
+righe = [f"[{s['fase_chiamata']}] {s['id']}" for s in libreria]
+print(f"Totale script nella libreria: {len(libreria)}")
+print("")
+print("\n".join(righe))
+PYEOF
+)
+  msg_info "$elenco"
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: rivedere le frasi raccolte durante le chiamate reali
+# ---------------------------------------------------------------------------
+#
+# Questo è il meccanismo che fa "crescere" la libreria facendo le chiamate:
+# ogni frase finale del cliente viene salvata (vedi server_suggerimenti.py)
+# insieme a quale script era stato scelto, se non è stato scelto nulla. Qui
+# le si rivede una alla volta e si decide cosa farne.
+
+rivedi_frasi_raccolte() {
+  richiedi_ambiente_pronto || return
+
+  local totale
+  totale=$("$PY" "$PYMOD_FRASI" conta_pendenti 2>/dev/null)
+  if [ -z "$totale" ] || [ "$totale" -eq 0 ] 2>/dev/null; then
+    msg_info "Non ci sono nuove frasi da rivedere. Compariranno qui dopo le prossime chiamate."
+    return
+  fi
+
+  msg_info "Ci sono $totale frasi raccolte dalle chiamate da rivedere. Te le mostro una alla volta: per ognuna puoi aggiungerla a uno script esistente, usarla per crearne uno nuovo, oppure ignorarla. Puoi interrompere in qualsiasi momento: quelle non riviste restano per la prossima volta."
+
+  local elenco
+  elenco=$("$PY" "$PYMOD_FRASI" pendenti)
+
+  while IFS=$'\t' read -r id fase script_scelto testo_breve; do
+    [ -z "$id" ] && continue
+
+    local descrizione_script
+    if [ "$script_scelto" = "nessuno" ]; then
+      descrizione_script="Durante la chiamata non era stato trovato nessuno script pertinente."
+    else
+      descrizione_script="Durante la chiamata era stato usato lo script \"$script_scelto\"."
+    fi
+
+    local risposta
+    risposta=$(osascript <<EOF 2>/dev/null
+try
+  set rispostaDialogo to display dialog "Frase rilevata durante una chiamata (fase: $fase):
+
+\"$testo_breve\"
+
+$descrizione_script
+
+Cosa vuoi farne?" with title "$TITOLO_APP" buttons {"Interrompi", "Ignora", "Usa questa frase"} default button "Usa questa frase" cancel button "Interrompi"
+  return button returned of rispostaDialogo
+on error
+  return "Interrompi"
+end try
+EOF
+)
+
+    case "$risposta" in
+      "Ignora")
+        "$PY" "$PYMOD_FRASI" ignora "$id" > /dev/null
+        ;;
+      "Usa questa frase")
+        local elenco_script scelta_script
+        elenco_script=$("$PY" "$PYMOD_FRASI" elenco_script_brevi)
+        elenco_script=$'➕ Crea un nuovo script con questa frase\n'"$elenco_script"
+        scelta_script=$(scegli_da_lista "$elenco_script" "A quale script vuoi aggiungere questa frase, oppure creane uno nuovo:")
+
+        if [ -z "$scelta_script" ]; then
+          continue
+        elif [ "$scelta_script" = "➕ Crea un nuovo script con questa frase" ]; then
+          local testo_esatto
+          testo_esatto=$("$PY" "$PYMOD_FRASI" testo_completo "$id")
+          aggiungi_script "$testo_esatto" "$id"
+        else
+          local id_script_scelto esito
+          id_script_scelto="${scelta_script%% | *}"
+          esito=$("$PY" "$PYMOD_FRASI" aggiungi_a_script "$id" "$id_script_scelto")
+          if [ "$esito" = "duplicato" ]; then
+            msg_info "Questa frase era già tra gli esempi di \"$id_script_scelto\". Segnata come rivista."
+          fi
+        fi
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done <<< "$elenco"
+
+  msg_info "Revisione completata."
+}
+
+# ---------------------------------------------------------------------------
+# Helper: selezione device audio
+# ---------------------------------------------------------------------------
+
+scegli_device_audio() {
+  richiedi_ambiente_pronto || return 1
+
+  local elenco
+  elenco=$("$PY" - <<'PYEOF'
+import sounddevice as sd
+for i, d in enumerate(sd.query_devices()):
+    if d['max_input_channels'] > 0:
+        print(f"{i}: {d['name']}")
+PYEOF
+)
+
+  if [ -z "$elenco" ]; then
+    msg_errore "Nessun device audio di input trovato."
+    return 1
+  fi
+
+  local scelta
+  scelta=$(scegli_da_lista "$elenco" "Seleziona il device audio (il mic-in collegato allo splitter):")
+  [ -z "$scelta" ] && return 1
+
+  echo "${scelta%%:*}" | tr -d ' '
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: test cattura audio isolato (15 secondi)
+# ---------------------------------------------------------------------------
+
+test_audio() {
+  richiedi_ambiente_pronto || return
+  richiedi_api_key_pronte || return
+
+  local device
+  device=$(scegli_device_audio)
+  [ -z "$device" ] && return
+
+  msg_info "Il test durerà 15 secondi: parla vicino al telefono. Premi OK per iniziare."
+
+  (
+    cd "$PROJECT_ROOT/audio-capture"
+    DEEPGRAM_API_KEY="$DEEPGRAM_API_KEY" "$PY" cattura_audio_stt.py --device "$device" > "$LOG_DIR/test_audio.log" 2>&1 &
+    pid=$!
+    sleep 15
+    kill "$pid" 2>/dev/null
+  )
+
+  open -a TextEdit "$LOG_DIR/test_audio.log"
+  msg_info "Test terminato. Ho aperto le trascrizioni in TextEdit."
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: test motore di matching (senza audio)
+# ---------------------------------------------------------------------------
+
+test_matching() {
+  richiedi_ambiente_pronto || return
+  richiedi_api_key_pronte || return
+
+  while true; do
+    local frase
+    frase=$(chiedi_testo "Scrivi una frase come se fossi il cliente (lascia vuoto per tornare al menu). Il calcolo richiede qualche secondo:")
+    [ -z "$frase" ] && break
+
+    local risultato
+    risultato=$(ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" "$PY" - "$frase" <<'PYEOF'
+import sys
+sys.path.insert(0, "matching-engine")
+from motore_suggerimenti import MotoreSuggerimenti
+
+motore = MotoreSuggerimenti("schema/esempio-libreria-script.json", "server/contesto-sessione-esempio.json")
+frase = sys.argv[1]
+r = motore.suggerisci(frase)
+if r:
+    testo = f"[{r['fase_chiamata']}] {r['testo_suggerimento']}"
+    if r.get("testo_alternativo"):
+        testo += f"\n\nAlternativa: {r['testo_alternativo']}"
+    print(testo)
+else:
+    print("Nessuno script pertinente trovato per questa frase.")
+PYEOF
+)
+    msg_info "$risultato"
+  done
+}
+
+# ---------------------------------------------------------------------------
+# Passaggio: avvio sistema completo per una chiamata
+# ---------------------------------------------------------------------------
+
+avvia_chiamata() {
+  richiedi_ambiente_pronto || return
+  richiedi_api_key_pronte || return
+
+  local device
+  device=$(scegli_device_audio)
+  [ -z "$device" ] && return
+
+  open "$PROJECT_ROOT/overlay/index.html"
+
+  (
+    cd "$PROJECT_ROOT/server"
+    DEEPGRAM_API_KEY="$DEEPGRAM_API_KEY" ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+      "$PY" server_suggerimenti.py --device "$device" > "$LOG_DIR/server.log" 2>&1 &
+    echo $! > "$LOG_DIR/server.pid"
+  )
+
+  sleep 2
+  local pid
+  pid=$(cat "$LOG_DIR/server.pid" 2>/dev/null)
+
+  if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+    msg_errore "Il sistema non è partito correttamente. Dettagli nel file logs/server.log."
+    return
+  fi
+
+  msg_info "Sistema avviato, overlay aperto nel browser. Premi OK QUANDO VUOI FERMARE la chiamata."
+
+  kill "$pid" 2>/dev/null
+  rm -f "$LOG_DIR/server.pid"
+  msg_info "Sistema fermato."
+}
+
+# ---------------------------------------------------------------------------
+# Menu principale
+# ---------------------------------------------------------------------------
+
+OPZIONI=$'Avvia sistema per una chiamata\nRivedi frasi raccolte dalle chiamate\nAggiungi uno script alla libreria\nVedi gli script già in libreria\nConfigura profilo azienda (per generazione AI)\nConfigura ambiente (prima volta)\nConfigura API key (prima volta)\nTest: solo audio (senza matching)\nTest: solo motore di matching\nEsci'
+
+while true; do
+  SCELTA=$(scegli_da_lista "$OPZIONI" "Cosa vuoi fare?")
+
+  case "$SCELTA" in
+    "Avvia sistema per una chiamata") avvia_chiamata ;;
+    "Rivedi frasi raccolte dalle chiamate") rivedi_frasi_raccolte ;;
+    "Aggiungi uno script alla libreria") aggiungi_script ;;
+    "Vedi gli script già in libreria") visualizza_libreria ;;
+    "Configura profilo azienda (per generazione AI)") configura_profilo_azienda ;;
+    "Configura ambiente (prima volta)") setup_ambiente ;;
+    "Configura API key (prima volta)") configura_api_key ;;
+    "Test: solo audio (senza matching)") test_audio ;;
+    "Test: solo motore di matching") test_matching ;;
+    "Esci"|"") break ;;
+  esac
+done
