@@ -7,6 +7,10 @@ Pipeline (Decisione 1 del progetto):
 2. Retrieval semantico: tra gli script ammessi, trova i candidati più
    simili alla frase del cliente usando embedding calcolati IN LOCALE
    (nessuna latenza di rete su questo step, fondamentale per l'uso live).
+   Scarta chi resta sotto SOGLIA_MINIMA_SIMILARITA: se nessuno script
+   supera la soglia (es. frase del cliente scollegata da tutta la
+   libreria), non c'è nessun candidato da proporre, anche se ne resta
+   ammesso solo uno dopo il filtro CRM.
 3. Classificatore LLM leggero (Claude Haiku): sceglie il migliore tra i
    candidati e restituisce SOLO un id — mai testo libero, per evitare sia
    allucinazioni sia la latenza di una generazione lunga.
@@ -34,6 +38,18 @@ from anthropic import Anthropic
 
 MODELLO_EMBEDDING = "paraphrase-multilingual-MiniLM-L12-v2"  # multilingua, include italiano, leggero e veloce
 MODELLO_CLASSIFICATORE = "claude-haiku-4-5-20251001"  # LLM leggero per la scelta finale tra i candidati
+
+# Sotto questa similarità coseno, uno script non è considerato un candidato
+# valido: evita che, con pochi script ammessi (libreria piccola o filtro CRM
+# stringente), venga sempre suggerito "il meno peggio" anche per frasi del
+# cliente completamente scollegate da ogni script in libreria.
+SOGLIA_MINIMA_SIMILARITA = 0.3
+
+# Margine di similarità entro cui uno script "prioritario" (regole_operatore
+# .script_prioritari) può scavalcare in ordine uno script più simile ma non
+# prioritario: la priorità deve valere solo a parità o quasi parità di
+# pertinenza, non come precedenza assoluta indipendente dalla similarità.
+MARGINE_PARITA_PRIORITARI = 0.05
 
 
 @dataclass
@@ -129,13 +145,13 @@ class MotoreSuggerimenti:
         candidati = [
             CandidatoScript(script=script_per_id[sid], punteggio_similarita=sim)
             for sid, sim in migliore_per_script.items()
+            if sim >= SOGLIA_MINIMA_SIMILARITA
         ]
 
         prioritari = set((self.contesto_sessione or {}).get("regole_operatore", {}).get("script_prioritari", []))
         candidati.sort(
             key=lambda c: (
-                c.script["id"] in prioritari,
-                c.punteggio_similarita,
+                c.punteggio_similarita + (MARGINE_PARITA_PRIORITARI if c.script["id"] in prioritari else 0.0),
                 c.script.get("priorita", 0),
             ),
             reverse=True,
