@@ -40,8 +40,39 @@ intestazione() {
   echo ""
 }
 
+# Cerca un python3 che funzioni davvero nei percorsi di installazione noti,
+# non solo tramite il PATH corrente (utile soprattutto se questo script viene
+# lanciato in contesti con un PATH ridotto).
+trova_python3_sistema() {
+  local candidati=(
+    "/usr/local/bin/python3"
+    "/opt/homebrew/bin/python3"
+    "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3"
+    "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3"
+    "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3"
+    "/Library/Frameworks/Python.framework/Versions/3.10/bin/python3"
+    "/usr/bin/python3"
+  )
+  local candidato
+  for candidato in "${candidati[@]}"; do
+    if [ -x "$candidato" ] && "$candidato" --version 2>&1 | grep -q "^Python 3\."; then
+      echo "$candidato"
+      return 0
+    fi
+  done
+  if command -v python3 &> /dev/null; then
+    candidato=$(command -v python3)
+    if "$candidato" --version 2>&1 | grep -q "^Python 3\."; then
+      echo "$candidato"
+      return 0
+    fi
+  fi
+  return 1
+}
+
 verifica_python() {
-  if ! command -v python3 &> /dev/null || ! python3 --version 2>&1 | grep -q "^Python 3\."; then
+  PYTHON3_SISTEMA=$(trova_python3_sistema)
+  if [ -z "$PYTHON3_SISTEMA" ]; then
     echo "ERRORE: Python non è installato correttamente su questo Mac (anche se il comando"
     echo "\"python3\" esiste, non funziona davvero — succede quando mancano gli Strumenti da"
     echo "riga di comando di Apple)."
@@ -51,8 +82,8 @@ verifica_python() {
     echo "installa. Poi rilancia questo script."
     exit 1
   fi
-  VERSIONE=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-  echo "python3 trovato (versione $VERSIONE)."
+  VERSIONE=$("$PYTHON3_SISTEMA" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+  echo "python3 trovato (versione $VERSIONE): $PYTHON3_SISTEMA"
 }
 
 # ---------------------------------------------------------------------------
@@ -67,7 +98,7 @@ setup_ambiente() {
 
   if [ ! -d "$VENV_DIR" ]; then
     echo "Creo l'ambiente virtuale in venv/ ..."
-    python3 -m venv "$VENV_DIR"
+    "$PYTHON3_SISTEMA" -m venv "$VENV_DIR"
   else
     echo "Ambiente virtuale già presente, lo riuso."
   fi
