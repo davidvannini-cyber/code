@@ -191,6 +191,7 @@ setup_ambiente() {
     "$PIP" install -r "$PROJECT_ROOT/audio-capture/requirements.txt"
     "$PIP" install -r "$PROJECT_ROOT/matching-engine/requirements.txt"
     "$PIP" install -r "$PROJECT_ROOT/server/requirements.txt"
+    "$PIP" install -r "$PROJECT_ROOT/overlay/requirements.txt"
   ) > "$LOG_DIR/setup.log" 2>&1
 
   if [ $? -eq 0 ]; then
@@ -677,7 +678,23 @@ avvia_chiamata() {
   device=$(scegli_device_audio)
   [ -z "$device" ] && return
 
-  open "$PROJECT_ROOT/overlay/index.html"
+  # Overlay in una finestra flottante, sempre in primo piano (vedi
+  # overlay/overlay_finestra.py). Se le dipendenze PyObjC non sono
+  # installate (es. non hai rifatto "Configura ambiente" dopo un
+  # aggiornamento), ripiega su una normale scheda del browser.
+  local pid_overlay msg_overlay
+  "$PY" "$PROJECT_ROOT/overlay/overlay_finestra.py" > "$LOG_DIR/overlay.log" 2>&1 &
+  pid_overlay=$!
+  sleep 1.5
+  if kill -0 "$pid_overlay" 2>/dev/null; then
+    echo "$pid_overlay" > "$LOG_DIR/overlay.pid"
+    msg_overlay="overlay in una finestra sempre in primo piano"
+  else
+    pid_overlay=""
+    rm -f "$LOG_DIR/overlay.pid"
+    open "$PROJECT_ROOT/overlay/index.html"
+    msg_overlay="overlay aperto nel browser (finestra sempre in primo piano non disponibile: dettagli in logs/overlay.log)"
+  fi
 
   (
     cd "$PROJECT_ROOT/server"
@@ -692,13 +709,16 @@ avvia_chiamata() {
 
   if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
     msg_errore "Il sistema non è partito correttamente. Dettagli nel file logs/server.log."
+    [ -n "$pid_overlay" ] && kill "$pid_overlay" 2>/dev/null
+    rm -f "$LOG_DIR/overlay.pid"
     return
   fi
 
-  msg_info "Sistema avviato, overlay aperto nel browser. Premi OK QUANDO VUOI FERMARE la chiamata."
+  msg_info "Sistema avviato, $msg_overlay. Premi OK QUANDO VUOI FERMARE la chiamata."
 
   kill "$pid" 2>/dev/null
-  rm -f "$LOG_DIR/server.pid"
+  [ -n "$pid_overlay" ] && kill "$pid_overlay" 2>/dev/null
+  rm -f "$LOG_DIR/server.pid" "$LOG_DIR/overlay.pid"
   msg_info "Sistema fermato."
 }
 

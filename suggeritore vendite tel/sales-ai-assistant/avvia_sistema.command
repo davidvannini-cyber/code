@@ -21,6 +21,7 @@ RADICE="$(pwd)"
 
 VENV_DIR="$RADICE/venv"
 ENV_FILE="$RADICE/.env"
+mkdir -p "$RADICE/logs"
 
 # ---------------------------------------------------------------------------
 # Utility
@@ -74,6 +75,7 @@ setup_ambiente() {
   pip install -r audio-capture/requirements.txt
   pip install -r matching-engine/requirements.txt
   pip install -r server/requirements.txt
+  pip install -r overlay/requirements.txt
 
   echo ""
   echo "Setup completato."
@@ -225,12 +227,23 @@ avvia_sistema_completo() {
   fi
 
   echo ""
-  echo "Apro l'overlay nel browser..."
-  open "$RADICE/overlay/index.html"
+  echo "Apro l'overlay in una finestra flottante (sempre in primo piano)..."
+  python overlay/overlay_finestra.py > logs/overlay.log 2>&1 &
+  PID_OVERLAY=$!
+  sleep 1.5
+  if kill -0 "$PID_OVERLAY" 2>/dev/null; then
+    echo "Overlay aperto in una finestra sempre in primo piano."
+  else
+    echo "Finestra flottante non disponibile (dettagli in logs/overlay.log), apro nel browser..."
+    PID_OVERLAY=""
+    open "$RADICE/overlay/index.html"
+  fi
 
   echo "Avvio il server. Premi Ctrl+C per fermare la chiamata e tornare al menu."
   echo ""
   (cd server && python server_suggerimenti.py --contesto "$CONTESTO" --device "$INDICE") || true
+
+  [ -n "$PID_OVERLAY" ] && kill "$PID_OVERLAY" 2>/dev/null
   pausa
 }
 

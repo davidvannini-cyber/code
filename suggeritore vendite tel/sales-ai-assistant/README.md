@@ -71,7 +71,9 @@ sales-ai-assistant/
 │   ├── contesto-sessione-esempio.json     # lead + regole di esempio
 │   └── requirements.txt
 └── overlay/
-    └── index.html                         # pagina da tenere aperta durante la chiamata
+    ├── index.html                         # pagina overlay (WebSocket client)
+    ├── overlay_finestra.py                # apre index.html in finestra flottante sempre in primo piano
+    └── requirements.txt
 ```
 
 ---
@@ -125,6 +127,7 @@ pip install --upgrade pip
 pip install -r audio-capture/requirements.txt
 pip install -r matching-engine/requirements.txt
 pip install -r server/requirements.txt
+pip install -r overlay/requirements.txt
 ```
 
 Nota: `sentence-transformers` scaricherà al primo utilizzo un modello di
@@ -227,12 +230,18 @@ Lead sessione: Marco Rossi
 Server overlay in ascolto su ws://localhost:8765
 ```
 
-### 4.3 Apri l'overlay
+### 4.3 L'overlay si apre da solo, sempre in primo piano
 
-Apri il file `overlay/index.html` con doppio click (si apre nel browser
-predefinito), oppure trascinalo in una finestra del browser. Deve comparire
-"connesso" in alto a destra. Posizionalo sul monitor dove vuoi vederlo
-durante la chiamata.
+Sia l'app che `avvia_sistema.command` aprono l'overlay automaticamente in una
+**finestra flottante**, che resta visibile sopra le altre finestre (anche
+cambiando app, Spaces, o con un'altra app a schermo intero) — non serve più
+tenerla come scheda del browser. Deve comparire "connesso" in alto a destra;
+la trovi in alto a destra dello schermo principale, spostabile dove preferisci.
+
+Se le dipendenze per la finestra flottante non sono installate (es. non hai
+rifatto il setup dopo un aggiornamento), il sistema ripiega automaticamente
+sull'apertura di `overlay/index.html` nel browser normale — vedi
+"Risoluzione problemi comuni" in fondo.
 
 ### 4.4 Fai la chiamata
 
@@ -364,6 +373,11 @@ miglioramenti, in ordine di utilità pratica:
 
 ## Risoluzione problemi comuni
 
+- **L'overlay si apre nel browser invece che in una finestra flottante**:
+  mancano le dipendenze PyObjC (`overlay/requirements.txt`) — rifai
+  "Configura ambiente" dal menu (o `pip install -r overlay/requirements.txt`
+  a mano). Dettagli dell'errore in `logs/overlay.log`. Nel frattempo il
+  sistema funziona comunque, solo senza restare in primo piano da solo.
 - **"Manca DEEPGRAM_API_KEY" / "Manca ANTHROPIC_API_KEY"**: variabile
   d'ambiente non impostata nella sessione di terminale corrente, oppure file
   `.env` non nella cartella giusta.
