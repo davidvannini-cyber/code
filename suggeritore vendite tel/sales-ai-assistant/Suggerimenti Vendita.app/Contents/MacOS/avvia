@@ -177,6 +177,17 @@ richiedi_api_key_pronte() {
 # ---------------------------------------------------------------------------
 
 setup_ambiente() {
+  if ! xcode-select -p &> /dev/null; then
+    msg_errore "Mancano gli \"Strumenti da riga di comando\" di Apple (Command Line Tools): senza, Python non funziona su questo Mac, anche se sembra installato.
+
+Apri il Terminale (Cmd+Spazio, scrivi \"Terminale\"), incolla questo comando e premi Invio:
+
+xcode-select --install
+
+Segui le istruzioni a schermo (qualche minuto, serve internet), poi torna qui e riprova \"Configura ambiente\"."
+    return
+  fi
+
   if ! command -v python3 &> /dev/null; then
     msg_errore "Python 3 non è installato su questo Mac. Scaricalo da python.org (versione 3.10 o superiore), poi riprova."
     return

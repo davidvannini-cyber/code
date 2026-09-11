@@ -41,6 +41,13 @@ intestazione() {
 }
 
 verifica_python() {
+  if ! xcode-select -p &> /dev/null; then
+    echo "ERRORE: mancano gli \"Strumenti da riga di comando\" di Apple (Command Line Tools)."
+    echo "Senza, Python non funziona su questo Mac, anche se sembra installato."
+    echo "Apri un altro Terminale e lancia: xcode-select --install"
+    echo "Segui le istruzioni a schermo (qualche minuto, serve internet), poi rilancia questo script."
+    exit 1
+  fi
   if ! command -v python3 &> /dev/null; then
     echo "ERRORE: python3 non trovato. Installalo da python.org o con 'brew install python@3.11', poi riprova."
     exit 1
