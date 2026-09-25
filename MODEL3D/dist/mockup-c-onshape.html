@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<title>MODEL3D — Bozza C: stile Onshape / Tinkercad (scaffale + inspector unico)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1b1c1f; color: #eaeaea; }
+  .badge { position: fixed; top: 10px; right: 10px; background: #2f6fed; color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 20px; z-index: 50; font-weight: 600; }
+
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  .topbar {
+    height: 46px; flex-shrink: 0; background: #202124; border-bottom: 1px solid #333;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 14px;
+  }
+  .topbar .title { font-weight: 700; font-size: 15px; }
+  .topbar .right { display: flex; gap: 8px; align-items: center; }
+  .topbar button { background: #2b2c30; border: 1px solid #3a3b3f; color: #eaeaea; border-radius: 7px; padding: 6px 11px; font-size: 12px; }
+  .topbar .status { font-size: 11px; color: #7ee787; }
+
+  .main { flex: 1; display: flex; min-height: 0; }
+
+  /* Left: shape shelf */
+  .shelf { width: 220px; flex-shrink: 0; background: #1c1d20; border-right: 1px solid #2c2d31; overflow-y: auto; padding: 12px; }
+  .shelf h4 { font-size: 11px; text-transform: uppercase; color: #7d838a; margin: 0 0 8px; }
+  .tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .tile { aspect-ratio: 1; background: #26272b; border: 1px solid #35363b; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+  .tile .ic { font-size: 22px; }
+  .tile span { font-size: 10.5px; color: #cfd2d6; }
+  .tile.active { border-color: #2f6fed; background: #2f6fed22; }
+  .shelf .divider { height: 1px; background: #2c2d31; margin: 10px 0; }
+  .shelf-tool { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; font-size: 12.5px; margin-bottom: 4px; }
+  .shelf-tool:hover { background: #26272b; }
+  .shelf-tool .ic { font-size: 16px; }
+
+  /* Viewport center */
+  .viewport { flex: 1; position: relative; background: radial-gradient(circle at 50% 40%, #262830 0%, #1b1c1f 60%); }
+  .viewport::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: linear-gradient(#2a2b30 1px, transparent 1px), linear-gradient(90deg, #2a2b30 1px, transparent 1px);
+    background-size: 44px 44px; transform: perspective(650px) rotateX(60deg) scale(1.5); transform-origin: center 75%; opacity: .5;
+  }
+  .fake-cube {
+    position: absolute; left: 42%; top: 38%; width: 170px; height: 170px;
+    background: linear-gradient(135deg, #4f8dfd, #2f6fed); transform: rotate(-16deg) skew(-6deg,0);
+    border-radius: 4px; box-shadow: 0 24px 50px rgba(0,0,0,.5);
+  }
+
+  /* Bottom-left collapsible history strip */
+  .history-strip {
+    position: absolute; left: 14px; bottom: 14px; width: 300px; max-height: 40px; overflow: hidden;
+    background: #1c1d20f2; border: 1px solid #35363b; border-radius: 12px; transition: max-height .2s;
+  }
+  .history-strip .hh { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; font-size: 11px; text-transform: uppercase; color: #9aa0a6; }
+  .history-strip .hitem { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 12px; }
+  .history-strip .hitem .dot { width: 7px; height: 7px; border-radius: 50%; background: #4f8dfd; }
+
+  /* Right: unified inspector */
+  .inspector { width: 260px; flex-shrink: 0; background: #1c1d20; border-left: 1px solid #2c2d31; overflow-y: auto; }
+  .insp-tabs { display: flex; border-bottom: 1px solid #2c2d31; }
+  .insp-tab { flex: 1; text-align: center; padding: 10px; font-size: 12px; color: #9aa0a6; }
+  .insp-tab.active { color: #eaeaea; border-bottom: 2px solid #2f6fed; font-weight: 600; }
+  .insp-body { padding: 14px; }
+  .insp-body h4 { font-size: 11px; text-transform: uppercase; color: #7d838a; margin: 0 0 10px; }
+  .insp-body .field { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .insp-body .field label { font-size: 11px; color: #9aa0a6; }
+  .insp-body input, .insp-body select { background: #101012; border: 1px solid #3a3b3f; border-radius: 6px; color: #eaeaea; padding: 7px; font-size: 13px; }
+  .insp-body .row3 { display: flex; gap: 6px; }
+  .insp-body .row3 input { min-width: 0; }
+  .apply-btn { width: 100%; margin-top: 8px; padding: 10px; border-radius: 8px; border: none; background: #2f6fed; color: #fff; font-weight: 600; font-size: 13px; }
+  .insp-banner { background: #22aa5522; border: 1px solid #22aa5566; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; color: #7ee787; margin-bottom: 12px; }
+
+  .note {
+    position: absolute; left: 232px; top: 14px; width: 240px; z-index: 10;
+    background: #ffcc0022; border: 1px solid #ffcc0066; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; color: #ffe08a;
+  }
+</style>
+</head>
+<body>
+<div class="badge">BOZZA C — Stile Onshape / Tinkercad</div>
+<div class="app">
+  <div class="topbar">
+    <span class="title">MODEL3D</span>
+    <span class="status">● Pronto</span>
+    <div class="right">
+      <button>↶</button><button>↷</button><button>⚫ Nero</button><button>💾 Salva .3mf</button><button>⇩ STL/STEP</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="shelf">
+      <h4>Primitive</h4>
+      <div class="tile-grid">
+        <div class="tile active"><span class="ic">🧊</span><span>Cubo</span></div>
+        <div class="tile"><span class="ic">⚫</span><span>Sfera</span></div>
+        <div class="tile"><span class="ic">🥫</span><span>Cilindro</span></div>
+        <div class="tile"><span class="ic">🔺</span><span>Cono</span></div>
+        <div class="tile"><span class="ic">🍩</span><span>Toro</span></div>
+      </div>
+      <h4>Forme 2D</h4>
+      <div class="tile-grid">
+        <div class="tile"><span class="ic">◻️</span><span>Quadrato</span></div>
+        <div class="tile"><span class="ic">▭</span><span>Rettang.</span></div>
+        <div class="tile"><span class="ic">△</span><span>Triangolo</span></div>
+        <div class="tile"><span class="ic">◯</span><span>Cerchio</span></div>
+        <div class="tile"><span class="ic">⬡</span><span>Poligono</span></div>
+        <div class="tile"><span class="ic">✏️</span><span>Libero</span></div>
+      </div>
+      <div class="divider"></div>
+      <h4>Strumenti</h4>
+      <div class="shelf-tool"><span class="ic">⬆️</span> Estrusione</div>
+      <div class="shelf-tool"><span class="ic">◐</span> Raccordo/Smusso</div>
+      <div class="shelf-tool"><span class="ic">⊕</span> Unisci</div>
+      <div class="shelf-tool"><span class="ic">⊖</span> Sottrai</div>
+      <div class="shelf-tool"><span class="ic">⊗</span> Interseca</div>
+    </div>
+
+    <div class="viewport">
+      <div class="fake-cube"></div>
+      <div class="note">
+        <b>Come funziona:</b> a sinistra scegli COSA creare (un tocco piazza la forma/primitiva); a destra c'è sempre lo stesso pannello "Inspector" che cambia contenuto in base a cosa selezioni o quale strumento hai attivato — un solo posto dove guardare.
+      </div>
+      <div class="history-strip">
+        <div class="hh"><span>Storico (4)</span><span>▾ espandi</span></div>
+        <div class="hitem"><span class="dot"></span> cubo_1</div>
+      </div>
+    </div>
+
+    <div class="inspector">
+      <div class="insp-tabs">
+        <div class="insp-tab active">Proprietà</div>
+        <div class="insp-tab">Corpi</div>
+      </div>
+      <div class="insp-body">
+        <div class="insp-banner">Corpo selezionato: estrusione_1</div>
+        <h4>Posizione (mm)</h4>
+        <div class="field row3"><input value="0"/><input value="0"/><input value="0"/></div>
+        <h4>Rotazione (°)</h4>
+        <div class="field row3"><input value="0"/><input value="0"/><input value="0"/></div>
+        <h4>Scala (×)</h4>
+        <div class="field row3"><input value="1"/><input value="1"/><input value="1"/></div>
+        <h4>Colore</h4>
+        <div class="field"><input type="color" value="#4f8dfd" style="height:34px;padding:2px"/></div>
+        <div class="divider"></div>
+        <h4>Strumento attivo: Estrusione</h4>
+        <div class="field"><label>Altezza (mm)</label><input value="20"/></div>
+        <button class="apply-btn">APPLICA ESTRUSIONE</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

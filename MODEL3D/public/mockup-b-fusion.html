@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<title>MODEL3D — Bozza B: stile Fusion 360 / SolidWorks (ribbon + albero)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1b1c1f; color: #eaeaea; }
+  .badge { position: fixed; top: 10px; right: 10px; background: #2f6fed; color: #fff; font-size: 12px; padding: 6px 12px; border-radius: 20px; z-index: 50; font-weight: 600; }
+
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* Ribbon: tabs + icon rows */
+  .ribbon { background: #202124; border-bottom: 1px solid #333; flex-shrink: 0; }
+  .tabs { display: flex; gap: 2px; padding: 6px 10px 0; }
+  .tab { padding: 7px 16px; font-size: 12.5px; border-radius: 8px 8px 0 0; color: #9aa0a6; }
+  .tab.active { background: #16171a; color: #eaeaea; font-weight: 600; }
+  .ribbon-row { display: flex; gap: 4px; padding: 10px 12px; background: #16171a; flex-wrap: wrap; }
+  .rbtn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 8px; min-width: 62px; }
+  .rbtn:hover, .rbtn.active { background: #2b2c30; }
+  .rbtn .ic { font-size: 18px; }
+  .rbtn span { font-size: 10px; color: #cfd2d6; text-align: center; }
+  .rgroup { display: flex; gap: 4px; padding-right: 10px; margin-right: 10px; border-right: 1px solid #2c2d31; }
+  .rgroup:last-child { border-right: none; }
+
+  .main { flex: 1; display: flex; min-height: 0; position: relative; }
+
+  /* Left tree */
+  .tree { width: 230px; flex-shrink: 0; background: #1c1d20; border-right: 1px solid #2c2d31; overflow-y: auto; }
+  .tree h4 { font-size: 11px; text-transform: uppercase; color: #7d838a; padding: 12px 12px 6px; margin: 0; }
+  .tree-item { display: flex; align-items: center; gap: 7px; padding: 7px 12px; font-size: 12.5px; cursor: default; }
+  .tree-item.sub { padding-left: 30px; color: #9aa0a6; font-size: 12px; }
+  .tree-item:hover { background: #26272b; }
+  .tree-item.selected { background: #2f6fed33; border-left: 2px solid #2f6fed; }
+  .tree-item .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Viewport */
+  .viewport { flex: 1; position: relative;
+    background: radial-gradient(circle at 55% 40%, #262830 0%, #1b1c1f 60%);
+  }
+  .viewport::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: linear-gradient(#2a2b30 1px, transparent 1px), linear-gradient(90deg, #2a2b30 1px, transparent 1px);
+    background-size: 44px 44px; transform: perspective(650px) rotateX(60deg) scale(1.5); transform-origin: center 75%;
+    opacity: .5;
+  }
+  .fake-cube {
+    position: absolute; left: 42%; top: 38%; width: 170px; height: 170px;
+    background: linear-gradient(135deg, #4f8dfd, #2f6fed); transform: rotate(-16deg) skew(-6deg,0);
+    border-radius: 4px; box-shadow: 0 24px 50px rgba(0,0,0,.5);
+  }
+
+  /* Floating command dialog (Fusion-style) */
+  .cmd-dialog {
+    position: absolute; top: 20px; left: 20px; width: 260px;
+    background: #202124f5; border: 1px solid #3a3b3f; border-radius: 10px;
+    box-shadow: 0 16px 36px rgba(0,0,0,.5); z-index: 20;
+  }
+  .cmd-dialog .cmd-head {
+    display: flex; align-items: center; justify-content: space-between; padding: 10px 12px;
+    background: #2b2c30; border-radius: 10px 10px 0 0; font-size: 13px; font-weight: 600; cursor: move;
+  }
+  .cmd-dialog .cmd-body { padding: 12px; }
+  .cmd-dialog .field { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .cmd-dialog .field label { font-size: 11px; color: #9aa0a6; }
+  .cmd-dialog input, .cmd-dialog select { background: #101012; border: 1px solid #3a3b3f; border-radius: 6px; color: #eaeaea; padding: 7px; font-size: 13px; }
+  .cmd-actions { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid #2c2d31; }
+  .cmd-actions button { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 12.5px; font-weight: 600; }
+  .cmd-ok { background: #2f6fed; color: #fff; }
+  .cmd-cancel { background: #2b2c30; color: #cfd2d6; }
+
+  /* Bottom timeline scrubber */
+  .timeline-bar { height: 46px; background: #1c1d20; border-top: 1px solid #2c2d31; display: flex; align-items: center; padding: 0 14px; gap: 10px; flex-shrink: 0; }
+  .timeline-bar .play { width: 26px; height: 26px; border-radius: 50%; background: #2f6fed; display:flex; align-items:center; justify-content:center; font-size: 11px; flex-shrink:0; }
+  .timeline-track { flex: 1; height: 3px; background: #333; border-radius: 2px; position: relative; }
+  .timeline-track .seg { position: absolute; top: -7px; width: 17px; height: 17px; border-radius: 4px; background: #4f8dfd; border: 2px solid #16171a; }
+  .timeline-track .seg.now { background: #ffcc00; }
+
+  .note {
+    position: absolute; right: 14px; top: 20px; width: 240px; z-index: 10;
+    background: #ffcc0022; border: 1px solid #ffcc0066; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; color: #ffe08a;
+  }
+</style>
+</head>
+<body>
+<div class="badge">BOZZA B — Stile Fusion 360 / SolidWorks</div>
+<div class="app">
+  <div class="ribbon">
+    <div class="tabs">
+      <div class="tab active">Modella</div>
+      <div class="tab">Schizzo</div>
+      <div class="tab">Strumenti</div>
+    </div>
+    <div class="ribbon-row">
+      <div class="rgroup">
+        <div class="rbtn"><span class="ic">🧊</span><span>Cubo</span></div>
+        <div class="rbtn"><span class="ic">⚫</span><span>Sfera</span></div>
+        <div class="rbtn"><span class="ic">🥫</span><span>Cilindro</span></div>
+        <div class="rbtn"><span class="ic">🔺</span><span>Cono</span></div>
+        <div class="rbtn"><span class="ic">🍩</span><span>Toro</span></div>
+      </div>
+      <div class="rgroup">
+        <div class="rbtn active"><span class="ic">⬆️</span><span>Estrudi</span></div>
+        <div class="rbtn"><span class="ic">◐</span><span>Raccordo</span></div>
+        <div class="rbtn"><span class="ic">⊕</span><span>Unisci</span></div>
+        <div class="rbtn"><span class="ic">⊖</span><span>Sottrai</span></div>
+      </div>
+      <div class="rgroup">
+        <div class="rbtn"><span class="ic">↔️</span><span>Sposta</span></div>
+        <div class="rbtn"><span class="ic">⟳</span><span>Ruota</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="tree">
+      <h4>Corpi</h4>
+      <div class="tree-item selected"><span class="dot" style="background:#4f8dfd"></span> estrusione_1</div>
+      <div class="tree-item"><span class="dot" style="background:#fd6a4f"></span> sfera_1</div>
+      <h4>Storico feature</h4>
+      <div class="tree-item sub">① cubo_1</div>
+      <div class="tree-item sub">② schizzo_1</div>
+      <div class="tree-item sub" style="color:#eaeaea;background:#2f6fed22">③ estrusione_1 ◂</div>
+      <div class="tree-item sub">④ subtract_1</div>
+    </div>
+
+    <div class="viewport">
+      <div class="fake-cube"></div>
+      <div class="cmd-dialog">
+        <div class="cmd-head"><span>Estrudi</span><span>✕</span></div>
+        <div class="cmd-body">
+          <div class="field"><label>Forma 2D</label><select><option>schizzo_1</option></select></div>
+          <div class="field"><label>Altezza (mm)</label><input value="20"/></div>
+          <div class="field"><label>Direzione</label><select><option>Normale +</option><option>Normale −</option></select></div>
+        </div>
+        <div class="cmd-actions">
+          <button class="cmd-cancel">Annulla</button>
+          <button class="cmd-ok">OK ✓</button>
+        </div>
+      </div>
+      <div class="note">
+        <b>Come funziona:</b> ogni strumento apre una finestra di dialogo flottante e trascinabile sopra la scena, con tutti i suoi parametri e OK/Annulla — non tocca i pannelli fissi. L'albero a sinistra unisce corpi e storico.
+      </div>
+    </div>
+  </div>
+
+  <div class="timeline-bar">
+    <div class="play">▶</div>
+    <div class="timeline-track">
+      <div class="seg" style="left:4%"></div>
+      <div class="seg" style="left:30%"></div>
+      <div class="seg now" style="left:58%"></div>
+      <div class="seg" style="left:84%"></div>
+    </div>
+    <span style="font-size:11px;color:#9aa0a6;flex-shrink:0">3 / 4</span>
+  </div>
+</div>
+</body>
+</html>
