@@ -1,0 +1,121 @@
+#!/bin/bash
+# ============================================================================
+# Eseguibile di "Crea Installer.app".
+#
+# Fa esattamente quello che fa crea_installer.command (stessa logica,
+# stesso risultato: Suggerimenti Vendita.dmg pronto da distribuire), ma
+# senza mai aprire una finestra di terminale — tutti i messaggi passano da
+# dialoghi osascript, come Suggerimenti Vendita.app. Usa questa per l'uso
+# normale; usa crea_installer.command solo se vuoi vedere l'avanzamento
+# passo passo in chiaro (debug).
+#
+# Deve restare nella cartella principale del progetto, allo stesso livello
+# di "Suggerimenti Vendita.app", audio-capture/, ecc. — usa percorsi
+# relativi a se stessa per trovarli.
+# ============================================================================
+
+PROJECT_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$PROJECT_ROOT"
+
+TITOLO="Crea Installer"
+APP="$PROJECT_ROOT/Suggerimenti Vendita.app"
+NOME_VOLUME="Suggerimenti Vendita"
+DMG_FINALE="$PROJECT_ROOT/Suggerimenti Vendita.dmg"
+LOG_DIR="$PROJECT_ROOT/logs"
+LOG_FILE="$LOG_DIR/crea_installer.log"
+mkdir -p "$LOG_DIR"
+
+msg_info() {
+  local escaped
+  escaped=$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  osascript <<EOF > /dev/null 2>&1
+display dialog "$escaped" with title "$TITOLO" buttons {"OK"} default button "OK" with icon note
+EOF
+}
+
+msg_errore() {
+  local escaped
+  escaped=$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  osascript <<EOF > /dev/null 2>&1
+display dialog "$escaped" with title "$TITOLO" buttons {"OK"} default button "OK" with icon stop
+EOF
+}
+
+if [ ! -d "$APP" ]; then
+  msg_errore "Non trovo \"Suggerimenti Vendita.app\" in questa cartella. \"Crea Installer.app\" deve restare accanto ad essa."
+  exit 1
+fi
+
+msg_info "Creo l'installer. Premi OK e attendi circa un minuto: non comparirà nulla nel frattempo, è normale. Alla fine ti avviso io."
+
+(
+  echo "--- creazione installer: $(date '+%Y-%m-%d %H:%M:%S') ---"
+  set -e
+
+  echo "Aggiorno il codice dentro l'app con quello di questa cartella..."
+  RISORSE_APP="$APP/Contents/Resources/progetto"
+  for CARTELLA in audio-capture matching-engine server schema overlay menu; do
+    rm -rf "$RISORSE_APP/$CARTELLA"
+    cp -R "$PROJECT_ROOT/$CARTELLA" "$RISORSE_APP/$CARTELLA"
+  done
+
+  STAGING="$(mktemp -d)"
+  trap 'rm -rf "$STAGING"' EXIT
+
+  echo "Preparo il contenuto dell'installer..."
+  cp -R "$APP" "$STAGING/"
+  ln -s /Applications "$STAGING/Applicazioni"
+
+  # Non distribuire mai venv/, logs/ o .env di un'installazione di test fatta
+  # in questa stessa cartella: chi riceve il .dmg deve fare il proprio setup
+  # (l'.env in particolare conterrebbe le TUE API key).
+  rm -rf "$STAGING/Suggerimenti Vendita.app/Contents/Resources/progetto/venv" \
+         "$STAGING/Suggerimenti Vendita.app/Contents/Resources/progetto/logs" \
+         "$STAGING/Suggerimenti Vendita.app/Contents/Resources/progetto/.env"
+
+  rm -f "$DMG_FINALE"
+  DMG_TEMPORANEO="$STAGING/temp.dmg"
+
+  echo "Costruisco l'immagine disco..."
+  hdiutil create -volname "$NOME_VOLUME" -srcfolder "$STAGING/Suggerimenti Vendita.app" \
+    -fs HFS+ -format UDRW -size 300m "$DMG_TEMPORANEO" > /dev/null
+
+  MOUNT_DIR="/Volumes/$NOME_VOLUME"
+  hdiutil attach "$DMG_TEMPORANEO" -mountpoint "$MOUNT_DIR" -nobrowse -quiet
+  ln -s /Applications "$MOUNT_DIR/Applicazioni"
+
+  echo "Sistemo l'aspetto della finestra..."
+  osascript <<APPLESCRIPT
+tell application "Finder"
+  tell disk "$NOME_VOLUME"
+    open
+    set current view of container window to icon view
+    set toolbar visible of container window to false
+    set statusbar visible of container window to false
+    set the bounds of container window to {200, 150, 680, 420}
+    set viewOptions to the icon view options of container window
+    set arrangement of viewOptions to not arranged
+    set icon size of viewOptions to 96
+    set position of item "Suggerimenti Vendita.app" of container window to {110, 140}
+    set position of item "Applicazioni" of container window to {370, 140}
+    close
+    open
+    update without registering applications
+  end tell
+end tell
+APPLESCRIPT
+
+  sync
+  hdiutil detach "$MOUNT_DIR" -quiet
+
+  echo "Comprimo l'immagine finale..."
+  hdiutil convert "$DMG_TEMPORANEO" -format UDZO -o "$DMG_FINALE" -quiet
+
+  echo "Fatto: $DMG_FINALE"
+) > "$LOG_FILE" 2>&1
+
+if [ $? -eq 0 ] && [ -f "$DMG_FINALE" ]; then
+  msg_info "Installer creato: \"Suggerimenti Vendita.dmg\" nella cartella del progetto. Apri il file per verificare la finestra con l'icona da trascinare su Applicazioni."
+else
+  msg_errore "Qualcosa è andato storto durante la creazione dell'installer. Dettagli nel file logs/crea_installer.log dentro la cartella del progetto."
+fi

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "apertura_nuovo_lead_portale",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "saluto_apertura",
+    "trigger_esempi": ["Pronto, chi parla?", "Sì, buongiorno, dica", "Buongiorno, chi è?", "Sì, sono io"],
+    "testo_suggerimento": "Buongiorno/Buonasera, sono [Nome] di YesMobility. La chiamo perché abbiamo ricevuto la sua richiesta online per [montascale/pedana/elevatore] tramite uno dei nostri portali dove ha lasciato i suoi dati.\nSiamo un servizio che lavora con i migliori produttori del settore — Access, Handicare, AreaLifting, Albatross, PVE — e possiamo darle in pochi minuti una prima valutazione di fattibilità e un'idea di prezzo, gratuita e senza impegno.\nLe va di dedicarmi 2 minuti per capire meglio la situazione (tipo di scale, altezza da superare, larghezza) così le do già un'indicazione?",
+    "condizioni_crm": { "stato_pipeline": ["nuovo_lead"] },
+    "priorita": 6,
+    "tags": ["apertura", "nuovo_lead"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_come_ha_mio_numero",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "obiezione_fiducia",
+    "trigger_esempi": ["Come ha avuto il mio numero?", "Chi vi ha dato i miei dati?", "Da dove avete preso il mio contatto?", "Chi le ha passato il mio numero di telefono?"],
+    "testo_suggerimento": "Abbiamo ricevuto la richiesta online tramite uno dei portali in cui ha inserito il suo nominativo per essere ricontattato.",
+    "priorita": 7,
+    "tags": ["fiducia", "privacy"],
+    "attivo": true
+  },
+  {
+    "id": "richiesta_con_chi_contratto",
+    "fase_chiamata": "scoperta",
+    "trigger_categoria": "richiesta_informazioni",
+    "trigger_esempi": ["Con chi faccio il contratto?", "Chi è che poi installa davvero?", "Il contratto è con voi o con l'installatore?", "Alla fine con chi firmo?"],
+    "testo_suggerimento": "Il nostro servizio seleziona per lei l'installatore locale certificato con le condizioni migliori. Nella sua zona lavoriamo con Facile Salire, che offre installazione, manutenzione e assistenza a 360°. Il contratto sarebbe con loro, ma il prezzo glielo garantiamo noi.",
+    "priorita": 6,
+    "tags": ["contratto", "facile_salire"],
+    "attivo": true
+  },
+  {
+    "id": "apertura_lead_freddo_secondo_preventivo",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "saluto_apertura",
+    "trigger_esempi": ["Pronto, chi parla?", "Sì, buongiorno, dica", "Buongiorno, chi è?", "Sì, sono io"],
+    "testo_suggerimento": "Buongiorno, sono [Nome] di YesMobility. Ho visto che ha fatto una richiesta di preventivo per [prodotto]. Volevo sentirla per capire a che punto è: ha già ricevuto delle proposte o è ancora in fase di valutazione?\n(Ascolta la risposta. Se il cliente accenna a un preventivo già ricevuto, lascialo raccontare prima di intervenire.)\nPerfetto, questo mi aiuta a capire meglio. Noi lavoriamo con diversi produttori e, per i volumi che gestiamo, spesso riusciamo a trovare condizioni interessanti. Se vuole, posso darle un secondo parere gratuito così ha un termine di paragone concreto prima di decidere.",
+    "condizioni_crm": { "stato_pipeline": ["lead_freddo_secondo_preventivo"] },
+    "priorita": 6,
+    "tags": ["apertura", "secondo_preventivo"],
+    "attivo": true
+  },
+  {
+    "id": "apertura_gia_visitato_da_partner",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "saluto_apertura",
+    "trigger_esempi": ["Pronto, chi parla?", "Sì, buongiorno, dica", "Buongiorno, chi è?", "Sì, sono io"],
+    "testo_suggerimento": "Buongiorno [Nome], sono [Nome] di YesMobility. La contatto perché ci risulta un suo interesse per [prodotto]. Mi diceva, a che punto è con la valutazione? Ha già avuto un tecnico da lei o un preventivo in mano?\n(Se il cliente conferma di avere già un preventivo, prosegui così — senza mai dire \"lo sappiamo già\":)\nOk, mi fa piacere che abbia già un punto di riferimento. Nella sua zona, comunque, avremmo indirizzato anche noi verso Facile Salire: sono seri, puntuali e coprono tutto — installazione, manutenzione, assistenza. Se vuole, con le cifre che ha in mano possiamo fare un confronto rapido e vedere se ci sono margini di miglioramento sul prezzo o sul modello proposto.",
+    "condizioni_crm": { "stato_pipeline": ["gia_visitato_da_partner"] },
+    "priorita": 6,
+    "tags": ["apertura", "gia_visitato"],
+    "attivo": true
+  },
+  {
+    "id": "apertura_richiamo_trattativa_persa",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "saluto_apertura",
+    "trigger_esempi": ["Pronto, chi parla?", "Sì, buongiorno, dica", "Buongiorno, chi è?", "Sì, sono io"],
+    "testo_suggerimento": "Buongiorno [Nome], sono [Nome] di YesMobility. La ricontatto perché avevamo parlato di [prodotto] qualche tempo fa e so che al momento non se n'era fatto nulla. Volevo capire se il tema era più legato al prezzo, ai tempi, o ad altro.\n(Ascolta il motivo del rifiuto — è la chiave per la proposta successiva.)\nHo fatto una verifica e con [Access/altro produttore] siamo riusciti a trovare una soluzione più conveniente rispetto a prima. Le va se le preparo un nuovo preventivo aggiornato? Non c'è nessun impegno, solo per farle vedere se ora i numeri tornano meglio.",
+    "condizioni_crm": { "stato_pipeline": ["trattativa_persa"] },
+    "priorita": 6,
+    "tags": ["apertura", "recupero"],
+    "attivo": true
+  },
+  {
+    "id": "segnale_interesse_organizza_sopralluogo",
+    "fase_chiamata": "chiusura",
+    "trigger_categoria": "segnale_interesse",
+    "trigger_esempi": ["Sì, mi interessa, come procediamo?", "Va bene, cosa devo fare adesso?", "Quando può venire qualcuno a vedere le scale?", "Ok, direi di procedere con un sopralluogo"],
+    "testo_suggerimento": "Ottimo [Nome], allora il prossimo passo è organizzare un sopralluogo tecnico: mi occupo io di metterla in contatto con Facile Salire, il nostro partner di fiducia in zona, così un loro tecnico verifica tutto dal vivo e le conferma la soluzione migliore e il prezzo definitivo, senza sorprese.\nHa disponibilità in settimana, magari [giorno] mattina o [giorno] pomeriggio? Prendo io l'appuntamento con Facile Salire e le confermo data e orario via messaggio.",
+    "priorita": 8,
+    "tags": ["sopralluogo", "facile_salire"],
+    "attivo": true
+  },
+  {
+    "id": "apertura_ultimo_richiamo_non_valido",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "saluto_apertura",
+    "trigger_esempi": ["Pronto, chi parla?", "Sì, buongiorno, dica", "Buongiorno, chi è?", "Sì, sono io"],
+    "testo_suggerimento": "Buongiorno [Nome], sono [Nome] di YesMobility. La richiamo un'ultima volta per [prodotto]: avevo visto che non se ne era fatto più nulla e volevo capire se il motivo era il prezzo.\nSe è quello il tema, posso verificare subito se riusciamo a scendere con un modello più essenziale o con un produttore diverso, per arrivare a una cifra più vicina al suo budget. Le interessa che le faccia questa verifica al volo?",
+    "condizioni_crm": { "stato_pipeline": ["non_valido_ultimo_tentativo"] },
+    "priorita": 6,
+    "tags": ["apertura", "ultimo_tentativo"],
+    "note_interne": "Se il cliente declina ancora dopo questo tentativo, il lead va segnato definitivamente come non valido (a mano, fuori dall'app).",
+    "attivo": true
+  },
+  {
+    "id": "chiusura_cliente_accetta_offerta",
+    "fase_chiamata": "chiusura",
+    "trigger_categoria": "tentativo_chiusura_cliente",
+    "trigger_esempi": ["Va bene, accetto il preventivo", "Sì, procediamo pure con l'installazione", "Sono d'accordo, possiamo firmare", "Ok per me, andiamo avanti così"],
+    "testo_suggerimento": "Perfetto [Nome], sono contento che la proposta faccia al caso suo! Le spiego come funziona da qui in avanti: organizzo io l'appuntamento con Facile Salire, l'azienda a cui ci affidiamo nella sua zona per praticità ma soprattutto per la qualità del servizio che offre.\nFacile Salire le invierà direttamente il contratto e si metterà in contatto con lei per organizzare tutto — installazione, manutenzione e assistenza a 360 gradi. Da qui in poi sarà il suo referente diretto. La ricontatteranno entro [tempistica]. Se nel frattempo le servisse qualcosa, sono comunque a disposizione.",
+    "priorita": 10,
+    "tags": ["chiusura", "facile_salire"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_vuole_pensarci_confrontare",
+    "fase_chiamata": "obiezioni",
+    "trigger_categoria": "obiezione_concorrenza",
+    "trigger_esempi": ["Voglio pensarci", "Devo confrontare con altri preventivi", "Ci penso e le faccio sapere", "Vorrei valutare anche altre offerte prima di decidere"],
+    "testo_suggerimento": "Certo, è giusto valutare con calma. Le lascio la mia proposta per iscritto così può confrontarla con comodo. Un consiglio: quando guarda altri preventivi, verifichi bene se includono anche manutenzione e assistenza, non solo l'installazione — spesso è lì che si nascondono i costi successivi.\nLe va bene se la richiamo tra [2-3 giorni] per sentire come sta valutando, senza alcuna pressione da parte mia?",
+    "priorita": 6,
+    "tags": ["obiezione", "tempo_decisione"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_fiducia_truffa",
+    "fase_chiamata": "obiezioni",
+    "trigger_categoria": "obiezione_fiducia",
+    "trigger_esempi": ["Non mi fido, è una truffa?", "Ma voi chi siete esattamente?", "Ho paura che sia una fregatura", "È tutto regolare questo servizio?"],
+    "testo_suggerimento": "Capisco perfettamente la diffidenza, è normale quando si parla di soldi e di lavori in casa. Le spiego in modo semplice: YesMobility non vende direttamente l'impianto, ma la mette in contatto con l'installatore locale più affidabile della sua zona, verificando che il prezzo sia corretto.\nNon le chiediamo nessun pagamento a noi: il contratto e il pagamento avvengono direttamente con l'azienda installatrice, che nel suo caso è Facile Salire. Può anche verificare le loro recensioni online prima di decidere, così si fa un'idea autonoma.",
+    "priorita": 7,
+    "tags": ["fiducia"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_prezzo_troppo_alto",
+    "fase_chiamata": "obiezioni",
+    "trigger_categoria": "obiezione_prezzo",
+    "trigger_esempi": ["È troppo caro", "Non mi aspettavo un prezzo così alto", "Potete farmi uno sconto?", "Il prezzo mi sembra eccessivo"],
+    "testo_suggerimento": "Capisco, è un investimento importante. Mi faccia capire meglio: la cifra la sorprende rispetto a quello che si aspettava, o ha già in mano un altro preventivo più basso per confronto?\nSe non ha altri preventivi: posso verificare se con un modello leggermente diverso o un altro produttore riusciamo ad abbassare la cifra mantenendo la qualità dell'installazione. Le preparo un'alternativa e la richiamo entro [tempistica].",
+    "testo_alternativo": "Se ha già un preventivo più basso in mano: mi faccia vedere le cifre, così verifico se è davvero comparabile — a volte mancano voci come manutenzione o assistenza che noi invece includiamo sempre.",
+    "priorita": 7,
+    "tags": ["obiezione", "prezzo"],
+    "attivo": true
+  },
+  {
+    "id": "riferimento_messaggio_segreteria",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "altro",
+    "trigger_esempi": ["nessuna frase applicabile: non c'è conversazione da trascrivere quando scatta la segreteria telefonica"],
+    "testo_suggerimento": "Buongiorno, sono [Nome] di YesMobility. La sto chiamando in merito alla sua richiesta per [prodotto]. Ho provato a raggiungerla un paio di volte senza fortuna: se è ancora interessato/a, mi richiami pure quando può al numero da cui la sto chiamando, oppure le scrivo un messaggio su WhatsApp con i dettagli. A presto!",
+    "priorita": 0,
+    "tags": ["segreteria", "riferimento_manuale"],
+    "note_interne": "NON utilizzabile dal motore live: scatta quando il cliente non risponde, quindi non c'è audio/parlato del cliente da riconoscere. Tenuto qui solo come testo di riferimento da leggere a voce quando serve — attivo:false per escluderlo dall'indicizzazione/matching.",
+    "attivo": false
+  },
+  {
+    "id": "scoperta_parla_familiare_caregiver",
+    "fase_chiamata": "scoperta",
+    "trigger_categoria": "altro",
+    "trigger_esempi": ["È per mia madre, non per me", "Chiamo per conto di mio padre", "Non sono io che deve usarlo, è per un mio parente anziano", "Gestisco io la pratica per mia suocera"],
+    "testo_suggerimento": "Capisco — posso parlare direttamente con lei per raccogliere i dettagli tecnici (tipo di scale, misure, esigenze) così prepariamo un preventivo su misura per [nome del genitore/parente].\nSe poi è utile, possiamo anche organizzare che il tecnico, in fase di sopralluogo, parli con entrambi, così siete sicuri che la soluzione vada bene sia dal punto di vista pratico che di comfort per chi la userà ogni giorno.",
+    "priorita": 5,
+    "tags": ["caregiver", "scoperta"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_tempi_installazione_lunghi",
+    "fase_chiamata": "obiezioni",
+    "trigger_categoria": "obiezione_tempo",
+    "trigger_esempi": ["I tempi di installazione sono troppo lunghi", "Quanto ci mette ad arrivare?", "Mi serve urgentemente, non posso aspettare troppo", "Non avete qualcosa di più rapido?"],
+    "testo_suggerimento": "È una preoccupazione legittima, soprattutto se c'è un'esigenza urgente in casa. Le tempistiche dipendono dal modello scelto e dalla disponibilità dell'installatore in zona, ma verifico subito con Facile Salire quali sono i tempi realistici per il suo caso specifico, così le do un dato preciso e non generico.\nSe l'urgenza è alta, posso anche segnalarlo come priorità nella richiesta, così cerchiamo di velocizzare il sopralluogo iniziale.",
+    "priorita": 6,
+    "tags": ["obiezione", "tempi"],
+    "attivo": true
+  },
+  {
+    "id": "apertura_richiamo_post_sopralluogo",
+    "fase_chiamata": "apertura",
+    "trigger_categoria": "saluto_apertura",
+    "trigger_esempi": ["Pronto, chi parla?", "Sì, buongiorno, dica", "Buongiorno, chi è?", "Sì, sono io"],
+    "testo_suggerimento": "Buongiorno [Nome], sono [Nome] di YesMobility. Ho visto che dopo il sopralluogo di Facile Salire non si è ancora arrivati a una conclusione: volevo sentirla direttamente per capire se ci sono ancora dubbi o punti da chiarire sul preventivo.\nSe ha delle perplessità su qualche voce, sono felice di aiutarla a fare chiarezza, così può decidere con tutte le informazioni in mano. C'è qualcosa in particolare che la frena?",
+    "condizioni_crm": { "stato_pipeline": ["sopralluogo_fatto_non_chiuso"] },
+    "priorita": 6,
+    "note_interne": "Da usare solo come richiamo di recupero se Facile Salire non è riuscita a chiudere direttamente dopo il sopralluogo tecnico.",
+    "tags": ["apertura", "recupero_sopralluogo"],
+    "attivo": true
+  },
+  {
+    "id": "obiezione_budget_limitato",
+    "fase_chiamata": "obiezioni",
+    "trigger_categoria": "obiezione_prezzo",
+    "trigger_esempi": ["Il mio budget massimo è di [cifra]", "Non posso spendere più di tot", "Ho un budget limitato, non posso superare una certa cifra", "Posso spendere al massimo circa [importo]"],
+    "testo_suggerimento": "Grazie per avermi detto la cifra che ha in mente, così posso lavorare in modo mirato. Con quel budget possiamo valutare un modello più essenziale, magari con [Access/altro produttore], che copre comunque le esigenze di base senza gli extra che fanno salire il prezzo.\nLe preparo due opzioni entro [tempistica]: una il più vicina possibile al suo budget, e una leggermente superiore ma con qualche funzione in più, così può scegliere con calma quale preferisce.",
+    "priorita": 7,
+    "tags": ["obiezione", "budget"],
+    "attivo": true
+  }
+]

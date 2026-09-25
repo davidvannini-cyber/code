@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>Suggerimenti Vendita</string>
+    <key>CFBundleDisplayName</key>
+    <string>Suggerimenti Vendita</string>
+    <key>CFBundleIdentifier</key>
+    <string>local.suggerimenti-vendita</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleExecutable</key>
+    <string>avvia</string>
+    <key>CFBundleIconFile</key>
+    <string>icona</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.business</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Serve per ascoltare la voce del cliente durante la chiamata e mostrare i suggerimenti di risposta.</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>local.suggerimenti-vendita.apri</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>suggerimentivendita</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

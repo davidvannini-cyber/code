@@ -1,0 +1,20 @@
+{
+  "lead": {
+    "id_crm": "CRM-00458",
+    "nome": "Anna Bianchi",
+    "settore": "privato",
+    "segmento": "privato",
+    "stato_pipeline": "nuovo_lead",
+    "prodotto_interesse": ["montascale"],
+    "budget_stimato": 3500,
+    "numero_chiamate_precedenti": 0,
+    "note_precedenti": ""
+  },
+  "regole_operatore": {
+    "script_vietati": [],
+    "script_prioritari": [],
+    "argomenti_da_evitare": [],
+    "tono": "consulenziale",
+    "obiettivo_chiamata": "qualificare la richiesta e fissare un sopralluogo con Facile Salire"
+  }
+}
