@@ -7,7 +7,7 @@
 set -e
 
 # ==================== CONFIGURAZIONE ====================
-LOCAL_PATH="/Users/davidvannini_1/progetti/SALESASSISTANT"
+LOCAL_PATH="/Users/davidvannini_1/Documents/progetti/SALESASSISTANT"
 REPO_URL="https://github.com/davidvannini-cyber/code.git"
 BRANCH="main"
 PYTHON_SERVER_DIR="$LOCAL_PATH/SUGGERIMENTIVENDITA"
