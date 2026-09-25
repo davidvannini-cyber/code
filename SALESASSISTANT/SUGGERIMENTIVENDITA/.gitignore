@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+._*
+
+# Log dell'app e del launcher a terminale (contengono percorsi locali e frasi dei clienti)
+Suggerimenti Vendita.app/Contents/Resources/progetto/logs/*
+logs/
+
+# Ambiente Python locale e cache
+venv/
+__pycache__/
+*.pyc
+
+# Chiavi API
+.env
+
+# File temporanei del browser (download incompleti, file di lock)
+*.crdownload
+*.download
+*.part
+*.tmp
+.~lock.*
+
+# Installer generato da Crea Installer.app / crea_installer.command
+Suggerimenti Vendita.dmg

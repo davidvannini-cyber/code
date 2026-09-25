@@ -4,7 +4,7 @@ Documento unico di ripresa per **Suggerimenti Vendita**, l'assistente live per l
 
 Copre la sessione del **21–25 settembre 2026**. Le parti che riguardano l'integrazione con la Lead Rework Console sono documentate anche in `../LEADREWORKS/docs/HANDOFF.md`.
 
-> Nota: `README.md` e `RIEPILOGO_SISTEMA.md` sono in parte superati (vedi §7). In caso di conflitto vale questo file, e sopra a tutto il codice.
+> Nota: `README.md` è stato aggiornato il 2026-09-25; `RIEPILOGO_SISTEMA.md` è ancora in parte superato (vedi §7). In caso di conflitto vale questo file, e sopra a tutto il codice.
 
 ---
 
@@ -164,10 +164,10 @@ Il bundle `Suggerimenti Vendita.app` contiene una **copia completa** del progett
 - [ ] Valutare un avviso visibile quando è selezionato "Predefinito di sistema" ma il predefinito è il microfono integrato.
 - [ ] Migrare `ScriptProcessor` → `AudioWorklet`.
 - [ ] Testare dal vivo: bagliore sulla porta 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 40/19/40.
-- [ ] **Aggiornare `README.md`**: parla ancora di `lead-corrente.json` da copiare nel bundle (rimosso), di "5 script di esempio", di overlay su porta 8765 e di finestra flottante sempre in primo piano. Documentare le 3 modalità, la porta 8767 e lo schema URL.
+- [x] ~~Aggiornare `README.md`~~: fatto il 2026-09-25 (flusso via estensione, 3 modalità, porta 8767, struttura attuale, rimossi finestra flottante e `lead-corrente.json`).
 - [ ] Aggiornare `RIEPILOGO_SISTEMA.md` (elenco pulsanti del menu non più attuale).
-- [ ] Allineare `../LEADREWORKS/docs/HANDOFF.md`, che riporta il menu al 15% (ora è 19%, pannello a x = 59%).
-- [ ] Pulizia repo: togliere dal versionamento `Contents/Resources/progetto/logs/*` (contengono percorsi locali del Mac), `venv/pyvenv.cfg`, `__pycache__`, `.DS_Store`, i file `._*`. Aggiungere un `.gitignore`.
+- [x] ~~Allineare `../LEADREWORKS/docs/HANDOFF.md` sul layout 40/19/40~~: fatto il 2026-09-25.
+- [x] ~~Pulizia repo~~: fatto il 2026-09-25 (rimossi log, `venv/`, `__pycache__`, file `._*`; aggiunto `.gitignore`).
 - [ ] Decidere se eliminare o riallineare `avvia_sistema.command` (vecchio e divergente da `avvia`).
 
 ---
@@ -177,8 +177,9 @@ Il bundle `Suggerimenti Vendita.app` contiene una **copia completa** del progett
 ```
 SALESASSISTANT/SUGGERIMENTIVENDITA/
 ├── HANDOFF.md                       # questo file
-├── README.md                        # guida installazione/uso (in parte superata)
+├── README.md                        # guida installazione/uso (aggiornata al 25/09)
 ├── RIEPILOGO_SISTEMA.md             # panoramica architettura (in parte superata)
+├── .gitignore                       # esclude log, venv, cache Python, .env, file macOS e temporanei
 ├── Suggerimenti Vendita.app/        # APP REALE, autosufficiente
 │   └── Contents/
 │       ├── Info.plist               # include CFBundleURLTypes → suggerimentivendita://

@@ -25,7 +25,10 @@ confermato funzionante) al software completo.
 - **`avvia_sistema.command`** — versione a terminale, con più dettagli/log a
   video e il vecchio menu numerato. Utile se qualcosa non funziona nell'app
   e vuoi vedere cosa succede passo-passo (vedi "Risoluzione problemi" in
-  fondo). Usa le cartelle sorgenti qui accanto (`audio-capture/`, `server/`,
+  fondo). **Attenzione**: è una versione più vecchia del launcher
+  dell'app (`Contents/MacOS/avvia`) e non ne ha tutte le funzioni (niente
+  modalità "Chiamata Gestione Lead", niente disposizione automatica delle
+  finestre). Usa le cartelle sorgenti qui accanto (`audio-capture/`, `server/`,
   ecc.), **non** la copia dentro l'app — quindi questo script deve restare
   nella cartella principale del progetto, allo stesso livello di
   `audio-capture/`, `server/`, ecc.
@@ -72,34 +75,45 @@ problemi comuni" in fondo.
 ## Struttura dei file
 
 ```
-sales-ai-assistant/
+SUGGERIMENTIVENDITA/
+├── HANDOFF.md                             # stato del progetto, problemi noti, file da sincronizzare
+├── README.md                              # questa guida
+├── RIEPILOGO_SISTEMA.md                   # panoramica dell'architettura
+├── .gitignore                             # esclude log, cache Python, file macOS e temporanei
 ├── Suggerimenti Vendita.app/              # app autosufficiente, da aprire con doppio click
-│   └── Contents/Resources/progetto/       # copia interna di tutto il codice (vedi sotto)
+│   └── Contents/
+│       ├── Info.plist                     # registra anche lo schema URL suggerimentivendita://
+│       ├── MacOS/avvia                    # launcher: azioni del menu, avvio chiamate, posizione finestre
+│       └── Resources/progetto/            # copia interna di tutto il codice (+ logs/, venv/, .env propri)
 ├── Crea Installer.app/                    # genera Suggerimenti Vendita.dmg, senza terminale
 ├── crea_installer.command                 # stessa cosa, a terminale (debug)
-├── avvia_sistema.command                  # alternativa da terminale (usa le cartelle qui sotto)
+├── avvia_sistema.command                  # alternativa da terminale (versione più vecchia, usa le cartelle qui sotto)
 ├── ripara_permessi.command                # da lanciare se un'app/script si rifiuta di aprirsi
 ├── schema/
 │   ├── schema-libreria-script.json        # JSON Schema per gli script
 │   ├── schema-contesto-sessione.json      # JSON Schema per lead + regole operatore
-│   └── esempio-libreria-script.json       # 5 script di esempio, pronti all'uso
+│   ├── esempio-libreria-script.json       # libreria script usata durante le chiamate (17 script)
+│   └── canovaccio-rinforzo-facile-salire.json  # canovaccio fisso della modalità "Rinforzo Facile Salire"
 ├── audio-capture/
-│   ├── cattura_audio_stt.py               # cattura mic-in + streaming a Deepgram
+│   ├── cattura_audio_stt.py               # cattura da device di sistema + Deepgram (solo test da terminale)
 │   └── requirements.txt
 ├── matching-engine/
 │   ├── motore_suggerimenti.py             # retrieval semantico locale + classificatore LLM nei casi ambigui
+│   ├── genera_testo_script.py             # scrittura assistita da AI dei nuovi suggerimenti
+│   ├── gestione_frasi_raccolte.py         # revisione delle frasi raccolte nelle chiamate
 │   └── requirements.txt
 ├── server/
-│   ├── server_suggerimenti.py             # collega audio + motore + overlay
+│   ├── server_suggerimenti.py             # HTTP 8766 (pagina chiamata) + WebSocket 8765, ponte browser → Deepgram → motore
 │   ├── contesto-sessione-esempio.json     # lead + regole di esempio
 │   └── requirements.txt
 ├── overlay/
-│   ├── index.html                         # pagina overlay (WebSocket client)
-│   ├── overlay_finestra.py                # apre index.html in finestra flottante sempre in primo piano
+│   ├── index.html                         # pannello chiamata: microfono, selettore ingresso, spia livello, canovaccio, suggerimenti
+│   ├── overlay_finestra.py                # usato solo da avvia_sistema.command
 │   └── requirements.txt
 └── menu/
-    ├── index.html                         # menu principale (pulsanti cliccabili)
-    ├── menu_finestra.py                   # apre index.html in finestra, smista i click alle azioni
+    ├── index.html                         # menu principale (pulsanti cliccabili, bagliore "lead in attesa")
+    ├── menu_finestra.py                   # finestra del menu, smista i click, server "lead in attesa" sulla porta 8767
+    ├── " logo-yesmobility.png"            # logo (il nome inizia con uno spazio)
     └── requirements.txt
 ```
 
@@ -139,7 +153,7 @@ o con Homebrew (`brew install python@3.11`).
 ### 2.2 Crea un ambiente virtuale unico per tutto il progetto
 
 ```bash
-cd sales-ai-assistant
+cd SUGGERIMENTIVENDITA
 python3 -m venv venv
 source venv/bin/activate
 ```
@@ -249,7 +263,7 @@ python server_suggerimenti.py --contesto contesto-sessione-esempio.json --device
 
 Vedrai:
 ```
-Libreria caricata: 5 script.
+Libreria caricata: 17 script.
 Lead sessione: Marco Rossi
 Server overlay in ascolto su ws://localhost:8765
 ```
@@ -262,24 +276,27 @@ volta caricato, la scelta dello script è quasi sempre istantanea (lavoro
 locale, senza rete); solo nei casi ambigui interviene il classificatore AI,
 con una latenza di rete percepibile ma limitata a quei casi.
 
-### 4.3 L'overlay si apre da solo, sempre in primo piano
+### 4.3 Il pannello chiamata si apre da solo
 
-Sia l'app che `avvia_sistema.command` aprono l'overlay automaticamente in una
-**finestra flottante**, che resta visibile sopra le altre finestre (anche
-cambiando app, Spaces, o con un'altra app a schermo intero) — non serve più
-tenerla come scheda del browser. Deve comparire "connesso" in alto a destra;
-la trovi in alto a destra dello schermo principale, spostabile dove preferisci.
+Dall'app, ogni pulsante di chiamata apre il pannello (`http://localhost:8766/`)
+in **Chrome in modalità app**: una finestra senza barra degli indirizzi né
+schede, posizionata da sola nella colonna destra dello schermo (40% della
+larghezza, accanto al menu e alla Lead Rework Console). Deve comparire
+"connesso" in alto a destra.
+
+Nel pannello:
+- **selettore del dispositivo di ingresso**: scegli lo splitter del telefono
+  se non è l'ingresso predefinito del Mac, altrimenti il sistema ascolta il
+  microfono integrato;
+- **spia "Segnale in ingresso"**: se resta ferma mentre il cliente parla, il
+  dispositivo scelto non sta ricevendo audio;
+- pulsanti **Pausa** e **Termina chiamata**.
 
 **Il riquadro delle frasi mostra solo il cliente**: per come è cablato
 l'audio (Parte 1), il Mac riceve solo la sua voce — l'operatore non viene
 mai trascritto. Non è quindi una conversazione a due, ma la sequenza delle
 frasi del cliente una dopo l'altra; il riquadro lo etichetta esplicitamente
 per evitare equivoci.
-
-Se le dipendenze per la finestra flottante non sono installate (es. non hai
-rifatto il setup dopo un aggiornamento), il sistema ripiega automaticamente
-sull'apertura di `overlay/index.html` nel browser normale — vedi
-"Risoluzione problemi comuni" in fondo.
 
 ### 4.4 Fai la chiamata
 
@@ -290,7 +307,7 @@ voce cliente → mic-in Mac → Deepgram (trascrizione) →
 motore di matching (classificatore LLM) → WebSocket → overlay a monitor
 ```
 
-Per fermare tutto, Ctrl+C sul terminale del server.
+Per fermare la chiamata, usa **Termina chiamata** nel pannello (dal terminale: Ctrl+C sul server).
 
 ---
 
@@ -393,35 +410,47 @@ cliente.
 ## Importare un lead dalla Lead Rework Console (progetto separato, LEADREWORKS)
 
 Prima di ogni chiamata puoi importare lo script/strategia preparato per
-quello specifico lead nell'altra app YesMobility ("Lead Rework Console"):
-compare **fisso in un riquadro verde in alto** nell'overlay ("Canovaccio
-chiamata"), sopra ai suggerimenti live per la gestione delle obiezioni (che
-restano invariati, invariata anche la loro reattività — questa parte non
-tocca il motore di matching in tempo reale).
+quello specifico lead nell'altra app YesMobility ("Lead Rework Console",
+cartella `../LEADREWORKS/`): compare **fisso in un riquadro verde in alto**
+nel pannello chiamata ("Canovaccio chiamata"), sopra ai suggerimenti live
+per la gestione delle obiezioni (che restano invariati, invariata anche la
+loro reattività — questa parte non tocca il motore di matching in tempo
+reale).
 
-**Come funziona**: nella Lead Rework Console, dopo aver generato lo script
-telefono (o anche solo l'analisi/strategia), premi "Esporta per Suggerimenti
-Vendita" — scarica un file `lead-corrente.json`. Spostalo dentro
-`Suggerimenti Vendita.app` → tasto destro → **Mostra contenuto pacchetto** →
-`Contents/Resources/progetto/` (sostituisce il file `lead-corrente.json` se
-già presente da una chiamata precedente). **Non in `~/Documents/`**: macOS
-blocca l'accesso a quella cartella per un'app non firmata come questa
-(verificato dal vivo: mandava in crash ogni chiamata con `PermissionError`),
-mentre l'accesso ai file dentro il proprio pacchetto funziona senza problemi.
-Il server lo rilegge da lì **ad ogni chiamata** (non serve riavviare tutto il
-sistema, il modello di matching resta caricato) — se non lo trova, tutto
-funziona esattamente come prima, senza canovaccio.
+**Nota sulla libreria**: il canovaccio viene generato dalla Lead Rework
+Console a partire dalla **sua** libreria: 26 script disponibili (numerati
+1-27) da LEADREWORKS. È una libreria diversa da quella usata qui durante la
+chiamata per i suggerimenti live (`schema/esempio-libreria-script.json`, 17
+script).
 
-**Se hai già una versione di "Suggerimenti Vendita" aperta**: il codice del
-server (`server_suggerimenti.py`) è cambiato per abilitare questa funzione,
-ma quel processo resta acceso tra una chiamata e l'altra e non ricarica da
-solo il proprio codice — **serve chiudere del tutto l'app almeno una volta**
-(bottone rosso o Cmd+Q, non solo la finestra dell'overlay) perché la
-modifica venga presa, poi si riapre normalmente.
+**Come funziona** (serve l'estensione Chrome in `../LEADREWORKS/browser-extension/`):
+1. Nella Lead Rework Console, dopo aver generato lo script, premi **"Invia a
+   Suggerimenti Vendita"** (anche da un lead riaperto dallo Storico).
+2. L'estensione tiene il canovaccio in attesa nel browser
+   (`chrome.storage.local`, nessun file da spostare) e apre Suggerimenti
+   Vendita tramite lo schema `suggerimentivendita://`. La prima volta Chrome
+   chiede di confermare l'apertura dell'app.
+3. Nel menu si **illumina il pulsante "Chiamata Gestione Lead"**: il segnale
+   arriva al menu sulla porta locale 8767, attiva finché l'app è aperta.
+4. Premi **"Chiamata Gestione Lead"**: il pannello si apre con il canovaccio
+   già visibile e il pulsante si spegne.
+
+Le tre modalità di chiamata del menu:
+- **Chiamata YesMobility**: solo suggerimenti live, **mai** il canovaccio
+  (un lead in attesa resta lì per la prossima "Chiamata Gestione Lead").
+- **Chiamata Gestione Lead**: suggerimenti live + canovaccio del lead
+  inviato dalla Lead Rework Console.
+- **Rinforzo Facile Salire**: suggerimenti live + canovaccio fisso
+  (`schema/canovaccio-rinforzo-facile-salire.json`).
+
+**Dopo un aggiornamento del codice**: il server resta acceso tra una
+chiamata e l'altra e non ricarica da solo il proprio codice — **chiudi del
+tutto l'app almeno una volta** (Cmd+Q, non solo la finestra del pannello),
+poi riaprila.
 
 ## Parte 5 — Prossimi passi naturali
 
-Il sistema ora è funzionante end-to-end con 5 script di esempio. I prossimi
+Il sistema ora è funzionante end-to-end con 17 script in libreria. I prossimi
 miglioramenti, in ordine di utilità pratica:
 
 1. **Espandere la libreria script** a 20-30 voci (situazioni più frequenti):
@@ -429,7 +458,7 @@ miglioramenti, in ordine di utilità pratica:
    più naturalmente, rivedendo le frasi raccolte dalle chiamate reali.
 2. ~~**Persistenza del contesto CRM**: oggi il file JSON è compilato a mano~~
    — fatto: vedi "Importare un lead dalla Lead Rework Console" qui sopra
-   (canovaccio/lead esportati automaticamente, letti ad ogni chiamata).
+   (canovaccio inviato dall'estensione, modalità "Chiamata Gestione Lead").
 3. **Condizioni CRM dai dialoghi**: oggi "Aggiungi uno script" non chiede le
    condizioni CRM avanzate (segmento, stato pipeline, ecc.) — richiedono di
    toccare il JSON a mano. Se ti serve spesso, si può aggiungere ai dialoghi.
@@ -446,22 +475,25 @@ miglioramenti, in ordine di utilità pratica:
   su tutti gli eseguibili e rimuove l'attributo di quarantena Gatekeeper.
   Se anche questo si rifiuta di aprirsi, apri Terminale e incolla:
   ```bash
-  bash "/percorso/della/cartella/sales-ai-assistant/ripara_permessi.command"
+  bash "/percorso/della/cartella/SUGGERIMENTIVENDITA/ripara_permessi.command"
   ```
 - **L'app mostra la lista testuale invece del menu con i pulsanti**: mancano
   le dipendenze PyObjC (`menu/requirements.txt`) — rifai "Configura
   ambiente" dalla lista. Dettagli in `logs/menu.log`. Nel frattempo il
   sistema funziona comunque, solo con il vecchio menu.
-- **L'overlay si apre nel browser invece che in una finestra flottante**:
-  mancano le dipendenze PyObjC (`overlay/requirements.txt`) — rifai
-  "Configura ambiente" dal menu (o `pip install -r overlay/requirements.txt`
-  a mano). Dettagli dell'errore in `logs/overlay.log`. Nel frattempo il
-  sistema funziona comunque, solo senza restare in primo piano da solo.
 - **"Manca DEEPGRAM_API_KEY" / "Manca ANTHROPIC_API_KEY"**: variabile
   d'ambiente non impostata nella sessione di terminale corrente, oppure file
   `.env` non nella cartella giusta.
-- **Overlay resta su "disconnesso"**: il server non è in esecuzione, oppure
-  gira su una porta diversa da 8765 (controlla l'output del server).
+- **Il pannello chiamata resta su "disconnesso"**: il server non è in
+  esecuzione, oppure il WebSocket non è sulla porta 8765 (controlla
+  `logs/server.log` o l'output del server).
+- **La spia "Segnale in ingresso" resta ferma o la trascrizione è vuota**:
+  il pannello sta ascoltando il dispositivo sbagliato — scegli lo splitter
+  nel selettore in alto invece di "Predefinito di sistema".
+- **"Chiamata Gestione Lead" non si illumina dopo "Invia a Suggerimenti
+  Vendita"**: controlla che l'estensione Chrome sia aggiornata e ricaricata
+  (`chrome://extensions`) e che l'app sia aperta; il canovaccio resta
+  comunque in attesa e compare alla prossima "Chiamata Gestione Lead".
 - **Audio saturo/distorto nella trascrizione**: abbassa il volume media di
   sistema del telefono, come indicato nella Parte 1.
 - **Il classificatore LLM sceglie script sbagliati**: quasi sempre è un
