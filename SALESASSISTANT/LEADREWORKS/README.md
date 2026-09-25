@@ -12,9 +12,7 @@ libreria script, flusso utente, struttura dati, capacità runtime.
 ## Struttura cartelle
 - `docs/`        — specifica funzionale e materiale di riferimento
 - `src/lead-rework-console.html` — **artifact finale**, file HTML unico e autonomo da incollare come Claude Artifact
-- `src/data/`    — libreria dei 25 script YesMobility e profilo azienda di default, in JSON (stessi contenuti incorporati nell'HTML: qui servono da sorgente leggibile/manutenibile)
-- `src/components/` — non usata (l'artifact è un unico file, niente build step)
-- `assets/`      — eventuali risorse statiche (loghi, icone)
+- `src/data/`    — libreria degli script YesMobility (26 script, numerati 1–27) e profilo azienda di default, in JSON (stessi contenuti incorporati nell'HTML: qui servono da sorgente leggibile/manutenibile; la fonte di verità resta l'HTML)
 - `browser-extension/` — estensione browser (prototipo) che importa i dati del lead direttamente dal CRM proprietario "Facile Salire" nella console, vedi sezione dedicata sotto
 
 ## Import diretto dal CRM (estensione browser, prototipo)
@@ -83,13 +81,22 @@ attesa senza che nulla succeda visibilmente.
 
 ## Origine della libreria script
 Il PDF `SCRIPT_YesMobility.pdf` citato nella specifica non era disponibile nel
-filesystem. La libreria dei 25 script in `src/data/script-library.json` è stata
-ricostruita adattando i 17 script reali trovati nel progetto correlato
+filesystem. La libreria in `src/data/script-library.json` è stata ricostruita
+adattando i 17 script reali trovati nel progetto correlato
 `SUGGERIMENTIVENDITA/schema/esempio-libreria-script.json`
 (stesso tono, stessi partner, stesse regole di compliance) e completata fino a
 25 per coprire tutti i canali (telefono/WhatsApp/email) richiesti dalla tabella
-stati-lead della specifica (sezione 3). Se in futuro il PDF originale diventa
-disponibile, va usato per sostituire/validare questi contenuti.
+stati-lead della specifica (sezione 3).
+
+Aggiornamento del 2026-09-24: rimosso lo script n. 22 (recap WhatsApp dopo la
+telefonata, presupponeva un contatto precedente mai avvenuto) e aggiunti il
+n. 26 (WhatsApp, primo contatto) e il n. 27 (email, primo contatto). La
+libreria conta quindi **26 script, numerati da 1 a 27** (il 22 non esiste
+più). I numeri non vengono riassegnati perché `LEAD_STATES` e
+`OBIEZIONI_TRASVERSALI` fanno riferimento agli script per numero.
+
+Se in futuro il PDF originale diventa disponibile, va usato per
+sostituire/validare questi contenuti.
 
 ## Note importanti per lo sviluppo
 - L'output finale è `src/lead-rework-console.html`: un file HTML autonomo

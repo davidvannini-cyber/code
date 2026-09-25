@@ -8,13 +8,15 @@
   "value_proposition": [
     "Preventivo telefonico in 2 minuti",
     "Confronto preventivo esistente con verifica di fattibilità e prezzo",
-    "Prezzo migliore grazie ai volumi gestiti con i produttori"
+    "Prezzo migliore grazie ai volumi gestiti con i produttori",
+    "Realtà internazionale: grazie a importanti accordi quadro con i produttori, acquista in grandi quantità ottenendo sconti importanti, trasferiti al cliente in quotazioni vantaggiosissime"
   ],
   "tono_di_voce": "Consulenziale, cordiale, mai aggressivo. Linguaggio funzionale, mai la parola 'broker'.",
   "regole_critiche_compliance": [
-    "Non rivelare mai di sapere che il cliente è già stato visitato da Facile Salire o che si possiede già il suo preventivo, per motivi di privacy: bisogna farlo emergere dal cliente, mai anticiparlo",
+    "Non rivelare mai di sapere che il cliente è già stato visitato dal nostro installatore partner o che si possiede già il suo preventivo, per motivi di privacy: bisogna farlo emergere dal cliente, mai anticiparlo",
     "Non dichiarare mai 'non lo sappiamo' quando in realtà si sa: semplicemente non si anticipa l'informazione",
-    "Il ruolo di YesMobility va sempre descritto in modo funzionale, mai come 'broker'"
+    "Il ruolo di YesMobility va sempre descritto in modo funzionale, mai come 'broker'",
+    "Le informazioni tecniche/di rilievo sul sopralluogo (caratteristiche delle scale, lunghezza, larghezza, contesto dell'installazione, chi userà il prodotto, sue condizioni di salute/mobilità, ecc.) sono solo per riferimento interno, per orientare la strategia: NON vanno mai citate negli script, nemmeno in modo vago o indiretto (es. mai frasi come 'conoscendo la situazione di suo [familiare]' o 'so che ha bisogno di...' — anche un accenno generico rivela che le possediamo già). Lo script può parlare solo di ciò che il cliente stesso ci ha detto direttamente in questa telefonata o che è ovvio dalla richiesta iniziale (es. il prodotto richiesto)"
   ],
   "placeholder_standard": ["[Nome]", "[Prodotto]", "[Prezzo]", "[Zona]", "[Data]", "[Orario]", "[Indirizzo]", "[tempistica]"],
   "prodotti_selezionabili": ["Montascale", "Pedana", "Elevatore"]

@@ -15,16 +15,16 @@
     "titolo": "Apertura lead freddo / secondo preventivo (Match4Markets)",
     "stati_correlati": [2],
     "categoria": "apertura",
-    "testo": "Buongiorno, sono [Nome operatore] di YesMobility. Ho visto che ha fatto una richiesta di preventivo per [Prodotto]. Volevo sentirla per capire a che punto è: ha già ricevuto delle proposte o è ancora in fase di valutazione?\n(Ascolta la risposta senza mettere fretta.)\nPerfetto, questo mi aiuta a capire meglio. Noi lavoriamo con diversi produttori e, per i volumi che gestiami, spesso riusciamo a trovare condizioni interessanti. Se vuole, posso darle un secondo parere gratuito così ha un termine di paragone concreto prima di decidere."
+    "testo": "Buongiorno, sono [Nome operatore] di YesMobility. Ho visto che ha fatto una richiesta di preventivo per [Prodotto]. Volevo sentirla per capire a che punto è: ha già ricevuto delle proposte o è ancora in fase di valutazione?\n(Ascolta la risposta senza mettere fretta.)\nPerfetto, questo mi aiuta a capire meglio. Noi lavoriamo con diversi produttori e, per i volumi che gestiamo, spesso riusciamo a trovare condizioni interessanti. Se vuole, posso darle un secondo parere gratuito così ha un termine di paragone concreto prima di decidere."
   },
   {
     "numero": 3,
     "id": "apertura_gia_visitato_da_partner",
     "canale": "telefono",
-    "titolo": "Apertura cliente già visitato da Facile Salire",
+    "titolo": "Apertura cliente già visitato da un altro installatore",
     "stati_correlati": [3],
     "categoria": "apertura",
-    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. La contatto perché ci risulta un suo interesse per [Prodotto]. Mi diceva, a che punto è con la valutazione? Ha già avuto un tecnico da lei o un preventivo in mano?\n(Se il cliente conferma di avere già un preventivo, non dire mai di saperlo già: prosegui così)\nOk, mi fa piacere che abbia già un punto di riferimento. Nella sua zona, comunque, avremmo indirizzato anche noi verso Facile Salire: sono seri, puntuali e coprono tutto — installazione, manutenzione, assistenza. Se vuole, con le cifre che ha in mano possiamo fare un confronto rapido e vedere se ci sono margini di miglioramento sul prezzo o sul modello proposto."
+    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. La contatto perché ci risulta un suo interesse per [Prodotto]. Mi diceva, a che punto è con la valutazione? Ha già avuto un tecnico da lei o un preventivo in mano?\n(Se il cliente conferma di avere già un preventivo, non dire mai di saperlo già: prosegui così)\nOk, mi fa piacere che abbia già un punto di riferimento. Nella sua zona, comunque, avremmo indirizzato anche noi verso un installatore partner di nostra fiducia: serio, puntuale e che copre tutto — installazione, manutenzione, assistenza. Se vuole, con le cifre che ha in mano possiamo fare un confronto rapido e vedere se ci sono margini di miglioramento sul prezzo o sul modello proposto."
   },
   {
     "numero": 4,
@@ -33,7 +33,8 @@
     "titolo": "Recupero trattativa persa",
     "stati_correlati": [4],
     "categoria": "apertura",
-    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. La ricontatto perché avevamo parlato di [Prodotto] qualche tempo fa e so che al momento non se n'era fatto nulla. Volevo capire se il tema era più legato al prezzo, ai tempi, o ad altro.\n(Ascolta il motivo del rifiuto — è la chiave per la proposta successiva.)\nHo fatto una verifica e siamo riusciti a trovare una soluzione più conveniente rispetto a prima. Le va se le preparo un nuovo preventivo aggiornato? Non c'è nessun impegno, solo per farle vedere se ora i numeri tornano meglio."
+    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. La contatto in merito alla sua richiesta per [Prodotto]: volevo capire se è ancora interessata/o o se nel frattempo ha già trovato una soluzione che la soddisfa.\n(Ascolta la risposta — è la chiave per la proposta successiva.)\nAbbiamo verificato con i nostri produttori partner e possiamo offrirle condizioni vantaggiose, con un sopralluogo gratuito e senza impegno per darle un quadro preciso su fattibilità e prezzo. Le andrebbe di approfondire?",
+    "note_interne": "Non menzionare mai una chiamata YesMobility precedente: non è mai avvenuta, anche se lo stato interno è 'trattativa persa' (nome della fase nel CRM/partner, non di una nostra chiamata)."
   },
   {
     "numero": 5,
@@ -42,7 +43,7 @@
     "titolo": "Cliente interessato — organizzare sopralluogo",
     "stati_correlati": [6],
     "categoria": "chiusura_parziale",
-    "testo": "Ottimo [Nome], allora il prossimo passo è organizzare un sopralluogo tecnico: mi occupo io di metterla in contatto con Facile Salire, il nostro partner di fiducia in zona, così un loro tecnico verifica tutto dal vivo e le conferma la soluzione migliore e il prezzo definitivo, senza sorprese.\nHa disponibilità in settimana, magari [Data] mattina o pomeriggio? Prendo io l'appuntamento con Facile Salire e le confermo data e orario via messaggio."
+    "testo": "Ottimo [Nome], allora il prossimo passo è organizzare un sopralluogo tecnico: mi occupo io di metterla in contatto con il nostro installatore partner di fiducia in zona, così un tecnico verifica tutto dal vivo e le conferma la soluzione migliore e il prezzo definitivo, senza sorprese.\nHa disponibilità in settimana, magari [Data] mattina o pomeriggio? Prendo io l'appuntamento e le confermo data e orario via messaggio."
   },
   {
     "numero": 6,
@@ -51,8 +52,8 @@
     "titolo": "Ultimo richiamo — contatto poco valido",
     "stati_correlati": [5],
     "categoria": "apertura",
-    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. La richiamo un'ultima volta per [Prodotto]: avevo visto che non se ne era fatto più nulla e volevo capire se il motivo era il prezzo.\nSe è quello il tema, posso verificare subito se riusciamo a scendere con un modello più essenziale o con un produttore diverso, per arrivare a una cifra più vicina al suo budget. Le interessa che le faccia questa verifica al volo?",
-    "note_interne": "Se il cliente declina ancora dopo questo tentativo, il lead va segnato definitivamente come non valido (a mano, fuori dall'app)."
+    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. La contatto per [Prodotto]: volevo capire se il tema del prezzo può essere quello che la frena rispetto a completare la valutazione.\nSe è quello il tema, posso verificare subito se riusciamo a scendere con un modello più essenziale o con un produttore diverso, per arrivare a una cifra più vicina al suo budget. Le interessa che le faccia questa verifica al volo?",
+    "note_interne": "Non menzionare mai tentativi di chiamata precedenti (mai avvenuti). Se il cliente declina ancora dopo questo tentativo, il lead va segnato definitivamente come non valido (a mano, fuori dall'app)."
   },
   {
     "numero": 7,
@@ -61,7 +62,7 @@
     "titolo": "Chiusura vendita — cliente accetta",
     "stati_correlati": [8],
     "categoria": "chiusura",
-    "testo": "Perfetto [Nome], sono contento che la proposta faccia al caso suo! Le spiego come funziona da qui in avanti: organizzo io l'appuntamento con Facile Salire, l'azienda a cui ci affidiamo nella sua zona per praticità ma soprattutto per la qualità del servizio che offre.\nFacile Salire le invierà direttamente il contratto e si metterà in contatto con lei per organizzare tutto — installazione, manutenzione e assistenza a 360 gradi. Da qui in poi sarà il suo referente diretto. La ricontatteranno entro [tempistica]. Se nel frattempo le servisse qualcosa, sono comunque a disposizione."
+    "testo": "Perfetto [Nome], sono contento che la proposta faccia al caso suo! Le spiego come funziona da qui in avanti: organizzo io l'appuntamento con il nostro installatore partner nella sua zona, a cui ci affidiamo per praticità ma soprattutto per la qualità del servizio che offre.\nLe invieranno direttamente il contratto e si metteranno in contatto con lei per organizzare tutto — installazione, manutenzione e assistenza a 360 gradi. Da qui in poi saranno il suo referente diretto. La ricontatteranno entro [tempistica]. Se nel frattempo le servisse qualcosa, sono comunque a disposizione."
   },
   {
     "numero": 8,
@@ -92,12 +93,13 @@
   },
   {
     "numero": 11,
-    "id": "riferimento_messaggio_segreteria",
+    "id": "apertura_richiamo_contatto_difficile",
     "canale": "telefono",
-    "titolo": "Cliente irraggiungibile — messaggio in segreteria",
+    "titolo": "Richiamo su contatto difficile — approccio commerciale",
     "stati_correlati": [7],
     "categoria": "apertura",
-    "testo": "Buongiorno, sono [Nome operatore] di YesMobility, la contatto in merito alla sua richiesta per [Prodotto]. Non sono riuscito a raggiungerla telefonicamente: la ricontatterò nei prossimi giorni, oppure può richiamarmi con comodo a questo stesso numero. Buona giornata."
+    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. La contatto per la sua richiesta relativa a [Prodotto]: volevo capire se è ancora interessata/o a valutare la soluzione o se nel frattempo ha già deciso diversamente.\n(Ascolta la risposta — è la chiave per la proposta successiva.)\nLavoriamo con i migliori produttori del settore e, per i volumi che gestiamo, riusciamo spesso a proporre condizioni vantaggiose. Se per lei ha ancora senso, posso darle già oggi un'indicazione di fattibilità e prezzo: le va di dedicarmi due minuti?",
+    "note_interne": "Nessun riferimento a tentativi di chiamata precedenti (mai avvenuti secondo il cliente): lo script punta sempre a un vero tentativo di vendita, mai a un messaggio da lasciare in segreteria."
   },
   {
     "numero": 12,
@@ -115,7 +117,7 @@
     "titolo": "Obiezione trasversale — tempi di installazione lunghi",
     "stati_correlati": ["trasversale"],
     "categoria": "obiezione",
-    "testo": "Capisco che i tempi siano importanti. Le tempistiche dipendono dal produttore e dal tipo di [Prodotto], ma appena confermato l'ordine il tecnico di Facile Salire le darà una data precisa già in fase di sopralluogo. Generalmente si parla di [tempistica] dalla firma. Vuole che verifichi già ora un'indicazione più precisa per la sua zona?"
+    "testo": "Capisco che i tempi siano importanti. Le tempistiche dipendono dal produttore e dal tipo di [Prodotto], ma appena confermato l'ordine il tecnico del nostro installatore partner le darà una data precisa già in fase di sopralluogo. Generalmente si parla di [tempistica] dalla firma. Vuole che verifichi già ora un'indicazione più precisa per la sua zona?"
   },
   {
     "numero": 14,
@@ -124,7 +126,7 @@
     "titolo": "Richiamo post-sopralluogo non chiuso",
     "stati_correlati": [9],
     "categoria": "apertura",
-    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. Volevo sentirla dopo il sopralluogo che ha fatto Facile Salire per [Prodotto]: come è andata? È rimasto soddisfatto della soluzione proposta o ci sono dei dubbi su cui posso aiutarla a fare chiarezza?"
+    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. Volevo sentirla dopo il sopralluogo che è stato fatto per [Prodotto]: come è andata? È rimasto soddisfatto della soluzione proposta o ci sono dei dubbi su cui posso aiutarla a fare chiarezza?"
   },
   {
     "numero": 15,
@@ -160,7 +162,7 @@
     "titolo": "Obiezione trasversale — con chi faccio il contratto",
     "stati_correlati": ["trasversale"],
     "categoria": "obiezione",
-    "testo": "Il nostro servizio seleziona per lei l'installatore locale certificato con le condizioni migliori. Nella sua zona lavoriamo con Facile Salire, che offre installazione, manutenzione e assistenza a 360°. Il contratto sarebbe con loro, ma il prezzo glielo garantiamo noi."
+    "testo": "Il nostro servizio seleziona per lei l'installatore locale certificato con le condizioni migliori, che offre installazione, manutenzione e assistenza a 360°. Il contratto sarebbe con loro, ma il prezzo glielo garantiamo noi."
   },
   {
     "numero": 19,
@@ -169,7 +171,7 @@
     "titolo": "WhatsApp — conferma appuntamento sopralluogo",
     "stati_correlati": [6],
     "categoria": "conferma",
-    "testo": "Buongiorno [Nome], le confermo l'appuntamento con Facile Salire per il sopralluogo di [Prodotto]:\n📅 [Data], ore [Orario]\n📍 [Indirizzo]\nIl tecnico verificherà tutto dal vivo e le darà la conferma definitiva su soluzione e prezzo. Per qualsiasi necessità sono a disposizione, David — YesMobility."
+    "testo": "Buongiorno [Nome], le confermo l'appuntamento con il nostro installatore partner per il sopralluogo di [Prodotto]:\n📅 [Data], ore [Orario]\n📍 [Indirizzo]\nIl tecnico verificherà tutto dal vivo e le darà la conferma definitiva su soluzione e prezzo. Per qualsiasi necessità sono a disposizione, [Nome operatore] — YesMobility."
   },
   {
     "numero": 20,
@@ -178,26 +180,18 @@
     "titolo": "WhatsApp — reminder appuntamento sopralluogo",
     "stati_correlati": [6],
     "categoria": "promemoria",
-    "testo": "Buongiorno [Nome], le ricordo l'appuntamento di domani con il tecnico di Facile Salire per il sopralluogo di [Prodotto], alle ore [Orario] presso [Indirizzo]. A presto! David — YesMobility."
+    "testo": "Buongiorno [Nome], le ricordo l'appuntamento di domani con il tecnico del nostro installatore partner per il sopralluogo di [Prodotto], alle ore [Orario] presso [Indirizzo]. A presto! [Nome operatore] — YesMobility."
   },
   {
     "numero": 21,
     "id": "email_gia_visitato_interessato",
     "canale": "email",
-    "titolo": "Email — riepilogo per cliente già visitato, interessato ad approfondire",
+    "titolo": "Email — confronto per cliente già visitato, interessato ad approfondire",
     "stati_correlati": [3],
     "categoria": "follow_up",
-    "oggetto": "YesMobility — riepilogo valutazione per [Prodotto]",
-    "corpo": "Gentile [Nome],\n\nla ringrazio per il tempo dedicato alla nostra telefonata di oggi in merito a [Prodotto].\n\nCome anticipato, nella sua zona ([Zona]) lavoriamo con Facile Salire, che si occupa di installazione, manutenzione e assistenza a 360°. Restiamo a disposizione per un confronto con eventuali altre proposte in suo possesso, così da verificare insieme fattibilità e prezzo migliore.\n\nPer qualsiasi domanda può rispondere direttamente a questa email o contattarmi al numero con cui l'ho chiamata.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility"
-  },
-  {
-    "numero": 22,
-    "id": "whatsapp_recap_post_chiamata",
-    "canale": "whatsapp",
-    "titolo": "WhatsApp — recap sintetico dopo la telefonata",
-    "stati_correlati": ["trasversale"],
-    "categoria": "follow_up",
-    "testo": "Buongiorno [Nome], come promesso le scrivo un breve riepilogo della nostra chiamata su [Prodotto]:\n- Zona: [Zona]\n- Prima indicazione di prezzo: [Prezzo]\n- Prossimo passo: [tempistica]\nResto a disposizione per qualsiasi dubbio. David — YesMobility."
+    "oggetto": "YesMobility — confronto gratuito per [Prodotto]",
+    "corpo": "Gentile [Nome],\n\nla contatto in merito alla sua richiesta per [Prodotto] nella zona di [Zona]. Nella sua zona lavoriamo con un installatore partner di fiducia, per installazione, manutenzione e assistenza a 360°.\n\nSe ha già ricevuto un sopralluogo o un preventivo da un altro fornitore, saremo felici di fare un confronto rapido e gratuito, senza impegno, per verificare se ci sono margini di miglioramento su prezzo o soluzione proposta.\n\nPuò rispondere direttamente a questa email con qualche dettaglio in più, oppure sarò lieto di sentirla telefonicamente per approfondire insieme.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility",
+    "note_interne": "Non fare mai riferimento a una telefonata o contatto YesMobility precedente: questo script deve restare valido anche generato da solo, senza il canale telefono nello stesso giro."
   },
   {
     "numero": 23,
@@ -207,7 +201,8 @@
     "stati_correlati": [1, 2],
     "categoria": "follow_up",
     "oggetto": "YesMobility — la sua richiesta per [Prodotto]",
-    "corpo": "Gentile [Nome],\n\nla ringrazio per averci contattato per una valutazione su [Prodotto] nella zona di [Zona].\n\nCome discusso telefonicamente, verificheremo con i nostri produttori partner (Access, Handicare, AreaLifting, Albatross, PVE) la soluzione più adatta alle sue esigenze e la ricontatteremo entro [tempistica] con un'indicazione di fattibilità e prezzo.\n\nSe nel frattempo avesse ulteriori informazioni utili (foto, misure, preventivi già ricevuti), può rispondere direttamente a questa email.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility"
+    "corpo": "Gentile [Nome],\n\nla ringrazio per averci contattato per una valutazione su [Prodotto] nella zona di [Zona].\n\nVerificheremo con i nostri produttori partner (Access, Handicare, AreaLifting, Albatross, PVE) la soluzione più adatta alle sue esigenze e la ricontatteremo entro [tempistica] con un'indicazione di fattibilità e prezzo.\n\nSe nel frattempo avesse ulteriori informazioni utili (foto, misure, preventivi già ricevuti), può rispondere direttamente a questa email.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility",
+    "note_interne": "Non fare mai riferimento a una telefonata o contatto YesMobility precedente: questo script deve restare valido anche generato da solo, senza il canale telefono nello stesso giro."
   },
   {
     "numero": 24,
@@ -216,17 +211,40 @@
     "titolo": "Email — nuova proposta migliorativa per recupero trattativa persa",
     "stati_correlati": [4],
     "categoria": "recupero",
-    "oggetto": "YesMobility — nuova proposta aggiornata per [Prodotto]",
-    "corpo": "Gentile [Nome],\n\ncome discusso al telefono, le confermo che siamo riusciti a individuare una soluzione più conveniente rispetto alla proposta precedente per [Prodotto].\n\nNuova indicazione di prezzo: [Prezzo]\nZona: [Zona]\n\nRestiamo a disposizione per qualsiasi chiarimento e per organizzare, se interessata/o, un sopralluogo con Facile Salire senza alcun impegno.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility"
+    "oggetto": "YesMobility — proposta per [Prodotto]",
+    "corpo": "Gentile [Nome],\n\nla contatto in merito alla sua richiesta per [Prodotto]: abbiamo verificato con i nostri produttori partner e siamo riusciti a individuare una soluzione vantaggiosa per lei.\n\nIndicazione di prezzo: [Prezzo]\nZona: [Zona]\n\nRestiamo a disposizione per qualsiasi chiarimento e per organizzare, se interessata/o, un sopralluogo con il nostro installatore partner, senza alcun impegno.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility",
+    "note_interne": "Non fare mai riferimento a una telefonata o contatto YesMobility precedente: questo script deve restare valido anche generato da solo, senza il canale telefono nello stesso giro."
   },
   {
     "numero": 25,
     "id": "email_conferma_chiusura_vendita",
     "canale": "email",
-    "titolo": "Email — conferma chiusura vendita e passaggio a Facile Salire",
+    "titolo": "Email — conferma chiusura vendita e passaggio all'installatore partner",
     "stati_correlati": [8],
     "categoria": "chiusura",
     "oggetto": "YesMobility — conferma per [Prodotto] e prossimi passi",
-    "corpo": "Gentile [Nome],\n\nla ringrazio per aver scelto di procedere con [Prodotto].\n\nCome anticipato al telefono, la sua pratica passa ora a Facile Salire, il nostro partner per la sua zona ([Zona]), che si occuperà di contratto, installazione, manutenzione e assistenza a 360°. Sarà contattata/o direttamente da loro entro [tempistica].\n\nResto comunque a disposizione per qualsiasi necessità nel frattempo.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility"
+    "corpo": "Gentile [Nome],\n\nla ringrazio per aver scelto di procedere con [Prodotto].\n\nLa sua pratica passa ora al nostro installatore partner per la sua zona ([Zona]), che si occuperà di contratto, installazione, manutenzione e assistenza a 360°. Sarà contattata/o direttamente da loro entro [tempistica].\n\nResto comunque a disposizione per qualsiasi necessità nel frattempo.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility",
+    "note_interne": "Non fare mai riferimento a una telefonata o contatto YesMobility precedente: la conferma riguarda l'accettazione della proposta, non il canale con cui è avvenuta."
+  },
+  {
+    "numero": 26,
+    "id": "whatsapp_apertura_primo_contatto",
+    "canale": "whatsapp",
+    "titolo": "WhatsApp — primo contatto (apertura, nessuna chiamata precedente)",
+    "stati_correlati": ["trasversale"],
+    "categoria": "apertura",
+    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility 🙂 Le scrivo perché abbiamo ricevuto la sua richiesta online per [Prodotto]. Lavoriamo con i migliori produttori del settore — Access, Handicare, AreaLifting, Albatross, PVE — e possiamo darle in pochi minuti una prima valutazione di fattibilità e un'idea di prezzo, gratuita e senza impegno. Mi conferma qualche dettaglio in più (tipo di scale, altezza da superare, larghezza) così le rispondo già con un'indicazione?",
+    "note_interne": "Da usare come primo contatto autonomo via WhatsApp: nessuna telefonata o messaggio precedente è mai avvenuto, non menzionarne nessuno (salvo un contatto fatto pochi minuti prima nello stesso giro di rework)."
+  },
+  {
+    "numero": 27,
+    "id": "email_apertura_primo_contatto",
+    "canale": "email",
+    "titolo": "Email — primo contatto (apertura, nessuna chiamata precedente)",
+    "stati_correlati": ["trasversale"],
+    "categoria": "apertura",
+    "oggetto": "YesMobility — la sua richiesta per [Prodotto]",
+    "corpo": "Gentile [Nome],\n\nla contatto in merito alla sua richiesta online per [Prodotto] nella zona di [Zona].\n\nSiamo un servizio che lavora con i migliori produttori del settore (Access, Handicare, AreaLifting, Albatross, PVE) e possiamo fornirle una prima valutazione di fattibilità e un'indicazione di prezzo, gratuita e senza impegno.\n\nPer procedere mi servirebbero alcuni dettagli in più (tipo di scale, altezza da superare, larghezza): può rispondere direttamente a questa email, oppure la contatterò telefonicamente per raccoglierli insieme.\n\nCordiali saluti,\n[Nome operatore]\nYesMobility",
+    "note_interne": "Da usare come primo contatto autonomo via email: nessuna telefonata o messaggio precedente è mai avvenuto, non menzionarne nessuno (salvo un contatto fatto pochi minuti prima nello stesso giro di rework)."
   }
 ]

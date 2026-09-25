@@ -19,9 +19,9 @@ La cronologia dettagliata della prima sessione (sezioni 9bis…9terdecies del ve
 | Libreria script | 26 script nell'HTML (n. 1–21, 23–27; il n. 22 è stato rimosso) |
 | Estensione CRM → console | Testata dal vivo con un lead reale: funziona |
 | Console → Suggerimenti Vendita | Implementata (URL scheme, bagliore "lead in attesa", due modalità di chiamata); in gran parte **non testata dal vivo** |
-| Layout a 3 finestre (40% / 15% / 40%) | Implementato e provato una volta dal vivo, proporzioni corrette su richiesta utente |
+| Layout a 3 finestre (40% / 19% / 40%) | Implementato e provato dal vivo, proporzioni corrette su richiesta utente (menu passato dal 15% al 19%) |
 | Claude Artifact reale su claude.ai | **Mai testato**: è il rischio tecnico principale |
-| `src/data/script-library.json` | **Disallineato** rispetto all'HTML (vedi §4, TODO) |
+| `src/data/*.json` | Allineati all'HTML il 2026-09-25 (26 script, profilo aggiornato) |
 
 **Il progetto dal 2026-09-25 vive in** `SALESASSISTANT/LEADREWORKS/` del repo `davidvannini-cyber/code`, accanto a `SALESASSISTANT/SUGGERIMENTIVENDITA/`. Sul Mac dell'utente il percorso di riferimento resta `/Users/davidvannini_1/Documents/progetti/LEADREWORKS/`. Le vecchie "due copie da sincronizzare a mano" (`/root/progetti/…` e `/progetti/…`) erano specifiche dell'ambiente della prima sessione e non valgono più: la fonte di verità è il repo.
 
@@ -94,8 +94,8 @@ Il problema di fondo: l'AI generava script che (a) inventavano un contatto YesMo
 ## 5. TODO
 
 ### Priorità alta
-- [ ] **Riallineare `src/data/script-library.json` all'HTML**: il JSON ha ancora gli script 1–25 (incluso il 22 rimosso) e non ha il 26 e il 27. Il README parla ancora di "25 script". La fonte di verità è `SCRIPT_LIBRARY` nell'HTML.
-- [ ] **Riallineare `docs/PROMPT-SISTEMA-COMPLETO.md` (e `.docx`)**: è fermo al 2026-09-21 e riporta 4 regole assolute invece di 6.
+- [x] ~~Riallineare `src/data/script-library.json` e il README all'HTML~~: fatto il 2026-09-25 (anche `company-profile.default.json`).
+- [x] ~~Riallineare `docs/PROMPT-SISTEMA-COMPLETO.md`~~: fatto il 2026-09-25 (6 regole, libreria e stati del lead attuali). **Resta da rigenerare `PROMPT-SISTEMA-COMPLETO.docx`**, ancora alla versione del 21/09.
 - [ ] **Profilo salvato dell'utente**: le modifiche a `COMPANY_PROFILE_DEFAULT` (sostituzione di "Facile Salire" nelle regole di compliance) **non retroagiscono** sul profilo già salvato nel browser. Aggiornarlo a mano dalla tab "Profilo Azienda", oppure ripristinare il default.
 - [ ] Rigenerare e verificare con l'utente qualche script per ogni stato (1–10) e per ogni canale, per confermare che le 6 regole siano rispettate.
 
@@ -109,9 +109,9 @@ Il problema di fondo: l'AI generava script che (a) inventavano un contatto YesMo
 
 ### Pulizia e manutenzione
 - [ ] Aggiornare `CONSOLE_FALLBACK_URL` in `browser-extension/background.js` se sul Mac la cartella viene spostata sotto `SALESASSISTANT/`.
-- [ ] Aggiornare `docs/PROMPT-RIPRESA.txt`: punta ancora a `/root/progetti/LEADREWORKS/`.
-- [ ] Rimuovere i file AppleDouble `._*` e i `.DS_Store` dal repo.
-- [ ] Rimuovere il duplicato `YesMobility-LeadRework-Specifica.md` nella root del progetto (identico a quello in `docs/`).
+- [x] ~~Aggiornare `docs/PROMPT-RIPRESA.txt`~~: fatto il 2026-09-25, ora punta a `SALESASSISTANT/LEADREWORKS/`.
+- [x] ~~Rimuovere i file AppleDouble `._*` e i `.DS_Store`~~: fatto il 2026-09-25, aggiunto `.gitignore`.
+- [x] ~~Rimuovere il duplicato della specifica nella root~~: fatto il 2026-09-25 (resta solo `docs/YesMobility-LeadRework-Specifica.md`).
 - [ ] `http://localhost:8766/*` resta negli `host_permissions` per il content script di Suggerimenti Vendita: è corretto, non rimuoverlo pensando che serva solo al vecchio endpoint.
 - [ ] README di Suggerimenti Vendita: documentare la modalità `gestione_lead` e la porta 8767.
 
@@ -168,8 +168,8 @@ Il problema di fondo: l'AI generava script che (a) inventavano un contatto YesMo
 
 ```
 SALESASSISTANT/LEADREWORKS/
+├── .gitignore                         # esclude .DS_Store e ._*
 ├── README.md                          # note tecniche, estensione CRM, test con API key
-├── YesMobility-LeadRework-Specifica.md  # duplicato di docs/ (da rimuovere)
 ├── apri-console.command               # avvio Chrome app-mode, colonna sinistra 40%
 ├── setup_leadreworks.sh               # script di setup iniziale della cartella
 ├── browser-extension/                 # estensione Chrome MV3
@@ -180,15 +180,15 @@ SALESASSISTANT/LEADREWORKS/
 │   └── suggerimenti-vendita-content.js  # consegna canovaccio solo con ?avvio=gestione_lead, DELETE 8767
 ├── docs/
 │   ├── HANDOFF.md                     # questo file
-│   ├── PROMPT-RIPRESA.txt             # prompt per riprendere in una nuova chat (percorsi da aggiornare)
-│   ├── PROMPT-SISTEMA-COMPLETO.md     # estratto letterale dei prompt AI (fermo al 21/09, da aggiornare)
-│   ├── PROMPT-SISTEMA-COMPLETO.docx   # stesso contenuto in Word
+│   ├── PROMPT-RIPRESA.txt             # prompt per riprendere in una nuova chat
+│   ├── PROMPT-SISTEMA-COMPLETO.md     # estratto letterale dei prompt AI (aggiornato al 25/09)
+│   ├── PROMPT-SISTEMA-COMPLETO.docx   # versione Word (ferma al 21/09, da rigenerare)
 │   └── YesMobility-LeadRework-Specifica.md  # specifica funzionale originale
 └── src/
     ├── lead-rework-console.html       # L'APP: file unico, fonte di verità di dati e logica
     └── data/
         ├── company-profile.default.json  # copia leggibile di COMPANY_PROFILE_DEFAULT
-        └── script-library.json        # copia leggibile di SCRIPT_LIBRARY (DISALLINEATA, vedi TODO)
+        └── script-library.json        # copia leggibile di SCRIPT_LIBRARY (26 script)
 ```
 
 ### Mappa di `src/lead-rework-console.html` (in ordine di apparizione)
