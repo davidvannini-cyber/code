@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>YesMobility — Architettura del Sistema (documento tecnico)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --testo-1:#12161c;
+    --testo-2:#3f4a58;
+    --testo-3:#6b7684;
+    --bordo:#dfe3e8;
+    --bordo-forte:#c3cad3;
+    --sfondo-pagina:#ffffff;
+    --sfondo-riquadro:#f4f6f8;
+    --sfondo-callout:#eef8f6;
+    --bordo-callout:#9fddd0;
+    --teal:#0f9488;
+    --teal-scuro:#0b6d64;
+    --ambra:#b4720a;
+    --viola:#6d4fc4;
+    --mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#e9edf1;color:var(--testo-1);font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.62;}
+  h1,h2,h3,h4{font-family:"Manrope","Segoe UI",Arial,sans-serif;color:var(--testo-1);}
+
+  .documento{max-width:900px;margin:0 auto;background:transparent;padding:10px 0 50px;}
+
+  /* ---------- copertina ---------- */
+  .copertina{background:var(--sfondo-pagina);border:1.5px solid var(--bordo-forte);border-radius:10px;box-shadow:0 1px 3px rgba(18,22,28,.06);padding:42px 48px 36px;margin-bottom:26px;}
+  .copertina .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--teal-scuro);margin-bottom:16px;}
+  .copertina h1{font-size:34px;font-weight:800;line-height:1.22;margin:0 0 16px;max-width:680px;}
+  .copertina .sotto{font-size:16.5px;color:var(--testo-2);max-width:620px;line-height:1.55;margin-bottom:28px;}
+  .copertina .meta{display:flex;gap:28px;font-size:12.5px;color:var(--testo-3);}
+  .copertina .meta b{color:var(--testo-1);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-weight:700;}
+
+  /* ---------- indice ---------- */
+  .indice{background:var(--sfondo-pagina);border:1.5px solid var(--bordo-forte);border-radius:10px;box-shadow:0 1px 3px rgba(18,22,28,.06);padding:26px 32px;margin-bottom:26px;}
+  .indice h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 14px;color:var(--testo-2);}
+  .indice ol{margin:0;padding-left:22px;columns:2;column-gap:36px;}
+  .indice li{font-size:13.5px;margin-bottom:7px;break-inside:avoid;}
+  .indice a{color:var(--testo-1);text-decoration:none;}
+  .indice a:hover{color:var(--teal-scuro);}
+
+  /* ---------- sezioni ---------- */
+  section.capitolo{background:var(--sfondo-pagina);border:1.5px solid var(--bordo-forte);border-radius:10px;box-shadow:0 1px 3px rgba(18,22,28,.06);padding:32px 40px 36px;margin-bottom:26px;}
+  section.capitolo h2{font-size:23px;font-weight:800;margin:0 0 6px;padding-bottom:14px;border-bottom:1px solid var(--bordo-forte);display:flex;align-items:baseline;gap:12px;}
+  section.capitolo h2 .num{color:var(--teal-scuro);font-family:var(--mono);font-size:16px;font-weight:600;}
+  section.capitolo h3{font-size:16.5px;font-weight:700;margin:30px 0 10px;}
+  section.capitolo p{margin:0 0 14px;color:var(--testo-2);}
+  section.capitolo p b, section.capitolo li b{color:var(--testo-1);}
+  section.capitolo ul, section.capitolo ol{margin:0 0 14px;padding-left:22px;color:var(--testo-2);}
+  section.capitolo li{margin-bottom:7px;}
+
+  code, .mono{font-family:var(--mono);font-size:.89em;background:var(--sfondo-riquadro);border:1px solid var(--bordo);border-radius:4px;padding:1px 6px;color:#a02f6f;white-space:nowrap;}
+
+  /* ---------- callout ---------- */
+  .callout{background:var(--sfondo-callout);border:1px solid var(--bordo-callout);border-left:4px solid var(--teal);border-radius:8px;padding:16px 20px;margin:18px 0;}
+  .callout .etichetta{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-scuro);margin-bottom:8px;}
+  .callout p{margin:0;color:var(--testo-1);font-size:14px;}
+  .callout p + p{margin-top:8px;}
+
+  .callout.avviso{background:#fff8ec;border-color:#f0d8a0;border-left-color:var(--ambra);}
+  .callout.avviso .etichetta{color:#8a5a06;}
+
+  /* ---------- tabelle ---------- */
+  table{width:100%;border-collapse:collapse;margin:14px 0 20px;font-size:13.5px;}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--testo-3);font-weight:700;padding:8px 12px;border-bottom:2px solid var(--bordo-forte);}
+  td{padding:9px 12px;border-bottom:1px solid var(--bordo);color:var(--testo-2);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+
+  /* ---------- diagrammi a blocchi (SVG-free, solo div) ---------- */
+  .diagramma{background:var(--sfondo-riquadro);border:1px solid var(--bordo);border-radius:10px;padding:26px;margin:20px 0;}
+  .diagramma .titolo-diagramma{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--testo-3);margin-bottom:16px;}
+  .riga-diagramma{display:flex;align-items:stretch;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .blocco-d{
+    flex:1; min-width:140px; background:#fff; border:1.5px solid var(--bordo-forte); border-radius:8px;
+    padding:12px 14px; font-size:12.5px; line-height:1.4;
+  }
+  .blocco-d .t{font-weight:700;font-size:13px;margin-bottom:3px;color:var(--testo-1);}
+  .blocco-d .s{color:var(--testo-3);font-size:11.5px;}
+  .blocco-d.accento-teal{border-color:var(--teal);background:#f2fbfa;}
+  .blocco-d.accento-viola{border-color:var(--viola);background:#f7f4fe;}
+  .blocco-d.accento-ambra{border-color:var(--ambra);background:#fdf6ea;}
+  .freccia-giu{text-align:center;color:var(--testo-3);font-size:18px;margin:2px 0;}
+
+  /* ---------- barra stampa ---------- */
+  .barra-stampa{position:fixed;top:18px;right:18px;z-index:50;display:flex;gap:10px;}
+  .barra-stampa button{
+    font-family:"IBM Plex Sans";font-size:13px;font-weight:600;color:#fff;
+    background:var(--teal-scuro);border:none;border-radius:8px;padding:10px 18px;cursor:pointer;
+    box-shadow:0 6px 16px rgba(15,148,136,.35);
+  }
+  .barra-stampa button:hover{background:#0a5951;}
+
+  @media print{
+    body{background:#fff;}
+    .documento{max-width:none;padding:0;margin:0;}
+    .barra-stampa{display:none;}
+    section.capitolo{page-break-inside:avoid;}
+    .diagramma, table, .callout{page-break-inside:avoid;}
+    @page{size:A4 portrait; margin:22mm 18mm;}
+  }
+</style>
+</head>
+<body>
+
+<div class="barra-stampa no-print">
+  <button onclick="window.print()">Esporta / Stampa in PDF</button>
+</div>
+
+<div class="documento">
+
+  <div class="copertina">
+    <div class="eyebrow">Documento tecnico — uso interno</div>
+    <h1>Architettura del sistema di gestione lead e assistenza vendita</h1>
+    <p class="sotto">Descrizione analitica del funzionamento end-to-end: dalla cattura del lead nel CRM fino alla gestione delle obiezioni in tempo reale durante la telefonata.</p>
+    <div class="meta">
+      <div><b>Componenti</b>Estensione browser · Lead Rework Console · Suggerimenti Vendita</div>
+      <div><b>Ambito</b>Architettura, flussi dati, protocolli interni</div>
+    </div>
+  </div>
+
+  <div class="indice">
+    <h2>Indice</h2>
+    <ol>
+      <li><a href="#s1">Panoramica del sistema</a></li>
+      <li><a href="#s2">Cattura dati dal CRM</a></li>
+      <li><a href="#s3">Lead Rework Console</a></li>
+      <li><a href="#s4">Trasferimento verso Suggerimenti Vendita</a></li>
+      <li><a href="#s5">Applicazione nativa Suggerimenti Vendita</a></li>
+      <li><a href="#s6">Motore di ascolto e suggerimento in tempo reale</a></li>
+      <li><a href="#s7">Consegna del canovaccio guida in chiamata</a></li>
+      <li><a href="#s8">Miglioramento continuo della libreria</a></li>
+      <li><a href="#s9">Regole di compliance e riservatezza</a></li>
+      <li><a href="#s10">Disposizione delle finestre sullo schermo</a></li>
+      <li><a href="#s11">Sintesi: il flusso end-to-end</a></li>
+    </ol>
+  </div>
+
+  <!-- 1 -->
+  <section class="capitolo" id="s1">
+    <h2><span class="num">01</span> Panoramica del sistema</h2>
+    <p>Il sistema è composto da tre pezzi indipendenti, collegati tra loro esclusivamente tramite <b>un'estensione browser</b> (Chrome, Manifest V3) che fa da ponte: nessuno dei tre componenti dipende direttamente dagli altri per funzionare da solo.</p>
+    <div class="diagramma">
+      <div class="titolo-diagramma">Componenti principali</div>
+      <div class="riga-diagramma">
+        <div class="blocco-d accento-ambra"><div class="t">CRM (Facile Salire)</div><div class="s">Applicazione web di terze parti, non modificabile</div></div>
+        <div class="blocco-d accento-teal"><div class="t">Lead Rework Console</div><div class="s">Artifact HTML self-contained, generazione script via AI</div></div>
+        <div class="blocco-d accento-viola"><div class="t">Suggerimenti Vendita</div><div class="s">App nativa macOS + server locale + pagina di chiamata</div></div>
+      </div>
+      <div class="riga-diagramma">
+        <div class="blocco-d" style="flex:0 0 100%;"><div class="t">Estensione browser "YesMobility CRM → Lead Rework Console"</div><div class="s">Content script su ciascuna delle tre superfici + un service worker (<code>background.js</code>) che orchestra apertura finestre, posizionamento, passaggio dati via <code>chrome.storage.local</code></div></div>
+      </div>
+    </div>
+    <p>Il resto del documento segue esattamente l'ordine in cui i dati attraversano questi componenti: dalla scheda del lead nel CRM fino al suggerimento mostrato all'operatore mentre parla al telefono.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="capitolo" id="s2">
+    <h2><span class="num">02</span> Cattura dati dal CRM</h2>
+    <h3>2.1 Estrazione dei dati dalla pagina</h3>
+    <p>Il CRM è un'applicazione basata su <b>Inertia.js</b>: ogni pagina incorpora i propri dati in un blob JSON dentro un tag <code>&lt;script type="application/json" data-page="app"&gt;</code>, già presente nel DOM al caricamento — non serve interrogare API separate. Il content script <code>crm-content.js</code>, iniettato solo sulle pagine di dettaglio lead (<code>https://app.facilesalire.it/leads/*</code>), legge quel blob una sola volta e ne estrae i campi rilevanti (anagrafica, note, storico attività, stato/fase).</p>
+    <p>Un pulsante fluttuante, aggiunto dal content script direttamente nella pagina del CRM, avvia il trasferimento al click dell'operatore.</p>
+    <h3>2.2 Trasporto dei dati e rilevamento pagina obsoleta</h3>
+    <p>I dati estratti vengono scritti in <code>chrome.storage.local</code> (chiave <code>pendingLead</code>) — l'unico canale di trasporto usato in tutto il sistema per passare dati tra pagine/processi diversi dello stesso browser, dato che i content script vivono in "mondi isolati" e non condividono variabili JavaScript tra loro. Contestualmente viene inviato un messaggio <code>{"type":"leadCaptured"}</code> al service worker.</p>
+    <p>Poiché il CRM è una SPA, l'URL della scheda può restare invariato mentre l'utente naviga tra lead diversi: per evitare di catturare dati di un lead diverso da quello visualizzato, il content script confronta l'ID lead nei dati estratti con quello atteso dall'URL corrente e, in caso di mismatch, mostra un avviso esplicito invece di procedere silenziosamente con dati sbagliati.</p>
+    <h3>2.3 Apertura della Lead Rework Console</h3>
+    <p>Ricevuto <code>leadCaptured</code>, <code>background.js</code> cerca una scheda già aperta della console (<code>chrome.tabs.query</code> su <code>file:///*lead-rework-console.html</code>):</p>
+    <ul>
+      <li><b>Scheda già aperta</b> → viene ricaricata (garantisce sempre l'ultima versione del file) e riposizionata nella colonna di schermo dedicata; i dati in attesa vengono letti da soli al ricaricamento.</li>
+      <li><b>Nessuna scheda aperta</b> → ne viene creata una nuova (<code>chrome.windows.create</code>, <code>type:"popup"</code>, senza barra indirizzi/tab), posizionata e dimensionata dinamicamente in base alla risoluzione reale dello schermo (vedi §10).</li>
+    </ul>
+    <p>Il content script <code>console-content.js</code>, iniettato nella pagina della console, consegna il lead in attesa alla pagina vera e propria tramite <code>window.postMessage</code> (il mondo isolato del content script non può chiamare direttamente le funzioni JavaScript della pagina).</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="capitolo" id="s3">
+    <h2><span class="num">03</span> Lead Rework Console</h2>
+    <h3>3.1 Architettura dell'artifact</h3>
+    <p>Un singolo file HTML self-contained (nessuna build, nessuna dipendenza server): CSS, JavaScript e dati (profilo azienda, libreria script, stati lead) sono tutti inline. Lo stato dell'applicazione vive in un oggetto <code>state</code> globale; ogni modifica passa da una funzione <code>render()</code> che ridisegna l'interfaccia — pattern manuale, senza framework.</p>
+    <h3>3.2 Import dei dati e estrazione assistita</h3>
+    <p>Oltre all'import automatico dal CRM (§2), i dati possono arrivare da inserimento manuale o da file caricati (screenshot, PDF convertiti pagina-per-pagina in immagini, CSV/Excel via SheetJS). Un secondo passaggio AI (<code>runAiAnalysis()</code>) analizza tutto il materiale disponibile e propone: stato del lead, obiezioni trasversali pertinenti, e una sintesi di analisi/strategia — sempre modificabile manualmente prima di procedere.</p>
+    <h3>3.3 Generazione degli script</h3>
+    <p>Alla generazione, <code>buildSystemPrompt()</code> compone il prompt di sistema inviato al modello AI assemblando, in quest'ordine di priorità dichiarata esplicitamente nel prompt stesso:</p>
+    <table>
+      <tr><th>Blocco</th><th>Origine</th><th>Modificabile dall'utente</th></tr>
+      <tr><td><code>HARD_COMPLIANCE_RULES</code></td><td>Costante nel codice</td><td>No — sempre attiva, priorità massima</td></tr>
+      <tr><td>Obiettivo primario della chiamata</td><td>Costante nel codice</td><td>No</td></tr>
+      <tr><td>Profilo azienda</td><td><code>COMPANY_PROFILE_DEFAULT</code> + eventuali modifiche salvate</td><td>Sì, da tab "Profilo Azienda"</td></tr>
+      <tr><td>Regole di compliance aggiuntive</td><td>Campo del profilo</td><td>Sì</td></tr>
+      <tr><td>Libreria script di riferimento</td><td><code>SCRIPT_LIBRARY</code> (25 script)</td><td>No — vive solo nel codice</td></tr>
+    </table>
+    <p><code>buildUserPrompt()</code> aggiunge invece i dati specifici del lead corrente: stato selezionato, dati anagrafici/note, analisi/strategia, canali richiesti (telefono/WhatsApp/email), obiezioni da presidiare. Il modello risponde con un JSON contenente uno script per ciascun canale richiesto.</p>
+    <p>Il dettaglio delle regole di compliance (§9) è trattato separatamente per la sua rilevanza.</p>
+    <h3>3.4 Stato del lead e storico</h3>
+    <p>Dieci stati predefiniti (<code>LEAD_STATES</code>) mappano ciascuno a uno o più canali/script di default (es. "Trattativa persa — recupero" → telefono + email). Ogni lead lavorato viene salvato nello storico (<code>leadsHistory</code>, persistito via <code>db</code>/<code>localStorage</code>), consultabile, duplicabile come base per un nuovo lead, stampabile.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="capitolo" id="s4">
+    <h2><span class="num">04</span> Trasferimento verso Suggerimenti Vendita</h2>
+    <h3>4.1 Payload e canale di trasporto</h3>
+    <p>Il pulsante "Invia a Suggerimenti Vendita" (disponibile sia dopo una generazione appena fatta, sia riaprendo un lead dallo storico) costruisce un payload minimale — <b>solo</b> il canale telefono, mai email/WhatsApp né l'analisi interna, perché Suggerimenti Vendita gestisce esclusivamente telefonate:</p>
+    <div class="diagramma">
+      <div class="titolo-diagramma">Struttura del payload</div>
+      <div class="riga-diagramma">
+        <div class="blocco-d"><div class="t">lead</div><div class="s">nome, segmento, stato_pipeline (mappato dallo stato lead)</div></div>
+        <div class="blocco-d"><div class="t">canovaccio</div><div class="s">titolo, testo (script telefono generato)</div></div>
+      </div>
+    </div>
+    <p>Il payload viaggia con lo stesso meccanismo del CRM: <code>window.postMessage</code> dalla pagina verso <code>console-content.js</code>, che lo scrive in <code>chrome.storage.local</code> (chiave <code>pendingLeadSuggerimentiVendita</code>) e notifica il service worker.</p>
+    <h3>4.2 Apertura automatica dell'applicazione</h3>
+    <p>Per far comparire l'app nativa direttamente dal browser, <code>Suggerimenti Vendita.app</code> registra uno schema URL personalizzato (<code>suggerimentivendita://</code>) tramite <code>CFBundleURLTypes</code> nel proprio <code>Info.plist</code>. La console apre un link invisibile con quello schema (non <code>window.location</code>, per non rischiare di navigare via dalla pagina se lo schema non fosse ancora registrato): macOS Launch Services instrada l'evento all'app, che lo riceve nel metodo <code>application_openURLs_</code> e porta la propria finestra in primo piano (avviandosi da sé se non era già in esecuzione).</p>
+    <div class="callout avviso">
+      <div class="etichetta">Nota di robustezza</div>
+      <p>La registrazione dello schema presso Launch Services non è sempre automatica alla comparsa di una nuova chiave <code>CFBundleURLTypes</code>: l'eseguibile dell'app (<code>Contents/MacOS/avvia</code>) richiama esplicitamente <code>lsregister -f</code> su se stesso ad ogni avvio, in background, per auto-guarire eventuali registrazioni mancanti senza intervento manuale.</p>
+    </div>
+    <h3>4.3 Segnalazione "lead in attesa"</h3>
+    <p>Un piccolo server HTTP (porta <code>8767</code>), interno al processo del menu principale dell'app (non al server delle chiamate), espone <code>POST/DELETE /lead-in-attesa</code>: la console lo notifica al momento dell'invio, così il pulsante "Chiamata Gestione Lead" nel menu può accendersi con un bagliore visivo <b>prima ancora</b> che l'operatore avvii una telefonata. È un canale deliberatamente separato dal server delle chiamate (porta 8766), che parte solo alla prima telefonata della sessione — se dipendesse da quello, l'avviso non potrebbe mai comparire nel momento in cui serve di più.</p>
+    <p>Poiché l'app potrebbe impiegare qualche secondo ad avviarsi, la notifica viene ritentata più volte a distanza di 1,5s (fino a 8 tentativi) — dal content script della console, non dal service worker: i timer (<code>setTimeout</code>) in un service worker Manifest V3 non sono affidabili, perché Chrome può sospendere il processo tra un evento e l'altro senza rispettare i timer pendenti, mentre una pagina normale come la console resta viva per tutta la finestra di ritentativi.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="capitolo" id="s5">
+    <h2><span class="num">05</span> Applicazione nativa Suggerimenti Vendita</h2>
+    <h3>5.1 Struttura del bundle</h3>
+    <p>App macOS autosufficiente: <code>Contents/MacOS/avvia</code> (script bash, è il <code>CFBundleExecutable</code>) avvia — tramite PyObjC — una finestra Cocoa (<code>menu_finestra.py</code>) che carica <code>menu/index.html</code> in una <code>WKWebView</code>. Ogni pulsante del menu manda un messaggio JavaScript→Python (<code>WKScriptMessageHandler</code>), che rilancia lo stesso eseguibile con <code>--azione &lt;nome&gt;</code> per eseguire la singola funzione richiesta (le funzioni vere e proprie — setup, configurazione, avvio chiamata — restano tutte nello script bash, il menu grafico ne è solo un selettore).</p>
+    <div class="callout">
+      <div class="etichetta">Decisione architetturale</div>
+      <p>Il lancio del processo Python avviene con <code>exec</code> (non una sotto-chiamata): questo sostituisce il processo bash con quello Python <b>mantenendo lo stesso PID</b>, condizione necessaria perché macOS Launch Services riconosca correttamente l'app come "già in esecuzione" e instradi lì gli eventi successivi (es. l'apertura via schema URL, §4.2) invece di avviarne una seconda istanza.</p>
+    </div>
+    <h3>5.2 Le tre modalità di chiamata</h3>
+    <table>
+      <tr><th>Modalità</th><th>Parametro URL</th><th>Canovaccio guida</th><th>Uso previsto</th></tr>
+      <tr><td>Chiamata YesMobility</td><td><code>avvio=""</code></td><td>Mai mostrato</td><td>Sola gestione telefonata + obiezioni</td></tr>
+      <tr><td>Chiamata Gestione Lead</td><td><code>avvio=gestione_lead</code></td><td>Importato da Lead Rework Console</td><td>Chiamata su un lead specifico preparato</td></tr>
+      <tr><td>Rinforzo Facile Salire</td><td><code>avvio=rinforzo_facile_salire</code></td><td>Canovaccio fisso da file</td><td>Richiamo standard post-sopralluogo</td></tr>
+    </table>
+    <p>Ognuna apre la stessa pagina (<code>overlay/index.html</code>) con un parametro <code>avvio</code> diverso in coda all'URL; è quel parametro a determinare, lato content script (§7), se e quale canovaccio va mostrato.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="capitolo" id="s6">
+    <h2><span class="num">06</span> Motore di ascolto e suggerimento in tempo reale</h2>
+    <h3>6.1 Cattura audio</h3>
+    <p>Il microfono viene catturato dal <b>browser</b> (<code>getUserMedia</code> dentro <code>overlay/index.html</code>), non dal processo nativo: un'app macOS non firmata con certificato sviluppatore non può ottenere in modo affidabile il permesso microfono di sistema, mentre un browser regolarmente firmato (Chrome) sì. I frame audio grezzi (PCM16 mono 16kHz) vengono inviati al server locale sulla stessa connessione WebSocket usata per ricevere i suggerimenti.</p>
+    <h3>6.2 Pipeline di elaborazione</h3>
+    <div class="diagramma">
+      <div class="titolo-diagramma">Dal parlato del cliente al suggerimento a schermo</div>
+      <div class="blocco-d accento-teal"><div class="t">1. Audio dal browser</div><div class="s">PCM16 16kHz via WebSocket verso <code>server_suggerimenti.py</code></div></div>
+      <div class="freccia-giu">↓</div>
+      <div class="blocco-d accento-teal"><div class="t">2. Deepgram (STT streaming)</div><div class="s">Trascrizione in tempo reale, si attende la trascrizione "finale" della frase</div></div>
+      <div class="freccia-giu">↓</div>
+      <div class="blocco-d accento-viola"><div class="t">3. Motore di matching</div><div class="s"><code>MotoreSuggerimenti.suggerisci()</code> — classificatore su embedding, confronta la frase con la libreria di script ammessi per la fase di chiamata corrente</div></div>
+      <div class="freccia-giu">↓</div>
+      <div class="blocco-d accento-ambra"><div class="t">4. Broadcast via WebSocket</div><div class="s">Fase chiamata, testo suggerimento, alternativa, categoria trigger → a tutte le pagine overlay collegate</div></div>
+    </div>
+    <h3>6.3 Tempi di reazione</h3>
+    <p>Il tempo che intercorre tra la frase finale riconosciuta e la comparsa del suggerimento a schermo è mantenuto sotto i <b>300 millisecondi</b>: il modello di matching (la parte computazionalmente più pesante, imbarcata all'avvio del server) resta caricato in memoria per l'intera sessione di lavoro invece di essere ricaricato ad ogni chiamata — è il motivo per cui la prima telefonata della sessione richiede qualche secondo in più (caricamento iniziale) mentre le successive partono pressoché istantanee. Il matching viene eseguito in un executor separato dall'event loop asincrono, per non bloccare la gestione simultanea di audio e WebSocket.</p>
+    <h3>6.4 Persistenza tra chiamate</h3>
+    <p>Il processo server resta acceso tra una chiamata e l'altra (avviato alla prima, terminato solo alla chiusura dell'app): ogni nuova connessione WebSocket in modalità <code>--browser-audio</code> resetta la fase di chiamata e ricarica la libreria script (<code>motore.nuova_chiamata()</code>), così un aggiornamento alla libreria fatto tra due telefonate è visibile dalla chiamata successiva senza riavviare nulla.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="capitolo" id="s7">
+    <h2><span class="num">07</span> Consegna del canovaccio guida in chiamata</h2>
+    <p>Il canovaccio (lo script preparato in Lead Rework Console) è deliberatamente <b>disaccoppiato</b> dal motore di suggerimento in tempo reale (§6): non transita mai per il server Python, arriva alla pagina della chiamata esclusivamente tramite l'estensione browser.</p>
+    <p>Il content script <code>suggerimenti-vendita-content.js</code>, iniettato sulla pagina <code>http://localhost:8766/*</code>, legge <code>chrome.storage.local</code> (chiave <code>pendingLeadSuggerimentiVendita</code>) al caricamento della pagina e ad ogni notifica ricevuta dal service worker, ma <b>solo se</b> il parametro <code>avvio</code> nell'URL corrente è <code>gestione_lead</code> — nelle altre due modalità (§5.2) il dato resta intatto in storage, non viene consumato, per essere ancora disponibile la volta successiva che si apre davvero la modalità corretta.</p>
+    <div class="callout avviso">
+      <div class="etichetta">Evoluzione storica del meccanismo</div>
+      <p>Una prima versione faceva transitare il canovaccio anche via file (<code>lead-corrente.json</code>, letto dal server ad ogni connessione WebSocket) per aggirare le restrizioni TCC di macOS sull'accesso a <code>~/Documents</code> per app non firmate. Il meccanismo è stato rimosso: applicava il canovaccio a <b>qualsiasi</b> modalità di chiamata (in conflitto con la distinzione introdotta al §5.2) e, se un file residuo restava nel bundle da un test precedente, il suo contenuto aveva sempre precedenza — mostrando permanentemente uno script vecchio indipendentemente da nuovi lead inviati.</p>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="capitolo" id="s8">
+    <h2><span class="num">08</span> Miglioramento continuo della libreria</h2>
+    <p>Ogni frase finale del cliente, insieme all'esito del matching (script scelto, fase rilevata), viene salvata in un log append-only (<code>logs/frasi_raccolte.jsonl</code>, una riga JSON per frase). La voce "Rivedi frasi raccolte" nel menu apre uno strumento di revisione (<code>gestione_frasi_raccolte.py</code>) per scorrere le frasi non ancora revisionate ed eventualmente trasformarle in nuovi esempi per la libreria di script — così le situazioni realmente incontrate al telefono, non previste in origine, arricchiscono nel tempo la capacità del motore di riconoscerle. La scrittura di nuovi script (anche manuale) può essere assistita da un secondo modulo AI dedicato (<code>genera_testo_script.py</code>).</p>
+  </section>
+
+  <!-- 9 -->
+  <section class="capitolo" id="s9">
+    <h2><span class="num">09</span> Regole di compliance e riservatezza</h2>
+    <p>Un sottoinsieme delle regole che vincolano la generazione degli script è stato deliberatamente <b>spostato fuori dal profilo azienda modificabile</b> e reso costante nel codice (<code>HARD_COMPLIANCE_RULES</code> in <code>lead-rework-console.html</code>), iniettato per primo — con priorità dichiarata esplicita su tutto il resto del prompt, inclusa la libreria di script di riferimento — nel prompt di sistema, e ribadito una seconda volta in chiusura come controllo finale prima della risposta.</p>
+    <table>
+      <tr><th>Regola</th><th>Vincolo</th></tr>
+      <tr><td>Nessun contatto precedente</td><td>Ogni script si presenta come primo contatto assoluto, indipendentemente dallo stato interno del lead (es. "trattativa persa" è un nome di fase, non prova di una chiamata già fatta)</td></tr>
+      <tr><td>Nessun dato inventato</td><td>Vietato attribuire al cliente dichiarazioni, stati d'animo o dettagli non presenti esplicitamente nei dati forniti</td></tr>
+      <tr><td>Riservatezza dei dati interni</td><td>Informazioni note internamente (relazioni familiari, condizioni di salute, dettagli tecnici del sopralluogo, per chi è il prodotto) non vanno mai rivelate finché non è il cliente stesso a menzionarle nella chiamata in corso</td></tr>
+      <tr><td>Obiettivo di chiusura</td><td>Lo script deve puntare a un accordo con il cliente, non limitarsi a proporre un nuovo sopralluogo come esito della chiamata</td></tr>
+    </table>
+    <p>Ogni regola include, nel prompt stesso, un esempio concreto di violazione realmente osservata e da non ripetere — tecnica adottata perché una regola astratta si è rivelata meno efficace, nella pratica, di un esempio negativo puntuale.</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="capitolo" id="s10">
+    <h2><span class="num">10</span> Disposizione delle finestre sullo schermo</h2>
+    <p>Le tre superfici (Lead Rework Console, menu Suggerimenti Vendita, pannello chiamata) occupano posizioni fisse in percentuale della larghezza dello schermo primario — 40% / 19% / 40% da sinistra a destra — calcolate dinamicamente ad ogni apertura, non in pixel fissi:</p>
+    <table>
+      <tr><th>Finestra</th><th>Meccanismo di posizionamento</th></tr>
+      <tr><td>Lead Rework Console</td><td>Chrome in modalità app (<code>--app=</code>, <code>--window-position</code>, <code>--window-size</code>), geometria letta via <code>osascript</code> (bash) o <code>chrome.system.display.getInfo()</code> (estensione)</td></tr>
+      <tr><td>Menu Suggerimenti Vendita</td><td><code>NSScreen.mainScreen().visibleFrame()</code> (PyObjC) — esclude nativamente barra menu e Dock</td></tr>
+      <tr><td>Pannello chiamata</td><td>Stesso meccanismo della Console (Chrome app-mode con geometria calcolata via <code>osascript</code>)</td></tr>
+    </table>
+    <p>Nessuna delle tre finestre resta forzatamente in primo piano rispetto alle altre: la disposizione affiancata rende superfluo un livello di finestra prioritario, che in precedenza causava sovrapposizioni indesiderate.</p>
+  </section>
+
+  <!-- 11 -->
+  <section class="capitolo" id="s11">
+    <h2><span class="num">11</span> Sintesi: il flusso end-to-end</h2>
+    <div class="diagramma">
+      <div class="blocco-d accento-ambra"><div class="t">CRM</div><div class="s">Operatore clicca "Invia a Lead Rework Console" sulla scheda del lead</div></div>
+      <div class="freccia-giu">↓ <span class="mono" style="font-size:11px;">chrome.storage.local</span></div>
+      <div class="blocco-d accento-teal"><div class="t">Lead Rework Console</div><div class="s">Stato, obiezioni e strategia suggeriti dall'AI → script generati (telefono/WhatsApp/email), nel rispetto delle regole di compliance</div></div>
+      <div class="freccia-giu">↓ <span class="mono" style="font-size:11px;">chrome.storage.local + schema URL</span></div>
+      <div class="blocco-d accento-viola"><div class="t">Suggerimenti Vendita — apertura</div><div class="s">App nativa avviata/portata in primo piano, bagliore "lead in attesa" acceso sul pulsante corretto</div></div>
+      <div class="freccia-giu">↓ operatore clicca "Chiamata Gestione Lead"</div>
+      <div class="blocco-d accento-viola"><div class="t">Chiamata in corso</div><div class="s">Canovaccio sempre visibile (da estensione) + audio ascoltato, trascritto e classificato in tempo reale (&lt;300ms) → suggerimento sulle obiezioni</div></div>
+      <div class="freccia-giu">↓</div>
+      <div class="blocco-d accento-teal"><div class="t">Dopo la chiamata</div><div class="s">Frasi raccolte disponibili per revisione → arricchimento della libreria per le chiamate successive</div></div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>
