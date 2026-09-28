@@ -1,0 +1,13 @@
+Riprendi il progetto LEADREWORKS (YesMobility Lead Rework Console).
+
+Repository: davidvannini-cyber/code
+Cartella di lavoro nel repo: SALESASSISTANT/LEADREWORKS/
+Copia sul Mac dell'utente: /Users/davidvannini_1/Documents/progetti/LEADREWORKS/
+Progetto collegato (stesso repo): SALESASSISTANT/SUGGERIMENTIVENDITA/
+
+File principale (artifact HTML autonomo): SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html
+
+Prima di fare qualsiasi cosa, leggi per intero questo file di handoff, che contiene lo stato completo del progetto, le decisioni prese, i rischi noti e le lezioni di debugging da non ripetere:
+SALESASSISTANT/LEADREWORKS/docs/HANDOFF.md
+
+Dopo averlo letto, chiedimi cosa vuoi fare oggi.
