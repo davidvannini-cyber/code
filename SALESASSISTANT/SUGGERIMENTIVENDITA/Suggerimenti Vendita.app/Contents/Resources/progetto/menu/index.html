@@ -49,28 +49,28 @@
     font-family:"Manrope", "Segoe UI", Arial, sans-serif;
   }
 
-  .contenuto{padding:22px 22px 18px;}
+  .contenuto{padding:8px 14px 12px;}
 
   .intestazione{
     display:flex;
     align-items:center;
-    gap:14px;
-    margin-bottom:20px;
+    gap:10px;
+    margin-bottom:12px;
   }
   .intestazione img{
-    width:48px;height:48px;border-radius:12px;
-    box-shadow:0 4px 14px rgba(0,0,0,.4);
+    width:48px;height:48px;border-radius:2px;
+    box-shadow:0 2px 8px rgba(0,0,0,.12);
   }
-  .intestazione .nome-app{font-size:18px;font-weight:800;letter-spacing:-.01em;}
-  .intestazione .sottotitolo{font-size:12.5px;color:var(--testo-2);margin-top:2px;}
+  .intestazione .nome-app{font-size:13px;font-weight:800;letter-spacing:-.01em;}
+  .intestazione .sottotitolo{font-size:10px;color:var(--testo-2);margin-top:1px;}
 
   .azione-primaria{
     width:100%;
     display:flex;
     align-items:center;
-    gap:14px;
-    padding:15px 17px;
-    border-radius:12px;
+    gap:10px;
+    padding:8px 12px;
+    border-radius:2px;
     border:1px solid #b97a08;
     background:linear-gradient(180deg, var(--ambra-hover), var(--ambra));
     color:var(--ambra-testo);
@@ -84,22 +84,22 @@
   .azione-primaria:active{transform:translateY(1px);}
   .azione-primaria:focus-visible{outline:2px solid #fff;outline-offset:2px;}
   .azione-primaria .icona-cerchio{
-    width:38px;height:38px;border-radius:10px;
+    width:30px;height:30px;border-radius:2px;
     background:rgba(28,19,0,.16);
     display:flex;align-items:center;justify-content:center;
     flex-shrink:0;
   }
-  .azione-primaria .icona-cerchio svg{width:20px;height:20px;}
-  .azione-primaria .titolo{font-size:15px;font-weight:800;}
-  .azione-primaria .descrizione{font-size:12px;opacity:.75;margin-top:1px;}
+  .azione-primaria .icona-cerchio svg{width:16px;height:16px;}
+  .azione-primaria .titolo{font-size:11px;font-weight:800;}
+  .azione-primaria .descrizione{font-size:9px;opacity:.75;margin-top:0px;}
 
   .azione-secondaria{
     width:100%;
     display:flex;
     align-items:center;
-    gap:14px;
-    padding:15px 17px;
-    border-radius:12px;
+    gap:10px;
+    padding:8px 12px;
+    border-radius:2px;
     border:1px solid #0f766e;
     background:linear-gradient(180deg, #2dd4bf, var(--teal));
     color:#042f2a;
@@ -113,14 +113,14 @@
   .azione-secondaria:active{transform:translateY(1px);}
   .azione-secondaria:focus-visible{outline:2px solid #fff;outline-offset:2px;}
   .azione-secondaria .icona-cerchio{
-    width:38px;height:38px;border-radius:10px;
+    width:30px;height:30px;border-radius:2px;
     background:rgba(4,47,42,.16);
     display:flex;align-items:center;justify-content:center;
     flex-shrink:0;
   }
-  .azione-secondaria .icona-cerchio svg{width:20px;height:20px;}
-  .azione-secondaria .titolo{font-size:15px;font-weight:800;}
-  .azione-secondaria .descrizione{font-size:12px;opacity:.75;margin-top:1px;}
+  .azione-secondaria .icona-cerchio svg{width:16px;height:16px;}
+  .azione-secondaria .titolo{font-size:11px;font-weight:800;}
+  .azione-secondaria .descrizione{font-size:9px;opacity:.75;margin-top:0px;}
 
   /* Stesso stile di .azione-primaria (pulsante d'azione principale in cima),
      colore viola per distinguerlo a colpo d'occhio da "Chiamata YesMobility"
@@ -129,9 +129,9 @@
     width:100%;
     display:flex;
     align-items:center;
-    gap:14px;
-    padding:15px 17px;
-    border-radius:12px;
+    gap:10px;
+    padding:8px 12px;
+    border-radius:2px;
     border:1px solid #6d28d9;
     background:linear-gradient(180deg, #a78bfa, var(--viola));
     color:#f5f3ff;
@@ -145,14 +145,14 @@
   .azione-viola:active{transform:translateY(1px);}
   .azione-viola:focus-visible{outline:2px solid #fff;outline-offset:2px;}
   .azione-viola .icona-cerchio{
-    width:38px;height:38px;border-radius:10px;
+    width:30px;height:30px;border-radius:2px;
     background:rgba(245,243,255,.18);
     display:flex;align-items:center;justify-content:center;
     flex-shrink:0;
   }
-  .azione-viola .icona-cerchio svg{width:20px;height:20px;}
-  .azione-viola .titolo{font-size:15px;font-weight:800;}
-  .azione-viola .descrizione{font-size:12px;opacity:.8;margin-top:1px;}
+  .azione-viola .icona-cerchio svg{width:16px;height:16px;}
+  .azione-viola .titolo{font-size:11px;font-weight:800;}
+  .azione-viola .descrizione{font-size:9px;opacity:.8;margin-top:0px;}
 
   /* Bagliore quando c'è un lead esportato dalla Lead Rework Console e non
      ancora aperto in questa modalità (vedi impostaLeadInAttesa più sotto e
@@ -166,29 +166,29 @@
     50%{ box-shadow:0 0 0 3px #ddd6fe, 0 0 22px 6px rgba(167,139,250,1); }
   }
 
-  .gruppo{margin-bottom:18px;}
+  .gruppo{margin-bottom:10px;}
   .gruppo:last-child{margin-bottom:0;}
   .etichetta{
-    font-size:11px;
+    font-size:9px;
     font-weight:700;
     text-transform:uppercase;
     letter-spacing:.09em;
     color:var(--testo-3);
-    margin:0 0 9px 2px;
+    margin:0 0 6px 2px;
   }
 
   .griglia{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:9px;
+    gap:6px;
   }
 
   .pulsante{
     display:flex;
     align-items:flex-start;
-    gap:10px;
-    padding:12px 13px;
-    border-radius:11px;
+    gap:8px;
+    padding:8px 10px;
+    border-radius:2px;
     border:1px solid var(--bordo);
     background:var(--card);
     color:var(--testo-1);
@@ -202,43 +202,43 @@
   .pulsante:focus-visible{outline:2px solid var(--ambra);outline-offset:2px;}
 
   .pulsante .icona-cerchio{
-    width:30px;height:30px;border-radius:8px;
+    width:26px;height:26px;border-radius:2px;
     display:flex;align-items:center;justify-content:center;
     flex-shrink:0;
   }
-  .pulsante .icona-cerchio svg{width:15px;height:15px;stroke:#1a1f2e;}
+  .pulsante .icona-cerchio svg{width:12px;height:12px;stroke:#1a1f2e;}
   .ic-teal{background:var(--teal);}
   .ic-viola{background:var(--viola);}
   .ic-blu{background:var(--blu);}
   .ic-ambra{background:var(--ambra);}
 
-  .pulsante .titolo{font-size:13px;font-weight:700;line-height:1.3;}
-  .pulsante .descrizione{font-size:11px;color:var(--testo-2);margin-top:2px;line-height:1.35;}
+  .pulsante .titolo{font-size:10px;font-weight:700;line-height:1.3;}
+  .pulsante .descrizione{font-size:9px;color:var(--testo-2);margin-top:1px;line-height:1.35;}
 
   .piede{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-top:20px;
-    padding-top:14px;
+    margin-top:12px;
+    padding-top:8px;
     border-top:1px solid var(--bordo);
   }
   .stato{
-    display:flex;align-items:center;gap:7px;
+    display:flex;align-items:center;gap:6px;
     font-family:"IBM Plex Mono", monospace;
-    font-size:11px;color:var(--testo-3);
+    font-size:9px;color:var(--testo-3);
   }
   .puntino-stato{width:7px;height:7px;border-radius:50%;background:var(--verde-traffico);box-shadow:0 0 6px var(--verde-traffico);transition:background .2s ease, box-shadow .2s ease;}
 
   .pulsante-esci{
     font-family:"IBM Plex Sans", sans-serif;
-    font-size:12px;
+    font-size:9px;
     font-weight:600;
     color:var(--testo-2);
     background:transparent;
     border:1px solid var(--bordo);
-    border-radius:8px;
-    padding:6px 13px;
+    border-radius:2px;
+    padding:4px 8px;
     cursor:pointer;
     transition:color .12s ease, border-color .12s ease;
   }
@@ -248,14 +248,14 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:6px;
-    margin-top:16px;
-    padding-top:14px;
+    gap:4px;
+    margin-top:10px;
+    padding-top:8px;
     border-top:1px solid var(--bordo);
   }
-  .firma img{height:73px;width:auto;opacity:.92;}
+  .firma img{height:60px;width:auto;opacity:.92;}
   .firma .copyright{
-    font-size:10px;
+    font-size:8px;
     color:var(--testo-3);
     text-align:center;
     letter-spacing:.01em;
