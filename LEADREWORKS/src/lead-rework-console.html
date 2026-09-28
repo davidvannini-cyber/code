@@ -8,110 +8,120 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
-  /* Stessa palette/tipografia dell'app "Suggerimenti Vendita" (menu/index.html),
-     per coerenza visiva tra le due app YesMobility. Se il CDN dei font non è
-     raggiungibile, si torna semplicemente ai font di sistema (fallback nello stack). */
+  /* Design "white.dc" di Claude Design (2026-09-28): tema chiaro, layout a tab
+     orizzontali in alto + rail destra invece di sidebar verticale, spazi
+     drasticamente ridotti per finestre strette affiancate. Palette e misure
+     replicate 1:1 dal mockup approvato (vedi docs/brief-design-lead-rework-console.md). */
   :root{
-    --bg:#14171f; --panel:#1b1f29; --panel-hover:#232837; --panel-raised:#1f2430;
-    --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.16);
-    --text:#f3f4f6; --text-dim:#9ca3af; --text-faint:#6b7280;
+    --bg:#ffffff; --panel:#e8e8ec; --panel-hover:#dcdce2; --panel-raised:#f0f0f4;
+    --border:rgba(0,0,0,.08); --border-strong:#d0d0d8;
+    --text:#1a1f2e; --text-dim:#6b7280; --text-faint:#6b7280;
     --primary:#14b8a6; --primary-dark:#0f766e; --primary-text:#042f2a;
     --accent:#28c840; --danger:#ff5f57; --warn:#f59e0b;
-    --sidebar:#101319; --sidebar-text:#9ca3af; --sidebar-active:#14b8a6;
-    --radius:10px;
+    --topnav:#ececf0; --topnav-text:#9ca3af; --topnav-active:#14b8a6;
+    --radius:2px;
     --font-body:"IBM Plex Sans","Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
     --font-head:"Manrope","IBM Plex Sans","Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
-    --field-bg:#cdf5ef; --field-text:#0b1f1c; --field-placeholder:#5f8b84;
+    --field-bg:#ffffff; --field-text:#1a1f2e; --field-placeholder:#a0a0a8;
+    --output-field-bg:#cdf5ef; --output-field-text:#0b1f1c;
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text);}
-  #app{display:flex;min-height:100vh;}
-  .sidebar{width:230px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-text);padding:20px 14px;display:flex;flex-direction:column;gap:4px;}
-  .brand{padding:0 8px 18px 8px;text-align:center;}
-  .brand span{font-size:12px;color:var(--text-faint);}
-  .navbtn{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--sidebar-text);user-select:none;font-family:var(--font-head);font-weight:600;}
-  .navbtn:hover{background:rgba(255,255,255,0.06);}
-  .navbtn.active{background:var(--sidebar-active);color:var(--primary-text);}
-  .navsubbtn{display:flex;align-items:center;gap:8px;padding:8px 12px 8px 30px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--sidebar-text);user-select:none;}
-  .navsubbtn:hover{background:rgba(255,255,255,0.06);}
+  a{color:#5eead4;text-decoration:none;}
+  a:hover{color:#2dd4bf;text-decoration:underline;}
+  #app{min-height:100vh;background:var(--bg);}
+  .topnav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--topnav);border-bottom:1px solid var(--border);padding:5px 14px;}
+  .topnav .brand{font-family:var(--font-head);font-weight:800;font-size:9px;color:var(--text);letter-spacing:-.01em;white-space:nowrap;}
+  .topnav .navtabs{display:flex;gap:4px;}
+  .navbtn{padding:8px 14px;border-radius:2px;cursor:pointer;font-family:var(--font-head);font-weight:700;font-size:9px;user-select:none;color:var(--topnav-text);background:transparent;}
+  .navbtn:hover{background:rgba(0,0,0,.04);}
+  .navbtn.active{background:var(--topnav-active);color:var(--primary-text);}
+  .navbtn.active:hover{background:var(--topnav-active);}
+  .topnav-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+  .topnav-status{display:flex;align-items:center;gap:6px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--text-dim);}
+  .topnav-copy{font-size:9px;color:var(--text-dim);white-space:nowrap;}
   textarea.autogrow{overflow:hidden;resize:none;}
   .card-header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
-  .icon-btn{background:transparent;border:none;color:var(--text-dim);cursor:pointer;padding:4px;border-radius:6px;display:flex;}
+  .icon-btn{background:transparent;border:none;color:var(--text-dim);cursor:pointer;padding:4px;border-radius:2px;display:flex;}
   .icon-btn:hover{background:var(--panel-hover);color:var(--text);}
-  .runtime-status{margin-top:auto;padding:10px 8px;font-size:11px;color:var(--text-faint);line-height:1.6;border-top:1px solid var(--border);font-family:"IBM Plex Mono",monospace;}
-  .runtime-status b{color:var(--sidebar-text);}
-  .sidebar-footer{margin-top:14px;padding:14px 8px 2px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:6px;}
-  .sidebar-footer .copyright{font-size:9.5px;color:var(--text-faint);text-align:center;line-height:1.4;}
   .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;}
-  .dot.ok{background:var(--accent);box-shadow:0 0 6px var(--accent);} .dot.ko{background:var(--danger);}
-  .main{flex:1;padding:26px 32px;max-width:1180px;}
-  h1{font-family:var(--font-head);font-weight:800;font-size:20px;margin:0 0 4px 0;letter-spacing:-.01em;}
-  h2{font-family:var(--font-head);font-weight:700;font-size:16px;margin:0 0 14px 0;}
-  h3{font-family:var(--font-head);font-weight:700;}
-  .subtitle{color:var(--text-dim);font-size:13px;margin-bottom:20px;}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:18px;}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
-  label{display:block;font-size:12.5px;font-weight:600;color:var(--text-dim);margin-bottom:5px;}
-  input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
-    width:100%;padding:9px 10px;border:1px solid var(--border-strong);border-radius:7px;font-size:13.5px;
-    font-family:inherit;background:var(--field-bg);color:var(--field-text);
+  .dot.ok{background:var(--accent);box-shadow:0 0 6px var(--accent);} .dot.ko{background:var(--warn);}
+  .page{max-width:1120px;margin:0 auto;padding:8px 14px 16px;display:flex;gap:7px;align-items:flex-start;flex-wrap:wrap;}
+  .page.page-narrow{max-width:800px;display:block;}
+  .main{flex:1 1 660px;min-width:0;}
+  .rail{flex:0 1 300px;min-width:260px;display:flex;flex-direction:column;gap:6px;position:sticky;top:44px;}
+  .rail-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:7px;}
+  .rail-card-title{font-family:var(--font-head);font-weight:700;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;}
+  .rail-steps{display:flex;flex-direction:column;gap:8px;font-size:9px;}
+  .rail-env{display:flex;flex-direction:column;gap:7px;font-family:"IBM Plex Mono",monospace;font-size:9px;color:var(--text-dim);}
+  h1{font-family:var(--font-head);font-weight:800;font-size:16px;margin:0 0 1px 0;letter-spacing:-.01em;}
+  h2{font-family:var(--font-head);font-weight:700;font-size:11px;margin:0 0 5px 0;}
+  h3{font-family:var(--font-head);font-weight:700;font-size:11px;}
+  .subtitle{color:var(--text-dim);font-size:9px;margin-bottom:2px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 4px 12px rgba(0,0,0,.12);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  label{display:block;font-size:9px;font-weight:600;color:var(--text-dim);margin-bottom:3px;}
+  input[type=text],input[type=tel],input[type=email],input[type=password],input[type=number],input[type=date],input[type=time],select,textarea{
+    width:100%;padding:2px 8px;border:1px solid var(--border-strong);border-radius:2px;font-size:11px;
+    font-family:inherit;background:var(--field-bg);color:var(--field-text);box-shadow:inset 0 1px 3px rgba(0,0,0,.08);
   }
   input::placeholder,textarea::placeholder{color:var(--field-placeholder);}
   select{color-scheme:light;}
-  textarea{resize:vertical;line-height:1.5;}
-  .field{margin-bottom:14px;}
+  textarea{resize:vertical;line-height:1.35;}
+  .field{margin-bottom:2px;}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-  button{cursor:pointer;border:none;border-radius:7px;padding:9px 16px;font-size:13.5px;font-weight:700;font-family:var(--font-head);}
+  button{cursor:pointer;border:none;border-radius:2px;padding:6px 16px;font-size:11px;font-weight:700;font-family:var(--font-head);}
   .btn-primary{background:var(--primary);color:var(--primary-text);} .btn-primary:hover{background:#2dd4bf;}
-  .btn-secondary{background:var(--panel-raised);color:var(--text);border:1px solid var(--border);} .btn-secondary:hover{background:var(--panel-hover);border-color:var(--border-strong);}
-  .btn-danger{background:rgba(255,95,87,.12);color:var(--danger);border:1px solid rgba(255,95,87,.35);} .btn-danger:hover{background:rgba(255,95,87,.2);}
-  .btn-ghost{background:transparent;color:var(--primary);padding:4px 8px;} .btn-ghost:hover{background:rgba(255,255,255,.06);border-radius:6px;}
+  .btn-secondary{background:var(--output-field-bg);color:var(--output-field-text);border:1px solid var(--border);} .btn-secondary:hover{background:#b8ece3;}
+  .btn-danger{background:rgba(255,95,87,.12);color:#c2392f;border:1px solid rgba(255,95,87,.35);} .btn-danger:hover{background:rgba(255,95,87,.2);}
+  .btn-ghost{background:transparent;color:var(--primary);padding:4px 8px;} .btn-ghost:hover{background:rgba(0,0,0,.04);border-radius:2px;}
   button:disabled{opacity:.5;cursor:not-allowed;}
-  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel-raised);color:var(--text-dim);border-radius:20px;padding:5px 12px;font-size:12.5px;cursor:pointer;user-select:none;border:1px solid var(--border);}
-  .chip.on{background:rgba(20,184,166,.18);color:#5eead4;border-color:rgba(20,184,166,.45);font-weight:600;}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:#1f2430;color:#9ca3af;border-radius:2px;padding:5px 14px;font-size:9px;cursor:pointer;user-select:none;border:1px solid rgba(255,255,255,.08);font-weight:600;}
+  .chip.on{background:rgba(20,184,166,.18);color:#5eead4;border-color:rgba(20,184,166,.45);}
   .chip input{margin:0;}
-  .badge{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 8px;border-radius:5px;}
+  .badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 8px;border-radius:2px;}
   .badge.ai{background:rgba(40,200,64,.15);color:#4ade80;}
   .badge.draft{background:rgba(245,158,11,.15);color:var(--warn);}
-  .badge.edited{background:rgba(255,255,255,.08);color:var(--text-dim);}
-  .output-block{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;background:var(--panel-raised);}
-  .output-block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-  .output-block-head h3{font-size:13.5px;margin:0;}
-  .hint{font-size:12px;color:var(--text-dim);margin-top:4px;}
-  .warn-box{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fcd34d;padding:10px 12px;border-radius:7px;font-size:12.5px;margin-bottom:14px;}
-  .error-box{background:rgba(255,95,87,.12);border:1px solid rgba(255,95,87,.4);color:#fca5a1;padding:10px 12px;border-radius:7px;font-size:12.5px;margin-bottom:14px;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);}
-  th{color:var(--text-dim);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;}
-  tr:hover td{background:rgba(255,255,255,.03);}
+  .badge.edited{background:rgba(0,0,0,.08);color:var(--text-dim);}
+  .output-block{border:1px solid var(--border);border-radius:2px;padding:10px;margin-bottom:2px;background:var(--panel-raised);}
+  .output-block input[type=text],.output-block textarea{background:var(--output-field-bg);color:var(--output-field-text);font-size:9px;}
+  .output-block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+  .output-block-head h3{font-size:11px;margin:0;}
+  .hint{font-size:9px;color:var(--text-dim);margin-top:4px;}
+  .warn-box{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#92660a;padding:10px 12px;border-radius:2px;font-size:11px;margin-bottom:14px;}
+  .error-box{background:rgba(255,95,87,.12);border:1px solid rgba(255,95,87,.4);color:#c2392f;padding:10px 12px;border-radius:2px;font-size:11px;margin-bottom:14px;}
+  table{width:100%;border-collapse:collapse;font-size:9px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);}
+  th{color:var(--text-dim);font-size:9px;text-transform:uppercase;letter-spacing:.03em;}
+  tr:hover td{background:rgba(0,0,0,.02);}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:50;overflow:auto;}
-  .modal{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:12px;max-width:720px;width:100%;padding:26px;max-height:90vh;overflow:auto;}
+  .modal{background:#ffffff;color:var(--text);border:1px solid var(--border);border-radius:2px;max-width:720px;width:100%;padding:26px;max-height:90vh;overflow:auto;}
   .close-x{float:right;cursor:pointer;color:var(--text-dim);font-size:20px;line-height:1;}
-  .small{font-size:12px;color:var(--text-dim);}
-  .thumb{max-width:140px;max-height:100px;border-radius:6px;border:1px solid var(--border);display:block;margin-top:6px;}
+  .small{font-size:11px;color:var(--text-dim);}
+  .thumb{max-width:140px;max-height:100px;border-radius:2px;border:1px solid var(--border);display:block;margin-top:6px;}
   .flex-between{display:flex;justify-content:space-between;align-items:center;}
-  .divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
-  .collapsible-toggle{font-size:12.5px;color:var(--primary);cursor:pointer;font-weight:600;user-select:none;}
-  .field-missing{background:rgba(245,158,11,.14) !important;border-color:rgba(245,158,11,.55) !important;}
-  .obiezioni-missing{background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:10px;}
-  /* Le due card "generate dall'AI" (Stato/canali e Analisi/strategia) in un
-     azzurro più chiaro rispetto alle altre card scure, per distinguerle a colpo
-     d'occhio dai dati importati (CRM/file): non sono la stessa cosa. */
+  .divider{border:none;border-top:1px solid var(--border);margin:0 0 12px 0;}
+  .collapsible-toggle{font-size:9px;color:var(--primary);cursor:pointer;font-weight:700;user-select:none;}
+  .field-missing{background:rgba(245,158,11,.18) !important;border-color:rgba(245,158,11,.55) !important;}
+  .obiezioni-missing{background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.4);border-radius:2px;padding:10px;}
+  /* Le due card "generate dall'AI" (Stato/canali e Analisi/strategia) restano
+     nel verde chiaro distintivo del mockup, per distinguerle a colpo d'occhio
+     dai dati importati (CRM/file): non sono la stessa cosa. */
   .card-ai-generated{background:rgba(167,243,208,.18);border-color:rgba(167,243,208,.45);}
-  .dropzone{border:2px dashed var(--border-strong);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s;background:var(--panel-raised);color:var(--text-dim);}
-  .dropzone:hover{border-color:var(--primary);background:#1c222e;}
+  .dropzone{border:2px dashed rgba(255,255,255,.16);border-radius:2px;padding:8px 10px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s;background:var(--panel-raised);color:var(--text-dim);}
+  .dropzone:hover{border-color:var(--primary);background:#e8f7f4;}
   .dropzone.dragover{border-color:var(--primary);background:rgba(20,184,166,.08);}
   .dropzone-icon{margin-bottom:8px;color:var(--text-dim);}
-  .dropzone-text{font-size:14px;color:var(--text);}
-  .dropzone-hint{font-size:12px;color:var(--text-dim);margin-top:4px;}
+  .dropzone-text{font-size:12.5px;color:var(--text);}
+  .dropzone-hint{font-size:11px;color:var(--text-dim);margin-top:4px;}
   .uploaded-files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:14px;}
-  .uploaded-file-card{position:relative;display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--panel-raised);}
-  .uploaded-file-thumb{width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;}
-  .uploaded-file-icon{width:40px;height:40px;border-radius:6px;background:var(--panel-hover);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .uploaded-file-card{position:relative;display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:2px;padding:8px;background:var(--panel-raised);}
+  .uploaded-file-thumb{width:40px;height:40px;object-fit:cover;border-radius:2px;flex-shrink:0;}
+  .uploaded-file-icon{width:40px;height:40px;border-radius:2px;background:var(--panel-hover);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
   .uploaded-file-info{min-width:0;flex:1;}
-  .uploaded-file-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .uploaded-file-meta{font-size:11px;color:var(--text-dim);}
+  .uploaded-file-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .uploaded-file-meta{font-size:9px;color:var(--text-dim);}
   .uploaded-file-remove{position:absolute;top:4px;right:6px;cursor:pointer;color:var(--text-dim);font-size:12px;}
   .uploaded-file-remove:hover{color:var(--danger);}
   @media print{
@@ -393,8 +403,7 @@ let state = {
   generationError: null,
   extracting: false,
   extractionError: null,
-  showImportPanel: false, // sezione "Importa i dati del lead": nascosta finché non richiamata dal sottomenu "Lead"
-  navLeadOpen: false // sottomenu del pulsante "Lead" nella sidebar, aperto/chiuso
+  showImportPanel: false // sezione "1. Import dati lead": card sempre presente, contenuto espandibile con toggle
 };
 
 const EXTRACTABLE_FIELDS = ["nome","zona","prezzo_esistente","note","motivazione_rifiuto","data_appuntamento","orario_appuntamento","indirizzo","tempistica","analisi_strategia"];
@@ -504,29 +513,24 @@ async function init(){
 
 function render(){
   const app = document.getElementById("app");
+  const showRail = state.tab === "nuovo";
   app.innerHTML = `
-    <div class="sidebar">
-      <div class="brand"><img src="${LOGO_YESMOBILITY_B64}" alt="YesMobility" style="max-width:132px;width:100%;height:auto;display:block;margin:0 auto 6px;"><span>Lead Rework Console</span></div>
-      <div>
-        <div class="navbtn ${state.tab==='nuovo'?'active':''}" style="display:flex;align-items:center;justify-content:space-between;">
-          <span onclick="switchTab('nuovo')" style="display:flex;align-items:center;flex:1;">${icon('lead')}Lead</span>
-          <span onclick="toggleNavLeadMenu()" style="display:flex;padding:2px;cursor:pointer;">${icon(state.navLeadOpen?'chevronUp':'chevronDown', {noMargin:true, size:13})}</span>
-        </div>
-        ${state.navLeadOpen ? `<div class="navsubbtn" onclick="openImportPanel()">${icon('upload')}Importa dati</div>` : ""}
+    <div class="topnav">
+      <div class="brand">Lead Rework Console</div>
+      <div class="navtabs">
+        <div class="navbtn ${state.tab==='nuovo'?'active':''}" onclick="switchTab('nuovo')">Lead</div>
+        <div class="navbtn ${state.tab==='storico'?'active':''}" onclick="switchTab('storico')">Storico Lead</div>
+        <div class="navbtn ${state.tab==='profilo'?'active':''}" onclick="switchTab('profilo')">Profilo Azienda</div>
       </div>
-      <div class="navbtn ${state.tab==='storico'?'active':''}" onclick="switchTab('storico')">${icon('history')}Storico Lead</div>
-      <div class="navbtn ${state.tab==='profilo'?'active':''}" onclick="switchTab('profilo')">${icon('settings')}Profilo Azienda</div>
-      <div class="runtime-status">
-        <div><span class="dot ${RUNTIME.db?'ok':'ko'}"></span><b>db</b>: ${RUNTIME.db?'runtime cloud':'fallback locale (localStorage)'}</div>
-        <div><span class="dot ${RUNTIME.sample?'ok':'ko'}"></span><b>sample</b>: ${RUNTIME.sample?('attivo via ' + ({artifact:'Claude Artifact', legacy:'complete legacy', api_key:'API key diretta'}[RUNTIME.sampleVia] || RUNTIME.sampleVia)):'non ancora usato / non disponibile'}</div>
-        <div><span class="dot ${getAnthropicApiKey()?'ok':'ko'}"></span><b>API key</b>: ${getAnthropicApiKey()?'configurata':'non configurata'}</div>
-        <div><span class="dot ${canUseImages()?'ok':'ko'}"></span><b>immagini</b>: ${canUseImages()?'supportate':'non disponibili (fallback manuale)'}</div>
-      </div>
-      <div class="sidebar-footer">
-        <div class="copyright">© Designed and krafted by Momandis David Vannini</div>
+      <div class="topnav-right">
+        <div class="topnav-status"><span class="dot ${RUNTIME.db?'ok':'ko'}"></span>Sistema attivo</div>
+        <div class="topnav-copy">© momandis</div>
       </div>
     </div>
-    <div class="main">${renderTab()}</div>
+    <div class="page ${state.tab==='profilo'?'page-narrow':''}">
+      <div class="main">${renderTab()}</div>
+      ${showRail ? renderRightRail() : ""}
+    </div>
   `;
   // requestAnimationFrame: aspetta che il browser abbia finito il layout della
   // nuova innerHTML prima di misurare scrollHeight, altrimenti il calcolo può
@@ -536,9 +540,40 @@ function render(){
   });
 }
 
-function switchTab(tab){ state.tab = tab; state.historyOpen = null; state.navLeadOpen = false; render(); }
-function toggleNavLeadMenu(){ state.navLeadOpen = !state.navLeadOpen; render(); }
-function openImportPanel(){ state.tab = "nuovo"; state.showImportPanel = true; state.navLeadOpen = false; render(); }
+function renderRightRail(){
+  const d = state.draft;
+  return `
+    <div class="rail">
+      <div class="rail-card">
+        <div class="rail-card-title">Lead corrente</div>
+        <div style="font-family:var(--font-head);font-weight:800;font-size:11px;margin-bottom:2px;">${escapeHtml(d.nome || '—')}</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-bottom:3px;">${escapeHtml(d.prodotto || '—')} · ${escapeHtml(d.zona || '—')}</div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.4;">${escapeHtml(d.telefono1 || '—')}<br>${escapeHtml(d.email || '—')}</div>
+      </div>
+      <div class="rail-card">
+        <div class="rail-card-title">Passaggi</div>
+        <div class="rail-steps">
+          <a href="#dati-lead">2. Dati lead</a>
+          <a href="#stato-canali">3. Stato e canali</a>
+          <a href="#analisi">4. Analisi e strategia</a>
+          <a href="#generazione">5. Generazione script</a>
+        </div>
+      </div>
+      <div class="rail-card">
+        <div class="rail-card-title">Ambiente</div>
+        <div class="rail-env">
+          <div><span class="dot ${RUNTIME.db?'ok':'ko'}"></span>db ${RUNTIME.db?'connesso':'fallback locale'}</div>
+          <div><span class="dot ${RUNTIME.sample?'ok':'ko'}"></span>sample API ${RUNTIME.sample?'pronta':'non disponibile'}</div>
+          <div><span class="dot ${getAnthropicApiKey()?'ok':'ko'}"></span>API key ${getAnthropicApiKey()?'configurata':'da verificare'}</div>
+          <div><span class="dot ${canUseImages()?'ok':'ko'}"></span>immagini ${canUseImages()?'abilitate':'non disponibili'}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchTab(tab){ state.tab = tab; state.historyOpen = null; render(); }
+function openImportPanel(){ state.tab = "nuovo"; state.showImportPanel = true; render(); }
 function closeImportPanel(){ state.showImportPanel = false; render(); }
 function autoGrowTextarea(el){
   if (!el) return;
@@ -706,45 +741,46 @@ function renderNewLeadTab(){
   const d = state.draft;
   const stato = statoById(d.stato_lead);
   return `
-    <h1>Lead</h1>
-    <div class="subtitle">Verifica i campi proposti e genera gli script operativi.</div>
-
-    ${state.showImportPanel ? `
-    <div class="card">
-      <div class="card-header-row">
-        <h2 style="margin:0;">Importa i dati del lead</h2>
-        <button class="icon-btn" onclick="closeImportPanel()" title="Nascondi">${icon('close', {noMargin:true})}</button>
-      </div>
-      <div class="subtitle" style="margin-bottom:14px;">Carica screenshot, CSV o Excel: l'estrazione automatica proverà a popolare i campi qui sotto, oltre a suggerire stato lead e obiezioni.</div>
-      <div class="dropzone" id="dropzone"
-           ondragover="event.preventDefault(); this.classList.add('dragover');"
-           ondragleave="this.classList.remove('dragover');"
-           ondrop="handleFileDrop(event)"
-           onclick="document.getElementById('file_input_hidden').click()">
-        <div class="dropzone-icon">${icon('upload', {size:26, noMargin:true})}</div>
-        <div class="dropzone-text"><strong>Trascina qui i file</strong> oppure clicca per selezionarli</div>
-        <div class="dropzone-hint">Screenshot (JPG/PNG), PDF, CSV, Excel — anche più file insieme</div>
-      </div>
-      <input type="file" id="file_input_hidden" accept="image/*,.pdf,.csv,.xlsx,.xls" multiple style="display:none" onchange="onFilesUpload(event)">
-      <div class="row" style="margin-top:12px;">
-        <button class="btn-secondary" onclick="pasteCrmImportFromClipboard()">${icon('clipboard')}Incolla dati dal CRM (dagli appunti)</button>
-        <span id="crm_import_msg" class="hint"></span>
-      </div>
-      ${renderUploadedFilesList()}
-      ${renderRowPicker()}
-      ${d.uploaded_files.some(f=>f.kind==='image') ? `
-        <div class="field" style="margin-top:12px;">
-          <label>Note aggiuntive sugli screenshot (opzionale — utile come backup se l'estrazione automatica non coglie tutto)</label>
-          <textarea rows="2" oninput="state.draft.note_manuali_file=this.value">${escapeHtml(d.note_manuali_file)}</textarea>
-        </div>` : ""}
-      ${d.uploaded_files.length ? `
-        <div class="row" style="margin-top:14px;">
-          <button class="btn-primary" onclick="extractDataFromFiles()" ${state.extracting?'disabled':''}>${state.extracting ? 'Estrazione in corso…' : icon('sparkles')+'Estrai dati dai file caricati'}</button>
-        </div>` : ""}
-      ${d._extractionAttempted ? `<div class="hint" style="margin-top:8px;">I campi con sfondo ambrato non sono stati determinati automaticamente: compilali a mano, l'evidenziazione sparirà appena li valorizzi.</div>` : ""}
-    </div>` : ""}
+    <h1>Nuovo Lead</h1>
+    <div class="subtitle">Compila i dati del lead, seleziona lo stato e genera gli script per i canali giusti.</div>
 
     <div class="card">
+      <div class="card-header-row" style="cursor:pointer;" onclick="${state.showImportPanel ? 'closeImportPanel()' : 'openImportPanel()'}">
+        <h2 style="margin:0;">1. Import dati lead <span class="hint" style="display:inline;margin:0;">(opzionale)</span></h2>
+        <span style="color:var(--primary);font-size:9px;font-weight:700;font-family:var(--font-head);">${state.showImportPanel ? '− Chiudi' : '+ Apri'}</span>
+      </div>
+      ${state.showImportPanel ? `
+      <div style="margin-top:3px;">
+        <div class="dropzone" id="dropzone"
+             ondragover="event.preventDefault(); this.classList.add('dragover');"
+             ondragleave="this.classList.remove('dragover');"
+             ondrop="handleFileDrop(event)"
+             onclick="document.getElementById('file_input_hidden').click()">
+          <div class="dropzone-icon">${icon('upload', {size:26, noMargin:true})}</div>
+          <div class="dropzone-text"><strong>Trascina qui i file</strong> oppure clicca per selezionarli</div>
+          <div class="dropzone-hint">Screenshot (JPG/PNG), PDF, CSV, Excel — anche più file insieme</div>
+        </div>
+        <input type="file" id="file_input_hidden" accept="image/*,.pdf,.csv,.xlsx,.xls" multiple style="display:none" onchange="onFilesUpload(event)">
+        <div class="row" style="margin-top:12px;">
+          <button class="btn-secondary" onclick="pasteCrmImportFromClipboard()">${icon('clipboard')}Incolla dati dal CRM (dagli appunti)</button>
+          <span id="crm_import_msg" class="hint"></span>
+        </div>
+        ${renderUploadedFilesList()}
+        ${renderRowPicker()}
+        ${d.uploaded_files.some(f=>f.kind==='image') ? `
+          <div class="field" style="margin-top:12px;">
+            <label>Note aggiuntive sugli screenshot (opzionale — utile come backup se l'estrazione automatica non coglie tutto)</label>
+            <textarea rows="2" oninput="state.draft.note_manuali_file=this.value">${escapeHtml(d.note_manuali_file)}</textarea>
+          </div>` : ""}
+        ${d.uploaded_files.length ? `
+          <div class="row" style="margin-top:14px;">
+            <button class="btn-primary" onclick="extractDataFromFiles()" ${state.extracting?'disabled':''}>${state.extracting ? 'Estrazione in corso…' : icon('sparkles')+'Estrai dati dai file caricati'}</button>
+          </div>` : ""}
+        ${d._extractionAttempted ? `<div class="hint" style="margin-top:8px;">I campi con sfondo ambrato non sono stati determinati automaticamente: compilali a mano, l'evidenziazione sparirà appena li valorizzi.</div>` : ""}
+      </div>` : ""}
+    </div>
+
+    <div class="card" id="dati-lead">
       <h2>2. Dati lead</h2>
       <div class="grid3">
         <div class="field"><label>Nome cliente</label><input type="text" id="ld_nome" class="${fieldMissingClass('nome')}" value="${escapeHtml(d.nome)}" oninput="state.draft.nome=this.value; clearMissing(this)"></div>
@@ -777,7 +813,7 @@ function renderNewLeadTab(){
       </div>` : ``}
     </div>
 
-    <div class="card card-ai-generated">
+    <div class="card card-ai-generated" id="stato-canali">
       <h2>3. Stato del lead e canali</h2>
       <div class="row" style="margin-bottom:14px;">
         <button class="btn-primary" onclick="runAiAnalysis()" ${state.extracting?'disabled':''}>${state.extracting ? 'Analisi in corso…' : icon('sparkles')+'Suggerisci stato, obiezioni e strategia con AI'}</button>
@@ -813,7 +849,7 @@ function renderNewLeadTab(){
       ${d._obiezioniMissing ? `<div class="hint">Nessuna obiezione suggerita automaticamente: seleziona a mano quelle pertinenti, se ce ne sono.</div>` : ""}
     </div>
 
-    <div class="card card-ai-generated">
+    <div class="card card-ai-generated" id="analisi">
       <h2>4. Analisi e strategia</h2>
       <div class="subtitle" style="margin-bottom:10px;">Sintesi AI (max 100 parole) di cosa emerge dai dati del lead e della strategia consigliata per approcciarlo. Editabile liberamente.</div>
       <div class="field">
@@ -821,7 +857,7 @@ function renderNewLeadTab(){
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="generazione">
       <div class="flex-between">
         <h2 style="margin:0;">5. Generazione script</h2>
         <div class="row">
