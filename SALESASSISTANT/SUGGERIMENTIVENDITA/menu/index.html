@@ -166,7 +166,23 @@
     50%{ box-shadow:0 0 0 3px #ddd6fe, 0 0 22px 6px rgba(167,139,250,1); }
   }
 
-  .gruppo{margin-bottom:10px;}
+  .card-azioni-principale{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:2px;
+    padding:8px;
+    margin-bottom:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+  }
+
+  .gruppo{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:2px;
+    padding:8px;
+    margin-bottom:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+  }
   .gruppo:last-child{margin-bottom:0;}
   .etichetta{
     font-size:9px;
@@ -278,41 +294,43 @@
     </div>
   </div>
 
-  <button class="azione-primaria" onclick="eseguiAzione('avvia_chiamata_yesmobility')">
-    <span class="icona-cerchio">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#1c1300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-      </svg>
-    </span>
-    <span>
-      <div class="titolo">Chiamata YesMobility</div>
-      <div class="descrizione">Solo gestione telefonata: audio + suggerimenti/obiezioni live</div>
-    </span>
-  </button>
+  <div class="card-azioni-principale">
+    <button class="azione-primaria" onclick="eseguiAzione('avvia_chiamata_yesmobility')">
+      <span class="icona-cerchio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1c1300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+      </span>
+      <span>
+        <div class="titolo">Chiamata YesMobility</div>
+        <div class="descrizione">Solo gestione telefonata: audio + suggerimenti/obiezioni live</div>
+      </span>
+    </button>
 
-  <button class="azione-viola" id="btn-gestione-lead" onclick="eseguiAzione('avvia_chiamata_gestione_lead')">
-    <span class="icona-cerchio">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#f5f3ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6M9 9h1"/>
-      </svg>
-    </span>
-    <span>
-      <div class="titolo">Chiamata Gestione Lead</div>
-      <div class="descrizione">Guida chiamata (script da Lead Rework Console) + suggerimenti/obiezioni live</div>
-    </span>
-  </button>
+    <button class="azione-viola" id="btn-gestione-lead" onclick="eseguiAzione('avvia_chiamata_gestione_lead')">
+      <span class="icona-cerchio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f5f3ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6M9 9h1"/>
+        </svg>
+      </span>
+      <span>
+        <div class="titolo">Chiamata Gestione Lead</div>
+        <div class="descrizione">Guida chiamata (script da Lead Rework Console) + suggerimenti/obiezioni live</div>
+      </span>
+    </button>
 
-  <button class="azione-secondaria" onclick="eseguiAzione('avvia_chiamata_rinforzo')">
-    <span class="icona-cerchio">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#042f2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-      </svg>
-    </span>
-    <span>
-      <div class="titolo">Rinforzo Facile Salire</div>
-      <div class="descrizione">Apre l'overlay con il suggerimento iniziale dedicato</div>
-    </span>
-  </button>
+    <button class="azione-secondaria" onclick="eseguiAzione('avvia_chiamata_rinforzo')">
+      <span class="icona-cerchio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#042f2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+      </span>
+      <span>
+        <div class="titolo">Rinforzo Facile Salire</div>
+        <div class="descrizione">Apre l'overlay con il suggerimento iniziale dedicato</div>
+      </span>
+    </button>
+  </div>
 
   <div class="gruppo">
     <div class="etichetta">Dopo la chiamata</div>
