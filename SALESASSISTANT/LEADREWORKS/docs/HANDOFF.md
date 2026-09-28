@@ -1,4 +1,4 @@
-# LEADREWORKS — Handoff consolidato (stato al 2026-09-25)
+# LEADREWORKS — Handoff consolidato (stato al 2026-09-28)
 
 Documento unico di ripresa per la **YesMobility Lead Rework Console**.
 Consolida le due sessioni di sviluppo:
@@ -14,12 +14,16 @@ La cronologia dettagliata della prima sessione (sezioni 9bis…9terdecies del ve
 
 | Area | Stato |
 |---|---|
-| Console (`src/lead-rework-console.html`) | Funzionante end-to-end in locale con API key Anthropic (confermato dall'utente) |
+| Console UI (tema, layout, responsive) | **RIDISEGNATO AL 2026-09-28**: tema chiaro (#ffffff), tab orizzontali sticky, rail destra con riepilogo lead/navigazione/stato ambiente, spazi ridotti, font size 9–16px — esattamente come il mockup Claude Design. **Funzionante.** |
+| Sezioni nav nella rail (ID anchor) | **AGGIUNTI AL 2026-09-28**: #dati-lead, #stato-canali, #analisi, #generazione — la rail naviga su click. **Funzionante.** |
+| Pannello import dati | **MODIFICATO AL 2026-09-28**: ora sempre visibile (non nascosto) con toggle +/− "1. Import dati lead (opzionale)" — sezione collassabile. Integra tutte le funzioni precedenti (dropzone, CSV/Excel, pulsante "Incolla da CRM", preview file). **Funzionante.** |
+| Larghezza finestra 30% (ridotta da 40%) | **INCOMPLETO**: implementato il codice per ridimensionare a 0.30 frazione, però Chrome su macOS ignora silenziosamente i parametri width/height su finestre `type: "popup"`. Le finestre si aprono ancora a larghezza indeterminata. Soluzione alternativa mai testata: viewport meta tag. **BLOCCO TECNICO — non risolto.** |
+| Console funzionalità core | Funzionante end-to-end in locale con API key Anthropic (confermato dall'utente) |
 | Regole di compliance | 6 regole **hardcoded** in `HARD_COMPLIANCE_RULES`, sempre attive a prescindere dal profilo salvato |
 | Libreria script | 26 script nell'HTML (n. 1–21, 23–27; il n. 22 è stato rimosso) |
 | Estensione CRM → console | Testata dal vivo con un lead reale: funziona |
 | Console → Suggerimenti Vendita | Implementata (URL scheme, bagliore "lead in attesa", due modalità di chiamata); in gran parte **non testata dal vivo** |
-| Layout a 3 finestre (40% / 19% / 40%) | Implementato e provato dal vivo, proporzioni corrette su richiesta utente (menu passato dal 15% al 19%) |
+| Layout a 3 finestre (30% / 19% / 40%) | **PARZIALE**: menu passato dal 15% al 19% funziona; console dovrebbe essere 30% ma rimane a larghezza fissa (vedi blocco sopra) |
 | Claude Artifact reale su claude.ai | **Mai testato**: è il rischio tecnico principale |
 | `src/data/*.json` | Allineati all'HTML il 2026-09-25 (26 script, profilo aggiornato) |
 
@@ -91,9 +95,31 @@ Il problema di fondo: l'AI generava script che (a) inventavano un contatto YesMo
 
 ---
 
-## 5. TODO
+## 5. Sessione 28 settembre: redesign UI e tentativo ridimensionamento finestra
 
-### Priorità alta
+### Ciò che è stato fatto (FUNZIONANTE)
+- **Redesign completo UI al mockup Claude Design** (tema chiaro, tab orizzontali, rail destra): CSS completamente riscritto (150+ linee nuove), `render()` modificato per generare topnav + rail, nuova funzione `renderRightRail()` con tre card (lead, navigazione, ambiente).
+- **ID anchor su tutte le sezioni** (#dati-lead, #stato-canali, #analisi, #generazione): la rail naviga clickando i link.
+- **Pannello import sempre visibile con toggle**: "1. Import dati lead (opzionale)" può collassarsi/espandersi.
+- **Commit su GitHub** ([0] ridisegno layout, [1] log diagnostici ridimensionamento, [2] fix dipendenza chrome.system.display, [3] fallback calcolato, [4] force state normal prima di resize — **commit [4] ha rotto il ridimensionamento su macOS**).
+
+### Ciò che è INCOMPLETO (BLOCCO TECNICO)
+- **Larghezza finestra 30%**: Chrome su macOS ignora silenziosamente `width`/`height`/`left`/`top` passati a `chrome.windows.create()` quando `type: "popup"` è usato. Même tentato di applicarli dopo con `chrome.windows.update()` (con `state: "normal"` forzato prima), ma l'effetto resta invisibile — la finestra si apre a larghezza indeterminata.
+  - Il codice per calcolare il 30% è corretto (`screenArea` da JS standard `window.screen.availWidth`, frazione 0.30 applicata).
+  - Il bug non è nella logica ma in una limitazione/bug di Chrome/macOS.
+  - Soluzione alternativa mai testata: viewport meta tag nel file HTML.
+  - **Azione richiesta all'utente al prossimo sviluppo**: testare la viewport tag oppure verificare se una versione precedente di Chrome su quel Mac riusciva a ridimensionare.
+
+## 6. TODO
+
+### Priorità alta — FIX NECESSARI
+- [ ] **Ridimensionamento finestra 30%**: trovare una soluzione che funzioni su Chrome/macOS. Opzioni:
+  1. Testare `<meta name="viewport" content="width=device-width, initial-scale=0.75">` nel file HTML console (ridimensiona il contenuto, non la finestra — via alternativa).
+  2. Verificare se una versione precedente di Chrome (o Safari via WebDriver) riesce a controllare la geometria della finestra popup.
+  3. Scartare il ridimensionamento via API e usare soltanto il metodo del viewport meta tag.
+- [ ] Ripristinare il codice di `background.js` e `crm-content.js` dalla versione del 25/09 (quella che funzionava): il commit [4] della sessione 28/09 ha cambiato la logica in modo incompatibile con come Chrome su macOS applica (o non applica) le dimensioni della finestra.
+
+### Priorità media
 - [x] ~~Riallineare `src/data/script-library.json` e il README all'HTML~~: fatto il 2026-09-25 (anche `company-profile.default.json`).
 - [x] ~~Riallineare `docs/PROMPT-SISTEMA-COMPLETO.md`~~: fatto il 2026-09-25 (6 regole, libreria e stati del lead attuali). **Resta da rigenerare `PROMPT-SISTEMA-COMPLETO.docx`**, ancora alla versione del 21/09.
 - [ ] **Profilo salvato dell'utente**: le modifiche a `COMPANY_PROFILE_DEFAULT` (sostituzione di "Facile Salire" nelle regole di compliance) **non retroagiscono** sul profilo già salvato nel browser. Aggiornarlo a mano dalla tab "Profilo Azienda", oppure ripristinare il default.
@@ -161,6 +187,12 @@ Il problema di fondo: l'AI generava script che (a) inventavano un contatto YesMo
 - Dire **prima** l'azione richiesta all'utente, poi la spiegazione tecnica.
 - Niente workaround che cambiano le abitudini dell'utente quando il problema è nel codice.
 - Per cambi di layout/UX importanti, discutere e aspettare il via libera prima di scrivere codice.
+
+### Limitazioni note di Chrome/macOS
+- **Finestre popup e parametri di geometria**: `chrome.windows.create({ type: "popup", width: X, height: Y, left: Z, top: W })` **ignora silenziosamente** i parametri di dimensione/posizione su macOS. Anche applicarli **dopo** la creazione con `chrome.windows.update()` non funziona se la finestra viene subito massimizzata o messa a schermo intero dal sistema. Questo comportamento è **specifico di macOS/Safari Chromium** e può variare tra versioni di Chrome.
+  - **Workaround testato**: nessuno efficace finora per il ridimensionamento della finestra stessa.
+  - **Possibile alternativa**: uso del viewport meta tag `<meta name="viewport">` nel file HTML console per restringere il **contenuto** (non la finestra), mediante CSS `max-width`.
+  - **Fatto in precedenza**: il layout a 40% funzionava — verificare se la versione di Chrome del Mac era diversa, o se c'era una configurazione perduta in una sessione precedente.
 
 ---
 
