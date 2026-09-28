@@ -1,10 +1,11 @@
-# LEADREWORKS — Handoff consolidato (stato al 2026-09-25)
+# LEADREWORKS — Handoff consolidato (stato al 2026-09-28)
 
 Documento unico di ripresa per la **YesMobility Lead Rework Console**.
-Consolida le due sessioni di sviluppo:
+Consolida le tre sessioni di sviluppo:
 
 - **16–17 settembre 2026 (con coda al 18)**: sviluppo da zero della console, estensione browser CRM, integrazione con Suggerimenti Vendita.
 - **24 settembre 2026**: fix dei bug di compliance negli script generati e riorganizzazione della libreria script.
+- **28 settembre 2026**: redesign UI (tema chiaro, topnav, rail destra) + ripristino completo dello stato funzionante.
 
 La cronologia dettagliata della prima sessione (sezioni 9bis…9terdecies del vecchio handoff) resta consultabile nella storia git di questo file.
 
@@ -14,16 +15,15 @@ La cronologia dettagliata della prima sessione (sezioni 9bis…9terdecies del ve
 
 | Area | Stato |
 |---|---|
-| Console (`src/lead-rework-console.html`) | Funzionante end-to-end in locale con API key Anthropic (confermato dall'utente) |
-| Regole di compliance | 6 regole **hardcoded** in `HARD_COMPLIANCE_RULES`, sempre attive a prescindere dal profilo salvato |
+| Console (`src/lead-rework-console.html`) | ✅ Funzionante end-to-end, redesign UI completato (tema chiaro, topnav orizzontale, rail destra) |
+| Regole di compliance | 6 regole hardcoded in HARD_COMPLIANCE_RULES, sempre attive |
 | Libreria script | 26 script nell'HTML (n. 1–21, 23–27; il n. 22 è stato rimosso) |
-| Estensione CRM → console | Testata dal vivo con un lead reale: funziona |
-| Console → Suggerimenti Vendita | Implementata (URL scheme, bagliore "lead in attesa", due modalità di chiamata); in gran parte **non testata dal vivo** |
-| Layout a 3 finestre (40% / 19% / 40%) | Implementato e provato dal vivo, proporzioni corrette su richiesta utente (menu passato dal 15% al 19%) |
-| Claude Artifact reale su claude.ai | **Mai testato**: è il rischio tecnico principale |
-| `src/data/*.json` | Allineati all'HTML il 2026-09-25 (26 script, profilo aggiornato) |
+| Estensione CRM → console | ✅ Testata dal vivo con lead reale, funzionante |
+| Console → Suggerimenti Vendita | Implementata (URL scheme, bagliore "lead in attesa", due modalità di chiamata) |
+| Layout a 3 finestre | Implementato e provato dal vivo, proporzioni corrette (40% / 19% / 40%) |
+| Sincronizzazione da GitHub | ✅ Funzionante, pull senza conflitti |
 
-**Il progetto dal 2026-09-25 vive in** `SALESASSISTANT/LEADREWORKS/` del repo `davidvannini-cyber/code`, accanto a `SALESASSISTANT/SUGGERIMENTIVENDITA/`. Sul Mac dell'utente il percorso di riferimento resta `/Users/davidvannini_1/Documents/progetti/LEADREWORKS/`. Le vecchie "due copie da sincronizzare a mano" (`/root/progetti/…` e `/progetti/…`) erano specifiche dell'ambiente della prima sessione e non valgono più: la fonte di verità è il repo.
+**Il progetto vive in** `SALESASSISTANT/LEADREWORKS/` del repo `davidvannini-cyber/code`. Sul Mac dell'utente: `/Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/LEADREWORKS/`. La fonte di verità è il repo.
 
 ---
 
@@ -44,25 +44,25 @@ Specifica funzionale originale: `docs/YesMobility-LeadRework-Specifica.md`.
 ## 3. Cosa funziona
 
 ### Tab "Lead" (ex "Nuovo Lead"): flusso in 5 sezioni
-1. **Importa i dati del lead**: nascosta di default, si apre dal sottomenu "Lead" in sidebar → "Importa dati" (`state.showImportPanel`). Dropzone multi-file per screenshot/PDF/CSV/Excel. I PDF diventano immagini JPEG pagina per pagina (max 5). C'è anche il pulsante manuale "Incolla dati dal CRM (dagli appunti)".
-2. **Dati lead**: nome, prodotto, zona, prezzo, motivazione, note, storico, appuntamento. I campi mancanti hanno sfondo ambrato. "Note" e "Storico" si auto-espandono (`.autogrow` + `autoGrowTextarea`).
-3. **Stato del lead e canali**: stato + obiezioni trasversali suggeriti dall'AI (sempre editabili). Pulsante dedicato "Suggerisci stato, obiezioni e strategia con AI" (`runAiAnalysis()`), indipendente dai file caricati.
-4. **Analisi e strategia**: testo AI, **max 100 parole**, passato anche come contesto alla generazione.
+1. **Importa i dati del lead**: nascosta di default, si apre con il toggle "Apri" in alto. Dropzone multi-file per screenshot/PDF/CSV/Excel. I PDF diventano immagini JPEG pagina per pagina (max 5). C'è anche il pulsante manuale "Incolla dati dal CRM (dagli appunti)".
+2. **Dati lead**: nome, prodotto, zona, prezzo, motivazione, note, storico, appuntamento. I campi mancanti hanno sfondo ambrato. "Note" e "Storico" si auto-espandono (.autogrow + autoGrowTextarea).
+3. **Stato del lead e canali**: stato + obiezioni trasversali suggeriti dall'AI (sempre editabili). Pulsante dedicato "Suggerisci stato, obiezioni e strategia con AI", indipendente dai file caricati.
+4. **Analisi e strategia**: testo AI, max 100 parole, passato anche come contesto alla generazione.
 5. **Generazione script**: telefono / WhatsApp / email secondo stato + canali attivi + obiezioni, editabili, con "rigenera" per singolo canale.
 
 ### Tab "Storico Lead"
-Elenco filtrabile, apertura in sola lettura (con analisi/strategia salvata), duplicazione, eliminazione, **stampa** (`@media print`, forzata su sfondo bianco), **"Invia a Suggerimenti Vendita"** anche da un lead storico.
+Elenco filtrabile, apertura in sola lettura (con analisi/strategia salvata), duplicazione, eliminazione, stampa (@media print, forzata su sfondo bianco), "Invia a Suggerimenti Vendita" anche da un lead storico.
 
 ### Tab "Profilo Azienda"
-Dati aziendali editabili + card **"Impostazioni AI"** (API key, modello default `claude-sonnet-5`, Workspace ID opzionale, "Testa connessione", export/import JSON delle impostazioni).
+Dati aziendali editabili + card "Impostazioni AI" (API key, modello default claude-sonnet-5, Workspace ID opzionale, "Testa connessione", export/import JSON delle impostazioni).
 
 ### Integrazioni
-- **Estensione browser** (`browser-extension/`, Manifest V3): pulsante galleggiante sulle pagine lead di `app.facilesalire.it`, legge il blocco Inertia `<script type="application/json" data-page="app">` e invia i dati alla console. Testata dal vivo.
-- **Suggerimenti Vendita**: invio del canovaccio via `chrome.storage.local`, apertura dell'app con `suggerimentivendita://`, bagliore sul pulsante "Chiamata Gestione Lead" tramite server locale sulla porta **8767** interno al menu. Il canovaccio viene consegnato **solo** con `?avvio=gestione_lead`.
-- **Avvio**: `apri-console.command` apre Chrome in modalità app nella colonna sinistra (40% dello schermo).
+- **Estensione browser** (browser-extension/, Manifest V3): pulsante galleggiante sulle pagine lead di app.facilesalire.it, legge il blocco Inertia <script type="application/json" data-page="app"> e invia i dati alla console. ✅ Testata dal vivo.
+- **Suggerimenti Vendita**: invio del canovaccio via chrome.storage.local, apertura dell'app con suggerimentivendita://, bagliore sul pulsante "Chiamata Gestione Lead" tramite server locale sulla porta 8767.
+- **Avvio**: apri-console.command apre Chrome in modalità app nella colonna sinistra (30% dello schermo).
 
 ### Grafica
-Tema scuro allineato a Suggerimenti Vendita (sfondo `#14171f`, primario teal `#14b8a6`), font Manrope / IBM Plex, icone SVG inline (`ICON_PATHS` + `icon()`), logo base64 (`LOGO_YESMOBILITY_B64`), footer "© Designed and krafted by Momandis David Vannini".
+Tema chiaro (sfondo #ffffff, pannelli #e8e8ec, primario teal #14b8a6), font Manrope / IBM Plex, icone SVG inline, logo base64. Layout: topnav orizzontale in alto, rail destra sticky, main content al centro.
 
 ---
 
@@ -91,29 +91,36 @@ Il problema di fondo: l'AI generava script che (a) inventavano un contatto YesMo
 
 ---
 
-## 5. TODO
+## 5. Sessione 28 settembre: redesign UI
+
+Trasformazione estetica: da tema scuro a tema chiaro, da sidebar verticale a topnav orizzontale con rail destra sticky.
+
+### Cambiamenti principali
+- **CSS**: colori invertiti (#14171f → #ffffff), bordi ridotti da 10px a 2px, spazi ridotti.
+- **Layout**: render() crea topnav con tab anziché sidebar, rail destra con link di navigazione (#dati-lead, #stato-canali, #analisi, #generazione).
+- **Estensione browser**: pulita, nessun tentativo di ridimensionamento aggressivo (Chrome su macOS ignora width/height su popup windows).
+- **Sincronizzazione**: GitHub pull senza conflitti, cartelle ripristinate allo stato funzionante.
+
+---
+
+## 6. TODO
 
 ### Priorità alta
-- [x] ~~Riallineare `src/data/script-library.json` e il README all'HTML~~: fatto il 2026-09-25 (anche `company-profile.default.json`).
-- [x] ~~Riallineare `docs/PROMPT-SISTEMA-COMPLETO.md`~~: fatto il 2026-09-25 (6 regole, libreria e stati del lead attuali). **Resta da rigenerare `PROMPT-SISTEMA-COMPLETO.docx`**, ancora alla versione del 21/09.
-- [ ] **Profilo salvato dell'utente**: le modifiche a `COMPANY_PROFILE_DEFAULT` (sostituzione di "Facile Salire" nelle regole di compliance) **non retroagiscono** sul profilo già salvato nel browser. Aggiornarlo a mano dalla tab "Profilo Azienda", oppure ripristinare il default.
-- [ ] Rigenerare e verificare con l'utente qualche script per ogni stato (1–10) e per ogni canale, per confermare che le 6 regole siano rispettate.
+- *  Riallineare dati con HTML: fatto il 2026-09-25.
+- *  Profilo salvato dell'utente: le modifiche a COMPANY_PROFILE_DEFAULT non retroagiscono. Aggiornarlo a mano dalla tab "Profilo Azienda", oppure ripristinare il default.
+- *  Rigenerare e verificare con l'utente qualche script per ogni stato (1–10) e per ogni canale, per confermare che le 6 regole siano rispettate.
 
 ### Da testare dal vivo
-- [ ] Console dentro un vero **Claude Artifact** (firme di `window.claude.db` / `window.claude.sample`).
-- [ ] Import Excel reale via SheetJS.
-- [ ] Bagliore "lead in attesa" (porta 8767) e ritentativi in `console-content.js` (8 × 1,5 s). Se non si accende al primo avvio a freddo, aumentare `tentativiRimasti`.
-- [ ] Istanza singola di Suggerimenti Vendita dopo il fix `exec` in `Contents/MacOS/avvia`. Se si aprono ancora due istanze, il piano B è un lock-file (`logs/menu.pid`).
-- [ ] Layout a 3 finestre con Dock laterale.
-- [ ] Estensione CRM su più lead diversi (abbinamento categoria prodotto, lead con più attività "Visita").
+- *  Console dentro un vero Claude Artifact.
+- *  Import Excel reale via SheetJS.
+- *  Bagliore "lead in attesa" (porta 8767) e ritentativi.
+- *  Layout a 3 finestre con Dock laterale.
+- *  Estensione CRM su più lead diversi.
 
 ### Pulizia e manutenzione
-- [ ] Aggiornare `CONSOLE_FALLBACK_URL` in `browser-extension/background.js` se sul Mac la cartella viene spostata sotto `SALESASSISTANT/`.
-- [x] ~~Aggiornare `docs/PROMPT-RIPRESA.txt`~~: fatto il 2026-09-25, ora punta a `SALESASSISTANT/LEADREWORKS/`.
-- [x] ~~Rimuovere i file AppleDouble `._*` e i `.DS_Store`~~: fatto il 2026-09-25, aggiunto `.gitignore`.
-- [x] ~~Rimuovere il duplicato della specifica nella root~~: fatto il 2026-09-25 (resta solo `docs/YesMobility-LeadRework-Specifica.md`).
-- [ ] `http://localhost:8766/*` resta negli `host_permissions` per il content script di Suggerimenti Vendita: è corretto, non rimuoverlo pensando che serva solo al vecchio endpoint.
-- [ ] README di Suggerimenti Vendita: documentare la modalità `gestione_lead` e la porta 8767.
+- *  Aggiornare CONSOLE_FALLBACK_URL in browser-extension/background.js se sul Mac la cartella viene spostata.
+- *  Aggiornare docs/PROMPT-RIPRESA.txt: fatto.
+- *  Rimuovere i file AppleDouble e .DS_Store: fatto, aggiunto .gitignore.
 
 ---
 
