@@ -61,6 +61,30 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, screenArea
   }
 }
 
+// Chrome ignora silenziosamente left/top/width/height passati a
+// chrome.windows.update() se la finestra è massimizzata o a schermo intero
+// (state "maximized"/"fullscreen"): va prima riportata a state "normal" in
+// una chiamata separata, altrimenti il ridimensionamento non ha alcun
+// effetto visibile (causa del bug "la finestra resta sempre uguale").
+function ridimensionaFinestra(windowId, rect) {
+  chrome.windows.get(windowId, {}, (win) => {
+    if (chrome.runtime.lastError) { console.error("[LRW] errore in windows.get:", chrome.runtime.lastError.message); return; }
+    console.log("[LRW] stato attuale finestra:", win && win.state);
+    const applica = () => {
+      chrome.windows.update(windowId, { focused: true, left: rect.left, top: rect.top, width: rect.width, height: rect.height }, (w) => {
+        if (chrome.runtime.lastError) console.error("[LRW] errore in windows.update (dimensioni):", chrome.runtime.lastError.message);
+        else console.log("[LRW] finestra ridimensionata a:", w && { left: w.left, top: w.top, width: w.width, height: w.height, state: w.state });
+      });
+    };
+    if (win && (win.state === "maximized" || win.state === "fullscreen")) {
+      console.log("[LRW] finestra era " + win.state + ", la riporto a \"normal\" prima di ridimensionare");
+      chrome.windows.update(windowId, { state: "normal" }, () => { applica(); });
+    } else {
+      applica();
+    }
+  });
+}
+
 // type:"popup" apre una finestra senza tab/barra indirizzi (la cosa più vicina a
 // "app esterna" che un'estensione può fare: non può lanciare Chrome in vera
 // modalità --app, quella è disponibile solo da riga di comando, vedi apri-console.command).
@@ -93,7 +117,7 @@ chrome.runtime.onMessage.addListener((msg) => {
         // essere più collegato.
         const tab = tabs[0];
         calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, msg.screenArea, (rect) => {
-          chrome.windows.update(tab.windowId, { focused: true, left: rect.left, top: rect.top, width: rect.width, height: rect.height });
+          ridimensionaFinestra(tab.windowId, rect);
         });
         chrome.tabs.update(tab.id, { active: true });
         chrome.tabs.reload(tab.id);
