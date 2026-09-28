@@ -165,13 +165,8 @@ function onCaptureClick() {
   const originalText = btn ? btn.textContent : "";
   try {
     const data = readCrmPageData();
-    // screen.availWidth/availHeight sono JS standard, sempre disponibili anche
-    // se l'estensione non riesce a leggere lo schermo fisico da sola (vedi
-    // background.js: chrome.system.display può fallire silenziosamente per
-    // restrizioni di sistema su macOS, es. permessi Screen Recording).
-    const screenArea = { width: window.screen.availWidth, height: window.screen.availHeight, left: window.screen.availLeft || 0, top: window.screen.availTop || 0 };
     chrome.storage.local.set({ pendingLead: data, pendingLeadTs: Date.now() }, () => {
-      chrome.runtime.sendMessage({ type: "leadCaptured", screenArea });
+      chrome.runtime.sendMessage({ type: "leadCaptured" });
       if (btn) {
         btn.textContent = "✓ Inviato";
         setTimeout(() => { btn.textContent = originalText; }, 2500);

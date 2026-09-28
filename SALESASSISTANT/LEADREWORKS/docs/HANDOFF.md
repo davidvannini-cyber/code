@@ -1,4 +1,4 @@
-# LEADREWORKS — Handoff consolidato (stato al 2026-09-28)
+# LEADREWORKS — Handoff consolidato (stato al 2026-09-25)
 
 Documento unico di ripresa per la **YesMobility Lead Rework Console**.
 Consolida le due sessioni di sviluppo:
@@ -14,10 +14,7 @@ La cronologia dettagliata della prima sessione (sezioni 9bis…9terdecies del ve
 
 | Area | Stato |
 |---|---|
-| Console UI (tema, layout, responsive) | **RIDISEGNATO AL 2026-09-28**: tema chiaro (#ffffff), tab orizzontali sticky, rail destra con riepilogo lead/navigazione/stato ambiente, spazi ridotti, font size 9–16px — esattamente come il mockup Claude Design. **Funzionante.** |
-| Sezioni nav nella rail (ID anchor) | **AGGIUNTI AL 2026-09-28**: #dati-lead, #stato-canali, #analisi, #generazione — la rail naviga su click. **Funzionante.** |
-| Pannello import dati | **MODIFICATO AL 2026-09-28**: ora sempre visibile (non nascosto) con toggle +/− "1. Import dati lead (opzionale)" — sezione collassabile. Integra tutte le funzioni precedenti (dropzone, CSV/Excel, pulsante "Incolla da CRM", preview file). **Funzionante.** |
-| Console funzionalità core | Funzionante end-to-end in locale con API key Anthropic (confermato dall'utente) |
+| Console (`src/lead-rework-console.html`) | Funzionante end-to-end in locale con API key Anthropic (confermato dall'utente) |
 | Regole di compliance | 6 regole **hardcoded** in `HARD_COMPLIANCE_RULES`, sempre attive a prescindere dal profilo salvato |
 | Libreria script | 26 script nell'HTML (n. 1–21, 23–27; il n. 22 è stato rimosso) |
 | Estensione CRM → console | Testata dal vivo con un lead reale: funziona |
@@ -94,16 +91,9 @@ Il problema di fondo: l'AI generava script che (a) inventavano un contatto YesMo
 
 ---
 
-## 5. Sessione 28 settembre: redesign UI
+## 5. TODO
 
-### Ciò che è stato fatto (FUNZIONANTE)
-- **Redesign completo UI al mockup Claude Design** (tema chiaro, tab orizzontali, rail destra): CSS completamente riscritto, `render()` modificato per generare topnav + rail, nuova funzione `renderRightRail()` con tre card (lead, navigazione, ambiente).
-- **ID anchor su tutte le sezioni** (#dati-lead, #stato-canali, #analisi, #generazione): la rail naviga clickando i link.
-- **Pannello import sempre visibile con toggle**: "1. Import dati lead (opzionale)" può collassarsi/espandersi.
-
-## 6. TODO
-
-### Priorità media
+### Priorità alta
 - [x] ~~Riallineare `src/data/script-library.json` e il README all'HTML~~: fatto il 2026-09-25 (anche `company-profile.default.json`).
 - [x] ~~Riallineare `docs/PROMPT-SISTEMA-COMPLETO.md`~~: fatto il 2026-09-25 (6 regole, libreria e stati del lead attuali). **Resta da rigenerare `PROMPT-SISTEMA-COMPLETO.docx`**, ancora alla versione del 21/09.
 - [ ] **Profilo salvato dell'utente**: le modifiche a `COMPANY_PROFILE_DEFAULT` (sostituzione di "Facile Salire" nelle regole di compliance) **non retroagiscono** sul profilo già salvato nel browser. Aggiornarlo a mano dalla tab "Profilo Azienda", oppure ripristinare il default.
@@ -171,7 +161,6 @@ Il problema di fondo: l'AI generava script che (a) inventavano un contatto YesMo
 - Dire **prima** l'azione richiesta all'utente, poi la spiegazione tecnica.
 - Niente workaround che cambiano le abitudini dell'utente quando il problema è nel codice.
 - Per cambi di layout/UX importanti, discutere e aspettare il via libera prima di scrivere codice.
-
 
 ---
 
