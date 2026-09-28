@@ -18,6 +18,9 @@ interface PhotoTracerProps {
   overlay?: React.ReactNode;
 }
 
+const LOUPE_SIZE = 180; // px, dimensione del riquadro della lente
+const LOUPE_ZOOM = 5; // fattore di ingrandimento
+
 /**
  * Overlay di tracciamento. Due modalità:
  * - "steps": l'utente clicca alternando bordo SINISTRO e DESTRO di ogni
@@ -26,6 +29,13 @@ interface PhotoTracerProps {
  *   punti) danno risultati più robusti.
  * - "floor": un singolo click su un punto del pavimento orizzontale alla
  *   base della rampa (NON sul gradino) — rompe l'ambiguità planare del PnP.
+ *
+ * Include una lente d'ingrandimento che segue il cursore: la precisione del
+ * click (specialmente per il punto pavimento) si è dimostrata il fattore
+ * dominante nell'affidabilità della stima — un errore di pochi pixel sullo
+ * schermo può far esplodere l'errore di riproiezione (verificato su foto
+ * reali). La lente rende visibili i singoli pixel dell'immagine originale
+ * prima del click, senza dover zoomare manualmente il browser.
  */
 export function PhotoTracer({
   imageUrl,
@@ -38,7 +48,10 @@ export function PhotoTracer({
   overlay,
 }: PhotoTracerProps) {
   const imgRef = useRef<HTMLImageElement>(null);
+  const loupeCanvasRef = useRef<HTMLCanvasElement>(null);
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
+  const [loupeVisible, setLoupeVisible] = useState(false);
+  const [loupeScreenPos, setLoupeScreenPos] = useState({ x: 0, y: 0 });
 
   const handleImgLoad = useCallback(() => {
     const img = imgRef.current;
@@ -48,19 +61,76 @@ export function PhotoTracer({
     onImageLoad?.(size.width, size.height);
   }, [onImageLoad]);
 
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const naturalFromEvent = (e: React.MouseEvent) => {
     const img = imgRef.current;
-    if (!img || naturalSize.width === 0) return;
+    if (!img || naturalSize.width === 0) return null;
     const rect = img.getBoundingClientRect();
     const scaleX = naturalSize.width / rect.width;
     const scaleY = naturalSize.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+      rect,
+    };
+  };
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const p = naturalFromEvent(e);
+    if (!p) return;
     if (mode === 'floor') {
-      onFloorPointChange({ x, y });
+      onFloorPointChange({ x: p.x, y: p.y });
     } else {
-      onPointsChange([...points, { x, y }]);
+      onPointsChange([...points, { x: p.x, y: p.y }]);
     }
+  };
+
+  const drawLoupe = useCallback((naturalX: number, naturalY: number) => {
+    const img = imgRef.current;
+    const canvas = loupeCanvasRef.current;
+    if (!img || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const srcHalf = LOUPE_SIZE / 2 / LOUPE_ZOOM;
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, LOUPE_SIZE, LOUPE_SIZE);
+    ctx.drawImage(
+      img,
+      naturalX - srcHalf,
+      naturalY - srcHalf,
+      srcHalf * 2,
+      srcHalf * 2,
+      0,
+      0,
+      LOUPE_SIZE,
+      LOUPE_SIZE,
+    );
+    // Crosshair al centro: indica il punto esatto che verrebbe registrato al click
+    ctx.strokeStyle = mode === 'floor' ? '#4dabf7' : '#ffd93d';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(LOUPE_SIZE / 2, 0);
+    ctx.lineTo(LOUPE_SIZE / 2, LOUPE_SIZE);
+    ctx.moveTo(0, LOUPE_SIZE / 2);
+    ctx.lineTo(LOUPE_SIZE, LOUPE_SIZE / 2);
+    ctx.stroke();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(LOUPE_SIZE / 2 - 4, LOUPE_SIZE / 2 - 4, 8, 8);
+  }, [mode]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const p = naturalFromEvent(e);
+    if (!p) return;
+    setLoupeVisible(true);
+    // Posiziona la lente vicino al cursore ma spostata per non coprirlo,
+    // e la sposta dall'altro lato se troppo vicina ai bordi del contenitore.
+    const offset = 24;
+    let lx = e.clientX - p.rect.left + offset;
+    let ly = e.clientY - p.rect.top - LOUPE_SIZE - offset;
+    if (ly < 0) ly = e.clientY - p.rect.top + offset;
+    if (lx + LOUPE_SIZE > p.rect.width) lx = e.clientX - p.rect.left - LOUPE_SIZE - offset;
+    setLoupeScreenPos({ x: lx, y: ly });
+    drawLoupe(p.x, p.y);
   };
 
   const undoLast = () => onPointsChange(points.slice(0, -1));
@@ -71,7 +141,11 @@ export function PhotoTracer({
 
   return (
     <div>
-      <div style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
+      <div
+        style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setLoupeVisible(false)}
+      >
         <img
           ref={imgRef}
           src={imageUrl}
@@ -153,6 +227,23 @@ export function PhotoTracer({
           )}
         </svg>
         {overlay}
+        <canvas
+          ref={loupeCanvasRef}
+          width={LOUPE_SIZE}
+          height={LOUPE_SIZE}
+          style={{
+            position: 'absolute',
+            left: loupeScreenPos.x,
+            top: loupeScreenPos.y,
+            width: LOUPE_SIZE,
+            height: LOUPE_SIZE,
+            borderRadius: '50%',
+            border: '3px solid white',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.5)',
+            pointerEvents: 'none',
+            display: loupeVisible ? 'block' : 'none',
+          }}
+        />
       </div>
       {mode === 'steps' ? (
         <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
