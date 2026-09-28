@@ -11,11 +11,12 @@ const CONSOLE_FALLBACK_URL = "file:///Users/davidvannini_1/Documents/progetti/LE
 
 // Percentuale di larghezza (dello schermo di lavoro primario) e offset da
 // sinistra per questa finestra: stesso schema usato da apri-console.command
-// (Lead Rework Console, 40%), menu_finestra.py (Suggerimenti Vendita, 19%,
+// (Lead Rework Console, 30%), menu_finestra.py (Suggerimenti Vendita, 19%,
 // subito a destra di questa) e Contents/MacOS/avvia (pannello chiamata, 40%,
 // più a destra ancora) — tre finestre affiancate in proporzioni fisse
 // (scelte dall'utente), invece di finestre sparse di dimensioni diverse.
-const LARGHEZZA_FRAZIONE_LEAD_REWORK = 0.40;
+// 30% invece di 40%: richiesta esplicita dell'utente il 2026-09-28 ("25% più stretta").
+const LARGHEZZA_FRAZIONE_LEAD_REWORK = 0.30;
 const OFFSET_FRAZIONE_LEAD_REWORK = 0;
 
 // "workArea" esclude già barra menu e Dock. Se l'API non è disponibile per
