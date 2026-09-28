@@ -19,13 +19,26 @@ const CONSOLE_FALLBACK_URL = "file:///Users/davidvannini_1/Documents/progetti/LE
 const LARGHEZZA_FRAZIONE_LEAD_REWORK = 0.30;
 const OFFSET_FRAZIONE_LEAD_REWORK = 0;
 
-// "workArea" esclude già barra menu e Dock. Se l'API non è disponibile per
-// qualche motivo, un rettangolo fisso di fallback (i valori usati prima di
-// questa funzionalità).
-function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, callback) {
+// Fonte primaria delle dimensioni: screenArea arriva dal content script della
+// pagina CRM (window.screen.availWidth/Height — JS standard, sempre
+// disponibile). chrome.system.display.getInfo() può fallire silenziosamente
+// su macOS per restrizioni di sistema legate allo schermo, quindi resta solo
+// come fallback secondario, non più come unica fonte.
+function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, screenArea, callback) {
+  if (screenArea && screenArea.width && screenArea.height) {
+    const rect = {
+      left: (screenArea.left || 0) + Math.round(screenArea.width * offsetFrazione),
+      top: screenArea.top || 0,
+      width: Math.round(screenArea.width * larghezzaFrazione),
+      height: screenArea.height
+    };
+    console.log("[LRW] rettangolo da screenArea della pagina (" + screenArea.width + "x" + screenArea.height + "), frazione " + larghezzaFrazione + ":", rect);
+    callback(rect);
+    return;
+  }
+  console.warn("[LRW] screenArea non ricevuto dal content script, provo chrome.system.display come fallback");
   if (chrome.system && chrome.system.display && chrome.system.display.getInfo) {
     chrome.system.display.getInfo((schermi) => {
-      console.log("[LRW] chrome.system.display.getInfo ha risposto, schermi:", schermi);
       const primario = (schermi && schermi.find(s => s.isPrimary)) || (schermi && schermi[0]);
       if (!primario) {
         console.warn("[LRW] nessuno schermo primario trovato, uso il fallback fisso (900px)");
@@ -39,7 +52,7 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, callback) 
         width: Math.round(area.width * larghezzaFrazione),
         height: area.height
       };
-      console.log("[LRW] rettangolo calcolato dalla frazione " + larghezzaFrazione + ":", rect);
+      console.log("[LRW] rettangolo calcolato da chrome.system.display, frazione " + larghezzaFrazione + ":", rect);
       callback(rect);
     });
   } else {
@@ -51,9 +64,9 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, callback) 
 // type:"popup" apre una finestra senza tab/barra indirizzi (la cosa più vicina a
 // "app esterna" che un'estensione può fare: non può lanciare Chrome in vera
 // modalità --app, quella è disponibile solo da riga di comando, vedi apri-console.command).
-function openNewConsoleWindow() {
+function openNewConsoleWindow(screenArea) {
   console.log("[LRW] apro una nuova finestra:", CONSOLE_FALLBACK_URL);
-  calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
+  calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, screenArea, (rect) => {
     chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", left: rect.left, top: rect.top, width: rect.width, height: rect.height, focused: true }, (win) => {
       if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
       else console.log("[LRW] finestra creata, id:", win && win.id);
@@ -65,7 +78,7 @@ chrome.runtime.onMessage.addListener((msg) => {
   if (!msg) return;
 
   if (msg.type === "leadCaptured") {
-    console.log("[LRW] leadCaptured ricevuto, cerco una scheda console già aperta…");
+    console.log("[LRW] leadCaptured ricevuto, screenArea:", msg.screenArea, "— cerco una scheda console già aperta…");
 
     chrome.tabs.query({ url: "file:///*lead-rework-console.html" }, (tabs) => {
       if (chrome.runtime.lastError) console.error("[LRW] errore in tabs.query:", chrome.runtime.lastError.message);
@@ -79,7 +92,7 @@ chrome.runtime.onMessage.addListener((msg) => {
         // non serve più mandare un messaggio a un content script che potrebbe non
         // essere più collegato.
         const tab = tabs[0];
-        calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
+        calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, msg.screenArea, (rect) => {
           chrome.windows.update(tab.windowId, { focused: true, left: rect.left, top: rect.top, width: rect.width, height: rect.height });
         });
         chrome.tabs.update(tab.id, { active: true });
@@ -87,7 +100,7 @@ chrome.runtime.onMessage.addListener((msg) => {
       } else {
         // Nessuna scheda della console aperta: la apriamo noi. I dati restano in
         // chrome.storage.local, li legge da sola al caricamento (vedi console-content.js).
-        openNewConsoleWindow();
+        openNewConsoleWindow(msg.screenArea);
       }
     });
     return;
