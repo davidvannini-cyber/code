@@ -21,8 +21,8 @@
     --pannello: #ffffff;
     --card: #e8e8ec;
     --card-hover: #dcdce2;
-    --bordo: rgba(0,0,0,.08);
-    --bordo-forte: #d0d0d8;
+    --border: rgba(0,0,0,.08);
+    --border-forte: #d0d0d8;
     --testo-1: #1a1f2e;
     --testo-2: #6b7280;
     --testo-3: #6b7280;
@@ -205,7 +205,7 @@
     gap:8px;
     padding:8px 10px;
     border-radius:2px;
-    border:1px solid var(--bordo);
+    border:1px solid var(--border);
     background:var(--pannello);
     color:var(--testo-1);
     cursor:pointer;
@@ -213,7 +213,7 @@
     font-family:inherit;
     transition:background .12s ease, border-color .12s ease, transform .12s ease, opacity .12s ease;
   }
-  .pulsante:hover{background:var(--card-hover);border-color:var(--bordo-forte);}
+  .pulsante:hover{background:var(--card-hover);border-color:var(--border-forte);}
   .pulsante:active{transform:translateY(1px);}
   .pulsante:focus-visible{outline:2px solid var(--ambra);outline-offset:2px;}
 
@@ -237,7 +237,7 @@
     align-items:center;
     margin-top:12px;
     padding-top:8px;
-    border-top:1px solid var(--bordo);
+    border-top:1px solid var(--border);
   }
   .stato{
     display:flex;align-items:center;gap:6px;
@@ -252,13 +252,13 @@
     font-weight:600;
     color:var(--testo-2);
     background:transparent;
-    border:1px solid var(--bordo);
+    border:1px solid var(--border);
     border-radius:2px;
     padding:4px 8px;
     cursor:pointer;
     transition:color .12s ease, border-color .12s ease;
   }
-  .pulsante-esci:hover{color:var(--testo-1);border-color:var(--bordo-forte);}
+  .pulsante-esci:hover{color:var(--testo-1);border-color:var(--border-forte);}
 
   .firma{
     display:flex;
@@ -267,7 +267,7 @@
     gap:4px;
     margin-top:10px;
     padding-top:8px;
-    border-top:1px solid var(--bordo);
+    border-top:1px solid var(--border);
   }
   .firma img{height:60px;width:auto;opacity:.92;}
   .firma .copyright{
