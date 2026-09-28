@@ -25,17 +25,25 @@ const OFFSET_FRAZIONE_LEAD_REWORK = 0;
 function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, callback) {
   if (chrome.system && chrome.system.display && chrome.system.display.getInfo) {
     chrome.system.display.getInfo((schermi) => {
+      console.log("[LRW] chrome.system.display.getInfo ha risposto, schermi:", schermi);
       const primario = (schermi && schermi.find(s => s.isPrimary)) || (schermi && schermi[0]);
-      if (!primario) { callback({ left: 40, top: 40, width: 900, height: 1300 }); return; }
+      if (!primario) {
+        console.warn("[LRW] nessuno schermo primario trovato, uso il fallback fisso (900px)");
+        callback({ left: 40, top: 40, width: 900, height: 1300 });
+        return;
+      }
       const area = primario.workArea;
-      callback({
+      const rect = {
         left: area.left + Math.round(area.width * offsetFrazione),
         top: area.top,
         width: Math.round(area.width * larghezzaFrazione),
         height: area.height
-      });
+      };
+      console.log("[LRW] rettangolo calcolato dalla frazione " + larghezzaFrazione + ":", rect);
+      callback(rect);
     });
   } else {
+    console.warn("[LRW] chrome.system.display non disponibile, uso il fallback fisso (900px) — la percentuale configurata non viene applicata");
     callback({ left: 40, top: 40, width: 900, height: 1300 });
   }
 }
