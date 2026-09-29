@@ -1,4 +1,4 @@
-# LEADREWORKS — Handoff consolidato (stato al 2026-09-28)
+# LEADREWORKS — Handoff consolidato (stato al 2026-09-29)
 
 Documento unico di ripresa per la **YesMobility Lead Rework Console**.
 Consolida le tre sessioni di sviluppo:
@@ -20,7 +20,7 @@ La cronologia dettagliata della prima sessione (sezioni 9bis…9terdecies del ve
 | Libreria script | 26 script nell'HTML (n. 1–21, 23–27; il n. 22 è stato rimosso) |
 | Estensione CRM → console | ✅ Testata dal vivo con lead reale, funzionante |
 | Console → Suggerimenti Vendita | Implementata (URL scheme, bagliore "lead in attesa", due modalità di chiamata) |
-| Layout a 3 finestre | Implementato e provato dal vivo, proporzioni corrette (40% / 19% / 40%) |
+| Layout a 3 finestre | Approvato dall'utente il 2026-09-29: console 35% · menu 15% · overlay 25%, tutte alte 60% (dettagli e punti di ripristino in `../../SUGGERIMENTIVENDITA/HANDOFF.md` §3) |
 | Sincronizzazione da GitHub | ✅ Funzionante, pull senza conflitti |
 
 **Il progetto vive in** `SALESASSISTANT/LEADREWORKS/` del repo `davidvannini-cyber/code`. Sul Mac dell'utente: `/Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/LEADREWORKS/`. La fonte di verità è il repo.
@@ -59,7 +59,7 @@ Dati aziendali editabili + card "Impostazioni AI" (API key, modello default clau
 ### Integrazioni
 - **Estensione browser** (browser-extension/, Manifest V3): pulsante galleggiante sulle pagine lead di app.facilesalire.it, legge il blocco Inertia <script type="application/json" data-page="app"> e invia i dati alla console. ✅ Testata dal vivo.
 - **Suggerimenti Vendita**: invio del canovaccio via chrome.storage.local, apertura dell'app con suggerimentivendita://, bagliore sul pulsante "Chiamata Gestione Lead" tramite server locale sulla porta 8767.
-- **Avvio**: apri-console.command apre Chrome in modalità app nella colonna sinistra (30% dello schermo).
+- **Avvio**: apri-console.command apre Chrome in modalità app nella colonna sinistra (lo script usa 30%; `background.js` usa 35%, valore approvato).
 
 ### Grafica
 Tema chiaro (sfondo #ffffff, pannelli #e8e8ec, primario teal #14b8a6), font Manrope / IBM Plex, icone SVG inline, logo base64. Layout: topnav orizzontale in alto, rail destra sticky, main content al centro.
@@ -177,7 +177,7 @@ Trasformazione estetica: da tema scuro a tema chiaro, da sidebar verticale a top
 SALESASSISTANT/LEADREWORKS/
 ├── .gitignore                         # esclude .DS_Store e ._*
 ├── README.md                          # note tecniche, estensione CRM, test con API key
-├── apri-console.command               # avvio Chrome app-mode, colonna sinistra 40%
+├── apri-console.command               # avvio Chrome app-mode, colonna sinistra (30% nello script)
 ├── setup_leadreworks.sh               # script di setup iniziale della cartella
 ├── browser-extension/                 # estensione Chrome MV3
 │   ├── manifest.json                  # permessi: storage, tabs, system.display; host facilesalire, file://, 8766, 8767

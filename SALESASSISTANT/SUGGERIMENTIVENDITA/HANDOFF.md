@@ -1,8 +1,8 @@
-# SUGGERIMENTIVENDITA — Handoff consolidato (stato al 2026-09-25)
+# SUGGERIMENTIVENDITA — Handoff consolidato (stato al 2026-09-29)
 
 Documento unico di ripresa per **Suggerimenti Vendita**, l'assistente live per le chiamate YesMobility: ascolta il cliente, lo trascrive con Deepgram e mostra il suggerimento più adatto preso dalla libreria script.
 
-Copre la sessione del **21–25 settembre 2026**. Le parti che riguardano l'integrazione con la Lead Rework Console sono documentate anche in `../LEADREWORKS/docs/HANDOFF.md`.
+Copre le sessioni del **21–29 settembre 2026**. Le parti che riguardano l'integrazione con la Lead Rework Console sono documentate anche in `../LEADREWORKS/docs/HANDOFF.md`.
 
 > Nota: `README.md` è stato aggiornato il 2026-09-25; `RIEPILOGO_SISTEMA.md` è ancora in parte superato (vedi §7). In caso di conflitto vale questo file, e sopra a tutto il codice.
 
@@ -17,10 +17,11 @@ Copre la sessione del **21–25 settembre 2026**. Le parti che riguardano l'inte
 | Trascrizione Deepgram + matching | Funzionante (nova-2, italiano, embedding locale + Claude Haiku nei casi ambigui) |
 | Qualità audio in chiamata reale | **Da tarare**: vedi §4 (microfono, AGC, livelli) |
 | Integrazione con Lead Rework Console | Implementata (URL scheme, porta 8767, modalità `gestione_lead`). In gran parte **non testata dal vivo** |
-| Layout a 3 finestre | Implementato: console 40% · menu 19% · pannello chiamata 40% |
+| Layout a 3 finestre | Approvato dall'utente il 2026-09-29: console 35% · menu 15% · overlay 25%, tutte alte 60% (vedi §3) |
+| Grafica overlay | Approvata il 2026-09-29 (tema chiaro, riquadri e pulsanti con raggio 2px). Punti di ripristino in §3 |
 | Sincronizzazione sorgenti ↔ bundle `.app` | **Allineata** al 2026-09-25 (tutti i file confrontati sono identici) |
 
-**Dove vive il progetto**: dal 2026-09-25 in `SALESASSISTANT/SUGGERIMENTIVENDITA/` del repo `davidvannini-cyber/code`. Sul Mac: `/Users/davidvannini_1/Documents/progetti/SUGGERIMENTIVENDITA/`. Il vecchio percorso `…/SuggeritoreVendite/sales-ai-assistant v2/` non è più valido.
+**Dove vive il progetto**: dal 2026-09-25 in `SALESASSISTANT/SUGGERIMENTIVENDITA/` del repo `davidvannini-cyber/code`. Sul Mac: `/Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/` (aggiornato con `git pull origin main`). Il vecchio percorso `…/SuggeritoreVendite/sales-ai-assistant v2/` non è più valido.
 
 ---
 
@@ -35,12 +36,13 @@ Finestra nativa Cocoa (PyObjC + WebKit). Ogni pulsante chiama `Contents/MacOS/av
 - Strumenti: rivedi frasi raccolte, aggiungi script (anche con testo generato da AI), visualizza libreria, profilo azienda, setup ambiente, API key, test audio, test matching.
 
 ### Pannello chiamata (`overlay/index.html`, servito su `http://localhost:8766/`)
-- Aperto da `avvia_chiamata_comune()` in **Chrome modalità app** (`open -na "Google Chrome" --args --app=…`), nella colonna destra.
+- Aperto da `avvia_chiamata_comune()` in **Chrome modalità app** (`open -na "Google Chrome" --args --app=…`), a destra del menu.
 - **Selettore del dispositivo di ingresso**, con l'opzione "Predefinito di sistema (segue il Mac)" come prima voce. La scelta è salvata in `localStorage` (`suggerimentivendita_deviceId_microfono`). Si può cambiare "a caldo" senza chiudere il WebSocket. Se il dispositivo salvato non c'è più, si ripiega sul predefinito.
 - **Spia "Segnale in ingresso"** (verde / ambra / rosso), attiva anche in pausa.
 - Avvio automatico del microfono se il permesso è già concesso. Se Chrome sospende l'`AudioContext` (policy anti-autoplay), viene mostrato un messaggio e serve un clic.
+- Barra superiore "SUGGERIMENTI LIVE" con selettore AUDIO e indicatore "connesso"; riga di pulsanti **Microfono attivo**, **Pausa**, **Termina**; riquadri Nome / Numero di telefono, "GUIDA CHIAMATA" (verde), badge "IN ATTESA" e "FRASI CLIENTE".
 - Pulsanti **Pausa** e **Termina chiamata** (manda `{"tipo":"termina"}` al server e riporta in primo piano il menu).
-- Riquadro verde "Canovaccio chiamata", visibile solo nelle modalità con canovaccio.
+- Riquadro verde "GUIDA CHIAMATA" (il canovaccio), visibile solo nelle modalità con canovaccio.
 
 ### Server (`server/server_suggerimenti.py`)
 - HTTP su **8766** (serve l'overlay, senza cache) + WebSocket su **8765**.
@@ -58,13 +60,26 @@ Finestra nativa Cocoa (PyObjC + WebKit). Ogni pulsante chiama `Contents/MacOS/av
 
 ## 3. Layout a 3 finestre
 
-| Finestra | Posizione | Dove si imposta |
-|---|---|---|
-| Lead Rework Console | x = 0, larghezza 40% | `../LEADREWORKS/apri-console.command`, `background.js` dell'estensione |
-| Menu Suggerimenti Vendita | x = 40%, larghezza **19%** | `menu_finestra.py`: `OFFSET_FRAZIONE = 0.40`, `LARGHEZZA_FRAZIONE = 0.19` |
-| Pannello chiamata | x = **59%**, larghezza 40% | `avvia` → `avvia_chiamata_comune`: `col_x = screen_w * 59/100` |
+Tre finestre affiancate, tutte alte il **60%** dello schermo.
 
-La larghezza del menu è passata dal 15% al **19%**. Chi cambia le proporzioni deve aggiornare **tutti e tre** i punti. Il menu non è più "sempre in primo piano" (`NSFloatingWindowLevel` rimosso).
+| Finestra | Larghezza | Partenza da sinistra | Dove si imposta |
+|---|---|---|---|
+| Lead Rework Console | 35% | 0% | `../LEADREWORKS/browser-extension/background.js` (`LARGHEZZA_FRAZIONE_LEAD_REWORK`, `OFFSET_…`, `ALTEZZA_…`) |
+| Menu Suggerimenti Vendita | 15% | 35% | `menu/menu_finestra.py`: `LARGHEZZA_FRAZIONE = 0.15`, `OFFSET_FRAZIONE = 0.35`, `ALTEZZA_FRAZIONE = 0.60` |
+| Overlay (pannello chiamata) | 25% | 50% | `avvia` → `avvia_chiamata_comune` (`col_w`, `col_x`, `col_h`) **e** script di posizionamento in `overlay/index.html` |
+
+- **Perché l'overlay si posiziona anche da solo**: con Chrome già aperto, `open -na … --window-position/--window-size` viene passato all'istanza esistente, che ignora quei parametri e riapre la finestra dell'app dove era stata lasciata. Per questo `overlay/index.html` contiene uno script che chiama `resizeTo`/`moveTo` all'apertura e di nuovo dopo 0,3 e 1,2 s (25% larghezza, offset 50%, 60% altezza dell'area disponibile). Se si cambiano le proporzioni dell'overlay vanno aggiornati **entrambi** i punti.
+- **Nessun `osascript` per ridimensionare Chrome** in `avvia`: chiede il permesso "controllare Google Chrome" e non risolve il problema. `avvia` usa `osascript` solo per leggere le dimensioni dello schermo (Finder).
+- Il menu non è "sempre in primo piano" (`NSFloatingWindowLevel` rimosso).
+- Nota: `../LEADREWORKS/apri-console.command` usa ancora `COL_W = 30%`, mentre `background.js` usa 35%: se la console si apre da quello script la larghezza è diversa.
+
+### Punti di ripristino (grafica approvata)
+| Tag git | Cartella di backup (in `SUGGERIMENTIVENDITA/`) | Contenuto |
+|---|---|---|
+| `grafica-ok-2026-09-29` | `RIPRISTINO-GRAFICA-2026-09-29/` | overlay, menu, `avvia` |
+| `grafica-posizioni-ok-2026-09-29` | `RIPRISTINO-GRAFICA-POSIZIONI-2026-09-29/` | come sopra + `background.js` e `lead-rework-console.html` (grafica **e** posizioni/dimensioni delle tre finestre) |
+
+Per tornare a uno stato approvato: `git checkout <tag> -- "<percorso file>"`, oppure copiare i file dalla cartella di backup (ognuna ha un `LEGGIMI.txt`). Ogni file va rimesso **anche** nella copia dentro `Suggerimenti Vendita.app/Contents/Resources/progetto/`, perché l'app legge solo quella (vedi §5).
 
 ---
 
@@ -163,7 +178,7 @@ Il bundle `Suggerimenti Vendita.app` contiene una **copia completa** del progett
 - [ ] Valutare di mostrare nella spia anche il livello **prima** del compressore, oppure un avviso "clipping".
 - [ ] Valutare un avviso visibile quando è selezionato "Predefinito di sistema" ma il predefinito è il microfono integrato.
 - [ ] Migrare `ScriptProcessor` → `AudioWorklet`.
-- [ ] Testare dal vivo: bagliore sulla porta 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 40/19/40.
+- [ ] Testare dal vivo: bagliore sulla porta 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 35/15/25 (overlay che si posiziona da solo).
 - [x] ~~Aggiornare `README.md`~~: fatto il 2026-09-25 (flusso via estensione, 3 modalità, porta 8767, struttura attuale, rimossi finestra flottante e `lead-corrente.json`).
 - [ ] Aggiornare `RIEPILOGO_SISTEMA.md` (elenco pulsanti del menu non più attuale).
 - [x] ~~Allineare `../LEADREWORKS/docs/HANDOFF.md` sul layout 40/19/40~~: fatto il 2026-09-25.
