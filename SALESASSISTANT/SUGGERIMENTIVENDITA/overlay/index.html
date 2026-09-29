@@ -47,54 +47,92 @@
     opacity: .95;
   }
 
-  .riquadro-microfono {
+  /* Navbar LEADREWORKS */
+  .navbar-overlay {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 14px;
+    gap: 14px;
+    background: #ececf0;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    padding: 8px 14px;
+    margin-bottom: 14px;
+  }
+  .navbar-brand {
+    font-family: "Manrope", -apple-system, sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    color: #1a1f2e;
+  }
+  .navbar-center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+  .audio-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
   #selettore-microfono {
     font-family: inherit;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
-    padding: 10px 12px;
+    padding: 6px 10px;
     border-radius: 2px;
-    border: 1px solid rgba(0,0,0,.08);
-    background: #e8e8ec;
+    border: 1px solid rgba(0,0,0,.12);
+    background: #ffffff;
     color: #1a1f2e;
-    max-width: 260px;
+    max-width: 180px;
   }
   #selettore-microfono:disabled {
     opacity: .6;
   }
-  #pulsante-microfono, #pulsante-pausa, #pulsante-termina {
-    font-family: inherit;
-    font-size: 17px;
-    font-weight: 700;
-    padding: 16px 30px;
+  .navbar-buttons {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .btn-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
     border-radius: 2px;
+    border: none;
     cursor: pointer;
+    transition: all .12s ease;
+    flex-shrink: 0;
+  }
+  .btn-navbar svg {
+    width: 18px;
+    height: 18px;
   }
   #pulsante-microfono {
-    border: none;
     background: #f59e0b;
     color: #1c1300;
+  }
+  #pulsante-microfono:hover {
+    background: #d97706;
   }
   #pulsante-microfono.attivo {
     background: #14532d;
     color: #f3f4f6;
-    cursor: default;
   }
   #pulsante-microfono:disabled {
     opacity: .6;
     cursor: default;
   }
   #pulsante-pausa {
-    border: 1px solid rgba(0,0,0,.08);
-    background: #e8e8ec;
+    border: 1px solid rgba(0,0,0,.12);
+    background: #ffffff;
     color: #1a1f2e;
+  }
+  #pulsante-pausa:hover {
+    background: #f9f9fb;
   }
   #pulsante-pausa.in-pausa {
     background: #fefce8;
@@ -105,6 +143,26 @@
     border: 1px solid rgba(255,95,87,.35);
     background: rgba(255,95,87,.12);
     color: #c2392f;
+  }
+  #pulsante-termina:hover {
+    background: rgba(255,95,87,.2);
+  }
+
+  .navbar-status {
+    font-size: 10px;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #28c840;
+    margin-right: 4px;
+  }
+  .status-dot.offline {
+    background: #ef4444;
   }
 
   .riquadro {
@@ -261,11 +319,38 @@
     <img src="logo-yesmobility.png" alt="YesMobility" onerror="this.parentElement.remove()">
   </div>
 
-  <div class="riquadro riquadro-microfono">
-    <select id="selettore-microfono" title="Dispositivo audio in ingresso"></select>
-    <button id="pulsante-microfono">🎙️ Avvia microfono</button>
-    <button id="pulsante-pausa" style="display:none;">⏸ Pausa</button>
-    <button id="pulsante-termina" style="display:none;">🛑 Termina chiamata</button>
+  <div class="navbar-overlay">
+    <div class="navbar-brand">SUGGERIMENTI LIVE</div>
+    <div class="navbar-center">
+      <div class="audio-label">Audio</div>
+      <select id="selettore-microfono" title="Dispositivo audio in ingresso"></select>
+    </div>
+    <div class="navbar-buttons">
+      <button id="pulsante-microfono" class="btn-navbar" title="Avvia microfono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v12a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
+      </button>
+      <button id="pulsante-pausa" class="btn-navbar" style="display:none;" title="Pausa">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16"></rect>
+          <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+      </button>
+      <button id="pulsante-termina" class="btn-navbar" style="display:none;" title="Termina chiamata">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="8" y1="12" x2="16" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="navbar-status">
+      <span class="status-dot" id="status-dot-navbar"></span>
+      <span id="status-text-navbar">disconnesso</span>
+    </div>
   </div>
 
   <div class="riquadro-livello" id="riquadro-livello">
@@ -307,6 +392,8 @@
   };
 
   const elStato = document.getElementById("stato-connessione");
+  const elStatusDot = document.getElementById("status-dot-navbar");
+  const elStatusText = document.getElementById("status-text-navbar");
   const elFaseBadge = document.getElementById("fase-badge");
   const elPrincipale = document.getElementById("suggerimento-principale");
   const elAlternativo = document.getElementById("suggerimento-alternativo");
@@ -626,12 +713,16 @@
     ws.onopen = () => {
       elStato.textContent = "connesso";
       elStato.className = "connesso";
+      elStatusDot.className = "status-dot";
+      elStatusText.textContent = "connesso";
     };
 
     ws.onclose = () => {
       if (chiamataTerminata) return;
       elStato.textContent = "disconnesso — nuovo tentativo tra 2s";
       elStato.className = "disconnesso";
+      elStatusDot.className = "status-dot offline";
+      elStatusText.textContent = "disconnesso";
       setTimeout(connetti, 2000);
     };
 
