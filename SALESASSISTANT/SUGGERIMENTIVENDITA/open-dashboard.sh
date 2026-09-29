@@ -4,15 +4,15 @@
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
   --app="file:///Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/unified-dashboard.html" &
 
-# Aspetta che la finestra si apra (2 secondi)
-sleep 2
+# Aspetta che la finestra si apra
+sleep 3
 
-# Usa AppleScript per ridimensionare la finestra al 70% dell'altezza
+# Usa AppleScript per ridimensionare al 70% (900px altezza standard)
 osascript << 'EOF'
-tell application "Google Chrome"
-    activate
-    set screenHeight to (call method "screen" of object (first window)) / 1
-    set newHeight to round (screenHeight * 0.7)
-    set bounds of first window to {0, 0, 1400, newHeight}
+tell application "System Events"
+    tell process "Google Chrome"
+        set the size of the first window to {1400, 900}
+        set the position of the first window to {0, 0}
+    end tell
 end tell
 EOF
