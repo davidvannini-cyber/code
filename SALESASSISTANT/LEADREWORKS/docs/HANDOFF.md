@@ -174,6 +174,13 @@ Trasformazione estetica: da tema scuro a tema chiaro, da sidebar verticale a top
 - Niente workaround che cambiano le abitudini dell'utente quando il problema è nel codice.
 - Per cambi di layout/UX importanti, discutere e aspettare il via libera prima di scrivere codice.
 
+### Flusso di sincronizzazione (dal 2026-09-29)
+- La copia di lavoro di Claude è `/root/progetti/code-repo/SALESASSISTANT/` (clone di `davidvannini-cyber/code`, push su `origin main`). È l'unica sorgente di verità: le vecchie copie in `/root/progetti/LEADREWORKS/` sono obsolete e non vanno modificate.
+- Lo strumento **SYNC SALESASSISTANT** sul Mac fa solo un `git pull` da GitHub verso `/Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT`. Ciò che non è stato pubblicato su GitHub sul Mac non arriva.
+- **Automatismo**: uno Stop hook di Claude Code (`/root/.claude/hooks/sync-code-repo.sh`, registrato in `/root/.claude/settings.json`) a fine lavoro fa `git add` della sola cartella `SALESASSISTANT`, commit e `git push origin HEAD:main`. Non fa mai force push, non fa nulla se non ci sono modifiche, esclude file con nome tipo `.env`/`secret`/`token`/`.pem`/`.key`, e in caso di errore (rete, push rifiutato, conflitto di rebase) mostra un messaggio **«SYNC FALLITA»**.
+- **Per l'utente**: quando Claude ha finito e compare «Sync pronta», lanciare SYNC SALESASSISTANT sul Mac e ricaricare la console con Cmd+Shift+R. Se compare «SYNC FALLITA», non lanciare la sync: chiedere a Claude di risolvere.
+- Se l'hook non parte (sessione nuova senza il file di impostazioni), Claude deve fare a mano commit e push prima di dire «finito».
+
 ---
 
 ## 7. Struttura dei file

@@ -114,6 +114,8 @@ telefono → splitter TRRS → mic-in del Mac
 
 ## 5. File da sincronizzare sul Mac
 
+**Flusso Sandbox → GitHub → Mac**: Claude lavora in `/root/progetti/code-repo/SALESASSISTANT/`; a fine lavoro uno Stop hook (`/root/.claude/hooks/sync-code-repo.sh`) fa commit e push su `origin main`, poi l'utente lancia SYNC SALESASSISTANT sul Mac (solo `git pull`). Dettagli e messaggi di errore in `../LEADREWORKS/docs/HANDOFF.md`, sezione «Flusso di sincronizzazione».
+
 Il bundle `Suggerimenti Vendita.app` contiene una **copia completa** del progetto in `Contents/Resources/progetto/`. L'app usa **solo** quella copia; `avvia_sistema.command` usa le cartelle sorgenti. Una modifica a un sorgente non ha effetto sull'app finché non viene copiata nel bundle, o finché non si rigenera l'installer (`Crea Installer.app` risincronizza da sé).
 
 ### Mappa sorgente → bundle (tutti identici al 2026-09-25)
