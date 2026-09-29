@@ -877,12 +877,13 @@ avvia_chiamata_comune() {
   local bounds
   bounds=$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null)
   if [ -n "$bounds" ]; then
-    local screen_w screen_h col_w col_x
+    local screen_w screen_h col_w col_x col_h
     screen_w=$(echo "$bounds" | awk -F', ' '{print $3}')
     screen_h=$(echo "$bounds" | awk -F', ' '{print $4}')
-    col_w=$(( screen_w * 40 / 100 ))
-    col_x=$(( screen_w * 59 / 100 ))
-    open -na "Google Chrome" --args --app="$url" --window-position=${col_x},0 --window-size=${col_w},${screen_h}
+    col_w=$(( screen_w * 25 / 100 ))
+    col_x=$(( screen_w * 50 / 100 ))
+    col_h=$(( screen_h * 60 / 100 ))
+    open -na "Google Chrome" --args --app="$url" --window-position=${col_x},0 --window-size=${col_w},${col_h}
   else
     # Fallback se osascript non è disponibile per qualche motivo: comportamento precedente.
     open -na "Google Chrome" --args --app="$url"
