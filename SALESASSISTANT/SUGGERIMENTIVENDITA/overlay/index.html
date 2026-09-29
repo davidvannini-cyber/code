@@ -52,16 +52,14 @@
   .navbar-overlay {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 20px;
     background: #ececf0;
     border-bottom: 1px solid rgba(0,0,0,.08);
     padding: 6px 12px;
     margin-bottom: 10px;
+    justify-content: space-between;
   }
   .navbar-brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     font-family: "Manrope", -apple-system, sans-serif;
     font-weight: 800;
     font-size: 11px;
@@ -69,35 +67,19 @@
     letter-spacing: 0.02em;
     white-space: nowrap;
   }
-  .navbar-brand svg {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-  }
   .navbar-center {
     display: flex;
     align-items: center;
     gap: 6px;
-    flex: 1;
+    margin: 0 auto;
   }
-  .navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  .audio-label {
     font-size: 9px;
+    font-weight: 700;
     color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     white-space: nowrap;
-    margin-left: auto;
-  }
-  .status-dot-navbar {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #28c840;
-    flex-shrink: 0;
-  }
-  .status-dot-navbar.offline {
-    background: #ef4444;
   }
   .audio-label {
     font-size: 9px;
@@ -343,19 +325,10 @@
   </div>
 
   <div class="navbar-overlay">
-    <div class="navbar-brand">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20 2H4c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12h-4v4h-4v-4H4v-2h4V8h4v4h4v2z"/>
-      </svg>
-      SUGGERIMENTI LIVE
-    </div>
+    <div class="navbar-brand">SUGGERIMENTI LIVE</div>
     <div class="navbar-center">
       <div class="audio-label">Audio</div>
       <select id="selettore-microfono" title="Dispositivo audio in ingresso"></select>
-    </div>
-    <div class="navbar-right">
-      <div class="status-dot-navbar" id="status-dot-navbar"></div>
-      <span id="status-text-navbar">connessso</span>
     </div>
   </div>
 
@@ -660,13 +633,13 @@
       silenzio.connect(contestoAudio.destination);
 
       elRiquadroLivello.style.display = "flex";
-      elBottoneMic.textContent = "🎙️ Microfono attivo";
+      elBottoneMic.textContent = "Microfono attivo";
       elBottoneMic.classList.add("attivo");
-      elBottonePausa.style.display = "inline-block";
-      elBottoneTermina.style.display = "inline-block";
+      elBottonePausa.style.display = "inline-flex";
+      elBottoneTermina.style.display = "inline-flex";
     } catch (errore) {
       elBottoneMic.disabled = false;
-      elBottoneMic.textContent = "🎙️ Avvia microfono";
+      elBottoneMic.textContent = "Avvia microfono";
       if (stream) stream.getTracks().forEach((traccia) => traccia.stop());
       streamCorrente = null;
       if (contestoAudio) { contestoAudio.close(); contestoAudio = null; }
@@ -687,7 +660,7 @@
 
   function togglePausa() {
     microfonoInPausa = !microfonoInPausa;
-    elBottonePausa.textContent = microfonoInPausa ? "▶ Riprendi" : "⏸ Pausa";
+    elBottonePausa.textContent = microfonoInPausa ? "Riprendi" : "Pausa";
     elBottonePausa.classList.toggle("in-pausa", microfonoInPausa);
   }
 
