@@ -16,7 +16,7 @@ const CONSOLE_FALLBACK_URL = "file:///Users/davidvannini_1/Documents/progetti/co
 // più a destra ancora) — tre finestre affiancate in proporzioni fisse
 // (scelte dall'utente), invece di finestre sparse di dimensioni diverse.
 // 30% invece di 40%: richiesta esplicita dell'utente il 2026-09-28 ("25% più stretta").
-const LARGHEZZA_FRAZIONE_LEAD_REWORK = 0.20;
+const LARGHEZZA_FRAZIONE_LEAD_REWORK = 0.35;
 const OFFSET_FRAZIONE_LEAD_REWORK = 0;
 const ALTEZZA_FRAZIONE_LEAD_REWORK = 0.60;
 
