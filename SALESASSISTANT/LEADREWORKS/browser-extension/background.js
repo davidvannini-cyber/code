@@ -31,7 +31,7 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, altezzaFra
       const area = primario.workArea;
       callback({
         left: area.left + Math.round(area.width * offsetFrazione),
-        top: area.top + area.height - Math.round(area.height * altezzaFrazione),
+        top: area.top,
         width: Math.round(area.width * larghezzaFrazione),
         height: Math.round(area.height * altezzaFrazione)
       });
