@@ -16,8 +16,9 @@ const CONSOLE_FALLBACK_URL = "file:///Users/davidvannini_1/Documents/progetti/LE
 // più a destra ancora) — tre finestre affiancate in proporzioni fisse
 // (scelte dall'utente), invece di finestre sparse di dimensioni diverse.
 // 30% invece di 40%: richiesta esplicita dell'utente il 2026-09-28 ("25% più stretta").
-const LARGHEZZA_FRAZIONE_LEAD_REWORK = 0.30;
+const LARGHEZZA_FRAZIONE_LEAD_REWORK = 0.20;
 const OFFSET_FRAZIONE_LEAD_REWORK = 0;
+const ALTEZZA_FRAZIONE_LEAD_REWORK = 0.60;
 
 // "workArea" esclude già barra menu e Dock. Se l'API non è disponibile per
 // qualche motivo, un rettangolo fisso di fallback (i valori usati prima di
