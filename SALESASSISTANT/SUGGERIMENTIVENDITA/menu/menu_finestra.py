@@ -58,8 +58,8 @@ ALTEZZA = 920
 # proporzioni fisse (scelte dall'utente), invece di finestre sparse di
 # dimensioni diverse. Il menu sta nel mezzo: 10%, subito a destra della
 # Lead Rework Console (20%).
-LARGHEZZA_FRAZIONE = 0.10
-OFFSET_FRAZIONE = 0.20
+LARGHEZZA_FRAZIONE = 0.15
+OFFSET_FRAZIONE = 0.35
 ALTEZZA_FRAZIONE = 0.60
 
 
