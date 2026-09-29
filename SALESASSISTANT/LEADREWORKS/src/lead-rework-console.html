@@ -529,8 +529,11 @@ function render(){
       </div>
     </div>
     <div class="page ${state.tab==='profilo'?'page-narrow':''}">
-      <div class="main">${renderTab()}</div>
-      ${showRail ? renderRightRail() : ""}
+      <div style="display:flex;gap:10px;width:100%;">
+        <div class="main">${renderTab()}</div>
+        ${showRail ? renderRightRail() : ""}
+      </div>
+      <div class="card">${renderAmbienteStrip()}</div>
     </div>
   `;
   // requestAnimationFrame: aspetta che il browser abbia finito il layout della
@@ -539,6 +542,18 @@ function render(){
   requestAnimationFrame(() => {
     document.querySelectorAll("textarea.autogrow").forEach(autoGrowTextarea);
   });
+}
+
+function renderAmbienteStrip(){
+  return `
+    <div class="rail-card-title" style="margin-bottom:8px;">Ambiente</div>
+    <div class="rail-env">
+      <div><span class="dot ${RUNTIME.db?'ok':'ko'}"></span>db ${RUNTIME.db?'connesso':'fallback locale'}</div>
+      <div><span class="dot ${RUNTIME.sample?'ok':'ko'}"></span>sample API ${RUNTIME.sample?'pronta':'non disponibile'}</div>
+      <div><span class="dot ${getAnthropicApiKey()?'ok':'ko'}"></span>API key ${getAnthropicApiKey()?'configurata':'da verificare'}</div>
+      <div><span class="dot ${canUseImages()?'ok':'ko'}"></span>immagini ${canUseImages()?'abilitate':'non disponibili'}</div>
+    </div>
+  `;
 }
 
 function renderRightRail(){
@@ -558,15 +573,6 @@ function renderRightRail(){
           <a href="#stato-canali">3. Stato e canali</a>
           <a href="#analisi">4. Analisi e strategia</a>
           <a href="#generazione">5. Generazione script</a>
-        </div>
-      </div>
-      <div class="rail-card">
-        <div class="rail-card-title">Ambiente</div>
-        <div class="rail-env">
-          <div><span class="dot ${RUNTIME.db?'ok':'ko'}"></span>db ${RUNTIME.db?'connesso':'fallback locale'}</div>
-          <div><span class="dot ${RUNTIME.sample?'ok':'ko'}"></span>sample API ${RUNTIME.sample?'pronta':'non disponibile'}</div>
-          <div><span class="dot ${getAnthropicApiKey()?'ok':'ko'}"></span>API key ${getAnthropicApiKey()?'configurata':'da verificare'}</div>
-          <div><span class="dot ${canUseImages()?'ok':'ko'}"></span>immagini ${canUseImages()?'abilitate':'non disponibili'}</div>
         </div>
       </div>
     </div>
