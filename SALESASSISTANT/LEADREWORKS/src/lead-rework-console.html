@@ -78,6 +78,7 @@
   .btn-danger{background:rgba(255,95,87,.12);color:#c2392f;border:1px solid rgba(255,95,87,.35);} .btn-danger:hover{background:rgba(255,95,87,.2);}
   .btn-ghost{background:transparent;color:var(--primary);padding:4px 8px;} .btn-ghost:hover{background:rgba(0,0,0,.04);border-radius:2px;}
   .copy-btn{font-size:10px;padding:2px 6px;white-space:nowrap;}
+  .brand-btn{padding:1px 3px;}
   button:disabled{opacity:.5;cursor:not-allowed;}
   .chip{display:inline-flex;align-items:center;gap:6px;background:#1f2430;color:#9ca3af;border-radius:2px;padding:5px 14px;font-size:9px;cursor:pointer;user-select:none;border:1px solid rgba(255,255,255,.08);font-weight:600;}
   .chip.on{background:rgba(20,184,166,.18);color:#5eead4;border-color:rgba(20,184,166,.45);}
@@ -460,19 +461,50 @@ function mobileNumberOf(d){
   if (isMobileNumber(d.telefono2)) return String(d.telefono2).trim();
   return "";
 }
-function contactLineFor(canale, data, hid){
+function contactLineFor(canale, data, hid, slotKey){
   const d = data || state.draft;
   let label, value;
   if (canale === "telefono"){ label = "Numero di telefono"; value = String(d.telefono1||"").trim(); }
   else if (canale === "whatsapp"){ label = "Numero WhatsApp"; value = mobileNumberOf(d) || String(d.telefono1||"").trim(); }
   else if (canale === "email"){ label = "Indirizzo email"; value = String(d.email||"").trim(); }
   else return "";
-  const btn = (canale !== "telefono" && value) ? copyBtn("contact", canale, hid) : "";
+  let btn = (canale !== "telefono" && value) ? copyBtn("contact", canale, hid) : "";
+  if (canale !== "telefono" && value && slotKey) btn += openBtn(canale, slotKey, hid);
   return `<div class="hint" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span><b>${label}:</b> ${escapeHtml(value || "—")}</span>${btn}</div>`;
 }
 
 function copyBtn(kind, key, hid){
   return `<button type="button" class="btn-ghost copy-btn" title="Copia negli appunti" aria-label="Copia negli appunti" onclick="copyOut(this,'${kind}','${key}','${hid||""}')">${icon('copy',{noMargin:true})}</button>`;
+}
+const WHATSAPP_LOGO_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" style="vertical-align:-5px;"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z" fill="#25D366"></path><g transform="translate(5.6 5.6) scale(0.53)" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></g></svg>';
+const MAC_MAIL_LOGO_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" style="vertical-align:-5px;"><defs><linearGradient id="macMailGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AC8FA"></stop><stop offset="1" stop-color="#1B6EF3"></stop></linearGradient></defs><rect x="1" y="1" width="22" height="22" rx="5.5" fill="url(#macMailGrad)"></rect><rect x="4.5" y="7" width="15" height="10.5" rx="1.6" fill="#fff"></rect><path d="M5 8l7 5.3L19 8" fill="none" stroke="#1B6EF3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+function openBtn(canale, key, hid){
+  const title = canale === "whatsapp" ? "Apri WhatsApp con il messaggio già scritto" : "Apri la mail già compilata (destinatario, oggetto e corpo)";
+  return `<button type="button" class="btn-ghost copy-btn brand-btn" title="${title}" aria-label="${title}" onclick="openOut('${canale}','${key}','${hid||""}')">${canale === "whatsapp" ? WHATSAPP_LOGO_SVG : MAC_MAIL_LOGO_SVG}</button>`;
+}
+function whatsappDigits(num){
+  const raw = String(num||"").trim();
+  let digits = raw.replace(/\D/g,"");
+  if (!digits) return "";
+  if (raw.startsWith("+")) return digits;
+  if (digits.startsWith("00")) return digits.slice(2);
+  return "39" + digits;
+}
+function openOut(canale, key, hid){
+  let url;
+  if (canale === "whatsapp"){
+    const num = whatsappDigits(copyOutValue("contact", "whatsapp", hid));
+    if (!num){ alert("Numero di telefono mancante."); return; }
+    url = "https://wa.me/" + num + "?text=" + encodeURIComponent(copyOutValue("text", key, hid));
+  } else {
+    const to = copyOutValue("contact", "email", hid);
+    if (!to){ alert("Indirizzo email mancante."); return; }
+    const crlf = t => encodeURIComponent(t.replace(/\r?\n/g, "\r\n"));
+    url = "mailto:" + to + "?subject=" + crlf(copyOutValue("oggetto", key, hid)) + "&body=" + crlf(copyOutValue("corpo", key, hid));
+  }
+  const a = document.createElement("a");
+  a.href = url; a.target = "_blank"; a.rel = "noopener";
+  document.body.appendChild(a); a.click(); a.remove();
 }
 function copyOutValue(kind, key, hid){
   const rec = hid ? state.leadsHistory[hid] : null;
@@ -1638,7 +1670,7 @@ function renderGeneratedOutputs(){
           <div class="output-block-head"><h3>${escapeHtml(sl.label)}</h3>${badge}
             <button class="btn-ghost" onclick="regenerateSlot('${sl.key}')">${icon('refresh')}Rigenera</button>
           </div>
-          ${contactLineFor(sl.canale)}
+          ${contactLineFor(sl.canale, null, "", sl.key)}
           <div class="field"><div style="display:flex;align-items:center;justify-content:space-between;"><label>Oggetto</label>${copyBtn('oggetto', sl.key)}</div><input type="text" value="${escapeHtml(val.oggetto||'')}" oninput="state.generatedOutput['${sl.key}'].oggetto=this.value; state.editedAfterGenerate=true;"></div>
           <div class="field"><div style="display:flex;align-items:center;justify-content:space-between;"><label>Corpo</label>${copyBtn('corpo', sl.key)}</div><textarea rows="8" oninput="state.generatedOutput['${sl.key}'].corpo=this.value; state.editedAfterGenerate=true;">${escapeHtml(val.corpo||'')}</textarea></div>
         </div>`;
@@ -1648,7 +1680,7 @@ function renderGeneratedOutputs(){
         <div class="output-block-head"><h3>${escapeHtml(sl.label)}</h3>${badge}
           <button class="btn-ghost" onclick="regenerateSlot('${sl.key}')">${icon('refresh')}Rigenera</button>
         </div>
-        ${contactLineFor(sl.canale)}
+        ${contactLineFor(sl.canale, null, "", sl.key)}
         ${sl.canale === "whatsapp" ? `<div style="display:flex;align-items:center;justify-content:space-between;"><label>Testo</label>${copyBtn('text', sl.key)}</div>` : ""}
         <textarea rows="6" oninput="state.generatedOutput['${sl.key}']=this.value; state.editedAfterGenerate=true;">${escapeHtml(typeof val === "string" ? val : JSON.stringify(val))}</textarea>
       </div>`;
@@ -1899,7 +1931,7 @@ function renderHistoryModal(id){
           return `
           <div class="output-block">
             <h3>${escapeHtml(k)}</h3>
-            ${contactLineFor(canale, r.dati_lead_input, r.id)}
+            ${contactLineFor(canale, r.dati_lead_input, r.id, k)}
             ${isEmail && v && typeof v === "object"
               ? row("Oggetto", "oggetto", v.oggetto) + row("Corpo", "corpo", v.corpo)
               : (canale === "whatsapp" ? row("Testo", "text", typeof v === "string" ? v : "") : `<p style="white-space:pre-wrap;">${nl2br(v)}</p>`)}
