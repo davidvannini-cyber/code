@@ -460,22 +460,24 @@ function mobileNumberOf(d){
   if (isMobileNumber(d.telefono2)) return String(d.telefono2).trim();
   return "";
 }
-function contactLineFor(canale){
-  const d = state.draft;
+function contactLineFor(canale, data, hid){
+  const d = data || state.draft;
   let label, value;
   if (canale === "telefono"){ label = "Numero di telefono"; value = String(d.telefono1||"").trim(); }
   else if (canale === "whatsapp"){ label = "Numero WhatsApp"; value = mobileNumberOf(d) || String(d.telefono1||"").trim(); }
   else if (canale === "email"){ label = "Indirizzo email"; value = String(d.email||"").trim(); }
   else return "";
-  const btn = (canale !== "telefono" && value) ? copyBtn("contact", canale) : "";
+  const btn = (canale !== "telefono" && value) ? copyBtn("contact", canale, hid) : "";
   return `<div class="hint" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span><b>${label}:</b> ${escapeHtml(value || "—")}</span>${btn}</div>`;
 }
 
-function copyBtn(kind, key){
-  return `<button type="button" class="btn-ghost copy-btn" title="Copia negli appunti" aria-label="Copia negli appunti" onclick="copyOut(this,'${kind}','${key}')">${icon('copy',{noMargin:true})}</button>`;
+function copyBtn(kind, key, hid){
+  return `<button type="button" class="btn-ghost copy-btn" title="Copia negli appunti" aria-label="Copia negli appunti" onclick="copyOut(this,'${kind}','${key}','${hid||""}')">${icon('copy',{noMargin:true})}</button>`;
 }
-function copyOutValue(kind, key){
-  const d = state.draft, o = state.generatedOutput || {};
+function copyOutValue(kind, key, hid){
+  const rec = hid ? state.leadsHistory[hid] : null;
+  const d = rec ? (rec.dati_lead_input || {}) : state.draft;
+  const o = (rec ? rec.script_generati : state.generatedOutput) || {};
   if (kind === "contact") return key === "email" ? String(d.email||"").trim() : (mobileNumberOf(d) || String(d.telefono1||"").trim());
   const v = o[key];
   if (kind === "text") return typeof v === "string" ? v : "";
@@ -483,8 +485,8 @@ function copyOutValue(kind, key){
   if (kind === "corpo") return v && typeof v === "object" ? String(v.corpo||"") : "";
   return "";
 }
-async function copyOut(btn, kind, key){
-  const text = copyOutValue(kind, key);
+async function copyOut(btn, kind, key, hid){
+  const text = copyOutValue(kind, key, hid);
   let ok = false;
   try { await navigator.clipboard.writeText(text); ok = true; }
   catch (e) {
@@ -1890,14 +1892,19 @@ function renderHistoryModal(id){
         <p class="small">${escapeHtml(r.dati_lead_input.note||'')}</p>
         ${(r.screenshots && r.screenshots.length) ? `<div class="row no-print" style="margin-bottom:10px;">${r.screenshots.map(s => `<img class="thumb" style="max-width:100px;max-height:70px;" src="${s.base64}" title="${escapeHtml(s.name)}">`).join("")}</div>` : ""}
         <hr class="divider">
-        ${Object.entries(r.script_generati||{}).map(([k,v]) => `
+        ${Object.entries(r.script_generati||{}).map(([k,v]) => {
+          const isEmail = /^email/i.test(k) || (v && typeof v === "object" && v.oggetto !== undefined);
+          const canale = isEmail ? "email" : (/^whatsapp/i.test(k) ? "whatsapp" : "telefono");
+          const row = (label, kind, text, extra) => `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div style="min-width:0;"><b>${label}</b>${extra||""}<div style="white-space:pre-wrap;">${nl2br(text||'')}</div></div><span class="no-print">${copyBtn(kind, k, r.id)}</span></div>`;
+          return `
           <div class="output-block">
             <h3>${escapeHtml(k)}</h3>
-            ${(v && typeof v === "object")
-              ? `<p><b>Oggetto:</b> ${escapeHtml(v.oggetto||'')}</p><p style="white-space:pre-wrap;">${nl2br(v.corpo||'')}</p>`
-              : `<p style="white-space:pre-wrap;">${nl2br(v)}</p>`}
-          </div>
-        `).join("")}
+            ${contactLineFor(canale, r.dati_lead_input, r.id)}
+            ${isEmail && v && typeof v === "object"
+              ? row("Oggetto", "oggetto", v.oggetto) + row("Corpo", "corpo", v.corpo)
+              : (canale === "whatsapp" ? row("Testo", "text", typeof v === "string" ? v : "") : `<p style="white-space:pre-wrap;">${nl2br(v)}</p>`)}
+          </div>`;
+        }).join("")}
       </div>
     </div>
   `;
