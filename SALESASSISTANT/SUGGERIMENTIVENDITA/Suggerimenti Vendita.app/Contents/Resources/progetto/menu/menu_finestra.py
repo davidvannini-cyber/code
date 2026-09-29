@@ -53,13 +53,14 @@ ALTEZZA = 920
 
 # Percentuale di larghezza (dello schermo principale) e offset da sinistra
 # per la finestra di questo menu: stesso schema usato da apri-console.command
-# (Lead Rework Console, 40%, a sinistra di tutto) e Contents/MacOS/avvia
-# (pannello chiamata, 40%, a destra di tutto) — tre finestre affiancate in
+# (Lead Rework Console, 20%, a sinistra di tutto) e Contents/MacOS/avvia
+# (pannello chiamata, 25%, a destra di tutto) — tre finestre affiancate in
 # proporzioni fisse (scelte dall'utente), invece di finestre sparse di
-# dimensioni diverse. Il menu sta nel mezzo, più stretto: 19%, subito a
-# destra della Lead Rework Console (40%).
-LARGHEZZA_FRAZIONE = 0.19
-OFFSET_FRAZIONE = 0.40
+# dimensioni diverse. Il menu sta nel mezzo: 10%, subito a destra della
+# Lead Rework Console (20%).
+LARGHEZZA_FRAZIONE = 0.15
+OFFSET_FRAZIONE = 0.35
+ALTEZZA_FRAZIONE = 0.60
 
 
 def calcola_rettangolo_finestra():
@@ -74,7 +75,9 @@ def calcola_rettangolo_finestra():
     area = schermo.visibleFrame()
     x = area.origin.x + area.size.width * OFFSET_FRAZIONE
     larghezza = area.size.width * LARGHEZZA_FRAZIONE
-    return NSMakeRect(x, area.origin.y, larghezza, area.size.height)
+    altezza = area.size.height * ALTEZZA_FRAZIONE
+    y = area.size.height - altezza
+    return NSMakeRect(x, y, larghezza, altezza)
 
 AZIONI_VALIDE = {
     "avvia_chiamata_yesmobility",

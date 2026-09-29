@@ -42,16 +42,20 @@ from Foundation import NSURL
 from PyObjCTools import AppHelper
 from WebKit import WKWebView
 
+LARGHEZZA_FRAZIONE = 0.25
+ALTEZZA_FRAZIONE = 0.60
+OFFSET_FRAZIONE = 0.50
 LARGHEZZA = 420
 ALTEZZA = 620
-MARGINE_DAL_BORDO = 24
 
 
 def crea_finestra():
     schermo = NSScreen.mainScreen().frame()
-    x = schermo.size.width - LARGHEZZA - MARGINE_DAL_BORDO
-    y = schermo.size.height - ALTEZZA - MARGINE_DAL_BORDO
-    rettangolo = NSMakeRect(x, y, LARGHEZZA, ALTEZZA)
+    larghezza = int(schermo.size.width * LARGHEZZA_FRAZIONE)
+    altezza = int(schermo.size.height * ALTEZZA_FRAZIONE)
+    x = int(schermo.size.width * OFFSET_FRAZIONE)
+    y = int(schermo.size.height * (1 - ALTEZZA_FRAZIONE))
+    rettangolo = NSMakeRect(x, y, larghezza, altezza)
 
     stile = (
         NSWindowStyleMaskTitled
@@ -73,7 +77,7 @@ def crea_finestra():
     )
     finestra.setReleasedWhenClosed_(False)
 
-    webview = WKWebView.alloc().initWithFrame_(NSMakeRect(0, 0, LARGHEZZA, ALTEZZA))
+    webview = WKWebView.alloc().initWithFrame_(NSMakeRect(0, 0, larghezza, altezza))
     webview.setAutoresizingMask_(NSViewWidthSizable | NSViewHeightSizable)
     finestra.setContentView_(webview)
 
