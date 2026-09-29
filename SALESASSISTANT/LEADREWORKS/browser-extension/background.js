@@ -51,8 +51,8 @@ function openNewConsoleWindow() {
       const primario = (schermi && schermi.find(s => s.isPrimary)) || (schermi && schermi[0]);
       if (!primario) { openWithDefaultSize(); return; }
       const area = primario.workArea;
-      const width = Math.round(area.width * 0.5);
-      const height = Math.round(area.height * 0.6);
+      const width = Math.round(area.width * LARGHEZZA_FRAZIONE_LEAD_REWORK);
+      const height = Math.round(area.height * ALTEZZA_FRAZIONE_LEAD_REWORK);
       chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", left: area.left, top: area.top, width: width, height: height, focused: true }, (win) => {
         if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
         else console.log("[LRW] finestra creata, id:", win && win.id);
@@ -92,8 +92,8 @@ chrome.runtime.onMessage.addListener((msg) => {
             const primario = (schermi && schermi.find(s => s.isPrimary)) || (schermi && schermi[0]);
             if (!primario) return;
             const area = primario.workArea;
-            const width = Math.round(area.width * 0.5);
-            const height = Math.round(area.height * 0.6);
+            const width = Math.round(area.width * LARGHEZZA_FRAZIONE_LEAD_REWORK);
+            const height = Math.round(area.height * ALTEZZA_FRAZIONE_LEAD_REWORK);
             chrome.windows.update(tab.windowId, { focused: true, left: area.left, top: area.top, width: width, height: height });
           });
         }
