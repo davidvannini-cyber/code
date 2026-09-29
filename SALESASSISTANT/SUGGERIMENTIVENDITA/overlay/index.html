@@ -399,6 +399,20 @@
   <div class="footer-copyright">© Designed and krafted by Momandis David Vannini</div>
 
 <script>
+// Posiziona la finestra accanto al menu: 25% larghezza, partenza al 50%, altezza 60%.
+(function () {
+  function posiziona() {
+    var l = screen.availLeft || 0, t = screen.availTop || 0;
+    var w = Math.round(screen.availWidth * 0.25), h = Math.round(screen.availHeight * 0.60);
+    var x = l + Math.round(screen.availWidth * 0.50);
+    try { window.resizeTo(w, h); window.moveTo(x, t); } catch (e) {}
+  }
+  posiziona();
+  setTimeout(posiziona, 300);
+  setTimeout(posiziona, 1200);
+})();
+</script>
+<script>
   const COLORI_FASE = {
     apertura: "var(--colore-apertura)",
     scoperta: "var(--colore-scoperta)",
