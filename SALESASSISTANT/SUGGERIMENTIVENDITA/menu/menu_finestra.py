@@ -76,7 +76,7 @@ def calcola_rettangolo_finestra():
     x = area.origin.x + area.size.width * OFFSET_FRAZIONE
     larghezza = area.size.width * LARGHEZZA_FRAZIONE
     altezza = area.size.height * ALTEZZA_FRAZIONE
-    y = area.origin.y + area.size.height * (1 - ALTEZZA_FRAZIONE)
+    y = area.origin.y + area.size.height - altezza
     return NSMakeRect(x, y, larghezza, altezza)
 
 AZIONI_VALIDE = {
