@@ -25,16 +25,8 @@
     gap: 10px;
   }
   #stato-connessione {
-    position: fixed;
-    top: 10px;
-    right: 16px;
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 12px;
-    background: #e5e5e5;
+    display: none;
   }
-  #stato-connessione.connesso { background: #dcfce7; color: #166534; }
-  #stato-connessione.disconnesso { background: #fee2e2; color: #991b1b; }
 
   .riquadro-logo {
     display: flex;
@@ -52,12 +44,10 @@
   .navbar-overlay {
     display: flex;
     align-items: center;
-    gap: 20px;
     background: #ececf0;
     border-bottom: 1px solid rgba(0,0,0,.08);
     padding: 6px 12px;
     margin-bottom: 10px;
-    justify-content: space-between;
   }
   .navbar-brand {
     font-family: "Manrope", -apple-system, sans-serif;
@@ -71,7 +61,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 0 auto;
+    flex: 1;
+    justify-content: center;
   }
   .audio-label {
     font-size: 9px;
@@ -80,6 +71,24 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     white-space: nowrap;
+  }
+  .navbar-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+  .status-led {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #28c840;
+    flex-shrink: 0;
+  }
+  .status-led.offline {
+    background: #ef4444;
   }
   .audio-label {
     font-size: 9px;
@@ -330,11 +339,15 @@
       <div class="audio-label">Audio</div>
       <select id="selettore-microfono" title="Dispositivo audio in ingresso"></select>
     </div>
+    <div class="navbar-status">
+      <div class="status-led" id="status-led-navbar"></div>
+      <span id="status-text-navbar">connessso</span>
+    </div>
   </div>
 
   <div class="controls-section">
     <button id="pulsante-microfono" class="btn-large" title="Avvia microfono">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2c-1.1 0-2 .9-2 2v7c0 1.1.9 2 2 2s2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
         <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5"/>
         <path d="M12 20v-2"/>
@@ -718,7 +731,7 @@
     ws.onopen = () => {
       elStato.textContent = "connesso";
       elStato.className = "connesso";
-      document.getElementById("status-dot-navbar").className = "status-dot-navbar";
+      document.getElementById("status-led-navbar").className = "status-led";
       document.getElementById("status-text-navbar").textContent = "connessso";
     };
 
@@ -726,7 +739,7 @@
       if (chiamataTerminata) return;
       elStato.textContent = "disconnesso — nuovo tentativo tra 2s";
       elStato.className = "disconnesso";
-      document.getElementById("status-dot-navbar").className = "status-dot-navbar offline";
+      document.getElementById("status-led-navbar").className = "status-led offline";
       document.getElementById("status-text-navbar").textContent = "disconnessso";
       setTimeout(connetti, 2000);
     };
