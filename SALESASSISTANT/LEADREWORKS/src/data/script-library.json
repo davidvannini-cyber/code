@@ -153,7 +153,7 @@
     "titolo": "WhatsApp — promemoria soft dopo tentativi senza risposta",
     "stati_correlati": [7],
     "categoria": "promemoria",
-    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility 🙂 Ho provato a chiamarla in merito alla sua richiesta per [Prodotto] ma non sono riuscito a raggiungerla. Mi scriva pure quando ha un attimo di tempo, o se preferisce mi faccia sapere un orario comodo per richiamarla."
+    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. Ho provato a chiamarla in merito alla sua richiesta per [Prodotto] ma non sono riuscito a raggiungerla. Mi scriva pure quando ha un attimo di tempo, o se preferisce mi faccia sapere un orario comodo per richiamarla."
   },
   {
     "numero": 18,
@@ -171,7 +171,7 @@
     "titolo": "WhatsApp — conferma appuntamento sopralluogo",
     "stati_correlati": [6],
     "categoria": "conferma",
-    "testo": "Buongiorno [Nome], le confermo l'appuntamento con il nostro installatore partner per il sopralluogo di [Prodotto]:\n📅 [Data], ore [Orario]\n📍 [Indirizzo]\nIl tecnico verificherà tutto dal vivo e le darà la conferma definitiva su soluzione e prezzo. Per qualsiasi necessità sono a disposizione, [Nome operatore] — YesMobility."
+    "testo": "Buongiorno [Nome], le confermo l'appuntamento con il nostro installatore partner per il sopralluogo di [Prodotto]:\n[Data], ore [Orario]\n[Indirizzo]\nIl tecnico verificherà tutto dal vivo e le darà la conferma definitiva su soluzione e prezzo. Per qualsiasi necessità sono a disposizione, [Nome operatore] — YesMobility."
   },
   {
     "numero": 20,
@@ -233,7 +233,7 @@
     "titolo": "WhatsApp — primo contatto (apertura, nessuna chiamata precedente)",
     "stati_correlati": ["trasversale"],
     "categoria": "apertura",
-    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility 🙂 Le scrivo perché abbiamo ricevuto la sua richiesta online per [Prodotto]. Lavoriamo con i migliori produttori del settore — Access, Handicare, AreaLifting, Albatross, PVE — e possiamo darle in pochi minuti una prima valutazione di fattibilità e un'idea di prezzo, gratuita e senza impegno. Mi conferma qualche dettaglio in più (tipo di scale, altezza da superare, larghezza) così le rispondo già con un'indicazione?",
+    "testo": "Buongiorno [Nome], sono [Nome operatore] di YesMobility. Le scrivo perché abbiamo ricevuto la sua richiesta online per [Prodotto]. Lavoriamo con i migliori produttori del settore — Access, Handicare, AreaLifting, Albatross, PVE — e possiamo darle in pochi minuti una prima valutazione di fattibilità e un'idea di prezzo, gratuita e senza impegno. Mi conferma qualche dettaglio in più (tipo di scale, altezza da superare, larghezza) così le rispondo già con un'indicazione?",
     "note_interne": "Da usare come primo contatto autonomo via WhatsApp: nessuna telefonata o messaggio precedente è mai avvenuto, non menzionarne nessuno (salvo un contatto fatto pochi minuti prima nello stesso giro di rework)."
   },
   {
