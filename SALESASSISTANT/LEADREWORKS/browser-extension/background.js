@@ -7,7 +7,7 @@
 
 // Percorso fisso del file locale sul Mac dell'utente: se la cartella del progetto
 // viene spostata, questo indirizzo va aggiornato di conseguenza.
-const CONSOLE_FALLBACK_URL = "file:///Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/unified-dashboard.html";
+const CONSOLE_FALLBACK_URL = "file:///Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/dashboard.html";
 
 // Percentuale di larghezza (dello schermo di lavoro primario) e offset da
 // sinistra per questa finestra: stesso schema usato da apri-console.command
