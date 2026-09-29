@@ -1,0 +1,9 @@
+PUNTO DI RIPRISTINO GRAFICA (2026-09-29) - grafica approvata dall'utente
+- overlay/index.html: overlay light, GUIDA CHIAMATA / FRASI CLIENTE, pulsanti raggio 2px
+- menu/menu_finestra.py: menu 15% larghezza, offset 35%, altezza 60%
+- avvia: overlay 25% larghezza, offset 50%, altezza 60%
+
+Ripristino: copiare questi file sia nelle cartelle sorgente (overlay/, menu/)
+sia dentro "Suggerimenti Vendita.app/Contents/Resources/progetto/overlay|menu"
+(l'app usa la copia dentro il bundle), e avvia in Contents/MacOS/.
+Oppure: git checkout grafica-ok-2026-09-29 -- <percorso file>
