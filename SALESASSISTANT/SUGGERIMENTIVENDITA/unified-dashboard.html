@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SALESASSISTANT Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            gap: 0;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .column:last-child {
+            border-right: none;
+        }
+
+        .column-leadreworks {
+            flex: 0 0 25%;
+            background: #f5f5f5;
+        }
+
+        .column-menu {
+            flex: 0 0 15%;
+            background: #ffffff;
+        }
+
+        .column-overlay {
+            flex: 0 0 30%;
+            background: #ffffff;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .column-header {
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fafafa;
+        }
+
+        .column-content {
+            flex: 1;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- LEADREWORKS (25%) -->
+        <div class="column column-leadreworks">
+            <div class="column-header">LEADREWORKS</div>
+            <div class="column-content">
+                <iframe src="file:///Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html"></iframe>
+            </div>
+        </div>
+
+        <!-- MENU (15%) -->
+        <div class="column column-menu">
+            <div class="column-header">MENU</div>
+            <div class="column-content">
+                <iframe src="file:///Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/menu/index.html"></iframe>
+            </div>
+        </div>
+
+        <!-- OVERLAY (30%) -->
+        <div class="column column-overlay">
+            <div class="column-header">OVERLAY</div>
+            <div class="column-content">
+                <iframe src="file:///Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/overlay/index.html"></iframe>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
