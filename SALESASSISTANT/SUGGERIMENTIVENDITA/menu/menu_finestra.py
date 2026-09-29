@@ -72,7 +72,7 @@ def calcola_rettangolo_finestra():
     schermo = NSScreen.mainScreen()
     if schermo is None:
         return NSMakeRect(0, 0, LARGHEZZA, ALTEZZA)
-    area = schermo.visibleFrame()
+    area = schermo.frame()
     x = area.origin.x + area.size.width * OFFSET_FRAZIONE
     larghezza = area.size.width * LARGHEZZA_FRAZIONE
     altezza = area.size.height * ALTEZZA_FRAZIONE
