@@ -883,7 +883,16 @@ avvia_chiamata_comune() {
     col_w=$(( screen_w * 25 / 100 ))
     col_x=$(( screen_w * 50 / 100 ))
     col_h=$(( screen_h * 60 / 100 ))
+
     open -na "Google Chrome" --args --app="$url" --window-position=${col_x},0 --window-size=${col_w},${col_h}
+
+    # Forza il ridimensionamento via osascript, poiché Chrome a volte ignora --window-size
+    sleep 0.5
+    osascript <<APPLE 2>/dev/null
+tell application "Google Chrome"
+  set bounds of front window to {$col_x, 0, $((col_x + col_w)), $col_h}
+end tell
+APPLE
   else
     # Fallback se osascript non è disponibile per qualche motivo: comportamento precedente.
     open -na "Google Chrome" --args --app="$url"
