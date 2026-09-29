@@ -1,0 +1,9 @@
+PUNTO DI RIPRISTINO GRAFICA + POSIZIONE + DIMENSIONI FINESTRE (2026-09-29) - approvato dall'utente
+Tre finestre affiancate, tutte alte 60% dello schermo:
+- LEADREWORKS: 35% larghezza, offset 0   (leadreworks/background.js, lead-rework-console.html)
+- MENU:        15% larghezza, offset 35% (menu/menu_finestra.py)
+- OVERLAY:     25% larghezza, offset 50% (overlay/index.html con script di posizionamento, avvia)
+
+Ripristino: copiare i file nelle cartelle sorgente E dentro
+"Suggerimenti Vendita.app/Contents/Resources/progetto/overlay|menu" (l'app usa la copia nel bundle).
+Oppure: git checkout grafica-posizioni-ok-2026-09-29 -- <percorso file>

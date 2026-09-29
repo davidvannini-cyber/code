@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Suggerimenti Live</title>
+<style>
+  :root {
+    --colore-apertura: #3b82f6;
+    --colore-scoperta: #14b8a6;
+    --colore-presentazione: #8b5cf6;
+    --colore-obiezioni: #f59e0b;
+    --colore-chiusura: #22c55e;
+    --colore-default: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    background: #ffffff;
+    color: #1a1f2e;
+    padding: 16px 24px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #stato-connessione {
+    display: none;
+  }
+
+  .riquadro-logo {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .riquadro-logo img {
+    height: 83px;
+    width: auto;
+    opacity: .95;
+  }
+
+  /* Navbar LEADREWORKS */
+  /* Navbar minimale */
+  .navbar-overlay {
+    display: flex;
+    align-items: center;
+    background: #ececf0;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    padding: 6px 12px;
+    margin-bottom: 10px;
+  }
+  .navbar-brand {
+    font-family: "Manrope", -apple-system, sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    color: #1a1f2e;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .navbar-center {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+  }
+  .audio-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .navbar-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+  .status-led {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #28c840;
+    flex-shrink: 0;
+  }
+  .status-led.offline {
+    background: #ef4444;
+  }
+  .audio-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  #selettore-microfono {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 2px;
+    border: 1px solid #d0d0d8;
+    background: #ffffff;
+    color: #1a1f2e;
+    max-width: 180px;
+  }
+  #selettore-microfono:disabled {
+    opacity: .6;
+  }
+
+  /* Sezione bottoni grandi */
+  .controls-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .btn-large {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 2px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all .12s ease;
+  }
+  .btn-large svg {
+    width: 18px;
+    height: 18px;
+  }
+  #pulsante-microfono {
+    background: #14532d;
+    color: #ffffff;
+  }
+  #pulsante-microfono:hover {
+    background: #0f3d21;
+  }
+  #pulsante-microfono.attivo {
+    background: #14532d;
+    color: #ffffff;
+  }
+  #pulsante-microfono:disabled {
+    opacity: .6;
+    cursor: default;
+  }
+  #pulsante-pausa {
+    border: 1px solid rgba(0,0,0,.12);
+    background: #ffffff;
+    color: #1a1f2e;
+  }
+  #pulsante-pausa:hover {
+    background: #f9f9fb;
+  }
+  #pulsante-pausa.in-pausa {
+    background: #fefce8;
+    border-color: #f59e0b;
+    color: #1c1300;
+  }
+  #pulsante-termina {
+    border: 1px solid rgba(255,95,87,.35);
+    background: rgba(255,95,87,.12);
+    color: #c2392f;
+  }
+  #pulsante-termina:hover {
+    background: rgba(255,95,87,.2);
+  }
+
+  .riquadro {
+    background: #e8e8ec;
+    border-radius: 2px;
+    padding: 12px 18px;
+    border: 1px solid rgba(0,0,0,.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  }
+
+  .riquadro-livello {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    font-size: 10px;
+    color: #6b7280;
+    background: #e8e8ec;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    margin: 0 0 10px 0;
+    width: 100%;
+  }
+  .barra-livello-track {
+    width: 100%;
+    height: 5px;
+    border-radius: 2px;
+    background: #f0f0f4;
+    border: none;
+    overflow: hidden;
+  }
+  .barra-livello-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    background: #d0d0d8;
+    transition: width .08s linear, background-color .15s linear;
+  }
+  .barra-livello-fill.livello-buono { background: #22c55e; }
+  .barra-livello-fill.livello-medio { background: #f59e0b; }
+  .barra-livello-fill.livello-alto { background: #ef4444; }
+
+  #lead-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+  }
+  #lead-info b { color: #1a1f2e; font-weight: 600; }
+  #lead-info .separatore { color: #d0d0d8; }
+
+  /* Canovaccio "Rinforzo Facile Salire": riquadro a parte, sempre visibile
+     per tutta la chiamata (non si sovrascrive con i suggerimenti dal vivo
+     qui sotto, che restano attivi come nel flusso standard). Compare solo
+     se il server manda un messaggio "canovaccio" (solo in questa modalità). */
+  #riquadro-canovaccio {
+    border: 1px solid rgba(20,184,166,.35);
+    background: rgba(20,184,166,.08);
+    flex-shrink: 0;
+  }
+  .etichetta-canovaccio {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #0f766e;
+    margin-bottom: 5px;
+  }
+  #canovaccio-testo {
+    font-size: 12px;
+    line-height: 1.3;
+    color: #1a1f2e;
+  }
+  #canovaccio-testo p {
+    margin: 0 0 5px;
+  }
+  #canovaccio-testo p:last-child {
+    margin-bottom: 0;
+  }
+
+  #fase-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-weight: 600;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--colore-default);
+    margin-bottom: 8px;
+  }
+
+  #suggerimento-principale {
+    font-size: 10px;
+    line-height: 1.3;
+    font-weight: 600;
+    min-height: auto;
+  }
+
+  #suggerimento-alternativo {
+    margin-top: 10px;
+    font-size: 17px;
+    color: #5b7280;
+    min-height: 24px;
+  }
+  #suggerimento-alternativo:before {
+    content: "Alternativa: ";
+    color: #9ca3af;
+  }
+
+  .riquadro-trascrizioni {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .etichetta-trascrizioni {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+  #trascrizioni {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 14px;
+    color: #6b7280;
+  }
+  #trascrizioni .riga {
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+  }
+  #trascrizioni .riga:last-child {
+    color: #1a1f2e;
+    font-weight: 500;
+  }
+
+  .footer-copyright {
+    text-align: center;
+    font-size: 11px;
+    color: #9ca3af;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+  <div id="stato-connessione" class="disconnesso">disconnesso</div>
+
+  <div class="riquadro-logo">
+    <img src="logo-yesmobility.png" alt="YesMobility" onerror="this.parentElement.remove()">
+  </div>
+
+  <div class="navbar-overlay">
+    <div class="navbar-brand">SUGGERIMENTI LIVE</div>
+    <div class="navbar-center">
+      <div class="audio-label">Audio</div>
+      <select id="selettore-microfono" title="Dispositivo audio in ingresso"></select>
+    </div>
+    <div class="navbar-status">
+      <div class="status-led" id="status-led-navbar"></div>
+      <span id="status-text-navbar">connessso</span>
+    </div>
+  </div>
+
+  <div class="controls-section">
+    <button id="pulsante-microfono" class="btn-large" title="Avvia microfono">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2c-1.1 0-2 .9-2 2v7c0 1.1.9 2 2 2s2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V22h2v-4.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+      </svg>
+      Microfono
+    </button>
+    <button id="pulsante-pausa" class="btn-large" style="display:none;" title="Pausa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="6" y="4" width="3" height="16" rx="0.5"/>
+        <rect x="15" y="4" width="3" height="16" rx="0.5"/>
+      </svg>
+      Pausa
+    </button>
+    <button id="pulsante-termina" class="btn-large" style="display:none;" title="Termina chiamata">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        <line x1="3" y1="3" x2="21" y2="21"/>
+      </svg>
+      Termina
+    </button>
+  </div>
+
+  <div class="riquadro-livello" id="riquadro-livello">
+    <span>Segnale in ingresso</span>
+    <div class="barra-livello-track"><div class="barra-livello-fill" id="livello-fill"></div></div>
+  </div>
+
+  <div class="riquadro" id="lead-info">
+    <span>Nome: <b id="lead-nome">—</b></span>
+    <span class="separatore">·</span>
+    <span>Numero di telefono: <b id="lead-telefono">—</b></span>
+  </div>
+
+  <div class="riquadro" id="riquadro-canovaccio" style="display:none;">
+    <div class="etichetta-canovaccio">Guida chiamata</div>
+    <div id="canovaccio-testo"></div>
+  </div>
+
+  <div class="riquadro">
+    <div id="fase-badge">in attesa</div>
+    <div id="suggerimento-principale">In attesa del primo suggerimento…</div>
+    <div id="suggerimento-alternativo" style="display:none;"></div>
+  </div>
+
+  <div class="riquadro riquadro-trascrizioni">
+    <div class="etichetta-trascrizioni">FRASI CLIENTE</div>
+    <div id="trascrizioni"></div>
+  </div>
+
+  <div class="footer-copyright">© Designed and krafted by Momandis David Vannini</div>
+
+<script>
+// Posiziona la finestra accanto al menu: 25% larghezza, partenza al 50%, altezza 60%.
+(function () {
+  function posiziona() {
+    var l = screen.availLeft || 0, t = screen.availTop || 0;
+    var w = Math.round(screen.availWidth * 0.25), h = Math.round(screen.availHeight * 0.60);
+    var x = l + Math.round(screen.availWidth * 0.50);
+    try { window.resizeTo(w, h); window.moveTo(x, t); } catch (e) {}
+  }
+  posiziona();
+  setTimeout(posiziona, 300);
+  setTimeout(posiziona, 1200);
+})();
+</script>
+<script>
+  const COLORI_FASE = {
+    apertura: "var(--colore-apertura)",
+    scoperta: "var(--colore-scoperta)",
+    presentazione: "var(--colore-presentazione)",
+    obiezioni: "var(--colore-obiezioni)",
+    chiusura: "var(--colore-chiusura)",
+  };
+
+  const elStato = document.getElementById("stato-connessione");
+  const elStatusDot = document.getElementById("status-dot-navbar");
+  const elStatusText = document.getElementById("status-text-navbar");
+  const elFaseBadge = document.getElementById("fase-badge");
+  const elPrincipale = document.getElementById("suggerimento-principale");
+  const elAlternativo = document.getElementById("suggerimento-alternativo");
+  const elTrascrizioni = document.getElementById("trascrizioni");
+  const elLeadNome = document.getElementById("lead-nome");
+  const elLeadTelefono = document.getElementById("lead-telefono");
+  const elBottoneMic = document.getElementById("pulsante-microfono");
+  const elBottonePausa = document.getElementById("pulsante-pausa");
+  const elBottoneTermina = document.getElementById("pulsante-termina");
+  const elSelettoreMic = document.getElementById("selettore-microfono");
+  const elRiquadroLivello = document.getElementById("riquadro-livello");
+  const elLivelloFill = document.getElementById("livello-fill");
+
+  let wsCorrente = null;
+  let microfonoInPausa = false;
+  let chiamataTerminata = false;
+  let streamCorrente = null;
+
+  // ---------- Scelta del dispositivo audio in ingresso --------------------
+  //
+  // Senza questo selettore, getUserMedia cattura sempre il dispositivo di
+  // ingresso di DEFAULT del sistema/browser: se il connettore esterno (es.
+  // un'interfaccia che porta l'audio della telefonata nel Mac) non è quello
+  // predefinito, il motore di suggerimento continua ad ascoltare il
+  // microfono integrato senza che ce ne sia evidenza visibile. La pagina è
+  // aperta in modalità "app" (niente barra indirizzi), quindi l'operatore
+  // non può scegliere il dispositivo dalle impostazioni del sito in Chrome:
+  // la scelta va offerta qui, direttamente nella pagina.
+  const CHIAVE_DISPOSITIVO = "suggerimentivendita_deviceId_microfono";
+  let dispositivoSelezionato = localStorage.getItem(CHIAVE_DISPOSITIVO) || "";
+
+  async function popolaDispositiviAudio() {
+    try {
+      const dispositivi = await navigator.mediaDevices.enumerateDevices();
+      const ingressi = dispositivi.filter((d) => d.kind === "audioinput");
+      if (ingressi.length === 0) return;
+      const valorePrecedente = elSelettoreMic.value || dispositivoSelezionato;
+      elSelettoreMic.innerHTML = "";
+      // Opzione sempre presente, prima della lista: nessun vincolo di
+      // deviceId passato a getUserMedia, segue quindi la sorgente che macOS
+      // considera di volta in volta predefinita (compreso lo switch
+      // automatico sul jack quando ci si collega/scollega qualcosa) — è il
+      // comportamento che c'era PRIMA di questo selettore. Senza questa
+      // opzione esplicita, la prima volta che la pagina si apre senza una
+      // scelta salvata finiva per agganciarsi comunque al primo dispositivo
+      // dell'elenco (spesso il microfono integrato), perdendo lo switch
+      // automatico e restando bloccata lì anche alle chiamate successive.
+      const opzionePredefinita = document.createElement("option");
+      opzionePredefinita.value = "";
+      opzionePredefinita.textContent = "Predefinito di sistema (segue il Mac)";
+      elSelettoreMic.appendChild(opzionePredefinita);
+      ingressi.forEach((d, indice) => {
+        const opzione = document.createElement("option");
+        opzione.value = d.deviceId;
+        opzione.textContent = d.label || `Ingresso audio ${indice + 1}`;
+        elSelettoreMic.appendChild(opzione);
+      });
+      const trovato = valorePrecedente === "" || ingressi.some((d) => d.deviceId === valorePrecedente);
+      elSelettoreMic.value = trovato ? valorePrecedente : "";
+      dispositivoSelezionato = elSelettoreMic.value;
+    } catch (errore) {
+      // enumerateDevices prima di un primo permesso concesso può fallire o
+      // restituire etichette vuote: non è un errore da mostrare, la lista
+      // si aggiorna da sola dopo il primo avvio riuscito del microfono.
+    }
+  }
+
+  function fermaMicrofono() {
+    if (contestoAudio) { contestoAudio.close(); contestoAudio = null; }
+    if (streamCorrente) { streamCorrente.getTracks().forEach((t) => t.stop()); streamCorrente = null; }
+    elRiquadroLivello.style.display = "none";
+    elLivelloFill.style.width = "0%";
+    elLivelloFill.className = "barra-livello-fill";
+    livelloSmussato = 0;
+  }
+
+  // ---------- Spia del livello di segnale in ingresso ----------------------
+  //
+  // Serve solo a capire a colpo d'occhio se qualcosa sta davvero arrivando
+  // dal dispositivo scelto (utile per diagnosticare un jack/splitter che non
+  // porta il segnale, senza dover aprire le Preferenze di Sistema): non è
+  // legata all'invio dei suggerimenti, resta attiva anche durante la pausa.
+  let livelloSmussato = 0;
+  function aggiornaLivelloMicrofono(campioni) {
+    let picco = 0;
+    for (let i = 0; i < campioni.length; i++) {
+      const v = Math.abs(campioni[i]);
+      if (v > picco) picco = v;
+    }
+    // Salita immediata, discesa morbida: altrimenti col parlato normale la
+    // barra lampeggerebbe in modo illeggibile invece di restare leggibile.
+    livelloSmussato = picco > livelloSmussato ? picco : livelloSmussato * 0.85;
+    elLivelloFill.style.width = Math.min(100, Math.round(livelloSmussato * 140)) + "%";
+    let classe = "";
+    if (livelloSmussato >= 0.55) classe = "livello-alto";
+    else if (livelloSmussato >= 0.2) classe = "livello-medio";
+    else if (livelloSmussato >= 0.02) classe = "livello-buono";
+    elLivelloFill.className = "barra-livello-fill " + classe;
+  }
+
+  elSelettoreMic.addEventListener("change", async () => {
+    dispositivoSelezionato = elSelettoreMic.value;
+    localStorage.setItem(CHIAVE_DISPOSITIVO, dispositivoSelezionato);
+    if (chiamataTerminata) return;
+    // Cambio dispositivo "a caldo": ferma la cattura corrente e riavvia
+    // subito con il nuovo ingresso, senza toccare la connessione WebSocket
+    // (i suggerimenti restano attivi durante il cambio).
+    fermaMicrofono();
+    elBottoneMic.classList.remove("attivo");
+    await avviaMicrofono(false);
+  });
+
+  if (navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener("devicechange", popolaDispositiviAudio);
+  }
+  popolaDispositiviAudio();
+
+  // ---------- Cattura microfono dal browser -------------------------------
+  //
+  // Il permesso del microfono lo chiede il BROWSER (Safari/Chrome), non la
+  // nostra app: niente problemi di firma/permessi di sistema. L'audio
+  // catturato viene ricampionato a 16kHz mono (formato atteso da Deepgram)
+  // e mandato come frame binari sullo stesso WebSocket già usato per
+  // ricevere i suggerimenti — il server lo inoltra a Deepgram al posto del
+  // microfono via Python.
+  const SAMPLE_RATE_DEEPGRAM = 16000;
+  let contestoAudio = null;
+
+  function ricampiona(input, tassoOriginale, tassoDestinazione) {
+    if (tassoOriginale === tassoDestinazione) return input;
+    const rapporto = tassoOriginale / tassoDestinazione;
+    const lunghezzaOutput = Math.floor(input.length / rapporto);
+    const output = new Float32Array(lunghezzaOutput);
+    for (let i = 0; i < lunghezzaOutput; i++) {
+      const posizione = i * rapporto;
+      const indice = Math.floor(posizione);
+      const frazione = posizione - indice;
+      const campioneA = input[indice] || 0;
+      const campioneB = input[indice + 1] !== undefined ? input[indice + 1] : campioneA;
+      output[i] = campioneA + (campioneB - campioneA) * frazione;
+    }
+    return output;
+  }
+
+  function float32AInt16(input) {
+    const output = new Int16Array(input.length);
+    for (let i = 0; i < input.length; i++) {
+      const s = Math.max(-1, Math.min(1, input[i]));
+      output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    }
+    return output;
+  }
+
+  async function avviaMicrofono(automatico) {
+    elBottoneMic.disabled = true;
+    elBottoneMic.textContent = "Richiedo permesso…";
+    let stream = null;
+    try {
+      // autoGainControl chiesto esplicitamente: normalizza già a livello di
+      // sistema operativo un segnale "caldo" come quello in uscita da un
+      // telefono (pensato per un altoparlante, non per un microfono) — si
+      // affianca al limiter software più sotto (DynamicsCompressorNode),
+      // che interviene sui picchi residui che l'AGC del sistema non copre.
+      const vincoliBase = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+      const vincoliAudio = dispositivoSelezionato
+        ? Object.assign({ deviceId: { exact: dispositivoSelezionato } }, vincoliBase)
+        : vincoliBase;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: vincoliAudio });
+      } catch (erroreDispositivo) {
+        // Il dispositivo salvato potrebbe non essere più disponibile (es.
+        // connettore scollegato): non blocchiamo l'avvio, ripieghiamo sul
+        // default e lasciamo che l'operatore scelga di nuovo dalla lista.
+        if (dispositivoSelezionato) {
+          dispositivoSelezionato = "";
+          stream = await navigator.mediaDevices.getUserMedia({ audio: vincoliBase });
+        } else {
+          throw erroreDispositivo;
+        }
+      }
+      streamCorrente = stream;
+      popolaDispositiviAudio();
+      contestoAudio = new (window.AudioContext || window.webkitAudioContext)();
+
+      // I browser sospendono automaticamente ogni AudioContext creato senza
+      // un gesto utente diretto (policy anti-autoplay): getUserMedia può
+      // riuscire comunque (se il permesso era già stato concesso in
+      // passato), dando l'illusione che il microfono sia attivo mentre in
+      // realtà onaudioprocess non scatta mai e non parte nessun byte verso
+      // il server. Va quindi verificato esplicitamente lo stato del
+      // contesto, non solo che getUserMedia sia andato a buon fine.
+      if (contestoAudio.state === "suspended") {
+        await contestoAudio.resume().catch(() => {});
+      }
+      if (contestoAudio.state !== "running") {
+        throw Object.assign(new Error("Il browser ha bloccato l'avvio automatico dell'audio."), { sospeso: true });
+      }
+
+      const sorgente = contestoAudio.createMediaStreamSource(stream);
+
+      // Limiter software: appiattisce i picchi residui che l'autoGainControl
+      // del sistema non riesce a coprire (tipico con un segnale "di linea"
+      // come l'uscita di un telefono, più caldo di un microfono normale).
+      // Agisce sia su ciò che vede la spia di livello sia su ciò che viene
+      // trascritto, riducendo il rischio di saturazione senza appiattire
+      // troppo la voce (soglia e ratio tarati come un limiter morbido, non
+      // una compressione pesante).
+      const compressore = contestoAudio.createDynamicsCompressor();
+      compressore.threshold.value = -24;
+      compressore.knee.value = 12;
+      compressore.ratio.value = 12;
+      compressore.attack.value = 0.003;
+      compressore.release.value = 0.25;
+
+      const nodoScript = contestoAudio.createScriptProcessor(4096, 1, 1);
+      const silenzio = contestoAudio.createGain();
+      silenzio.gain.value = 0; // non far sentire in altoparlante quello che cattura
+
+      nodoScript.onaudioprocess = (evento) => {
+        const campioni = evento.inputBuffer.getChannelData(0);
+        aggiornaLivelloMicrofono(campioni);
+        if (microfonoInPausa) return;
+        if (!wsCorrente || wsCorrente.readyState !== WebSocket.OPEN) return;
+        const ridotti = ricampiona(campioni, contestoAudio.sampleRate, SAMPLE_RATE_DEEPGRAM);
+        const pcm16 = float32AInt16(ridotti);
+        wsCorrente.send(pcm16.buffer);
+      };
+
+      sorgente.connect(compressore);
+      compressore.connect(nodoScript);
+      nodoScript.connect(silenzio);
+      silenzio.connect(contestoAudio.destination);
+
+      elRiquadroLivello.style.display = "flex";
+      elBottoneMic.textContent = "Microfono attivo";
+      elBottoneMic.classList.add("attivo");
+      elBottonePausa.style.display = "inline-flex";
+      elBottoneTermina.style.display = "inline-flex";
+    } catch (errore) {
+      elBottoneMic.disabled = false;
+      elBottoneMic.textContent = "Avvia microfono";
+      if (stream) stream.getTracks().forEach((traccia) => traccia.stop());
+      streamCorrente = null;
+      if (contestoAudio) { contestoAudio.close(); contestoAudio = null; }
+      elRiquadroLivello.style.display = "none";
+      // Il primo tentativo è automatico, alla sola apertura della pagina: se
+      // il permesso non è ancora stato concesso, o il browser ha sospeso il
+      // contesto audio perché manca un gesto utente, i browser bloccano il
+      // tentativo senza un click umano — è normale, non un errore da
+      // mostrare. Un errore vero lo mostriamo solo dopo un click esplicito
+      // (che è un gesto utente valido, quindi qui l'avvio dovrebbe riuscire).
+      if (!automatico) {
+        elPrincipale.textContent = errore.sospeso
+          ? "Il browser ha bloccato l'avvio del microfono: clicca di nuovo \"Avvia microfono\"."
+          : "Permesso microfono negato o non disponibile: " + errore.message;
+      }
+    }
+  }
+
+  function togglePausa() {
+    microfonoInPausa = !microfonoInPausa;
+    elBottonePausa.textContent = microfonoInPausa ? "Riprendi" : "Pausa";
+    elBottonePausa.classList.toggle("in-pausa", microfonoInPausa);
+  }
+
+  function terminaChiamata() {
+    elBottoneTermina.disabled = true;
+    elBottonePausa.disabled = true;
+    // Chiude questa chiamata (il server resta acceso, pronto per la
+    // prossima — vedi server_suggerimenti.py). chiamataTerminata blocca il
+    // riconnetti automatico qui sotto: altrimenti, siccome il server non
+    // muore più a fine chiamata, un tentativo di riconnessione andrebbe a
+    // buon fine e riavvierebbe silenziosamente una chiamata (microfono
+    // incluso) alcuni secondi dopo aver premuto questo pulsante, nel caso
+    // in cui il browser non riesca a chiudere da solo questa scheda.
+    chiamataTerminata = true;
+    if (wsCorrente && wsCorrente.readyState === WebSocket.OPEN) {
+      wsCorrente.send(JSON.stringify({ tipo: "termina" }));
+      wsCorrente.close();
+    }
+    fermaMicrofono();
+    elSelettoreMic.disabled = true;
+    elBottoneMic.textContent = "Chiamata terminata";
+    elBottonePausa.style.display = "none";
+    elBottoneTermina.style.display = "none";
+    elPrincipale.textContent = "Chiamata terminata. Puoi chiudere questa scheda.";
+    elAlternativo.style.display = "none";
+
+    // Prova a chiudere la scheda da sola: i browser lo permettono solo per
+    // schede aperte da uno script, quindi qui potrebbe non funzionare (una
+    // scheda aperta dall'app non è "sua" secondo il browser) — in quel
+    // caso resta comunque il messaggio sopra per chiuderla a mano.
+    setTimeout(() => window.close(), 300);
+  }
+
+  elBottoneMic.addEventListener("click", () => avviaMicrofono(false));
+  elBottonePausa.addEventListener("click", togglePausa);
+  elBottoneTermina.addEventListener("click", terminaChiamata);
+
+  // Ci prova da sola all'apertura della pagina: se il permesso è già stato
+  // concesso in passato per questa pagina, parte subito senza dover
+  // cliccare nulla. Se è la primissima volta, il browser blocca il
+  // tentativo automatico e resta il pulsante da premere una volta sola.
+  avviaMicrofono(true);
+
+  // Letto dall'URL con cui è stata aperta questa pagina (vedi
+  // Contents/MacOS/avvia, avvia_chiamata_comune): distingue "Chiamata
+  // YesMobility" (vuoto, flusso standard) da "Rinforzo Facile Salire"
+  // (mostra subito un suggerimento iniziale dedicato, vedi
+  // server_suggerimenti.py).
+  const PARAMETRO_AVVIO = new URLSearchParams(window.location.search).get("avvio") || "";
+
+  function connetti() {
+    const ws = new WebSocket("ws://localhost:8765/?avvio=" + encodeURIComponent(PARAMETRO_AVVIO));
+    wsCorrente = ws;
+
+    ws.onopen = () => {
+      elStato.textContent = "connesso";
+      elStato.className = "connesso";
+      document.getElementById("status-led-navbar").className = "status-led";
+      document.getElementById("status-text-navbar").textContent = "connessso";
+    };
+
+    ws.onclose = () => {
+      if (chiamataTerminata) return;
+      elStato.textContent = "disconnesso — nuovo tentativo tra 2s";
+      elStato.className = "disconnesso";
+      document.getElementById("status-led-navbar").className = "status-led offline";
+      document.getElementById("status-text-navbar").textContent = "disconnessso";
+      setTimeout(connetti, 2000);
+    };
+
+    ws.onerror = () => ws.close();
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.tipo === "init") {
+        // In modalità "gestione_lead" nome/telefono arrivano dal lead CRM
+        // reale, iniettati direttamente nel DOM dal content script
+        // dell'estensione (vedi suggerimenti-vendita-content.js) — qui non
+        // vanno mai sovrascritti con il lead statico di esempio caricato
+        // lato server (--contesto), altrimenti un dato vero appena arrivato
+        // rischia di essere cancellato da un nome/numero finti al primo
+        // messaggio "init" ricevuto dal server.
+        if (PARAMETRO_AVVIO !== "gestione_lead") {
+          const lead = msg.lead || {};
+          elLeadNome.textContent = lead.nome || "—";
+          elLeadTelefono.textContent = lead.telefono || "—";
+        }
+      }
+
+      if (msg.tipo === "canovaccio") {
+        const contenitore = document.getElementById("canovaccio-testo");
+        contenitore.textContent = "";
+        msg.testo.split(/\n\s*\n/).forEach((paragrafo) => {
+          const p = document.createElement("p");
+          p.textContent = paragrafo.trim();
+          contenitore.appendChild(p);
+        });
+        document.getElementById("riquadro-canovaccio").style.display = "block";
+      }
+
+      if (msg.tipo === "trascrizione") {
+        const riga = document.createElement("div");
+        riga.className = "riga";
+        riga.textContent = msg.testo;
+        elTrascrizioni.appendChild(riga);
+        elTrascrizioni.scrollTop = elTrascrizioni.scrollHeight;
+      }
+
+      if (msg.tipo === "suggerimento") {
+        elFaseBadge.textContent = msg.fase_chiamata;
+        elFaseBadge.style.background = COLORI_FASE[msg.fase_chiamata] || "var(--colore-default)";
+        elPrincipale.textContent = msg.testo_suggerimento;
+        if (msg.testo_alternativo) {
+          elAlternativo.textContent = msg.testo_alternativo;
+          elAlternativo.style.display = "block";
+        } else {
+          elAlternativo.style.display = "none";
+        }
+      }
+
+      if (msg.tipo === "nessun_suggerimento") {
+        elPrincipale.textContent = "Nessuno script pertinente per l'ultima frase.";
+        elAlternativo.style.display = "none";
+      }
+    };
+  }
+
+  connetti();
+</script>
+
+</body>
+</html>
