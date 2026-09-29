@@ -23,7 +23,7 @@ const ALTEZZA_FRAZIONE_LEAD_REWORK = 0.60;
 // "workArea" esclude già barra menu e Dock. Se l'API non è disponibile per
 // qualche motivo, un rettangolo fisso di fallback (i valori usati prima di
 // questa funzionalità).
-function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, callback) {
+function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, altezzaFrazione, callback) {
   if (chrome.system && chrome.system.display && chrome.system.display.getInfo) {
     chrome.system.display.getInfo((schermi) => {
       const primario = (schermi && schermi.find(s => s.isPrimary)) || (schermi && schermi[0]);
@@ -33,7 +33,7 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, callback) 
         left: area.left + Math.round(area.width * offsetFrazione),
         top: area.top,
         width: Math.round(area.width * larghezzaFrazione),
-        height: area.height
+        height: Math.round(area.height * altezzaFrazione)
       });
     });
   } else {
@@ -46,7 +46,7 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, callback) 
 // modalità --app, quella è disponibile solo da riga di comando, vedi apri-console.command).
 function openNewConsoleWindow() {
   console.log("[LRW] apro una nuova finestra:", CONSOLE_FALLBACK_URL);
-  calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
+  calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, ALTEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
     chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", left: rect.left, top: rect.top, width: rect.width, height: rect.height, focused: true }, (win) => {
       if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
       else console.log("[LRW] finestra creata, id:", win && win.id);
@@ -72,7 +72,7 @@ chrome.runtime.onMessage.addListener((msg) => {
         // non serve più mandare un messaggio a un content script che potrebbe non
         // essere più collegato.
         const tab = tabs[0];
-        calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
+        calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, ALTEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
           chrome.windows.update(tab.windowId, { focused: true, left: rect.left, top: rect.top, width: rect.width, height: rect.height });
         });
         chrome.tabs.update(tab.id, { active: true });
