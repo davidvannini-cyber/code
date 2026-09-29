@@ -47,7 +47,7 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, altezzaFra
 function openNewConsoleWindow() {
   console.log("[LRW] apro una nuova finestra:", CONSOLE_FALLBACK_URL);
   calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, ALTEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
-    chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", left: rect.left, top: rect.top, width: rect.width, height: rect.height, focused: true }, (win) => {
+    chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", left: rect.left, top: rect.top, width: 1600, height: rect.height, focused: true }, (win) => {
       if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
       else console.log("[LRW] finestra creata, id:", win && win.id);
     });
@@ -73,7 +73,7 @@ chrome.runtime.onMessage.addListener((msg) => {
         // essere più collegato.
         const tab = tabs[0];
         calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, ALTEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
-          chrome.windows.update(tab.windowId, { focused: true, left: rect.left, top: rect.top, width: rect.width, height: rect.height });
+          chrome.windows.update(tab.windowId, { focused: true, left: rect.left, top: rect.top, width: 1600, height: rect.height });
         });
         chrome.tabs.update(tab.id, { active: true });
         chrome.tabs.reload(tab.id);
