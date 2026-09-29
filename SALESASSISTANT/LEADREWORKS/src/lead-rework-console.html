@@ -178,6 +178,7 @@ const COMPANY_PROFILE_DEFAULT = {
 // ricordato di editare un campo testo. Gli esempi vietati sono presi da un caso reale generato
 // dall'AI e segnalato dall'utente come inaccettabile.
 const HARD_COMPLIANCE_RULES = [
+  "Il cliente va SEMPRE chiamato per COGNOME preceduto da 'Sig.' (uomo) o 'Sig.ra' (donna), es. 'Sig. Rossi' / 'Sig.ra Verdi' (nel campo DATI LEAD trovi 'appellativo_cliente' già calcolato: usalo, correggendolo solo se dal nome è evidente che l'ordine nome/cognome o il genere è sbagliato). MAI il solo nome di battesimo, MAI nome e cognome insieme, MAI 'signor'/'signora' per esteso. Se il nome del cliente non è noto, non inventarlo e usa una formula neutra ('Buongiorno,').",
   "Negli script WhatsApp NON usare MAI emoji, emoticon o smiley (nemmeno 🙂, 📅, 📍 o simili): solo testo semplice.",
   "YesMobility non ha MAI parlato con questo cliente prima d'ora, in nessun canale. Frasi come 'la ricontatto', 'la richiamo', 'ricordo che l'ultima volta...', 'come detto la volta scorsa' riferite a un contatto YesMobility precedente sono VIETATE sempre — anche se lo stato del lead nel CRM si chiama 'trattativa persa' o 'ultimo richiamo': sono nomi interni di fase, non prove di una telefonata YesMobility già avvenuta. Unica eccezione: riferirsi a una chiamata/messaggio fatto pochi minuti prima nello STESSO giro di rework (es. un'email di riepilogo dopo la telefonata di oggi).",
   "Non inventare MAI un comportamento, uno stato d'animo o una frase passata attribuita al cliente che non è scritta esplicitamente nei dati del lead forniti nel prompt (note, storico, motivazione). Esempio REALE VIETATO, generato per errore e da non ripetere mai più: 'ricordo che l'ultima volta era stato sommerso di chiamate e aveva preferito prendersi un po' di tempo prima di valutare'. Se un motivo o un contesto non è nei dati forniti, lo script resta generico — non va mai inventata una spiegazione plausibile per riempire il vuoto.",
@@ -1358,10 +1359,28 @@ window.addEventListener("message", (ev) => {
    GENERAZIONE SCRIPT (sample)
    ========================================================= */
 
+const SURNAME_PARTICLES = ["de","di","del","della","dei","degli","delle","dal","dalla","dai","da","dello","la","lo","le","li","van","von","mc","mac","d'","dell'","dall'"];
+const MALE_NAMES_IN_A = ["andrea","luca","nicola","mattia","elia","tobia","enea","gianluca","pierluca","battista","giovannibattista","gianbattista","cosma","sacha","joshua","noah","ezra","jona","gioacchino"];
+const FEMALE_NAMES_NOT_IN_A = ["carmen","miriam","ester","irene","agnese","alice","beatrice","noemi","nicole","denise","rachele","elisabeth","isabel","ines","mercedes","consuelo","michelle","doris","judith","ruth","ilary","marilyn","siria","aurore","sophie"];
+function titleCaseWord(w){ return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w; }
+function customerAppellative(nomeRaw){
+  let toks = String(nomeRaw||"").replace(/[,;]+/g," ").trim().split(/\s+/).filter(Boolean);
+  let titleFemale = false;
+  while (toks.length && /^(sig|sig\.|sig\.ra|sigra|sig\.na|signor|signora|signorina|dott|dott\.|dott\.ssa|dottor|dottoressa|ing|ing\.|avv|avv\.|geom|geom\.|rag|rag\.|prof|prof\.|professor|professoressa|gent\.?mo|gentile|egr\.?)$/i.test(toks[0])){ if (/^(sig\.ra|sigra|sig\.na|signora|signorina|dott\.ssa|dottoressa|professoressa)$/i.test(toks[0])) titleFemale = true; toks.shift(); }
+  if (!toks.length) return "";
+  let surnameStart = toks.length - 1;
+  while (surnameStart > 1 && SURNAME_PARTICLES.includes(toks[surnameStart-1].toLowerCase())) surnameStart--;
+  const surname = toks.slice(surnameStart).map(titleCaseWord).join(" ");
+  if (toks.length === 1) return (titleFemale ? "Sig.ra " : "Sig. ") + surname;
+  const first = toks[0].toLowerCase();
+  const female = titleFemale || FEMALE_NAMES_NOT_IN_A.includes(first) || (/a$/.test(first) && !MALE_NAMES_IN_A.includes(first));
+  return (female ? "Sig.ra " : "Sig. ") + surname;
+}
+
 function placeholderMap(){
   const d = state.draft, p = state.profile;
   return {
-    "[Nome]": d.nome || "[Nome]",
+    "[Nome]": customerAppellative(d.nome) || "[Nome]",
     "[Nome operatore]": p.nome_operatore || "[Nome operatore]",
     "[Prodotto]": d.prodotto || "[Prodotto]",
     "[Prezzo]": d.prezzo_esistente || "[Prezzo]",
@@ -1445,7 +1464,7 @@ function buildSystemPrompt(){
     "Per i canali telefono/whatsapp il valore è una stringa con lo script pronto. Per i canali email il valore è un oggetto {\"oggetto\":\"...\",\"corpo\":\"...\"}.",
     "Sostituisci i placeholder con i dati reali del lead dove disponibili; se un dato manca, lascia il placeholder standard (es. [Prezzo]).",
     "",
-    "ULTIMO CONTROLLO PRIMA DI RISPONDERE: rileggi il testo che stai per restituire e verifica riga per riga che rispetti tutte e 6 le REGOLE ASSOLUTE indicate in cima a questo prompt (nessun contatto YesMobility precedente, nessun dettaglio inventato, nessuna informazione interna rivelata, chiusura che punta all'accordo e non solo a un sopralluogo, nessun nome dell'installatore/partner locale rivelato, autocontrollo fatto). Se una riga viola anche solo una regola, riscrivila prima di restituire l'output."
+    "ULTIMO CONTROLLO PRIMA DI RISPONDERE: rileggi il testo che stai per restituire e verifica riga per riga che rispetti tutte le REGOLE ASSOLUTE indicate in cima a questo prompt (il cliente è chiamato per cognome con Sig./Sig.ra, nessun contatto YesMobility precedente, nessun dettaglio inventato, nessuna informazione interna rivelata, chiusura che punta all'accordo e non solo a un sopralluogo, nessun nome dell'installatore/partner locale rivelato, autocontrollo fatto). Se una riga viola anche solo una regola, riscrivila prima di restituire l'output."
   ].join("\n");
 }
 
@@ -1470,7 +1489,7 @@ function buildUserPrompt(){
     "",
     "DATI LEAD:",
     JSON.stringify({
-      nome: d.nome, prodotto: d.prodotto, zona: d.zona, note: d.note, storico: d.storico,
+      nome: d.nome, appellativo_cliente: customerAppellative(d.nome) || undefined, prodotto: d.prodotto, zona: d.zona, note: d.note, storico: d.storico,
       prezzo_esistente: d.prezzo_esistente, motivazione_rifiuto: d.motivazione_rifiuto,
       data_appuntamento: d.data_appuntamento, orario_appuntamento: d.orario_appuntamento,
       indirizzo: d.indirizzo, tempistica: d.tempistica,
