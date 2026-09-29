@@ -46,11 +46,26 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, altezzaFra
 // modalità --app, quella è disponibile solo da riga di comando, vedi apri-console.command).
 function openNewConsoleWindow() {
   console.log("[LRW] apro una nuova finestra:", CONSOLE_FALLBACK_URL);
-  calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, ALTEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
-    chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", left: rect.left, top: rect.top, width: 1600, height: rect.height, focused: true }, (win) => {
-      if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
-      else console.log("[LRW] finestra creata, id:", win && win.id);
+  if (chrome.system && chrome.system.display && chrome.system.display.getInfo) {
+    chrome.system.display.getInfo((schermi) => {
+      const primario = (schermi && schermi.find(s => s.isPrimary)) || (schermi && schermi[0]);
+      if (!primario) { openWithDefaultSize(); return; }
+      const area = primario.workArea;
+      const width = Math.round(area.width * 0.5);
+      const height = Math.round(area.height * 0.6);
+      chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", left: area.left, top: area.top, width: width, height: height, focused: true }, (win) => {
+        if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
+        else console.log("[LRW] finestra creata, id:", win && win.id);
+      });
     });
+  } else {
+    openWithDefaultSize();
+  }
+}
+
+function openWithDefaultSize() {
+  chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", width: 800, height: 700, focused: true }, (win) => {
+    if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
   });
 }
 
@@ -72,9 +87,16 @@ chrome.runtime.onMessage.addListener((msg) => {
         // non serve più mandare un messaggio a un content script che potrebbe non
         // essere più collegato.
         const tab = tabs[0];
-        calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, ALTEZZA_FRAZIONE_LEAD_REWORK, (rect) => {
-          chrome.windows.update(tab.windowId, { focused: true, left: rect.left, top: rect.top, width: 1600, height: rect.height });
-        });
+        if (chrome.system && chrome.system.display && chrome.system.display.getInfo) {
+          chrome.system.display.getInfo((schermi) => {
+            const primario = (schermi && schermi.find(s => s.isPrimary)) || (schermi && schermi[0]);
+            if (!primario) return;
+            const area = primario.workArea;
+            const width = Math.round(area.width * 0.5);
+            const height = Math.round(area.height * 0.6);
+            chrome.windows.update(tab.windowId, { focused: true, left: area.left, top: area.top, width: width, height: height });
+          });
+        }
         chrome.tabs.update(tab.id, { active: true });
         chrome.tabs.reload(tab.id);
       } else {
