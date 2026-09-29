@@ -77,6 +77,7 @@
   .btn-secondary{background:var(--output-field-bg);color:var(--output-field-text);border:1px solid var(--border);} .btn-secondary:hover{background:#b8ece3;}
   .btn-danger{background:rgba(255,95,87,.12);color:#c2392f;border:1px solid rgba(255,95,87,.35);} .btn-danger:hover{background:rgba(255,95,87,.2);}
   .btn-ghost{background:transparent;color:var(--primary);padding:4px 8px;} .btn-ghost:hover{background:rgba(0,0,0,.04);border-radius:2px;}
+  .copy-btn{font-size:10px;padding:2px 6px;white-space:nowrap;}
   button:disabled{opacity:.5;cursor:not-allowed;}
   .chip{display:inline-flex;align-items:center;gap:6px;background:#1f2430;color:#9ca3af;border-radius:2px;padding:5px 14px;font-size:9px;cursor:pointer;user-select:none;border:1px solid rgba(255,255,255,.08);font-weight:600;}
   .chip.on{background:rgba(20,184,166,.18);color:#5eead4;border-color:rgba(20,184,166,.45);}
@@ -464,7 +465,36 @@ function contactLineFor(canale){
   else if (canale === "whatsapp"){ label = "Numero WhatsApp"; value = mobileNumberOf(d) || String(d.telefono1||"").trim(); }
   else if (canale === "email"){ label = "Indirizzo email"; value = String(d.email||"").trim(); }
   else return "";
-  return `<div class="hint" style="margin-bottom:6px;"><b>${label}:</b> ${escapeHtml(value || "—")}</div>`;
+  const btn = (canale !== "telefono" && value) ? copyBtn("contact", canale) : "";
+  return `<div class="hint" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span><b>${label}:</b> ${escapeHtml(value || "—")}</span>${btn}</div>`;
+}
+
+function copyBtn(kind, key){
+  return `<button type="button" class="btn-ghost copy-btn" title="Copia negli appunti" onclick="copyOut(this,'${kind}','${key}')">${icon('copy')}Copia</button>`;
+}
+function copyOutValue(kind, key){
+  const d = state.draft, o = state.generatedOutput || {};
+  if (kind === "contact") return key === "email" ? String(d.email||"").trim() : (mobileNumberOf(d) || String(d.telefono1||"").trim());
+  const v = o[key];
+  if (kind === "text") return typeof v === "string" ? v : "";
+  if (kind === "oggetto") return v && typeof v === "object" ? String(v.oggetto||"") : "";
+  if (kind === "corpo") return v && typeof v === "object" ? String(v.corpo||"") : "";
+  return "";
+}
+async function copyOut(btn, kind, key){
+  const text = copyOutValue(kind, key);
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; }
+  catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { ok = document.execCommand("copy"); } catch (_) {}
+    ta.remove();
+  }
+  const original = btn.innerHTML;
+  btn.textContent = ok ? "Copiato ✓" : "Copia non riuscita";
+  setTimeout(() => { btn.innerHTML = original; }, 1500);
 }
 
 function appendSignature(text){
@@ -1581,13 +1611,14 @@ function renderGeneratedOutputs(){
             <button class="btn-ghost" onclick="regenerateSlot('${sl.key}')">${icon('refresh')}Rigenera</button>
           </div>
           ${contactLineFor(sl.canale)}
-          <div class="field"><label>Oggetto</label><input type="text" value="${escapeHtml(val.oggetto||'')}" oninput="state.generatedOutput['${sl.key}'].oggetto=this.value; state.editedAfterGenerate=true;"></div>
-          <div class="field"><label>Corpo</label><textarea rows="8" oninput="state.generatedOutput['${sl.key}'].corpo=this.value; state.editedAfterGenerate=true;">${escapeHtml(val.corpo||'')}</textarea></div>
+          <div class="field"><div style="display:flex;align-items:center;justify-content:space-between;"><label>Oggetto</label>${copyBtn('oggetto', sl.key)}</div><input type="text" value="${escapeHtml(val.oggetto||'')}" oninput="state.generatedOutput['${sl.key}'].oggetto=this.value; state.editedAfterGenerate=true;"></div>
+          <div class="field"><div style="display:flex;align-items:center;justify-content:space-between;"><label>Corpo</label>${copyBtn('corpo', sl.key)}</div><textarea rows="8" oninput="state.generatedOutput['${sl.key}'].corpo=this.value; state.editedAfterGenerate=true;">${escapeHtml(val.corpo||'')}</textarea></div>
         </div>`;
     }
     return `
       <div class="output-block">
         <div class="output-block-head"><h3>${escapeHtml(sl.label)}</h3>${badge}
+          ${sl.canale === "whatsapp" ? copyBtn('text', sl.key) : ""}
           <button class="btn-ghost" onclick="regenerateSlot('${sl.key}')">${icon('refresh')}Rigenera</button>
         </div>
         ${contactLineFor(sl.canale)}
