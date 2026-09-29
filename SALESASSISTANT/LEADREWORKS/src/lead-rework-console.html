@@ -436,11 +436,64 @@ function emptyDraft(){
   };
 }
 
-function defaultChannelsFor(statoId){
+function defaultChannelsFor(statoId, draft){
   const stato = LEAD_STATES.find(s => s.id === statoId);
   const out = { telefono:false, whatsapp:false, email:false };
   stato.slots.forEach(sl => { if (sl.def) out[sl.canale] = true; });
+  if (draft){
+    if (mobileNumberOf(draft)) out.whatsapp = true;
+    if (String(draft.email||"").trim()) out.email = true;
+  }
   return out;
+}
+
+const SIGNATURE_TEXT = "David Vannini\nYesMobility.it";
+
+function isMobileNumber(num){
+  return /^(?:\+39|0039)?3\d/.test(String(num||"").replace(/[\s.\-()\/]/g, ""));
+}
+function mobileNumberOf(d){
+  if (isMobileNumber(d.telefono1)) return String(d.telefono1).trim();
+  if (isMobileNumber(d.telefono2)) return String(d.telefono2).trim();
+  return "";
+}
+function contactLineFor(canale){
+  const d = state.draft;
+  let label, value;
+  if (canale === "telefono"){ label = "Numero di telefono"; value = String(d.telefono1||"").trim(); }
+  else if (canale === "whatsapp"){ label = "Numero WhatsApp"; value = mobileNumberOf(d) || String(d.telefono1||"").trim(); }
+  else if (canale === "email"){ label = "Indirizzo email"; value = String(d.email||"").trim(); }
+  else return "";
+  return `<div class="hint" style="margin-bottom:6px;"><b>${label}:</b> ${escapeHtml(value || "—")}</div>`;
+}
+
+function appendSignature(text){
+  const lines = String(text||"").replace(/\s+$/,"").split("\n");
+  while (lines.length && /^(\[nome operatore\]|david( vannini)?|yesmobility(\.it)?|)$/i.test(lines[lines.length-1].trim())) lines.pop();
+  if (!lines.length) return SIGNATURE_TEXT;
+  const glue = /,\s*$/.test(lines[lines.length-1]) ? "\n" : "\n\n";
+  return lines.join("\n") + glue + SIGNATURE_TEXT;
+}
+function signValue(canale, val){
+  if (canale === "whatsapp" && typeof val === "string") return appendSignature(val);
+  if (canale === "email" && val && typeof val === "object") return Object.assign({}, val, { corpo: appendSignature(val.corpo) });
+  return val;
+}
+function signOutput(out){
+  if (!out || typeof out !== "object" || out._raw !== undefined) return out;
+  activeSlots().forEach(sl => { if (out[sl.key] !== undefined) out[sl.key] = signValue(sl.canale, out[sl.key]); });
+  return out;
+}
+
+function syncContactChannels(){
+  const d = state.draft;
+  if (mobileNumberOf(d)) d.canali_attivi.whatsapp = true;
+  if (String(d.email||"").trim()) d.canali_attivi.email = true;
+  document.querySelectorAll("label.chip[data-canale]").forEach(el => {
+    const on = !!d.canali_attivi[el.dataset.canale];
+    el.classList.toggle("on", on);
+    const cb = el.querySelector("input"); if (cb) cb.checked = on;
+  });
 }
 
 function scriptById(numero){ return SCRIPT_LIBRARY.find(s => s.numero === numero); }
@@ -799,9 +852,9 @@ function renderNewLeadTab(){
         <div class="field"><label>Zona</label><input type="text" id="ld_zona" class="${fieldMissingClass('zona')}" value="${escapeHtml(d.zona)}" oninput="state.draft.zona=this.value; clearMissing(this)"></div>
       </div>
       <div class="grid3">
-        <div class="field"><label>Numero di telefono</label><input type="tel" id="ld_telefono1" value="${escapeHtml(d.telefono1)}" oninput="state.draft.telefono1=this.value"></div>
-        <div class="field"><label>Numero di telefono (secondario)</label><input type="tel" id="ld_telefono2" value="${escapeHtml(d.telefono2)}" oninput="state.draft.telefono2=this.value"></div>
-        <div class="field"><label>Indirizzo email</label><input type="email" id="ld_email" value="${escapeHtml(d.email)}" oninput="state.draft.email=this.value"></div>
+        <div class="field"><label>Numero di telefono</label><input type="tel" id="ld_telefono1" value="${escapeHtml(d.telefono1)}" oninput="state.draft.telefono1=this.value" onchange="syncContactChannels()"></div>
+        <div class="field"><label>Numero di telefono (secondario)</label><input type="tel" id="ld_telefono2" value="${escapeHtml(d.telefono2)}" oninput="state.draft.telefono2=this.value" onchange="syncContactChannels()"></div>
+        <div class="field"><label>Indirizzo email</label><input type="email" id="ld_email" value="${escapeHtml(d.email)}" oninput="state.draft.email=this.value" onchange="syncContactChannels()"></div>
       </div>
       <div class="grid3">
         <div class="field"><label>Prezzo esistente (se noto)</label><input type="text" id="ld_prezzo" class="${fieldMissingClass('prezzo_esistente')}" value="${escapeHtml(d.prezzo_esistente)}" oninput="state.draft.prezzo_esistente=this.value; clearMissing(this)"></div>
@@ -837,7 +890,7 @@ function renderNewLeadTab(){
       <label>Canali da generare</label>
       <div class="row" style="margin-bottom:6px;">
         ${CANALI_BASE.map(c => `
-          <label class="chip ${d.canali_attivi[c.key]?'on':''}">
+          <label class="chip ${d.canali_attivi[c.key]?'on':''}" data-canale="${c.key}">
             <input type="checkbox" ${d.canali_attivi[c.key]?'checked':''} onchange="toggleCanale('${c.key}')" style="display:none;">
             ${escapeHtml(c.label)}
           </label>
@@ -924,7 +977,7 @@ function toggleAppuntamentoFields(){ state.draft._showAppt = !state.draft._showA
 
 function onStatoChange(val){
   state.draft.stato_lead = parseInt(val,10);
-  state.draft.canali_attivi = defaultChannelsFor(state.draft.stato_lead);
+  state.draft.canali_attivi = defaultChannelsFor(state.draft.stato_lead, state.draft);
   state.draft._statoUserSet = true;
   state.draft._statoMissing = false;
   state.generatedOutput = null;
@@ -1201,7 +1254,7 @@ function mergeExtractedIntoDraft(parsed){
   }
   if (typeof parsed.stato_lead_suggerito === "number" && LEAD_STATES.some(s => s.id === parsed.stato_lead_suggerito)){
     state.draft.stato_lead = parsed.stato_lead_suggerito;
-    state.draft.canali_attivi = defaultChannelsFor(parsed.stato_lead_suggerito);
+    state.draft.canali_attivi = defaultChannelsFor(parsed.stato_lead_suggerito, state.draft);
     state.draft._statoMissing = false;
   }
   if (Array.isArray(parsed.obiezioni_suggerite)){
@@ -1231,6 +1284,7 @@ function applyCrmImport(data){
   // con la stessa evidenziazione ambrata usata per l'estrazione AI dai file.
   if (!state.draft._statoUserSet) state.draft._statoMissing = true;
   if (!state.draft._obiezioniUserSet) state.draft._obiezioniMissing = true;
+  syncContactChannels();
   render();
   const el = document.getElementById("crm_import_msg");
   if (el){ el.textContent = "Dati importati dal CRM ✓"; setTimeout(()=>{ if(el) el.textContent=""; }, 4000); }
@@ -1395,6 +1449,8 @@ function buildUserPrompt(){
     "OBIEZIONI TRASVERSALI DA CONSIDERARE SE PERTINENTI:",
     obiezioniDescr,
     "",
+    "FIRMA: nei testi WhatsApp e nel corpo delle email NON scrivere nessuna firma, nome operatore o \"YesMobility.it\" finale: la firma viene aggiunta automaticamente. Chiudi con la formula di saluto e basta.",
+    "",
     `Rispondi con un JSON con le chiavi: ${JSON.stringify(slots.map(s=>s.key))}`
   ].join("\n");
 }
@@ -1417,7 +1473,7 @@ function localFallbackGenerate(){
       out[sl.key] = substitutePlaceholders(ref.testo||"");
     }
   });
-  return out;
+  return signOutput(out);
 }
 
 async function generateScripts(){
@@ -1464,7 +1520,7 @@ async function generateScripts(){
   }
 
   try {
-    state.generatedOutput = parseGeneratedJson(raw);
+    state.generatedOutput = signOutput(parseGeneratedJson(raw));
     state.generatedMeta = { source:"ai", raw };
     state.editedAfterGenerate = false;
   } catch(e){
@@ -1486,15 +1542,15 @@ async function regenerateSlot(slotKey){
     const raw = await callSample({ system: buildSystemPrompt(), user });
     const parsed = parseGeneratedJson(raw);
     if (!state.generatedOutput) state.generatedOutput = {};
-    state.generatedOutput[slotKey] = parsed[slotKey] !== undefined ? parsed[slotKey] : parsed;
+    state.generatedOutput[slotKey] = signValue(sl.canale, parsed[slotKey] !== undefined ? parsed[slotKey] : parsed);
   } catch(e){
     if (e.code === "NO_AI_RUNTIME"){
       const ref = scriptById(sl.scripts[0]);
       if (ref){
         state.generatedOutput = state.generatedOutput || {};
-        state.generatedOutput[slotKey] = sl.canale === "email"
+        state.generatedOutput[slotKey] = signValue(sl.canale, sl.canale === "email"
           ? { oggetto: substitutePlaceholders(ref.oggetto||""), corpo: substitutePlaceholders(ref.corpo||"") }
-          : substitutePlaceholders(ref.testo||"");
+          : substitutePlaceholders(ref.testo||""));
       }
     } else {
       alert("Rigenerazione non riuscita: " + e.message);
@@ -1524,6 +1580,7 @@ function renderGeneratedOutputs(){
           <div class="output-block-head"><h3>${escapeHtml(sl.label)}</h3>${badge}
             <button class="btn-ghost" onclick="regenerateSlot('${sl.key}')">${icon('refresh')}Rigenera</button>
           </div>
+          ${contactLineFor(sl.canale)}
           <div class="field"><label>Oggetto</label><input type="text" value="${escapeHtml(val.oggetto||'')}" oninput="state.generatedOutput['${sl.key}'].oggetto=this.value; state.editedAfterGenerate=true;"></div>
           <div class="field"><label>Corpo</label><textarea rows="8" oninput="state.generatedOutput['${sl.key}'].corpo=this.value; state.editedAfterGenerate=true;">${escapeHtml(val.corpo||'')}</textarea></div>
         </div>`;
@@ -1533,6 +1590,7 @@ function renderGeneratedOutputs(){
         <div class="output-block-head"><h3>${escapeHtml(sl.label)}</h3>${badge}
           <button class="btn-ghost" onclick="regenerateSlot('${sl.key}')">${icon('refresh')}Rigenera</button>
         </div>
+        ${contactLineFor(sl.canale)}
         <textarea rows="6" oninput="state.generatedOutput['${sl.key}']=this.value; state.editedAfterGenerate=true;">${escapeHtml(typeof val === "string" ? val : JSON.stringify(val))}</textarea>
       </div>`;
   }).join("") + `
@@ -1794,7 +1852,7 @@ function duplicateHistoryItem(id){
   state.draft = emptyDraft();
   Object.assign(state.draft, r.dati_lead_input);
   state.draft.stato_lead = r.stato_lead;
-  state.draft.canali_attivi = defaultChannelsFor(r.stato_lead);
+  state.draft.canali_attivi = defaultChannelsFor(r.stato_lead, state.draft);
   state.draft.obiezioni_attive = (r.obiezioni_toggle||[]).slice();
   state.generatedOutput = null;
   state.generatedMeta = null;

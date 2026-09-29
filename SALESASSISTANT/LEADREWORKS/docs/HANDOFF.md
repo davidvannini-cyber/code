@@ -50,6 +50,11 @@ Specifica funzionale originale: `docs/YesMobility-LeadRework-Specifica.md`.
 4. **Analisi e strategia**: testo AI, max 100 parole, passato anche come contesto alla generazione.
 5. **Generazione script**: telefono / WhatsApp / email secondo stato + canali attivi + obiezioni, editabili, con "rigenera" per singolo canale.
 
+**Generazione script, aggiunte del 2026-09-29** (`src/lead-rework-console.html`, da provare dal vivo):
+- Canali di default: WhatsApp si attiva se `telefono1` o `telefono2` è un cellulare (`+39 3…`, `0039 3…`, `3…`); Email si attiva se il campo email è valorizzato. Vale al cambio stato, dopo l'estrazione AI, all'import CRM e alla modifica dei campi (l'attivazione automatica non spegne mai un canale).
+- Sopra ogni script compare il contatto: telefono (`telefono1`) sul canale Telefono, cellulare sul WhatsApp, email sul canale Email.
+- Firma `David Vannini` / `YesMobility.it` aggiunta dal codice (`appendSignature`) in fondo a WhatsApp e al corpo delle email, anche in rigenerazione e bozza da libreria. Una firma già presente (`[Nome operatore]`, `David`, `YesMobility`) viene sostituita, non duplicata. Il prompt chiede all'AI di non firmare.
+
 ### Tab "Storico Lead"
 Elenco filtrabile, apertura in sola lettura (con analisi/strategia salvata), duplicazione, eliminazione, stampa (@media print, forzata su sfondo bianco), "Invia a Suggerimenti Vendita" anche da un lead storico.
 
