@@ -503,7 +503,8 @@ function openOut(canale, key, hid){
     url = "mailto:" + to + "?subject=" + crlf(copyOutValue("oggetto", key, hid)) + "&body=" + crlf(copyOutValue("corpo", key, hid));
   }
   const a = document.createElement("a");
-  a.href = url; a.target = "_blank"; a.rel = "noopener";
+  a.href = url;
+  if (canale === "whatsapp"){ a.target = "_blank"; a.rel = "noopener"; }
   document.body.appendChild(a); a.click(); a.remove();
 }
 function copyOutValue(kind, key, hid){
