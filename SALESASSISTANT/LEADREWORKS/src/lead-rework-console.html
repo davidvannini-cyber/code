@@ -529,11 +529,11 @@ function render(){
       </div>
     </div>
     <div class="page ${state.tab==='profilo'?'page-narrow':''}">
-      <div style="display:flex;gap:10px;width:100%;">
-        <div class="main">${renderTab()}</div>
-        ${showRail ? renderRightRail() : ""}
+      <div class="main">
+        ${renderTab()}
+        <div class="card">${renderAmbienteStrip()}</div>
       </div>
-      <div class="card">${renderAmbienteStrip()}</div>
+      ${showRail ? renderRightRail() : ""}
     </div>
   `;
   // requestAnimationFrame: aspetta che il browser abbia finito il layout della
