@@ -85,5 +85,44 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Legge i dati da chrome.storage.local e li passa agli iframe
+        function inviaDateAIframe() {
+            chrome.storage.local.get(['pendingLeadSuggerimentiVendita'], (result) => {
+                const dati = result.pendingLeadSuggerimentiVendita || {};
+
+                // Invia a LEADREWORKS
+                const leadFrameEl = document.querySelector('.column-leadreworks iframe');
+                if (leadFrameEl && leadFrameEl.contentWindow) {
+                    leadFrameEl.contentWindow.postMessage({
+                        type: 'DATI_LEAD',
+                        payload: dati
+                    }, '*');
+                }
+
+                // Invia a MENU
+                const menuFrameEl = document.querySelector('.column-menu iframe');
+                if (menuFrameEl && menuFrameEl.contentWindow) {
+                    menuFrameEl.contentWindow.postMessage({
+                        type: 'DATI_LEAD',
+                        payload: dati
+                    }, '*');
+                }
+            });
+        }
+
+        // Invia dati ogni volta che cambiano in chrome.storage
+        chrome.storage.onChanged.addListener((changes, areaName) => {
+            if (areaName === 'local' && changes.pendingLeadSuggerimentiVendita) {
+                inviaDateAIframe();
+            }
+        });
+
+        // Invia dati al caricamento della pagina
+        window.addEventListener('load', () => {
+            setTimeout(inviaDateAIframe, 500);
+        });
+    </script>
 </body>
 </html>
