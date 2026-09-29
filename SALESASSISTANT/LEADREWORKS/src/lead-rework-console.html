@@ -51,9 +51,10 @@
   .main{flex:1 1 660px;min-width:0;}
   .rail{flex:0 1 300px;min-width:260px;display:flex;flex-direction:column;gap:6px;position:sticky;top:44px;}
   .rail-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:7px;}
+  .rail-card:nth-child(1),.rail-card:nth-child(2){display:none;}
   .rail-card-title{font-family:var(--font-head);font-weight:700;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;}
   .rail-steps{display:flex;flex-direction:column;gap:8px;font-size:9px;}
-  .rail-env{display:flex;flex-direction:column;gap:7px;font-family:"IBM Plex Mono",monospace;font-size:9px;color:var(--text-dim);}
+  .rail-env{display:flex;flex-direction:row;gap:12px;font-family:"IBM Plex Mono",monospace;font-size:9px;color:var(--text-dim);align-items:center;flex-wrap:wrap;}
   h1{font-family:var(--font-head);font-weight:800;font-size:16px;margin:0 0 1px 0;letter-spacing:-.01em;}
   h2{font-family:var(--font-head);font-weight:700;font-size:11px;margin:0 0 5px 0;}
   h3{font-family:var(--font-head);font-weight:700;font-size:11px;}
