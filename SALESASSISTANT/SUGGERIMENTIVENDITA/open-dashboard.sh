@@ -1,22 +1,18 @@
 #!/bin/bash
 
-# Ottiene l'altezza dello schermo (macOS)
-SCREEN_HEIGHT=$(system_profiler SPDisplaysDataType | grep "Resolution:" | head -n1 | awk '{print $2}')
-
-# Se il comando sopra non funziona, usa un valore di fallback
-if [ -z "$SCREEN_HEIGHT" ]; then
-    SCREEN_HEIGHT=1440  # fallback per MacBook Air/Pro standard
-fi
-
-# Calcola il 70% dell'altezza
-WINDOW_HEIGHT=$((SCREEN_HEIGHT * 70 / 100))
-
-# Se WINDOW_HEIGHT è ancora vuoto, usa fallback
-if [ -z "$WINDOW_HEIGHT" ] || [ "$WINDOW_HEIGHT" -lt 600 ]; then
-    WINDOW_HEIGHT=900
-fi
-
-# Apre Chrome in modalità app con l'altezza calcolata
+# Apre Chrome in modalità app
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
-  --app="file:///Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/unified-dashboard.html" \
-  --window-size=1400,$WINDOW_HEIGHT &
+  --app="file:///Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/unified-dashboard.html" &
+
+# Aspetta che la finestra si apra (2 secondi)
+sleep 2
+
+# Usa AppleScript per ridimensionare la finestra al 70% dell'altezza
+osascript << 'EOF'
+tell application "Google Chrome"
+    activate
+    set screenHeight to (call method "screen" of object (first window)) / 1
+    set newHeight to round (screenHeight * 0.7)
+    set bounds of first window to {0, 0, 1400, newHeight}
+end tell
+EOF
