@@ -30,7 +30,12 @@ export const END_OPTIONS: EndType[] = ['none', 'prolungato', '90', '180']
 
 const FLATTEN = 0.35 // quanto appiattisce in immagine la direzione orizzontale rispetto alla rampa
 const FORESHORTEN = 0.45 // accorciamento della direzione laterale sul piano del pavimento
-const TURN_RADIUS_MM = 450
+/** Senza tromba la curva è stretta: raggio ~15 cm */
+export const NO_WELL_RADIUS_MM = 150
+
+/** Raggio di curvatura: metà della larghezza della tromba scale, o curva stretta se non c'è. */
+export const turnRadiusMm = (wellWidthCm: number) =>
+  wellWidthCm > 0 ? (wellWidthCm * 10) / 2 : NO_WELL_RADIUS_MM
 
 const norm = (x: number, y: number) => {
   const l = Math.hypot(x, y) || 1
@@ -44,6 +49,7 @@ export function endModule(
   which: 'start' | 'end',
   type: EndType,
   side: Side,
+  radiusMm: number,
 ): PathPoint[] {
   if (type === 'none') return []
   const k = anchor.s / railDimensions.tubeDiameter // px per mm
@@ -67,7 +73,7 @@ export function endModule(
       return [at(250, 0, 40), at(450, 0, 240)]
     case '90':
     case '180': {
-      const R = TURN_RADIUS_MM
+      const R = radiusMm
       const end = type === '90' ? 90 : 180
       const pts: PathPoint[] = []
       for (let deg = 30; deg <= end; deg += 30) {
@@ -89,13 +95,14 @@ export function buildPath(
   start: EndType,
   end: EndType,
   side: Side,
+  radiusMm: number,
 ): { key: string; p: PathPoint }[] {
   if (anchors.length < 2) return anchors.map((p, i) => ({ key: `a${i}`, p }))
   // anchors[0] = basso, anchors[1] = alto: ruoli fissi anche se l'utente li incrocia
   const [low, high] = anchors
   const run = norm(high.x - low.x, high.y - low.y)
-  const startPts = endModule(low, run, 'start', start, side)
-  const endPts = endModule(high, run, 'end', end, side)
+  const startPts = endModule(low, run, 'start', start, side, radiusMm)
+  const endPts = endModule(high, run, 'end', end, side, radiusMm)
   return [
     ...startPts.map((p, i) => ({ key: `s${i}`, p })).reverse(),
     { key: 'a0', p: low },

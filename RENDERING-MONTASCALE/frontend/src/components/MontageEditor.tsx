@@ -6,6 +6,7 @@ import {
   END_OPTIONS,
   KIND_PRESETS,
   START_OPTIONS,
+  turnRadiusMm,
   type EndType,
   type RampKind,
   type Side,
@@ -24,6 +25,7 @@ export function MontageEditor({ image, onComposite }: Props) {
   const [startType, setStartType] = useState<EndType>(KIND_PRESETS.partenza.start)
   const [endType, setEndType] = useState<EndType>(KIND_PRESETS.partenza.end)
   const [side, setSide] = useState<Side>('dx')
+  const [wellCm, setWellCm] = useState(0) // larghezza tromba scale, 0 = senza tromba
   // ancore sulla rampa (max 2) e spostamenti manuali dei punti dei moduli
   const [anchors, setAnchors] = useState<PathPoint[]>([])
   const [offsets, setOffsets] = useState<Record<string, { dx: number; dy: number }>>({})
@@ -31,12 +33,12 @@ export function MontageEditor({ image, onComposite }: Props) {
   const dragging = useRef<string | null>(null)
 
   const path = useMemo(() => {
-    const raw = buildPath(anchors, startType, endType, side)
+    const raw = buildPath(anchors, startType, endType, side, turnRadiusMm(wellCm))
     return raw.map(({ key, p }) => {
       const o = offsets[key]
       return { key, p: o ? { ...p, x: p.x + o.dx, y: p.y + o.dy } : p }
     })
-  }, [anchors, startType, endType, side, offsets])
+  }, [anchors, startType, endType, side, wellCm, offsets])
 
   const pickKind = (k: RampKind) => {
     setKind(k)
@@ -173,6 +175,10 @@ export function MontageEditor({ image, onComposite }: Props) {
           <select value={endType} onChange={(e) => { setEndType(e.target.value as EndType); setOffsets({}) }}>
             {END_OPTIONS.map((t) => <option key={t} value={t}>{END_LABELS[t]}</option>)}
           </select>
+        </label>
+        <label>
+          Tromba (cm, 0 = senza){' '}
+          <input type="number" min={0} max={200} value={wellCm} style={{ width: 60 }} onChange={(e) => { setWellCm(Math.max(0, +e.target.value || 0)); setOffsets({}) }} />
         </label>
         <label>
           Lato curve{' '}
