@@ -55,7 +55,8 @@ export function MontageEditor({ image, onComposite }: Props) {
       const pts = path.map((q) => q.p)
       drawRail(ctx, pts)
       if (!handles) return
-      ctx.lineWidth = 2
+      const u = c.width / 70 // unità di interfaccia proporzionale alla larghezza immagine
+      ctx.lineWidth = Math.max(2, u / 6)
       ctx.strokeStyle = 'rgba(255,60,60,0.9)'
       ctx.beginPath()
       sampleSpline(pts).forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)))
@@ -63,10 +64,11 @@ export function MontageEditor({ image, onComposite }: Props) {
       path.forEach(({ key, p }) => {
         const anchor = key.startsWith('a')
         ctx.beginPath()
-        ctx.arc(p.x, p.y, anchor ? 14 : 9, 0, Math.PI * 2)
+        ctx.arc(p.x, p.y, anchor ? u : u * 0.65, 0, Math.PI * 2)
         ctx.fillStyle = anchor ? '#ffd400' : '#ff3c3c'
         ctx.fill()
         ctx.strokeStyle = '#fff'
+        ctx.lineWidth = Math.max(2, u / 5)
         ctx.stroke()
       })
     },
@@ -101,9 +103,15 @@ export function MontageEditor({ image, onComposite }: Props) {
       ;(e.target as Element).setPointerCapture(e.pointerId)
       return
     }
-    if (anchors.length < 2) {
-      const s = anchors.length === 0 ? image.naturalWidth / 25 : anchors[0].s * 0.8
-      setAnchors([...anchors, { ...p, s }])
+    if (anchors.length === 0) {
+      // un solo tocco: il binario compare subito, poi si trascina per adattarlo
+      const s = image.naturalWidth / 25
+      const top = {
+        x: Math.min(image.naturalWidth * 0.95, p.x + image.naturalWidth * 0.06),
+        y: Math.max(image.naturalHeight * 0.1, p.y - image.naturalHeight * 0.4),
+        s: s * 0.75,
+      }
+      setAnchors([{ ...p, s }, top])
     }
   }
 
@@ -197,10 +205,8 @@ export function MontageEditor({ image, onComposite }: Props) {
         </label>
         <button onClick={exportComposite} disabled={anchors.length < 2}>Genera fotomontaggio</button>
       </div>
-      <p className="hint">
-        1) Tocca l'inizio del tratto dritto sulla rampa (in basso), 2) tocca la fine (in alto). I moduli di partenza/arrivo
-        e le curve si generano da soli: trascina i punti rossi per adattarli, i gialli per spostare il tratto dritto. Le
-        due scale regolano la prospettiva (vicino = grande, lontano = piccolo).
+      <p className="status">
+        {anchors.length === 0 ? 'Tocca la foto dove inizia il binario (in basso)' : 'Trascina le estremità per adattare il binario'}
       </p>
       <canvas
         ref={canvasRef}

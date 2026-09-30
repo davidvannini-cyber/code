@@ -1,6 +1,12 @@
+:root { color-scheme: light; }
+body { background: #fff !important; color: #111 !important; display: block !important; }
 .app { max-width: 900px; margin: 0 auto; padding: 16px; font-family: system-ui, sans-serif; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
 .toolbar button { padding: 10px 14px; font-size: 15px; }
 .hint { color: #555; font-size: 14px; }
 .montage-canvas { width: 100%; height: auto; touch-action: none; cursor: crosshair; border: 1px solid #ccc; }
 .result { width: 100%; height: auto; }
+.status { font-weight: 600; color: #b00; }
+.toolbar button, .app button { background: #eee; color: #111; border: 1px solid #999; border-radius: 6px; }
+.toolbar button.on { background: #1a73e8; color: #fff; }
+.toolbar button:disabled { opacity: .4; }
