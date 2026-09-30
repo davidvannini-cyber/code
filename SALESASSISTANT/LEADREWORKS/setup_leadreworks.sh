@@ -4,7 +4,7 @@
 # ==========================================================
 set -e
 
-PROJECT_ROOT="/progetti/LEADREWORKS"
+PROJECT_ROOT="/Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/LEADREWORKS"
 
 echo "Creo la struttura del progetto in $PROJECT_ROOT ..."
 
@@ -19,7 +19,10 @@ else
   echo "Copialo manualmente in $PROJECT_ROOT/docs/ prima di iniziare lo sviluppo."
 fi
 
-# README di progetto
+# README di progetto (non sovrascrive un README già esistente)
+if [ -f "$PROJECT_ROOT/README.md" ]; then
+  echo "README.md già presente, non lo sovrascrivo."
+else
 cat > "$PROJECT_ROOT/README.md" << 'EOF'
 # LEADREWORKS — YesMobility Lead Rework Console
 
@@ -49,6 +52,7 @@ libreria script, flusso utente, struttura dati, capacità runtime.
 EOF
 
 echo "README.md creato."
+fi
 echo ""
 echo "Struttura progetto creata con successo in: $PROJECT_ROOT"
 find "$PROJECT_ROOT" -maxdepth 2
