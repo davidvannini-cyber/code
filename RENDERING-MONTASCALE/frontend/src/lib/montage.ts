@@ -3,7 +3,7 @@
  * dall'utente sulla foto. Nessuna stima di posa: la forma è quella del
  * percorso, la prospettiva è data dalla dimensione `s` di ogni punto.
  */
-import { railDimensions } from '../geometry/dimensions'
+import { chairDimensions, railDimensions } from '../geometry/dimensions'
 
 /** x,y in pixel immagine; s = diametro del tubo in pixel a quel punto (scala locale) */
 export interface PathPoint {
@@ -126,4 +126,32 @@ export function drawRail(ctx: CanvasRenderingContext2D, pts: PathPoint[]) {
   // tubo inferiore (sul percorso) e superiore (sopra di interasse)
   tube(ctx, line, () => 0)
   tube(ctx, line, (s) => -mmToPx(tubeSpacing, s))
+}
+
+export interface Rect {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+/** Ingombro reale della poltroncina in pixel, alla scala locale dell'appoggio. */
+export function chairRect(at: PathPoint): Rect {
+  const { postHeight, tubeDiameter } = railDimensions
+  const { armrestSpan, seatHeightFromRail, backrestHeight } = chairDimensions
+  const bottom = at.y + mmToPx(postHeight + tubeDiameter / 2, at.s)
+  const h = mmToPx(seatHeightFromRail + backrestHeight, at.s)
+  const w = mmToPx(armrestSpan, at.s)
+  return { x: at.x - w / 2, y: bottom - h, w, h }
+}
+
+/** Sagoma segnaposto blu piena (senza testo): indica posizione e ingombro; poi sostituita dal prodotto. */
+export function drawChairRect(ctx: CanvasRenderingContext2D, r: Rect, lineWidth = 3) {
+  ctx.fillStyle = 'rgba(30,70,160,0.95)'
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+  ctx.lineWidth = lineWidth
+  ctx.beginPath()
+  ctx.roundRect(r.x, r.y, r.w, r.h, r.w * 0.12)
+  ctx.fill()
+  ctx.stroke()
 }

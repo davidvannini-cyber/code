@@ -12,7 +12,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.post('/api/generate', async (req, res) => {
-  const { compositeImageBase64, maskImageBase64 } = req.body ?? {};
+  const { compositeImageBase64, maskImageBase64, withChair, chairOnly } = req.body ?? {};
   if (!compositeImageBase64) {
     res.status(400).json({ error: 'compositeImageBase64 è richiesto' });
     return;
@@ -22,7 +22,7 @@ app.post('/api/generate', async (req, res) => {
     return;
   }
   try {
-    const resultImageBase64 = await fuseImage({ compositeImageBase64, maskImageBase64 });
+    const resultImageBase64 = await fuseImage({ compositeImageBase64, maskImageBase64, withChair: Boolean(withChair), chairOnly: Boolean(chairOnly) });
     res.json({ resultImageBase64 });
   } catch (err) {
     console.error('Errore fusione Gemini', err);

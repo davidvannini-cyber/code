@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { drawRail, sampleSpline, type PathPoint } from '../lib/montage'
+import { chairRect, drawChairRect, drawRail, sampleSpline, type PathPoint, type Rect } from '../lib/montage'
 import {
   buildPath,
   END_LABELS,
@@ -16,7 +16,7 @@ const HIT_RADIUS = 28
 
 interface Props {
   image: HTMLImageElement
-  onComposite?: (canvas: HTMLCanvasElement) => void
+  onComposite?: (canvas: HTMLCanvasElement, chair: Rect | null) => void
 }
 
 export function MontageEditor({ image, onComposite }: Props) {
@@ -30,6 +30,8 @@ export function MontageEditor({ image, onComposite }: Props) {
   const [anchors, setAnchors] = useState<PathPoint[]>([])
   const [offsets, setOffsets] = useState<Record<string, { dx: number; dy: number }>>({})
   const [showHandles, setShowHandles] = useState(true)
+  const [chairOn, setChairOn] = useState(true)
+  const [chairT, setChairT] = useState(0.15) // posizione lungo il tratto dritto: 0 = basso, 1 = alto
   const dragging = useRef<string | null>(null)
 
   const path = useMemo(() => {
@@ -47,8 +49,18 @@ export function MontageEditor({ image, onComposite }: Props) {
     setOffsets({})
   }
 
+  const chairRect_ = useMemo(() => {
+    if (!chairOn || anchors.length < 2) return null
+    const [a, b] = anchors
+    return chairRect({
+      x: a.x + (b.x - a.x) * chairT,
+      y: a.y + (b.y - a.y) * chairT,
+      s: a.s + (b.s - a.s) * chairT,
+    })
+  }, [chairOn, chairT, anchors])
+
   const render = useCallback(
-    (handles: boolean) => {
+    (handles: boolean, placeholder = true) => {
       const c = canvasRef.current
       if (!c) return
       const ctx = c.getContext('2d')!
@@ -56,6 +68,7 @@ export function MontageEditor({ image, onComposite }: Props) {
       ctx.drawImage(image, 0, 0)
       const pts = path.map((q) => q.p)
       drawRail(ctx, pts)
+      if (placeholder && chairRect_) drawChairRect(ctx, chairRect_, Math.max(2, c.width / 300))
       if (!handles) return
       const u = c.width / 45 // unità di interfaccia proporzionale alla larghezza immagine
       ctx.lineWidth = Math.max(2, u / 6)
@@ -74,7 +87,7 @@ export function MontageEditor({ image, onComposite }: Props) {
         ctx.stroke()
       })
     },
-    [image, path],
+    [image, path, chairRect_],
   )
 
   useEffect(() => {
@@ -148,8 +161,8 @@ export function MontageEditor({ image, onComposite }: Props) {
   const maxS = image.naturalWidth / 12
 
   const exportComposite = () => {
-    render(false)
-    onComposite?.(canvasRef.current!)
+    render(false, false) // senza sagoma: la poltroncina si aggiunge in un secondo passaggio
+    onComposite?.(canvasRef.current!, chairRect_)
     render(showHandles)
   }
 
@@ -196,6 +209,15 @@ export function MontageEditor({ image, onComposite }: Props) {
         <label>
           Scala punto alto{' '}
           <input type="range" min={4} max={maxS} disabled={anchors.length < 2} value={sortedAnchors[1]?.s ?? 4} onChange={(e) => setAnchorScale('high', +e.target.value)} />
+        </label>
+      </div>
+      <div className="toolbar">
+        <label>
+          <input type="checkbox" checked={chairOn} onChange={(e) => setChairOn(e.target.checked)} /> Poltroncina
+        </label>
+        <label>
+          Posizione poltroncina{' '}
+          <input type="range" min={0} max={1} step={0.01} disabled={!chairOn} value={chairT} onChange={(e) => setChairT(+e.target.value)} />
         </label>
       </div>
       <div className="toolbar">
