@@ -1,4 +1,4 @@
-# SUGGERIMENTIVENDITA — Handoff di sintesi (stato al 2026-09-30)
+# SALESASSISTANT — Handoff di sintesi (stato al 2026-09-30)
 
 Sintesi unica di `HANDOFF.md`, `RIEPILOGO_SISTEMA.md` e `README.md`. È il file da usare per riprendere il lavoro. In caso di conflitto tra i documenti: **codice > `HANDOFF.md` > README > RIEPILOGO_SISTEMA**. Per i dettagli, vedi `HANDOFF.md`.
 
