@@ -12,3 +12,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-09-30 | `a54ade4` | SALESASSISTANT/SUGGERIMENTIVENDITA/SUGGERIMENTIVENDITA HANDOFF.md → SALESASSISTANT HANDOFF.md (rinomina), REGISTRO-SALVATAGGI.md | `git checkout a54ade4` |
 | 2026-09-30 | `6b7f429` | SALESASSISTANT HANDOFF.md spostato da SALESASSISTANT/SUGGERIMENTIVENDITA/ a SALESASSISTANT/, REGISTRO-SALVATAGGI.md | `git checkout 6b7f429` |
 | 2026-09-30 | f08d66f | RENDERING-MONTASCALE/experiments/feasibility.mjs | git checkout f08d66f |
+| 2026-09-30 | `afa49f9` | RENDERING-MONTASCALE: editor a moduli (frontend/src/lib/modules.ts, montage.ts, MontageEditor.tsx, App.tsx), backend gemini.ts/index.ts, vite proxy, COME-TESTARE.md, experiments/harmonize.mjs | `git checkout afa49f9` |
