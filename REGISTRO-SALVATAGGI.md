@@ -18,3 +18,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-09-30 | `e8fa1e0` | RENDERING-MONTASCALE/frontend: dimensions.ts (tubo 38mm), modules.ts, MontageEditor.tsx (drag e layout) | `git checkout e8fa1e0` |
 | 2026-09-30 | `194cbd6` | RENDERING-MONTASCALE/frontend: modules.ts, MontageEditor.tsx (raggio curve da tromba) | `git checkout 194cbd6` |
 | 2026-09-30 | `7a9ac14` | RENDERING-MONTASCALE: poltroncina (montage.ts, MontageEditor.tsx, App.tsx, backend gemini.ts/index.ts) | `git checkout 7a9ac14` |
+| 2026-09-30 | `abd689e` | RENDERING-MONTASCALE/frontend: modules.ts, MontageEditor.tsx, App.tsx, App.css (disegno a pezzi + progress bar) | `git checkout abd689e` |
