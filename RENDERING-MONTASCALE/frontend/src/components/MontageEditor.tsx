@@ -55,7 +55,7 @@ export function MontageEditor({ image, onComposite }: Props) {
       const pts = path.map((q) => q.p)
       drawRail(ctx, pts)
       if (!handles) return
-      const u = c.width / 70 // unità di interfaccia proporzionale alla larghezza immagine
+      const u = c.width / 45 // unità di interfaccia proporzionale alla larghezza immagine
       ctx.lineWidth = Math.max(2, u / 6)
       ctx.strokeStyle = 'rgba(255,60,60,0.9)'
       ctx.beginPath()
@@ -105,7 +105,7 @@ export function MontageEditor({ image, onComposite }: Props) {
     }
     if (anchors.length === 0) {
       // un solo tocco: il binario compare subito, poi si trascina per adattarlo
-      const s = image.naturalWidth / 25
+      const s = image.naturalWidth / 45
       const top = {
         x: Math.min(image.naturalWidth * 0.95, p.x + image.naturalWidth * 0.06),
         y: Math.max(image.naturalHeight * 0.1, p.y - image.naturalHeight * 0.4),
@@ -120,9 +120,7 @@ export function MontageEditor({ image, onComposite }: Props) {
     if (!key) return
     const p = toImage(e)
     if (key.startsWith('a')) {
-      // le ancore sono ordinate per y nel path: a0 = la più bassa
-      const low = anchors[0].y >= anchors[1]?.y ? 0 : 1
-      const idx = key === 'a0' ? low : anchors.length > 1 ? 1 - low : 0
+      const idx = key === 'a0' ? 0 : 1
       setAnchors((cur) => cur.map((q, k) => (k === idx ? { ...q, x: p.x, y: p.y } : q)))
     } else {
       const base = path.find((q) => q.key === key)!.p
@@ -139,15 +137,13 @@ export function MontageEditor({ image, onComposite }: Props) {
 
   const setAnchorScale = (which: 'low' | 'high', s: number) => {
     setAnchors((cur) => {
-      if (cur.length < 2) return cur.map((q) => ({ ...q, s }))
-      const lowIdx = cur[0].y >= cur[1].y ? 0 : 1
-      const idx = which === 'low' ? lowIdx : 1 - lowIdx
+      const idx = which === 'low' ? 0 : 1
       return cur.map((q, k) => (k === idx ? { ...q, s } : q))
     })
   }
 
-  const sortedAnchors = [...anchors].sort((a, b) => b.y - a.y)
-  const maxS = image.naturalWidth / 6
+  const sortedAnchors = anchors
+  const maxS = image.naturalWidth / 12
 
   const exportComposite = () => {
     render(false)
@@ -186,18 +182,16 @@ export function MontageEditor({ image, onComposite }: Props) {
           </select>
         </label>
       </div>
-      {sortedAnchors.length === 2 && (
-        <div className="toolbar">
-          <label>
-            Scala punto basso{' '}
-            <input type="range" min={4} max={maxS} value={sortedAnchors[0].s} onChange={(e) => setAnchorScale('low', +e.target.value)} />
-          </label>
-          <label>
-            Scala punto alto{' '}
-            <input type="range" min={4} max={maxS} value={sortedAnchors[1].s} onChange={(e) => setAnchorScale('high', +e.target.value)} />
-          </label>
-        </div>
-      )}
+      <div className="toolbar">
+        <label>
+          Scala punto basso{' '}
+          <input type="range" min={4} max={maxS} disabled={anchors.length < 2} value={sortedAnchors[0]?.s ?? 4} onChange={(e) => setAnchorScale('low', +e.target.value)} />
+        </label>
+        <label>
+          Scala punto alto{' '}
+          <input type="range" min={4} max={maxS} disabled={anchors.length < 2} value={sortedAnchors[1]?.s ?? 4} onChange={(e) => setAnchorScale('high', +e.target.value)} />
+        </label>
+      </div>
       <div className="toolbar">
         <button onClick={() => { setAnchors([]); setOffsets({}) }} disabled={!anchors.length}>Azzera</button>
         <label>

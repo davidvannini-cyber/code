@@ -11,7 +11,7 @@
 
 export const railDimensions = {
   /** Diametro di un singolo tubo (tubolare acciaio) */
-  tubeDiameter: 48.3,
+  tubeDiameter: 38,
   /**
    * Interasse tra i due tubi (centro-centro). I due tubi sono impilati nel
    * piano verticale di marcia (pignone+cremagliera su due livelli), NON

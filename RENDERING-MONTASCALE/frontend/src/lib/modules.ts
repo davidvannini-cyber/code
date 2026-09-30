@@ -91,7 +91,8 @@ export function buildPath(
   side: Side,
 ): { key: string; p: PathPoint }[] {
   if (anchors.length < 2) return anchors.map((p, i) => ({ key: `a${i}`, p }))
-  const [low, high] = [...anchors].sort((a, b) => b.y - a.y)
+  // anchors[0] = basso, anchors[1] = alto: ruoli fissi anche se l'utente li incrocia
+  const [low, high] = anchors
   const run = norm(high.x - low.x, high.y - low.y)
   const startPts = endModule(low, run, 'start', start, side)
   const endPts = endModule(high, run, 'end', end, side)
