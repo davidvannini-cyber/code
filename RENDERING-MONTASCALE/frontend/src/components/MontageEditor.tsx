@@ -1,63 +1,53 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { chairRect, drawChairRect, drawRail, sampleSpline, type PathPoint, type Rect } from '../lib/montage'
+import { chairRect, drawChairRect, drawRail, sampleSpline, type Rect } from '../lib/montage'
 import {
-  buildPath,
-  END_LABELS,
-  END_OPTIONS,
-  KIND_PRESETS,
-  START_OPTIONS,
+  buildPiecewise,
+  ELEM_LABELS,
+  ELEM_OPTIONS,
+  parseOption,
   turnRadiusMm,
-  type EndType,
-  type RampKind,
-  type Side,
+  type Elem,
+  type ElemType,
 } from '../lib/modules'
 
 const HIT_RADIUS = 28
+const PLAIN: ElemType[] = ['inizioRett', 'fineRett', 'inizioPian', 'finePian']
+const WITH_OPTIONS: ElemType[] = ['partenza', 'curva', 'arrivo']
 
 interface Props {
   image: HTMLImageElement
   onComposite?: (canvas: HTMLCanvasElement, chair: Rect | null) => void
+  disabled?: boolean
 }
 
-export function MontageEditor({ image, onComposite }: Props) {
+export function MontageEditor({ image, onComposite, disabled }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [kind, setKind] = useState<RampKind>('partenza')
-  const [startType, setStartType] = useState<EndType>(KIND_PRESETS.partenza.start)
-  const [endType, setEndType] = useState<EndType>(KIND_PRESETS.partenza.end)
-  const [side, setSide] = useState<Side>('dx')
-  const [wellCm, setWellCm] = useState(0) // larghezza tromba scale, 0 = senza tromba
-  // ancore sulla rampa (max 2) e spostamenti manuali dei punti dei moduli
-  const [anchors, setAnchors] = useState<PathPoint[]>([])
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [elems, setElems] = useState<Elem[]>([])
   const [offsets, setOffsets] = useState<Record<string, { dx: number; dy: number }>>({})
+  const [sel, setSel] = useState<number | null>(null)
+  const [menu, setMenu] = useState<{ x: number; y: number; sx: number; sy: number } | null>(null)
+  const [wellCm, setWellCm] = useState(0) // larghezza tromba, 0 = senza tromba
   const [showHandles, setShowHandles] = useState(true)
   const [chairOn, setChairOn] = useState(true)
-  const [chairT, setChairT] = useState(0.15) // posizione lungo il tratto dritto: 0 = basso, 1 = alto
+  const [chairT, setChairT] = useState(0.1)
   const dragging = useRef<string | null>(null)
+  const nextId = useRef(1)
 
-  const path = useMemo(() => {
-    const raw = buildPath(anchors, startType, endType, side, turnRadiusMm(wellCm))
-    return raw.map(({ key, p }) => {
-      const o = offsets[key]
-      return { key, p: o ? { ...p, x: p.x + o.dx, y: p.y + o.dy } : p }
-    })
-  }, [anchors, startType, endType, side, wellCm, offsets])
+  const path = useMemo(
+    () =>
+      buildPiecewise(elems, turnRadiusMm(wellCm)).map((q) => {
+        const o = offsets[q.key]
+        return o ? { ...q, p: { ...q.p, x: q.p.x + o.dx, y: q.p.y + o.dy }, h: { x: q.h.x + o.dx, y: q.h.y + o.dy } } : q
+      }),
+    [elems, wellCm, offsets],
+  )
 
-  const pickKind = (k: RampKind) => {
-    setKind(k)
-    setStartType(KIND_PRESETS[k].start)
-    setEndType(KIND_PRESETS[k].end)
-    setOffsets({})
-  }
-
-  const chairRect_ = useMemo(() => {
-    if (!chairOn || anchors.length < 2) return null
-    const [a, b] = anchors
-    return chairRect({
-      x: a.x + (b.x - a.x) * chairT,
-      y: a.y + (b.y - a.y) * chairT,
-      s: a.s + (b.s - a.s) * chairT,
-    })
-  }, [chairOn, chairT, anchors])
+  const chair = useMemo(() => {
+    if (!chairOn || path.length < 2) return null
+    const line = sampleSpline(path.map((q) => q.p))
+    return chairRect(line[Math.round(chairT * (line.length - 1))])
+  }, [chairOn, chairT, path])
 
   const render = useCallback(
     (handles: boolean, placeholder = true) => {
@@ -68,26 +58,25 @@ export function MontageEditor({ image, onComposite }: Props) {
       ctx.drawImage(image, 0, 0)
       const pts = path.map((q) => q.p)
       drawRail(ctx, pts)
-      if (placeholder && chairRect_) drawChairRect(ctx, chairRect_, Math.max(2, c.width / 300))
+      if (placeholder && chair) drawChairRect(ctx, chair, Math.max(2, c.width / 300))
       if (!handles) return
-      const u = c.width / 45 // unità di interfaccia proporzionale alla larghezza immagine
+      const u = c.width / 45
       ctx.lineWidth = Math.max(2, u / 6)
       ctx.strokeStyle = 'rgba(255,60,60,0.9)'
       ctx.beginPath()
       sampleSpline(pts).forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)))
       ctx.stroke()
-      path.forEach(({ key, p }) => {
-        const anchor = key.startsWith('a')
+      path.forEach(({ h, elemId }) => {
         ctx.beginPath()
-        ctx.arc(p.x, p.y, anchor ? u : u * 0.65, 0, Math.PI * 2)
-        ctx.fillStyle = anchor ? '#ffd400' : '#ff3c3c'
+        ctx.arc(h.x, h.y, elemId !== null ? u : u * 0.6, 0, Math.PI * 2)
+        ctx.fillStyle = elemId === sel ? '#00c853' : elemId !== null ? '#ffd400' : '#ff3c3c'
         ctx.fill()
         ctx.strokeStyle = '#fff'
         ctx.lineWidth = Math.max(2, u / 5)
         ctx.stroke()
       })
     },
-    [image, path, chairRect_],
+    [image, path, chair, sel],
   )
 
   useEffect(() => {
@@ -96,8 +85,10 @@ export function MontageEditor({ image, onComposite }: Props) {
       c.width = image.naturalWidth
       c.height = image.naturalHeight
     }
-    setAnchors([])
+    setElems([])
     setOffsets({})
+    setSel(null)
+    setMenu(null)
   }, [image])
 
   useEffect(() => render(showHandles), [render, showHandles])
@@ -105,38 +96,38 @@ export function MontageEditor({ image, onComposite }: Props) {
   const toImage = (e: React.PointerEvent) => {
     const c = canvasRef.current!
     const r = c.getBoundingClientRect()
-    return { x: ((e.clientX - r.left) / r.width) * c.width, y: ((e.clientY - r.top) / r.height) * c.height }
+    return {
+      x: ((e.clientX - r.left) / r.width) * c.width,
+      y: ((e.clientY - r.top) / r.height) * c.height,
+      sx: e.clientX - r.left,
+      sy: e.clientY - r.top,
+    }
   }
 
   const onDown = (e: React.PointerEvent) => {
+    if (disabled) return
     const p = toImage(e)
     const c = canvasRef.current!
     const r = (c.width / c.getBoundingClientRect().width) * HIT_RADIUS
-    const hit = path.find(({ p: q }) => Math.hypot(q.x - p.x, q.y - p.y) < r)
+    const hit = [...path].reverse().find(({ h }) => Math.hypot(h.x - p.x, h.y - p.y) < r)
+    setMenu(null)
     if (hit) {
       dragging.current = hit.key
+      setSel(hit.elemId)
       ;(e.target as Element).setPointerCapture(e.pointerId)
       return
     }
-    if (anchors.length === 0) {
-      // un solo tocco: il binario compare subito, poi si trascina per adattarlo
-      const s = image.naturalWidth / 45
-      const top = {
-        x: Math.min(image.naturalWidth * 0.95, p.x + image.naturalWidth * 0.06),
-        y: Math.max(image.naturalHeight * 0.1, p.y - image.naturalHeight * 0.4),
-        s: s * 0.75,
-      }
-      setAnchors([{ ...p, s }, top])
-    }
+    setMenu({ x: p.x, y: p.y, sx: p.sx, sy: p.sy })
   }
 
   const onMove = (e: React.PointerEvent) => {
     const key = dragging.current
     if (!key) return
     const p = toImage(e)
-    if (key.startsWith('a')) {
-      const idx = key === 'a0' ? 0 : 1
-      setAnchors((cur) => cur.map((q, k) => (k === idx ? { ...q, x: p.x, y: p.y } : q)))
+    if (key.startsWith('e')) {
+      const id = +key.slice(1)
+      // la maniglia è nel punto toccato: il binario sta mezzo tubo più in alto
+      setElems((cur) => cur.map((q) => (q.id === id ? { ...q, x: p.x, y: p.y } : q)))
     } else {
       const base = path.find((q) => q.key === key)!.p
       setOffsets((cur) => {
@@ -150,93 +141,105 @@ export function MontageEditor({ image, onComposite }: Props) {
     dragging.current = null
   }
 
-  const setAnchorScale = (which: 'low' | 'high', s: number) => {
-    setAnchors((cur) => {
-      const idx = which === 'low' ? 0 : 1
-      return cur.map((q, k) => (k === idx ? { ...q, s } : q))
-    })
+  const addElem = (type: ElemType, option?: string) => {
+    if (!menu) return
+    const prev = elems[elems.length - 1]
+    const s = prev ? prev.s * 0.85 : image.naturalWidth / 45
+    const { kind, side } = option ? parseOption(option) : { kind: 'none' as const, side: 'dx' as const }
+    const id = nextId.current++
+    setElems([...elems, { id, x: menu.x, y: menu.y, s, type, kind, side }])
+    setOffsets({})
+    setSel(id)
+    setMenu(null)
   }
 
-  const sortedAnchors = anchors
-  const maxS = image.naturalWidth / 12
+  const selected = elems.find((q) => q.id === sel)
+  const setSelScale = (s: number) => setElems((cur) => cur.map((q) => (q.id === sel ? { ...q, s } : q)))
+  const removeSel = () => {
+    setElems((cur) => cur.filter((q) => q.id !== sel))
+    setOffsets({})
+    setSel(null)
+  }
 
   const exportComposite = () => {
     render(false, false) // senza sagoma: la poltroncina si aggiunge in un secondo passaggio
-    onComposite?.(canvasRef.current!, chairRect_)
+    onComposite?.(canvasRef.current!, chair)
     render(showHandles)
   }
+
+  const first = elems.length === 0
+  const types: ElemType[] = first
+    ? ['partenza', 'inizioRett', 'fineRett', 'inizioPian', 'finePian', 'curva', 'arrivo']
+    : ['inizioRett', 'fineRett', 'inizioPian', 'finePian', 'curva', 'arrivo']
 
   return (
     <div>
       <div className="toolbar">
-        <strong>Rampa:</strong>
-        {(['partenza', 'percorso', 'arrivo'] as RampKind[]).map((k) => (
-          <button key={k} onClick={() => pickKind(k)} className={kind === k ? 'on' : ''}>
-            {k[0].toUpperCase() + k.slice(1)}
-          </button>
-        ))}
-      </div>
-      <div className="toolbar">
+        <button onClick={() => { const last = elems[elems.length - 1]; if (last) { setElems(elems.slice(0, -1)); setOffsets({}); setSel(null) } }} disabled={!elems.length}>
+          Annulla ultimo
+        </button>
+        <button onClick={() => { setElems([]); setOffsets({}); setSel(null) }} disabled={!elems.length}>Azzera</button>
         <label>
-          {kind === 'partenza' ? 'Tipo partenza (in basso)' : 'In basso'}{' '}
-          <select value={startType} onChange={(e) => { setStartType(e.target.value as EndType); setOffsets({}) }}>
-            {START_OPTIONS.map((t) => <option key={t} value={t}>{END_LABELS[t]}</option>)}
-          </select>
-        </label>
-        <label>
-          {kind === 'arrivo' ? 'Tipo arrivo (in alto)' : 'In alto'}{' '}
-          <select value={endType} onChange={(e) => { setEndType(e.target.value as EndType); setOffsets({}) }}>
-            {END_OPTIONS.map((t) => <option key={t} value={t}>{END_LABELS[t]}</option>)}
-          </select>
-        </label>
-        <label>
-          Tromba (cm, 0 = senza){' '}
+          Tromba (cm){' '}
           <input type="number" min={0} max={200} value={wellCm} style={{ width: 60 }} onChange={(e) => { setWellCm(Math.max(0, +e.target.value || 0)); setOffsets({}) }} />
         </label>
         <label>
-          Lato curve{' '}
-          <select value={side} onChange={(e) => { setSide(e.target.value as Side); setOffsets({}) }}>
-            <option value="sx">Sinistra</option>
-            <option value="dx">Destra</option>
-          </select>
-        </label>
-      </div>
-      <div className="toolbar">
-        <label>
-          Scala punto basso{' '}
-          <input type="range" min={4} max={maxS} disabled={anchors.length < 2} value={sortedAnchors[0]?.s ?? 4} onChange={(e) => setAnchorScale('low', +e.target.value)} />
-        </label>
-        <label>
-          Scala punto alto{' '}
-          <input type="range" min={4} max={maxS} disabled={anchors.length < 2} value={sortedAnchors[1]?.s ?? 4} onChange={(e) => setAnchorScale('high', +e.target.value)} />
+          <input type="checkbox" checked={showHandles} onChange={(e) => setShowHandles(e.target.checked)} /> Guide
         </label>
       </div>
       <div className="toolbar">
         <label>
           <input type="checkbox" checked={chairOn} onChange={(e) => setChairOn(e.target.checked)} /> Poltroncina
         </label>
+        <input type="range" min={0} max={1} step={0.01} disabled={!chairOn} value={chairT} onChange={(e) => setChairT(+e.target.value)} />
         <label>
-          Posizione poltroncina{' '}
-          <input type="range" min={0} max={1} step={0.01} disabled={!chairOn} value={chairT} onChange={(e) => setChairT(+e.target.value)} />
+          Scala{' '}
+          <input
+            type="range"
+            min={4}
+            max={image.naturalWidth / 12}
+            disabled={!selected}
+            value={selected?.s ?? 4}
+            onChange={(e) => setSelScale(+e.target.value)}
+          />
         </label>
+        <button onClick={removeSel} disabled={!selected}>Elimina punto</button>
+        <button className="primary" onClick={exportComposite} disabled={path.length < 2 || disabled}>
+          Genera
+        </button>
       </div>
-      <div className="toolbar">
-        <button onClick={() => { setAnchors([]); setOffsets({}) }} disabled={!anchors.length}>Azzera</button>
-        <label>
-          <input type="checkbox" checked={showHandles} onChange={(e) => setShowHandles(e.target.checked)} /> Mostra guide
-        </label>
-        <button onClick={exportComposite} disabled={anchors.length < 2}>Genera fotomontaggio</button>
+      <div className="canvas-wrap" ref={wrapRef}>
+        <canvas
+          ref={canvasRef}
+          className="montage-canvas"
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+        />
+        {menu && (
+          <div
+            className="menu"
+            style={{ left: Math.min(menu.sx, (wrapRef.current?.clientWidth ?? 300) - 210), top: menu.sy }}
+          >
+            {types.map((t) =>
+              WITH_OPTIONS.includes(t) ? (
+                <select
+                  key={t}
+                  value=""
+                  onChange={(e) => e.target.value && addElem(t, e.target.value)}
+                >
+                  <option value="">{ELEM_LABELS[t]} ▾</option>
+                  {ELEM_OPTIONS[t]!.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              ) : PLAIN.includes(t) ? (
+                <button key={t} onClick={() => addElem(t)}>{ELEM_LABELS[t]}</button>
+              ) : null,
+            )}
+          </div>
+        )}
       </div>
-      <p className="status">
-        {anchors.length === 0 ? 'Tocca la foto dove inizia il binario (in basso)' : 'Trascina le estremità per adattare il binario'}
-      </p>
-      <canvas
-        ref={canvasRef}
-        className="montage-canvas"
-        onPointerDown={onDown}
-        onPointerMove={onMove}
-        onPointerUp={onUp}
-      />
     </div>
   )
 }

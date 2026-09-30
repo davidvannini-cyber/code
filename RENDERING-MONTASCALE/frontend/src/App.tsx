@@ -11,6 +11,7 @@ function App() {
   const [montageUrl, setMontageUrl] = useState<string | null>(null)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [progress, setProgress] = useState(0)
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -95,9 +96,12 @@ function App() {
     setMontageUrl(dataUrl)
     setResultUrl(null)
     setPhase('loading')
+    setProgress(8)
     try {
       let result = await generate(dataUrl, false)
+      setProgress(chair ? 60 : 95)
       if (chair) result = await addChair(result, chair, canvas.width)
+      setProgress(100)
       setResultUrl(result)
       setPhase('done')
     } catch (err) {
@@ -111,14 +115,16 @@ function App() {
     <div className="app">
       <h1>Rendering montascale</h1>
       <input type="file" accept="image/*" onChange={handleFile} />
-      {image && <MontageEditor image={image} onComposite={handleComposite} />}
+      {image && <MontageEditor image={image} onComposite={handleComposite} disabled={phase === 'loading'} />}
       {montageUrl && (
         <section>
           <h2>Fotomontaggio</h2>
           <img src={montageUrl} className="result" />
         </section>
       )}
-      {phase === 'loading' && <p>Ritocco fotorealistico in corso…</p>}
+      {phase === 'loading' && (
+        <div className="progress"><div className="progress-bar" style={{ width: `${progress}%` }} /></div>
+      )}
       {phase === 'error' && <p>Ritocco AI non disponibile: {error}</p>}
       {resultUrl && (
         <section>
