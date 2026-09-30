@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { chairRect, drawChairRect, drawRail, sampleSpline, type Rect } from '../lib/montage'
+import { railDimensions, stairAssumptions } from '../geometry/dimensions'
 import {
   buildPiecewise,
   ELEM_LABELS,
@@ -31,8 +32,11 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
   const [showHandles, setShowHandles] = useState(true)
   const [chairOn, setChairOn] = useState(true)
   const [chairT, setChairT] = useState(0.1)
+  const [loupe, setLoupe] = useState<{ x: number; y: number } | null>(null)
+  const [calib, setCalib] = useState<{ x: number; y: number }[] | null>(null) // tocchi di calibrazione (alzata = 170 mm)
   const dragging = useRef<string | null>(null)
   const nextId = useRef(1)
+  const [calibS, setCalibS] = useState<number | null>(null)
 
   const path = useMemo(
     () =>
@@ -75,8 +79,42 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
         ctx.lineWidth = Math.max(2, u / 5)
         ctx.stroke()
       })
+      calib?.forEach((q) => {
+        ctx.beginPath()
+        ctx.arc(q.x, q.y, u * 0.6, 0, Math.PI * 2)
+        ctx.fillStyle = '#00bcd4'
+        ctx.fill()
+      })
+      if (loupe) {
+        // lente 2.5x sopra il punto trascinato, per vedere dove si sta posizionando
+        const R = u * 3.2
+        const z = 2.5
+        const cx = Math.min(Math.max(loupe.x, R), c.width - R)
+        const cy = Math.max(loupe.y - R * 1.6, R)
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(cx, cy, R, 0, Math.PI * 2)
+        ctx.clip()
+        ctx.fillStyle = '#000'
+        ctx.fillRect(cx - R, cy - R, R * 2, R * 2)
+        ctx.drawImage(c, loupe.x - R / z, loupe.y - R / z, (R * 2) / z, (R * 2) / z, cx - R, cy - R, R * 2, R * 2)
+        ctx.restore()
+        ctx.beginPath()
+        ctx.arc(cx, cy, R, 0, Math.PI * 2)
+        ctx.lineWidth = Math.max(3, u / 4)
+        ctx.strokeStyle = '#fff'
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(cx - u * 0.5, cy)
+        ctx.lineTo(cx + u * 0.5, cy)
+        ctx.moveTo(cx, cy - u * 0.5)
+        ctx.lineTo(cx, cy + u * 0.5)
+        ctx.lineWidth = 2
+        ctx.strokeStyle = '#f00'
+        ctx.stroke()
+      }
     },
-    [image, path, chair, sel],
+    [image, path, chair, sel, loupe, calib],
   )
 
   useEffect(() => {
@@ -107,6 +145,20 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
   const onDown = (e: React.PointerEvent) => {
     if (disabled) return
     const p = toImage(e)
+    if (calib) {
+      const pts = [...calib, { x: p.x, y: p.y }]
+      if (pts.length < 2) {
+        setCalib(pts)
+      } else {
+        // alzata reale 170 mm -> diametro tubo 38 mm in pixel
+        const sNew = (Math.abs(pts[1].y - pts[0].y) * railDimensions.tubeDiameter) / stairAssumptions.riserHeight
+        const f = elems[0] ? sNew / elems[0].s : 1
+        setElems((cur) => (cur.length ? cur.map((q) => ({ ...q, s: q.s * f })) : cur))
+        setCalibS(sNew)
+        setCalib(null)
+      }
+      return
+    }
     const c = canvasRef.current!
     const r = (c.width / c.getBoundingClientRect().width) * HIT_RADIUS
     const hit = [...path].reverse().find(({ h }) => Math.hypot(h.x - p.x, h.y - p.y) < r)
@@ -114,6 +166,7 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
     if (hit) {
       dragging.current = hit.key
       setSel(hit.elemId)
+      setLoupe({ x: p.x, y: p.y })
       ;(e.target as Element).setPointerCapture(e.pointerId)
       return
     }
@@ -124,6 +177,7 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
     const key = dragging.current
     if (!key) return
     const p = toImage(e)
+    setLoupe({ x: p.x, y: p.y })
     if (key.startsWith('e')) {
       const id = +key.slice(1)
       // la maniglia è nel punto toccato: il binario sta mezzo tubo più in alto
@@ -139,12 +193,13 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
 
   const onUp = () => {
     dragging.current = null
+    setLoupe(null)
   }
 
   const addElem = (type: ElemType, option?: string) => {
     if (!menu) return
     const prev = elems[elems.length - 1]
-    const s = prev ? prev.s * 0.85 : image.naturalWidth / 45
+    const s = prev ? prev.s * 0.85 : calibS ?? image.naturalWidth / 45
     const { kind, side } = option ? parseOption(option) : { kind: 'none' as const, side: 'dx' as const }
     const id = nextId.current++
     setElems([...elems, { id, x: menu.x, y: menu.y, s, type, kind, side }])
@@ -168,9 +223,15 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
   }
 
   const first = elems.length === 0
-  const types: ElemType[] = first
+  const NEXT: Record<ElemType, ElemType> = {
+    partenza: 'inizioRett', inizioRett: 'fineRett', fineRett: 'curva',
+    inizioPian: 'finePian', finePian: 'inizioRett', curva: 'inizioRett', arrivo: 'inizioRett',
+  }
+  const all: ElemType[] = first
     ? ['partenza', 'inizioRett', 'fineRett', 'inizioPian', 'finePian', 'curva', 'arrivo']
     : ['inizioRett', 'fineRett', 'inizioPian', 'finePian', 'curva', 'arrivo']
+  const suggested = first ? 'partenza' : NEXT[elems[elems.length - 1].type]
+  const types = [suggested, ...all.filter((t) => t !== suggested)].filter((t) => all.includes(t))
 
   return (
     <div>
@@ -183,6 +244,9 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
           Tromba (cm){' '}
           <input type="number" min={0} max={200} value={wellCm} style={{ width: 60 }} onChange={(e) => { setWellCm(Math.max(0, +e.target.value || 0)); setOffsets({}) }} />
         </label>
+        <button onClick={() => setCalib(calib ? null : [])} className={calib ? 'on' : ''}>
+          {calib ? `Tocca alto e basso di un gradino (${calib.length}/2)` : 'Calibra scala'}
+        </button>
         <label>
           <input type="checkbox" checked={showHandles} onChange={(e) => setShowHandles(e.target.checked)} /> Guide
         </label>
@@ -225,6 +289,7 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
               WITH_OPTIONS.includes(t) ? (
                 <select
                   key={t}
+                  className={t === suggested ? 'suggest' : ''}
                   value=""
                   onChange={(e) => e.target.value && addElem(t, e.target.value)}
                 >
@@ -234,7 +299,7 @@ export function MontageEditor({ image, onComposite, disabled }: Props) {
                   ))}
                 </select>
               ) : PLAIN.includes(t) ? (
-                <button key={t} onClick={() => addElem(t)}>{ELEM_LABELS[t]}</button>
+                <button key={t} className={t === suggested ? 'suggest' : ''} onClick={() => addElem(t)}>{ELEM_LABELS[t]}</button>
               ) : null,
             )}
           </div>

@@ -16,3 +16,4 @@ body { background: #fff !important; color: #111 !important; display: block !impo
 .primary { background: #1a73e8 !important; color: #fff !important; font-weight: 700; }
 .progress { height: 14px; background: #ddd; border-radius: 7px; overflow: hidden; margin: 16px 0; }
 .progress-bar { height: 100%; background: #1a73e8; transition: width .6s ease; }
+.menu .suggest { background: #1a73e8; color: #fff; font-weight: 700; border-color: #1a73e8; }
