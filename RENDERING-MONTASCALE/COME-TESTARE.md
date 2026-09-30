@@ -1,4 +1,8 @@
-# Come testare (sul tuo computer)
+# Come testare
+
+Doppio clic su `AVVIA-TEST.command` (prima volta: tasto destro > Apri). Fa tutto da solo.
+
+Procedura manuale (solo se serve):
 
 ```bash
 git fetch origin claude/adoring-darwin-3jf3eu
