@@ -1,5 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { drawRail, sampleSpline, type PathPoint } from '../lib/montage'
+import {
+  buildPath,
+  END_LABELS,
+  END_OPTIONS,
+  KIND_PRESETS,
+  START_OPTIONS,
+  type EndType,
+  type RampKind,
+  type Side,
+} from '../lib/modules'
 
 const HIT_RADIUS = 28
 
@@ -8,20 +18,32 @@ interface Props {
   onComposite?: (canvas: HTMLCanvasElement) => void
 }
 
-/** Distanza punto-segmento, per inserire un nuovo punto sul tratto più vicino. */
-function segDist(p: PathPoint, a: PathPoint, b: PathPoint) {
-  const dx = b.x - a.x
-  const dy = b.y - a.y
-  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)))
-  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy))
-}
-
 export function MontageEditor({ image, onComposite }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [pts, setPts] = useState<PathPoint[]>([])
-  const [sel, setSel] = useState<number | null>(null)
-  const dragging = useRef<number | null>(null)
+  const [kind, setKind] = useState<RampKind>('partenza')
+  const [startType, setStartType] = useState<EndType>(KIND_PRESETS.partenza.start)
+  const [endType, setEndType] = useState<EndType>(KIND_PRESETS.partenza.end)
+  const [side, setSide] = useState<Side>('dx')
+  // ancore sulla rampa (max 2) e spostamenti manuali dei punti dei moduli
+  const [anchors, setAnchors] = useState<PathPoint[]>([])
+  const [offsets, setOffsets] = useState<Record<string, { dx: number; dy: number }>>({})
   const [showHandles, setShowHandles] = useState(true)
+  const dragging = useRef<string | null>(null)
+
+  const path = useMemo(() => {
+    const raw = buildPath(anchors, startType, endType, side)
+    return raw.map(({ key, p }) => {
+      const o = offsets[key]
+      return { key, p: o ? { ...p, x: p.x + o.dx, y: p.y + o.dy } : p }
+    })
+  }, [anchors, startType, endType, side, offsets])
+
+  const pickKind = (k: RampKind) => {
+    setKind(k)
+    setStartType(KIND_PRESETS[k].start)
+    setEndType(KIND_PRESETS[k].end)
+    setOffsets({})
+  }
 
   const render = useCallback(
     (handles: boolean) => {
@@ -30,24 +52,25 @@ export function MontageEditor({ image, onComposite }: Props) {
       const ctx = c.getContext('2d')!
       ctx.clearRect(0, 0, c.width, c.height)
       ctx.drawImage(image, 0, 0)
+      const pts = path.map((q) => q.p)
       drawRail(ctx, pts)
       if (!handles) return
-      const line = sampleSpline(pts)
       ctx.lineWidth = 2
       ctx.strokeStyle = 'rgba(255,60,60,0.9)'
       ctx.beginPath()
-      line.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)))
+      sampleSpline(pts).forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)))
       ctx.stroke()
-      pts.forEach((p, i) => {
+      path.forEach(({ key, p }) => {
+        const anchor = key.startsWith('a')
         ctx.beginPath()
-        ctx.arc(p.x, p.y, i === sel ? 14 : 10, 0, Math.PI * 2)
-        ctx.fillStyle = i === sel ? '#ffd400' : '#ff3c3c'
+        ctx.arc(p.x, p.y, anchor ? 14 : 9, 0, Math.PI * 2)
+        ctx.fillStyle = anchor ? '#ffd400' : '#ff3c3c'
         ctx.fill()
         ctx.strokeStyle = '#fff'
         ctx.stroke()
       })
     },
-    [image, pts, sel],
+    [image, path],
   )
 
   useEffect(() => {
@@ -56,105 +79,128 @@ export function MontageEditor({ image, onComposite }: Props) {
       c.width = image.naturalWidth
       c.height = image.naturalHeight
     }
+    setAnchors([])
+    setOffsets({})
   }, [image])
 
   useEffect(() => render(showHandles), [render, showHandles])
 
-  const toImage = (e: React.PointerEvent): PathPoint => {
+  const toImage = (e: React.PointerEvent) => {
     const c = canvasRef.current!
     const r = c.getBoundingClientRect()
-    return { x: ((e.clientX - r.left) / r.width) * c.width, y: ((e.clientY - r.top) / r.height) * c.height, s: 0 }
-  }
-
-  const hitScale = () => {
-    const c = canvasRef.current!
-    return (c.width / c.getBoundingClientRect().width) * HIT_RADIUS
+    return { x: ((e.clientX - r.left) / r.width) * c.width, y: ((e.clientY - r.top) / r.height) * c.height }
   }
 
   const onDown = (e: React.PointerEvent) => {
     const p = toImage(e)
-    const r = hitScale()
-    const hit = pts.findIndex((q) => Math.hypot(q.x - p.x, q.y - p.y) < r)
-    if (hit >= 0) {
-      dragging.current = hit
-      setSel(hit)
+    const c = canvasRef.current!
+    const r = (c.width / c.getBoundingClientRect().width) * HIT_RADIUS
+    const hit = path.find(({ p: q }) => Math.hypot(q.x - p.x, q.y - p.y) < r)
+    if (hit) {
+      dragging.current = hit.key
       ;(e.target as Element).setPointerCapture(e.pointerId)
       return
     }
-    const baseS = image.naturalWidth / 28
-    if (pts.length === 0) {
-      setPts([{ ...p, s: baseS }])
-      setSel(0)
-      return
+    if (anchors.length < 2) {
+      const s = anchors.length === 0 ? image.naturalWidth / 25 : anchors[0].s * 0.8
+      setAnchors([...anchors, { ...p, s }])
     }
-    if (pts.length >= 2) {
-      // inserisce sul tratto vicino se il click è vicino al percorso
-      let best = -1
-      let bestD = r * 1.5
-      for (let i = 0; i < pts.length - 1; i++) {
-        const d = segDist(p, pts[i], pts[i + 1])
-        if (d < bestD) {
-          bestD = d
-          best = i
-        }
-      }
-      if (best >= 0) {
-        const s = (pts[best].s + pts[best + 1].s) / 2
-        setPts([...pts.slice(0, best + 1), { ...p, s }, ...pts.slice(best + 1)])
-        setSel(best + 1)
-        return
-      }
-    }
-    // altrimenti aggiunge in coda: il punto successivo è un po' più piccolo (più lontano)
-    const last = pts[pts.length - 1]
-    setPts([...pts, { ...p, s: last.s * 0.93 }])
-    setSel(pts.length)
   }
 
   const onMove = (e: React.PointerEvent) => {
-    const i = dragging.current
-    if (i === null) return
+    const key = dragging.current
+    if (!key) return
     const p = toImage(e)
-    setPts((cur) => cur.map((q, k) => (k === i ? { ...q, x: p.x, y: p.y } : q)))
+    if (key.startsWith('a')) {
+      // le ancore sono ordinate per y nel path: a0 = la più bassa
+      const low = anchors[0].y >= anchors[1]?.y ? 0 : 1
+      const idx = key === 'a0' ? low : anchors.length > 1 ? 1 - low : 0
+      setAnchors((cur) => cur.map((q, k) => (k === idx ? { ...q, x: p.x, y: p.y } : q)))
+    } else {
+      const base = path.find((q) => q.key === key)!.p
+      setOffsets((cur) => {
+        const o = cur[key] ?? { dx: 0, dy: 0 }
+        return { ...cur, [key]: { dx: o.dx + (p.x - base.x), dy: o.dy + (p.y - base.y) } }
+      })
+    }
   }
 
   const onUp = () => {
     dragging.current = null
   }
 
-  const setScale = (factor: number) => {
-    if (sel === null) return
-    setPts((cur) => cur.map((q, k) => (k === sel ? { ...q, s: Math.max(4, q.s * factor) } : q)))
+  const setAnchorScale = (which: 'low' | 'high', s: number) => {
+    setAnchors((cur) => {
+      if (cur.length < 2) return cur.map((q) => ({ ...q, s }))
+      const lowIdx = cur[0].y >= cur[1].y ? 0 : 1
+      const idx = which === 'low' ? lowIdx : 1 - lowIdx
+      return cur.map((q, k) => (k === idx ? { ...q, s } : q))
+    })
   }
 
-  const removeSel = () => {
-    if (sel === null) return
-    setPts((cur) => cur.filter((_, k) => k !== sel))
-    setSel(null)
-  }
+  const sortedAnchors = [...anchors].sort((a, b) => b.y - a.y)
+  const maxS = image.naturalWidth / 6
 
   const exportComposite = () => {
     render(false)
-    const c = canvasRef.current!
-    onComposite?.(c)
+    onComposite?.(canvasRef.current!)
     render(showHandles)
   }
 
   return (
     <div>
       <div className="toolbar">
-        <button onClick={() => setScale(1.1)} disabled={sel === null}>Punto più grande</button>
-        <button onClick={() => setScale(1 / 1.1)} disabled={sel === null}>Punto più piccolo</button>
-        <button onClick={removeSel} disabled={sel === null}>Elimina punto</button>
-        <button onClick={() => { setPts([]); setSel(null) }} disabled={!pts.length}>Azzera</button>
+        <strong>Rampa:</strong>
+        {(['partenza', 'percorso', 'arrivo'] as RampKind[]).map((k) => (
+          <button key={k} onClick={() => pickKind(k)} className={kind === k ? 'on' : ''}>
+            {k[0].toUpperCase() + k.slice(1)}
+          </button>
+        ))}
+      </div>
+      <div className="toolbar">
+        <label>
+          {kind === 'partenza' ? 'Tipo partenza (in basso)' : 'In basso'}{' '}
+          <select value={startType} onChange={(e) => { setStartType(e.target.value as EndType); setOffsets({}) }}>
+            {START_OPTIONS.map((t) => <option key={t} value={t}>{END_LABELS[t]}</option>)}
+          </select>
+        </label>
+        <label>
+          {kind === 'arrivo' ? 'Tipo arrivo (in alto)' : 'In alto'}{' '}
+          <select value={endType} onChange={(e) => { setEndType(e.target.value as EndType); setOffsets({}) }}>
+            {END_OPTIONS.map((t) => <option key={t} value={t}>{END_LABELS[t]}</option>)}
+          </select>
+        </label>
+        <label>
+          Lato curve{' '}
+          <select value={side} onChange={(e) => { setSide(e.target.value as Side); setOffsets({}) }}>
+            <option value="sx">Sinistra</option>
+            <option value="dx">Destra</option>
+          </select>
+        </label>
+      </div>
+      {sortedAnchors.length === 2 && (
+        <div className="toolbar">
+          <label>
+            Scala punto basso{' '}
+            <input type="range" min={4} max={maxS} value={sortedAnchors[0].s} onChange={(e) => setAnchorScale('low', +e.target.value)} />
+          </label>
+          <label>
+            Scala punto alto{' '}
+            <input type="range" min={4} max={maxS} value={sortedAnchors[1].s} onChange={(e) => setAnchorScale('high', +e.target.value)} />
+          </label>
+        </div>
+      )}
+      <div className="toolbar">
+        <button onClick={() => { setAnchors([]); setOffsets({}) }} disabled={!anchors.length}>Azzera</button>
         <label>
           <input type="checkbox" checked={showHandles} onChange={(e) => setShowHandles(e.target.checked)} /> Mostra guide
         </label>
-        <button onClick={exportComposite} disabled={pts.length < 2}>Genera fotomontaggio</button>
+        <button onClick={exportComposite} disabled={anchors.length < 2}>Genera fotomontaggio</button>
       </div>
       <p className="hint">
-        Tocca la foto lungo il percorso del binario, dal basso verso l'alto, seguendo la curva. Trascina i punti per
-        correggere; tocca un punto e usa "più grande/piccolo" per la prospettiva (vicino = grande, lontano = piccolo).
+        1) Tocca l'inizio del tratto dritto sulla rampa (in basso), 2) tocca la fine (in alto). I moduli di partenza/arrivo
+        e le curve si generano da soli: trascina i punti rossi per adattarli, i gialli per spostare il tratto dritto. Le
+        due scale regolano la prospettiva (vicino = grande, lontano = piccolo).
       </p>
       <canvas
         ref={canvasRef}

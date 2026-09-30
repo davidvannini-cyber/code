@@ -14,22 +14,37 @@ export interface PathPoint {
 
 const SAMPLES_PER_SEGMENT = 24
 
-/** Catmull-Rom attraverso i punti, con `s` interpolato linearmente. */
+/**
+ * Catmull-Rom centripetale (Barry-Goldman) attraverso i punti, con `s`
+ * interpolato linearmente. La parametrizzazione centripeta evita ricci e
+ * overshoot quando i punti sono a distanze molto diverse (rettilineo + curva).
+ */
 export function sampleSpline(pts: PathPoint[]): PathPoint[] {
   if (pts.length < 2) return [...pts]
+  const ext = (a: PathPoint, b: PathPoint): PathPoint => ({ x: 2 * a.x - b.x, y: 2 * a.y - b.y, s: a.s })
+  const P = [ext(pts[0], pts[1]), ...pts, ext(pts[pts.length - 1], pts[pts.length - 2])]
   const out: PathPoint[] = []
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[Math.max(i - 1, 0)]
-    const p1 = pts[i]
-    const p2 = pts[i + 1]
-    const p3 = pts[Math.min(i + 2, pts.length - 1)]
+  const lerp = (a: PathPoint, b: PathPoint, ta: number, tb: number, u: number) => {
+    const w = (u - ta) / (tb - ta || 1)
+    return { x: a.x + (b.x - a.x) * w, y: a.y + (b.y - a.y) * w }
+  }
+  for (let i = 1; i < P.length - 2; i++) {
+    const [p0, p1, p2, p3] = [P[i - 1], P[i], P[i + 1], P[i + 2]]
+    const d = (a: PathPoint, b: PathPoint) => Math.max(Math.sqrt(Math.hypot(b.x - a.x, b.y - a.y)), 1e-3)
+    const t0 = 0
+    const t1 = t0 + d(p0, p1)
+    const t2 = t1 + d(p1, p2)
+    const t3 = t2 + d(p2, p3)
     for (let k = 0; k < SAMPLES_PER_SEGMENT; k++) {
-      const t = k / SAMPLES_PER_SEGMENT
-      const t2 = t * t
-      const t3 = t2 * t
-      const cr = (a: number, b: number, c: number, d: number) =>
-        0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3)
-      out.push({ x: cr(p0.x, p1.x, p2.x, p3.x), y: cr(p0.y, p1.y, p2.y, p3.y), s: p1.s + (p2.s - p1.s) * t })
+      const f = k / SAMPLES_PER_SEGMENT
+      const u = t1 + (t2 - t1) * f
+      const A1 = lerp(p0, p1, t0, t1, u)
+      const A2 = lerp(p1, p2, t1, t2, u)
+      const A3 = lerp(p2, p3, t2, t3, u)
+      const B1 = lerp({ ...A1, s: 0 }, { ...A2, s: 0 }, t0, t2, u)
+      const B2 = lerp({ ...A2, s: 0 }, { ...A3, s: 0 }, t1, t3, u)
+      const C = lerp({ ...B1, s: 0 }, { ...B2, s: 0 }, t1, t2, u)
+      out.push({ x: C.x, y: C.y, s: p1.s + (p2.s - p1.s) * f })
     }
   }
   out.push({ ...pts[pts.length - 1] })
