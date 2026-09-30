@@ -14,3 +14,34 @@ usa lo strumento AskUserQuestion con queste 4 domande, ciascuna con due sole opz
 Dopo le risposte agisci SOLO secondo i "Sì". Per ogni "No" non fare quell'azione e chiedi conferma caso per caso.
 Se lo strumento AskUserQuestion non è disponibile, scrivi le 4 domande in chat e attendi la risposta prima di fare altro.
 EOF
+
+# --- Scelta progetto / cartella / stato (elenchi calcolati al momento dell'avvio) ---
+cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || exit 0
+
+echo
+echo "DOPO le 4 domande di consenso, e sempre prima di iniziare a lavorare, fai altre 3 scelte"
+echo "con AskUserQuestion, UNA ALLA VOLTA (ognuna dipende dalla precedente). Elenchi attuali del repository:"
+echo
+echo "PROGETTI (cartelle di primo livello), dal più recente:"
+for d in $(git ls-tree -d --name-only HEAD 2>/dev/null | grep -v '^\.' | tr ' ' '?'); do
+  d=${d//\?/ }
+  t=$(git log -1 --format=%ct -- "$d" 2>/dev/null); echo "${t:-0}|$d"
+done | sort -t'|' -k1,1nr | cut -d'|' -f2 | sed 's/^/  - /'
+echo
+echo "SOTTOCARTELLE e FILE DI STATO (.md) per ciascun progetto:"
+git ls-tree -d --name-only HEAD 2>/dev/null | grep -v '^\.' | while IFS= read -r d; do
+  echo "  [$d]"
+  find "$d" -mindepth 1 -maxdepth 1 -type d -not -name '.*' -not -name node_modules -not -name dist | sed 's/^/    cartella: /'
+  find "$d" -maxdepth 2 -type f -name '*.md' -not -path '*node_modules*' | sed 's/^/    stato:    /'
+done
+cat <<'EOF'
+
+SCELTA A) PROGETTO: opzioni = i 3 progetti più recenti dell'elenco + "Nuovo progetto"
+   (gli altri progetti si scelgono con "Other"). Se "Nuovo progetto": chiedi il nome e crea la cartella.
+SCELTA B) CARTELLA DI LAVORO dentro il progetto scelto: opzioni = sottocartelle esistenti (max 3)
+   + "Nuova cartella" (chiedi il nome e creala). Se non esistono sottocartelle: radice del progetto + "Nuova cartella".
+SCELTA C) RECUPERO STATO: opzioni = i file .md di stato trovati nel progetto/cartella
+   (HANDOFF.md, README.md, ecc., max 3) + "Parto da zero, nessun recupero".
+   Se scelto un file: leggilo per intero e riassumi in 3-5 righe a che punto siamo prima di procedere.
+Dopo le 3 scelte, lavora SOLO dentro la cartella scelta. Se AskUserQuestion non è disponibile, scrivi le domande in chat.
+EOF
