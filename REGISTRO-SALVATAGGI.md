@@ -16,3 +16,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-09-30 | `6b76aac` | RENDERING-MONTASCALE/AVVIA-TEST.command, COME-TESTARE.md | `git checkout 6b76aac` |
 | 2026-09-30 | `de42795` | RENDERING-MONTASCALE/frontend (MontageEditor.tsx, App.css): un tocco, handle proporzionali, UI leggibile | `git checkout de42795` |
 | 2026-09-30 | `e8fa1e0` | RENDERING-MONTASCALE/frontend: dimensions.ts (tubo 38mm), modules.ts, MontageEditor.tsx (drag e layout) | `git checkout e8fa1e0` |
+| 2026-09-30 | `194cbd6` | RENDERING-MONTASCALE/frontend: modules.ts, MontageEditor.tsx (raggio curve da tromba) | `git checkout 194cbd6` |
