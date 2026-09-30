@@ -11,18 +11,17 @@ function getClient(): GoogleGenAI {
 export interface FuseImageInput {
   /** Foto originale + proxy 3D già compositati (PNG base64, senza prefisso data:) */
   compositeImageBase64: string;
-  /** Bianco = area modificabile (alone luci/ombre attorno al prodotto), nero = area protetta (pixel prodotto, intoccabili) */
-  maskImageBase64: string;
+  /** Opzionale: bianco = area modificabile, nero = area protetta */
+  maskImageBase64?: string;
 }
 
 const FUSION_PROMPT = `
-Sei uno strumento di fusione fotorealistica per un montascale composito su una foto reale.
-Nell'immagine fornita, il prodotto (binario e poltroncina) è già posizionato correttamente
-in prospettiva: NON modificare forma, colore o dettagli del prodotto.
-Il tuo unico compito è armonizzare l'illuminazione, generare ombre coerenti con la luce
-della stanza/ambiente, e sfumare i contorni del prodotto con la scena circostante SOLO
-nell'area indicata dalla maschera fornita (area bianca = modificabile, area nera =
-intoccabile). Non alterare la geometria della scala, non aggiungere o rimuovere elementi.
+Sei uno strumento di ritocco fotorealistico per un fotomontaggio di montascale su una foto reale.
+Nell'immagine il binario (due tubi d'acciaio con montanti bianchi) è già disegnato in posizione
+e prospettiva corrette: MANTIENI esattamente forma, posizione e percorso del binario, compresi
+i tratti curvi. Rendilo fotorealistico: materiale metallico zincato con riflessi coerenti con
+l'ambiente, montanti bianchi verniciati, ombre proiettate e di contatto sui gradini, grana e
+nitidezza uguali alla foto. Non alterare la scala né il resto della scena.
 `.trim();
 
 /**
@@ -39,14 +38,14 @@ export async function fuseImage({
   const ai = getClient();
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
+    model: process.env.GEMINI_MODEL ?? 'gemini-3.1-flash-image-preview',
     contents: [
       {
         role: 'user',
         parts: [
           { text: FUSION_PROMPT },
           { inlineData: { mimeType: 'image/png', data: compositeImageBase64 } },
-          { inlineData: { mimeType: 'image/png', data: maskImageBase64 } },
+          ...(maskImageBase64 ? [{ inlineData: { mimeType: 'image/png', data: maskImageBase64 } }] : []),
         ],
       },
     ],

@@ -13,8 +13,8 @@ app.get('/api/health', (_req, res) => {
 
 app.post('/api/generate', async (req, res) => {
   const { compositeImageBase64, maskImageBase64 } = req.body ?? {};
-  if (!compositeImageBase64 || !maskImageBase64) {
-    res.status(400).json({ error: 'compositeImageBase64 e maskImageBase64 sono richiesti' });
+  if (!compositeImageBase64) {
+    res.status(400).json({ error: 'compositeImageBase64 è richiesto' });
     return;
   }
   if (!process.env.GEMINI_API_KEY) {
