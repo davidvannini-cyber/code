@@ -20,3 +20,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-09-30 | `7a9ac14` | RENDERING-MONTASCALE: poltroncina (montage.ts, MontageEditor.tsx, App.tsx, backend gemini.ts/index.ts) | `git checkout 7a9ac14` |
 | 2026-09-30 | `abd689e` | RENDERING-MONTASCALE/frontend: modules.ts, MontageEditor.tsx, App.tsx, App.css (disegno a pezzi + progress bar) | `git checkout abd689e` |
 | 2026-09-30 | `9ddb431` | RENDERING-MONTASCALE/frontend: MontageEditor.tsx, App.css (calibra, lente, suggerimento) | `git checkout 9ddb431` |
+| 2026-10-06 | `4da99b3` | SALESASSISTANT/PDF-REGOLE-ISTRUZIONI: 4 PDF (LEADREWORKS/SALESASSISTANT REGOLE e ISTRUZIONI) + genera_pdf.py | `git checkout 4da99b3` |
