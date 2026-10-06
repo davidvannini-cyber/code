@@ -36,12 +36,14 @@ git ls-tree -d --name-only HEAD 2>/dev/null | grep -v '^\.' | while IFS= read -r
 done
 cat <<'EOF'
 
-SCELTA A) PROGETTO: opzioni = i 3 progetti più recenti dell'elenco + "Nuovo progetto"
-   (gli altri progetti si scelgono con "Other"). Se "Nuovo progetto": chiedi il nome e crea la cartella.
-SCELTA B) CARTELLA DI LAVORO dentro il progetto scelto: opzioni = sottocartelle esistenti (max 3)
-   + "Nuova cartella" (chiedi il nome e creala). Se non esistono sottocartelle: radice del progetto + "Nuova cartella".
-SCELTA C) RECUPERO STATO: opzioni = i file .md di stato trovati nel progetto/cartella
-   (HANDOFF.md, README.md, ecc., max 3) + "Parto da zero, nessun recupero".
-   Se scelto un file: leggilo per intero e riassumi in 3-5 righe a che punto siamo prima di procedere.
+REGOLA PER OGNI SCELTA (A, B, C): AskUserQuestion ammette max 4 opzioni, quindi NON troncare gli elenchi.
+Mostra TUTTI gli elementi a pagine di 3, con la 4ª opzione = "Altri (pagina successiva)" finché ne restano;
+sull'ultima pagina la 4ª opzione = "Torna alla prima pagina". Prima dell'elenco chiedi sempre "Esistente o nuovo?".
+SCELTA A) PROGETTO: "Esistente o nuovo?" -> se esistente, elenca TUTTI i progetti a pagine di 3 (dal più recente).
+   Se nuovo: chiedi il nome e crea la cartella.
+SCELTA B) CARTELLA DI LAVORO nel progetto scelto: "Esistente o nuova?" -> se esistente, TUTTE le sottocartelle
+   a pagine di 3 (+ "Radice del progetto"). Se nuova: chiedi il nome e creala.
+SCELTA C) RECUPERO STATO: elenca TUTTI i .md di stato del progetto/cartella a pagine di 3
+   (+ "Parto da zero, nessun recupero"). Se scelto un file: leggilo per intero e riassumi in 3-5 righe a che punto siamo.
 Dopo le 3 scelte, lavora SOLO dentro la cartella scelta. Se AskUserQuestion non è disponibile, scrivi le domande in chat.
 EOF
