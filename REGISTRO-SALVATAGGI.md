@@ -26,3 +26,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-06 | `103f799` | Sync.command (nuovo), REGISTRO-SALVATAGGI.md | `git checkout 103f799` |
 | 2026-10-06 | `02d4d28` | Sync.command, REGISTRO-SALVATAGGI.md | `git checkout 02d4d28` |
 | 2026-10-06 | `cfe101b` | Sync.command (trova la cartella da solo), .gitignore (nuovo), MODEL3D/node_modules (tolto da GitHub), REGISTRO-SALVATAGGI.md | `git checkout cfe101b` |
+| 2026-10-06 | `d901918` | RELAUNCH/index.html (nuovo task K02a "Creare le pagine social da zero", K02 e T06 corretti, assistente AI K02a), REGISTRO-SALVATAGGI.md | `git checkout d901918` |
