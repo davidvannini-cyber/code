@@ -30,3 +30,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-06 | `818b9b3` | RELAUNCH/index.html (anno 2018 nel task K02a), REGISTRO-SALVATAGGI.md | `git checkout 818b9b3` |
 | 2026-10-06 | `ee62e2b` | Pubblicato su RE-LAUNCH-MMNDS (main, commit 39c86c7) il nuovo RELAUNCH/index.html. Per tornare indietro sul sito: ripristina il commit 3d0dba4 in RE-LAUNCH-MMNDS | `git checkout ee62e2b` |
 | 2026-10-06 | `6eb7de2` | RELAUNCH/index.html (nuovo task T06a in Fase 0 prima di T06; K02a spostato in Fase 5 come avvio dei profili; T06, K02, K05 aggiornati), REGISTRO-SALVATAGGI.md | `git checkout 6eb7de2` |
+| 2026-10-06 | `b4f97d3` | RELAUNCH/HANDOFF.md (nuovo), REGISTRO-SALVATAGGI.md | `git checkout b4f97d3` |
