@@ -139,7 +139,10 @@ function readCrmPageData() {
     data_appuntamento,
     orario_appuntamento,
     indirizzo,
-    prodotto: mapProdottoCategoria(prodottoNome)
+    prodotto: mapProdottoCategoria(prodottoNome),
+    // ID del lead sul CRM: la console lo salva per poter riaprire la pagina del lead
+    // (https://app.facilesalire.it/leads/<id>) e per collegare i lead già in storico.
+    crm_lead_id: String(lead.id)
   };
 }
 
