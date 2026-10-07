@@ -97,6 +97,15 @@
   table{width:100%;border-collapse:collapse;font-size:9px;}
   th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);}
   th{color:var(--text-dim);font-size:9px;text-transform:uppercase;letter-spacing:.03em;}
+  /* Storico lead: righe compatte */
+  .tbl-storico th,.tbl-storico td{padding:3px 8px;white-space:nowrap;vertical-align:middle;}
+  .tbl-storico td,.tbl-storico th{line-height:1.2;}
+  .tbl-storico .ck{text-align:center;width:1%;}
+  .tbl-storico .acts{white-space:nowrap;width:1%;}
+  .tbl-storico .acts .btn-ghost{padding:2px 4px;}
+  .tbl-storico input[type=checkbox]{margin:0;}
+  /* finestra stretta (colonna 35% dello schermo): nascondi Prodotto, Stato e Gen. (lo stato resta nel tooltip del nome) per far stare tutte le colonne */
+  @media (max-width:900px){ .tbl-storico .c-prod,.tbl-storico .c-gen,.tbl-storico .c-stato{display:none;} .tbl-storico th,.tbl-storico td{padding:3px 5px;} }
   tr:hover td{background:rgba(0,0,0,.02);}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:50;overflow:auto;}
   .modal{background:#ffffff;color:var(--text);border:1px solid var(--border);border-radius:2px;max-width:720px;width:100%;padding:26px;max-height:90vh;overflow:auto;}
@@ -273,7 +282,24 @@ async function dbGet(key, fallback){
   try { const raw = localStorage.getItem(LOCAL_PREFIX+key); return raw ? JSON.parse(raw) : fallback; }
   catch(e){ return fallback; }
 }
+/* Salvataggio automatico di sicurezza dei lead: a ogni scrittura di "leads" tiene due copie di riserva
+   (leads_backup = ultima versione, leads_prev = quella ancora prima) con la stessa chiave-prefisso.
+   Non sostituisce il backup su file (Scarica backup lead), che resta l'unica protezione fuori dal browser. */
+function mirrorLeadsBackup(value){
+  try {
+    const oldBackup = localStorage.getItem(LOCAL_PREFIX+"leads_backup");
+    if (oldBackup) localStorage.setItem(LOCAL_PREFIX+"leads_prev", oldBackup);
+    localStorage.setItem(LOCAL_PREFIX+"leads_backup", JSON.stringify(value));
+    localStorage.setItem(LOCAL_PREFIX+"leads_backup_at", new Date().toISOString());
+  } catch(e){ console.warn("copia di sicurezza lead non riuscita", e); }
+}
+function readLocalLeadsCopy(name){
+  try { const raw = localStorage.getItem(LOCAL_PREFIX+name); const v = raw ? JSON.parse(raw) : null; return (v && typeof v === "object") ? v : null; }
+  catch(e){ return null; }
+}
+
 async function dbSet(key, value){
+  if (key === "leads") mirrorLeadsBackup(value);
   if (window.claude && window.claude.db && typeof window.claude.db.set === "function"){
     try { await window.claude.db.set(key, value); RUNTIME.db = true; return; }
     catch(e){ console.warn("db.set fallita, uso fallback locale", e); }
@@ -398,7 +424,7 @@ let state = {
   tab: "nuovo",
   profile: null,
   leadsHistory: {},
-  historyFilter: { stato:"", da:"", a:"", lavorato:"" },
+  historyFilter: Object.assign({ stato:"", da:"", a:"", lavorato:"", nascondiLavorati:false, ordina:"data_desc" }, loadHistoryPrefs()),
   historyOpen: null,
   draft: emptyDraft(),
   generating: false,
@@ -599,7 +625,8 @@ const ICON_PATHS = {
   trash: '<path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"></path><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path>',
   check: '<path d="M5 12.5l4.5 4.5L19 7"></path>',
   plus: '<path d="M12 5v14"></path><path d="M5 12h14"></path>',
-  zap: '<path d="M13 2L4 14h6l-1 8 9-12h-6z"></path>'
+  zap: '<path d="M13 2L4 14h6l-1 8 9-12h-6z"></path>',
+  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>'
 };
 function icon(name, opts){
   opts = opts || {};
@@ -618,7 +645,17 @@ async function init(){
     state.profile = JSON.parse(JSON.stringify(COMPANY_PROFILE_DEFAULT));
     await dbSet("company/profile", state.profile);
   }
-  state.leadsHistory = await dbGet("leads", {});
+  let leadsLoaded = await dbGet("leads", null);
+  if (leadsLoaded === null || typeof leadsLoaded !== "object") {
+    // chiave "leads" assente (non svuotata dall'utente): se esiste una copia automatica la recupero
+    const copia = readLocalLeadsCopy("leads_backup");
+    if (copia && Object.keys(copia).length) {
+      leadsLoaded = copia;
+      await dbSet("leads", leadsLoaded);
+      setTimeout(() => alert("Storico lead non trovato: ho ripristinato automaticamente " + Object.keys(copia).length + " lead dalla copia di sicurezza."), 300);
+    } else leadsLoaded = {};
+  }
+  state.leadsHistory = leadsLoaded;
   render();
   // I font Google (Manrope/IBM Plex) si caricano in modo asincrono: se il testo
   // viene misurato con il font di sistema mentre quello vero è ancora in arrivo,
@@ -1798,9 +1835,28 @@ async function saveLeadToHistory(){
   switchTab("storico");
 }
 
+/* Preferenze di visualizzazione dello storico (ordinamento, nascondi lavorati): solo comodità, mai dati dei lead. */
+function loadHistoryPrefs(){
+  try { const p = JSON.parse(localStorage.getItem(LOCAL_PREFIX+"history_prefs") || "{}"); return { nascondiLavorati: !!p.nascondiLavorati, ordina: p.ordina || "data_desc" }; }
+  catch(e){ return {}; }
+}
+function setHistoryPref(key, value){
+  state.historyFilter[key] = value;
+  try { localStorage.setItem(LOCAL_PREFIX+"history_prefs", JSON.stringify({ nascondiLavorati: !!state.historyFilter.nascondiLavorati, ordina: state.historyFilter.ordina })); } catch(e){}
+  render();
+}
+const HISTORY_SORTS = {
+  data_desc: { label:"Data: più recenti prima", cmp:(a,b) => b.data_creazione.localeCompare(a.data_creazione) },
+  data_asc:  { label:"Data: meno recenti prima", cmp:(a,b) => a.data_creazione.localeCompare(b.data_creazione) },
+  nome_asc:  { label:"Cliente A→Z", cmp:(a,b) => String(a.dati_lead_input.nome||"").localeCompare(String(b.dati_lead_input.nome||""), "it") },
+  nome_desc: { label:"Cliente Z→A", cmp:(a,b) => String(b.dati_lead_input.nome||"").localeCompare(String(a.dati_lead_input.nome||""), "it") }
+};
+
 function filteredHistoryList(){
-  const all = Object.values(state.leadsHistory).sort((a,b) => b.data_creazione.localeCompare(a.data_creazione));
+  const sorter = (HISTORY_SORTS[state.historyFilter.ordina] || HISTORY_SORTS.data_desc).cmp;
+  const all = Object.values(state.leadsHistory).sort(sorter);
   return all.filter(r => {
+    if (state.historyFilter.nascondiLavorati && r.lavorato) return false;
     if (state.historyFilter.stato && String(r.stato_lead) !== state.historyFilter.stato) return false;
     if (state.historyFilter.da && r.data_creazione < state.historyFilter.da) return false;
     if (state.historyFilter.a && r.data_creazione > state.historyFilter.a + "T23:59:59") return false;
@@ -1808,6 +1864,15 @@ function filteredHistoryList(){
     if (state.historyFilter.lavorato === "no" && r.lavorato) return false;
     return true;
   });
+}
+
+async function toggleAttivita(id, canale){
+  const r = state.leadsHistory[id];
+  if (!r) return;
+  r.attivita = Object.assign({ telefono:false, whatsapp:false, email:false }, r.attivita || {});
+  r.attivita[canale] = !r.attivita[canale];
+  await dbSet("leads", state.leadsHistory);
+  render();
 }
 
 async function toggleLavorato(id){
@@ -1830,6 +1895,9 @@ async function esportaStoricoExcel(){
     "Zona": r.dati_lead_input.zona || "",
     "Stato": statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead,
     "Canali generati": (r.canali_generati||[]).join(", "),
+    "Telefonata": (r.attivita && r.attivita.telefono) ? "Sì" : "No",
+    "WhatsApp": (r.attivita && r.attivita.whatsapp) ? "Sì" : "No",
+    "Email inviata": (r.attivita && r.attivita.email) ? "Sì" : "No",
     "Lavorato": r.lavorato ? "Sì" : "No"
   }));
   const foglio = XLSX.utils.json_to_sheet(righe);
@@ -1900,6 +1968,22 @@ function importLeadsBackup(evt){
   reader.readAsText(file);
 }
 
+async function recoverFromAutoCopy(){
+  const extra = Object.assign({}, readLocalLeadsCopy("leads_prev") || {}, readLocalLeadsCopy("leads_backup") || {});
+  const missing = Object.values(extra).filter(r => r && r.id && !state.leadsHistory[r.id]);
+  if (!missing.length) { setHistoryBackupMsg("Nessun lead mancante: lo storico attuale contiene già tutto ciò che c'è nelle copie automatiche ✓"); return; }
+  if (!confirm("Nelle copie automatiche ci sono " + missing.length + " lead che nello storico attuale non ci sono (es. eliminati per errore).\nLi riaggiungo? Quelli attuali non vengono toccati.")) return;
+  missing.forEach(r => { state.leadsHistory[r.id] = r; });
+  await dbSet("leads", state.leadsHistory);
+  render();
+  setHistoryBackupMsg(missing.length + " lead recuperati ✓");
+}
+
+function autoBackupInfo(){
+  let at = ""; try { at = localStorage.getItem(LOCAL_PREFIX+"leads_backup_at") || ""; } catch(e){}
+  return at ? "Copia automatica: " + new Date(at).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : "Copia automatica: attiva";
+}
+
 function renderHistoryTab(){
   const all = Object.values(state.leadsHistory);
   const filtered = filteredHistoryList();
@@ -1917,6 +2001,14 @@ function renderHistoryTab(){
           <option value="si" ${state.historyFilter.lavorato==='si'?'selected':''}>Solo lavorati</option>
           <option value="no" ${state.historyFilter.lavorato==='no'?'selected':''}>Solo da lavorare</option>
         </select>
+        <label class="small" style="display:flex;align-items:center;gap:6px;">Ordina per
+          <select onchange="setHistoryPref('ordina', this.value)">
+            ${Object.entries(HISTORY_SORTS).map(([k,v]) => `<option value="${k}" ${state.historyFilter.ordina===k?'selected':''}>${v.label}</option>`).join("")}
+          </select>
+        </label>
+        <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" ${state.historyFilter.nascondiLavorati?'checked':''} onchange="setHistoryPref('nascondiLavorati', this.checked)"> Nascondi lavorati
+        </label>
         <input type="date" onchange="state.historyFilter.da=this.value; render();" value="${state.historyFilter.da}">
         <input type="date" onchange="state.historyFilter.a=this.value; render();" value="${state.historyFilter.a}">
         <button class="btn-secondary" onclick="esportaStoricoExcel()">${icon('download')}Esporta storico</button>
@@ -1925,29 +2017,37 @@ function renderHistoryTab(){
         <button class="btn-primary" onclick="exportLeadsBackup()" title="Scarica un file con TUTTI i lead (indipendente dal browser)">${icon('save')}Scarica backup lead</button>
         <button class="btn-secondary" onclick="document.getElementById('leads_backup_import_input').click()" title="Unisce i lead di un backup a quelli attuali, senza cancellare nulla">${icon('upload')}Ripristina da backup</button>
         <input type="file" id="leads_backup_import_input" accept="application/json,.json" style="display:none" onchange="importLeadsBackup(event)">
+        <button class="btn-secondary" onclick="recoverFromAutoCopy()" title="Riaggiunge lead presenti nelle copie automatiche ma non più nello storico (es. eliminati per errore)">${icon('refresh')}Recupera da copia automatica</button>
+        <span class="hint">${autoBackupInfo()}</span>
         <span id="history_backup_msg" class="hint"></span>
       </div>
     </div>
-    <div class="card">
+    <div class="card" style="overflow-x:auto;">
       ${filtered.length === 0 ? `<div class="hint">Nessun lead trovato.</div>` : `
-      <table>
-        <thead><tr><th>Data</th><th>Cliente</th><th>Prodotto</th><th>Stato</th><th>Canali</th><th>Lavorato</th><th></th></tr></thead>
+      <table class="tbl-storico">
+        <thead><tr>
+          <th>Data</th><th>Cliente</th><th class="c-prod">Prodotto</th><th class="c-stato">Stato</th><th class="c-gen" title="Canali generati">Gen.</th>
+          <th class="ck" title="Telefonata fatta">${icon('phone',{noMargin:true})}</th>
+          <th class="ck" title="WhatsApp inviato">${WHATSAPP_LOGO_SVG}</th>
+          <th class="ck" title="Email inviata">${MAC_MAIL_LOGO_SVG}</th>
+          <th class="ck" title="Lavorato">Lav.</th><th></th>
+        </tr></thead>
         <tbody>
-          ${filtered.map(r => `
+          ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
             <tr>
-              <td>${new Date(r.data_creazione).toLocaleString('it-IT')}</td>
-              <td>${escapeHtml(r.dati_lead_input.nome || '—')}</td>
-              <td>${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
-              <td>${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
-              <td>${r.canali_generati.length}</td>
-              <td><input type="checkbox" ${r.lavorato?'checked':''} onchange="toggleLavorato('${r.id}')" title="Segna come lavorato"></td>
-              <td class="row">
-                <button class="btn-ghost" onclick="openHistoryItem('${r.id}')">${icon('eye')}Apri</button>
-                <button class="btn-ghost" onclick="duplicateHistoryItem('${r.id}')">${icon('copy')}Duplica</button>
-                <button class="btn-ghost" style="color:var(--danger)" onclick="deleteHistoryItem('${r.id}')">${icon('trash')}Elimina</button>
+              <td>${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+              <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}">${escapeHtml(r.dati_lead_input.nome || '—')}</td>
+              <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
+              <td class="c-stato">${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
+              <td class="c-gen">${r.canali_generati.length}</td>
+              ${ck('telefono','Telefonata fatta')}${ck('whatsapp','WhatsApp inviato')}${ck('email','Email inviata')}
+              <td class="ck"><input type="checkbox" ${r.lavorato?'checked':''} onchange="toggleLavorato('${r.id}')" title="Segna come lavorato"></td>
+              <td class="acts">
+                <button class="btn-ghost" title="Apri" aria-label="Apri" onclick="openHistoryItem('${r.id}')">${icon('eye',{noMargin:true})}</button>
+                <button class="btn-ghost" title="Duplica" aria-label="Duplica" onclick="duplicateHistoryItem('${r.id}')">${icon('copy',{noMargin:true})}</button>
+                <button class="btn-ghost" title="Elimina" aria-label="Elimina" style="color:var(--danger)" onclick="deleteHistoryItem('${r.id}')">${icon('trash',{noMargin:true})}</button>
               </td>
-            </tr>
-          `).join("")}
+            </tr>`; }).join("")}
         </tbody>
       </table>`}
     </div>
