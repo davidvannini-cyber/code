@@ -35,3 +35,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-07 | `25b54a6` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (pulsante pagina Lead: solo "CRM") + pulsanti CRM, ID lead CRM, collegamento graduale (browser-extension/crm-content.js), REGISTRO-SALVATAGGI.md | `git checkout 25b54a6` |
 | 2026-10-07 | `78c0173` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (CRM in finestra Chrome 40% x 80% in alto a destra), REGISTRO-SALVATAGGI.md | `git checkout 78c0173` |
 | 2026-10-07 | `39e825c` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (campo di ricerca testuale nello Storico Lead), REGISTRO-SALVATAGGI.md | `git checkout 39e825c` |
+| 2026-10-07 | `e9a4d4f` | SALESASSISTANT/LEADREWORKS/browser-extension/crm-content.js (rilettura dati lead dopo navigazione senza F5), REGISTRO-SALVATAGGI.md | `git checkout e9a4d4f` |

@@ -53,29 +53,64 @@ function mapProdottoCategoria(nomeProdotto) {
   return "";
 }
 
-function readCrmPageData() {
+// Quando si passa da un lead all'altro dentro il CRM senza ricaricare la pagina, il blocco
+// data-page resta quello del lead precedente. Invece di fermarsi, chiediamo al CRM i dati
+// della pagina corrente con la stessa richiesta (protocollo Inertia) che il CRM stesso fa
+// quando si naviga tra le pagine: è solo una lettura, non ricarica nulla.
+async function fetchFreshPage(version) {
+  const res = await fetch(location.href, {
+    credentials: "same-origin",
+    headers: {
+      "X-Inertia": "true",
+      "X-Requested-With": "XMLHttpRequest",
+      "X-Inertia-Version": version || "",
+      "Accept": "text/html, application/xhtml+xml"
+    }
+  });
+  if (!res.ok) throw new Error("risposta " + res.status);
+  const ct = res.headers.get("content-type") || "";
+  if (/json/i.test(ct)) return await res.json();
+  // se il CRM risponde con la pagina HTML completa, il blocco dati è dentro come sempre
+  const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+  const el = doc.querySelector('script[data-page="app"]');
+  if (!el) throw new Error("risposta senza dati pagina");
+  return JSON.parse(el.textContent);
+}
+
+async function readCrmPageData() {
   const scriptEl = document.querySelector('script[data-page="app"]');
   if (!scriptEl) {
     throw new Error("Blocco dati pagina non trovato (script data-page=\"app\" mancante).");
   }
-  const payload = JSON.parse(scriptEl.textContent);
-  const props = payload.props || {};
-  const lead = props.lead;
-  if (!lead) {
-    throw new Error("Questa non sembra una pagina di dettaglio lead (dato \"lead\" mancante).");
-  }
+  let payload = JSON.parse(scriptEl.textContent);
+  let props = payload.props || {};
+  let lead = props.lead;
 
   // Il CRM (Inertia.js) carica questo blocco dati una volta sola al caricamento
   // completo della pagina. Se l'operatore passa da un lead all'altro cliccando
-  // dentro il CRM senza un refresh vero (navigazione client-side), questo blocco
-  // può restare quello del lead precedente anche se sullo schermo si vede quello
-  // nuovo — l'indirizzo della pagina invece si aggiorna sempre. Confrontando i due
-  // ID si individua il caso ed si evita di inviare dati del lead sbagliato.
+  // dentro il CRM senza un refresh vero (navigazione client-side), il blocco
+  // può restare quello del lead precedente (o di una pagina che non è un lead,
+  // come l'elenco) anche se sullo schermo si vede quello nuovo: l'indirizzo
+  // invece si aggiorna sempre. Se i due ID non combaciano si rileggono i dati
+  // aggiornati dal CRM; solo se anche questo non riesce ci si ferma, per non
+  // inviare mai dati del lead sbagliato.
   const urlMatch = location.pathname.match(/\/leads\/(\d+)/);
-  if (urlMatch && String(lead.id) !== urlMatch[1]) {
-    throw new Error(
-      "I dati letti dalla pagina sono ancora quelli del lead precedente (probabilmente hai navigato qui senza ricaricare la pagina). Premi F5 su questa pagina e riprova."
-    );
+  if (urlMatch && (!lead || String(lead.id) !== urlMatch[1])) {
+    try {
+      payload = await fetchFreshPage(payload.version);
+      props = payload.props || {};
+      lead = props.lead;
+    } catch (e) {
+      console.warn("[LRW] rilettura dati pagina non riuscita:", e);
+    }
+    if (!lead || String(lead.id) !== urlMatch[1]) {
+      throw new Error(
+        "I dati letti dalla pagina sono ancora quelli del lead precedente (probabilmente hai navigato qui senza ricaricare la pagina). Premi F5 su questa pagina e riprova."
+      );
+    }
+  }
+  if (!lead) {
+    throw new Error("Questa non sembra una pagina di dettaglio lead (dato \"lead\" mancante).");
   }
 
   const activities = props.activities || [];
@@ -163,11 +198,11 @@ function injectButton() {
   document.body.appendChild(btn);
 }
 
-function onCaptureClick() {
+async function onCaptureClick() {
   const btn = document.getElementById("lrw-float-btn");
   const originalText = btn ? btn.textContent : "";
   try {
-    const data = readCrmPageData();
+    const data = await readCrmPageData();
     chrome.storage.local.set({ pendingLead: data, pendingLeadTs: Date.now() }, () => {
       chrome.runtime.sendMessage({ type: "leadCaptured" });
       if (btn) {
