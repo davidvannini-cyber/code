@@ -1415,7 +1415,20 @@ function mergeExtractedIntoDraft(parsed){
 /* --- Collegamento al CRM Facile Salire --- */
 const CRM_LEADS_URL = "https://app.facilesalire.it/leads";
 function crmLeadUrl(id){ return id ? CRM_LEADS_URL + "/" + encodeURIComponent(String(id)) : CRM_LEADS_URL; }
-function openCrm(id){ window.open(crmLeadUrl(id), "_blank", "noopener"); }
+/* Il CRM si apre in una finestra Chrome a parte: 40% della larghezza e 80% dell'altezza dello schermo,
+   in alto a destra (misure in percentuale, ricavate dallo schermo su cui è aperta la console). */
+function openCrm(id){
+  const sc = window.screen || {};
+  const aw = sc.availWidth || window.innerWidth, ah = sc.availHeight || window.innerHeight;
+  const al = sc.availLeft || 0, at = sc.availTop || 0;
+  const w = Math.round(aw * 0.40), h = Math.round(ah * 0.80);
+  const left = al + aw - w, top = at;
+  const feat = "popup=yes,width=" + w + ",height=" + h + ",left=" + left + ",top=" + top;
+  // senza "noopener" nelle opzioni: con noopener window.open restituisce sempre null e non si distinguerebbe il popup bloccato
+  const win = window.open(crmLeadUrl(id), "_blank", feat);
+  if (win) { try { win.opener = null; } catch(e){} }
+  else window.open(crmLeadUrl(id), "_blank", "noopener"); // riserva se il popup viene bloccato
+}
 function openCrmFromDraft(){ openCrm(state.draft.crm_lead_id); }
 function openCrmFromHistory(hid){ const r = state.leadsHistory[hid]; openCrm(r && r.dati_lead_input ? r.dati_lead_input.crm_lead_id : ""); }
 
