@@ -1838,6 +1838,68 @@ async function esportaStoricoExcel(){
   XLSX.writeFile(cartella, "storico_lead_" + new Date().toISOString().slice(0,10) + ".xlsx");
 }
 
+/* --- Backup lead: file JSON esterno al browser, indipendente da localStorage e dal sync Git.
+   Esporta TUTTI i lead (non solo quelli filtrati); l'import UNISCE per id e non cancella mai nulla. --- */
+const LEADS_BACKUP_FORMAT = "leadrework-leads-backup";
+
+function setHistoryBackupMsg(text){
+  const el = document.getElementById("history_backup_msg");
+  if (el){ el.textContent = text; setTimeout(()=>{ if (el) el.textContent = ""; }, 8000); }
+}
+
+function exportLeadsBackup(){
+  const leads = state.leadsHistory || {};
+  const n = Object.keys(leads).length;
+  const data = { format: LEADS_BACKUP_FORMAT, version: 1, exported_at: new Date().toISOString(), count: n, leads };
+  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const d = new Date();
+  const pad = x => String(x).padStart(2, "0");
+  a.href = url;
+  a.download = "leadrework-lead-" + d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()) + "_" + pad(d.getHours()) + pad(d.getMinutes()) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setHistoryBackupMsg("Backup scaricato: " + n + " lead ✓");
+}
+
+function importLeadsBackup(evt){
+  const file = evt.target.files[0];
+  evt.target.value = "";
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || data.format !== LEADS_BACKUP_FORMAT || !data.leads || typeof data.leads !== "object") {
+        throw new Error("non è un backup lead di Lead Rework Console");
+      }
+      const incoming = Object.values(data.leads);
+      let added = 0, replaced = 0, kept = 0;
+      const conflicts = incoming.filter(r => r && r.id && state.leadsHistory[r.id]);
+      const overwrite = conflicts.length > 0 && confirm(
+        conflicts.length + " lead del backup esistono già nello storico attuale.\n\n" +
+        "OK = sostituisci quelli attuali con la versione del backup\n" +
+        "Annulla = tieni la versione attuale (i lead nuovi vengono aggiunti comunque)"
+      );
+      incoming.forEach(r => {
+        if (!r || !r.id) return;
+        if (!state.leadsHistory[r.id]) { state.leadsHistory[r.id] = r; added++; }
+        else if (overwrite) { state.leadsHistory[r.id] = r; replaced++; }
+        else kept++;
+      });
+      await dbSet("leads", state.leadsHistory);
+      render();
+      setHistoryBackupMsg("Import completato: " + added + " aggiunti, " + replaced + " sostituiti, " + kept + " già presenti lasciati invariati ✓");
+    } catch(e){
+      alert("Backup non valido: " + e.message + ". Lo storico attuale NON è stato modificato.");
+    }
+  };
+  reader.readAsText(file);
+}
+
 function renderHistoryTab(){
   const all = Object.values(state.leadsHistory);
   const filtered = filteredHistoryList();
@@ -1858,6 +1920,12 @@ function renderHistoryTab(){
         <input type="date" onchange="state.historyFilter.da=this.value; render();" value="${state.historyFilter.da}">
         <input type="date" onchange="state.historyFilter.a=this.value; render();" value="${state.historyFilter.a}">
         <button class="btn-secondary" onclick="esportaStoricoExcel()">${icon('download')}Esporta storico</button>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn-primary" onclick="exportLeadsBackup()" title="Scarica un file con TUTTI i lead (indipendente dal browser)">${icon('save')}Scarica backup lead</button>
+        <button class="btn-secondary" onclick="document.getElementById('leads_backup_import_input').click()" title="Unisce i lead di un backup a quelli attuali, senza cancellare nulla">${icon('upload')}Ripristina da backup</button>
+        <input type="file" id="leads_backup_import_input" accept="application/json,.json" style="display:none" onchange="importLeadsBackup(event)">
+        <span id="history_backup_msg" class="hint"></span>
       </div>
     </div>
     <div class="card">
