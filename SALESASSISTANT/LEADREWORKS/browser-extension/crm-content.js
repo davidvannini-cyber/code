@@ -53,61 +53,30 @@ function mapProdottoCategoria(nomeProdotto) {
   return "";
 }
 
-// Quando si passa da un lead all'altro dentro il CRM senza ricaricare la pagina, il blocco
-// data-page resta quello del lead precedente. Invece di fermarsi, chiediamo al CRM i dati
-// della pagina corrente con la stessa richiesta (protocollo Inertia) che il CRM stesso fa
-// quando si naviga tra le pagine: è solo una lettura, non ricarica nulla.
-async function fetchFreshPage(version) {
-  const res = await fetch(location.href, {
-    credentials: "same-origin",
-    headers: {
-      "X-Inertia": "true",
-      "X-Requested-With": "XMLHttpRequest",
-      "X-Inertia-Version": version || "",
-      "Accept": "text/html, application/xhtml+xml"
-    }
-  });
-  if (!res.ok) throw new Error("risposta " + res.status);
-  const ct = res.headers.get("content-type") || "";
-  if (/json/i.test(ct)) return await res.json();
-  // se il CRM risponde con la pagina HTML completa, il blocco dati è dentro come sempre
-  const doc = new DOMParser().parseFromString(await res.text(), "text/html");
-  const el = doc.querySelector('script[data-page="app"]');
-  if (!el) throw new Error("risposta senza dati pagina");
-  return JSON.parse(el.textContent);
-}
-
-async function readCrmPageData() {
+function readCrmPageData() {
   const scriptEl = document.querySelector('script[data-page="app"]');
   if (!scriptEl) {
     throw new Error("Blocco dati pagina non trovato (script data-page=\"app\" mancante).");
   }
-  let payload = JSON.parse(scriptEl.textContent);
-  let props = payload.props || {};
-  let lead = props.lead;
+  const payload = JSON.parse(scriptEl.textContent);
+  const props = payload.props || {};
+  const lead = props.lead;
 
   // Il CRM (Inertia.js) carica questo blocco dati una volta sola al caricamento
   // completo della pagina. Se l'operatore passa da un lead all'altro cliccando
   // dentro il CRM senza un refresh vero (navigazione client-side), il blocco
   // può restare quello del lead precedente (o di una pagina che non è un lead,
   // come l'elenco) anche se sullo schermo si vede quello nuovo: l'indirizzo
-  // invece si aggiorna sempre. Se i due ID non combaciano si rileggono i dati
-  // aggiornati dal CRM; solo se anche questo non riesce ci si ferma, per non
-  // inviare mai dati del lead sbagliato.
+  // invece si aggiorna sempre. In quel caso si segnala "dati vecchi" e il
+  // chiamante ricarica la pagina UNA volta e riprova (vedi onCaptureClick):
+  // non si inviano mai dati del lead sbagliato.
   const urlMatch = location.pathname.match(/\/leads\/(\d+)/);
   if (urlMatch && (!lead || String(lead.id) !== urlMatch[1])) {
-    try {
-      payload = await fetchFreshPage(payload.version);
-      props = payload.props || {};
-      lead = props.lead;
-    } catch (e) {
-      console.warn("[LRW] rilettura dati pagina non riuscita:", e);
-    }
-    if (!lead || String(lead.id) !== urlMatch[1]) {
-      throw new Error(
-        "I dati letti dalla pagina sono ancora quelli del lead precedente (probabilmente hai navigato qui senza ricaricare la pagina). Premi F5 su questa pagina e riprova."
-      );
-    }
+    const err = new Error(
+      "I dati letti dalla pagina sono ancora quelli del lead precedente (probabilmente hai navigato qui senza ricaricare la pagina). Premi F5 su questa pagina e riprova."
+    );
+    err.stale = true;
+    throw err;
   }
   if (!lead) {
     throw new Error("Questa non sembra una pagina di dettaglio lead (dato \"lead\" mancante).");
@@ -194,15 +163,20 @@ function injectButton() {
     "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif",
     "box-shadow:0 4px 14px rgba(0,0,0,.25)", "cursor:pointer"
   ].join(";");
-  btn.addEventListener("click", onCaptureClick);
+  btn.addEventListener("click", () => onCaptureClick(false));
   document.body.appendChild(btn);
 }
 
-async function onCaptureClick() {
+// Dopo un ricaricamento automatico (dati vecchi) il lavoro riparte da solo, una volta sola:
+// il segnaposto in sessionStorage viene cancellato appena letto e scade dopo 20 secondi,
+// così non possono nascere cicli di ricaricamenti.
+const AUTO_KEY = "lrw_auto_capture";
+
+function onCaptureClick(afterReload) {
   const btn = document.getElementById("lrw-float-btn");
   const originalText = btn ? btn.textContent : "";
   try {
-    const data = await readCrmPageData();
+    const data = readCrmPageData();
     chrome.storage.local.set({ pendingLead: data, pendingLeadTs: Date.now() }, () => {
       chrome.runtime.sendMessage({ type: "leadCaptured" });
       if (btn) {
@@ -211,6 +185,14 @@ async function onCaptureClick() {
       }
     });
   } catch (e) {
+    if (e && e.stale && !afterReload) {
+      try {
+        sessionStorage.setItem(AUTO_KEY, JSON.stringify({ path: location.pathname, ts: Date.now() }));
+        if (btn) btn.textContent = "Ricarico…";
+        location.reload();
+        return;
+      } catch (err) { /* sessionStorage non disponibile: si ricade sull'avviso */ }
+    }
     alert(
       "Impossibile leggere i dati di questa pagina: " + e.message +
       "\n\nSe sei arrivato qui cliccando da un altro lead senza ricaricare la pagina, prova a premere F5 e riprova."
@@ -218,4 +200,15 @@ async function onCaptureClick() {
   }
 }
 
+function resumeAfterReload() {
+  let flag = null;
+  try {
+    flag = JSON.parse(sessionStorage.getItem(AUTO_KEY) || "null");
+    sessionStorage.removeItem(AUTO_KEY);
+  } catch (e) { return; }
+  if (!flag || flag.path !== location.pathname || Date.now() - flag.ts > 20000) return;
+  onCaptureClick(true);
+}
+
 injectButton();
+resumeAfterReload();
