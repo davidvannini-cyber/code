@@ -31,3 +31,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-07 | `d837d67` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (copia automatica di sicurezza dei lead + Recupera da copia automatica), REGISTRO-SALVATAGGI.md | `git checkout d837d67` |
 | 2026-10-07 | `b15d067` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (barra in alto compatta con icone; Storico: pannello filtri/backup compatto, Filtri ripiegabili), REGISTRO-SALVATAGGI.md | `git checkout b15d067` |
 | 2026-10-07 | `9f31dae` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (finestra Apri dello Storico: sezioni sempre aperte, icone copia incolonnate), REGISTRO-SALVATAGGI.md | `git checkout 9f31dae` |
+| 2026-10-07 | `25b54a6` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html e browser-extension/crm-content.js (pulsanti CRM, ID lead CRM, collegamento graduale) — solo sul branch, non ancora in main | `git checkout 25b54a6` |
