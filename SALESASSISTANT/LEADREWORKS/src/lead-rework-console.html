@@ -282,7 +282,24 @@ async function dbGet(key, fallback){
   try { const raw = localStorage.getItem(LOCAL_PREFIX+key); return raw ? JSON.parse(raw) : fallback; }
   catch(e){ return fallback; }
 }
+/* Salvataggio automatico di sicurezza dei lead: a ogni scrittura di "leads" tiene due copie di riserva
+   (leads_backup = ultima versione, leads_prev = quella ancora prima) con la stessa chiave-prefisso.
+   Non sostituisce il backup su file (Scarica backup lead), che resta l'unica protezione fuori dal browser. */
+function mirrorLeadsBackup(value){
+  try {
+    const oldBackup = localStorage.getItem(LOCAL_PREFIX+"leads_backup");
+    if (oldBackup) localStorage.setItem(LOCAL_PREFIX+"leads_prev", oldBackup);
+    localStorage.setItem(LOCAL_PREFIX+"leads_backup", JSON.stringify(value));
+    localStorage.setItem(LOCAL_PREFIX+"leads_backup_at", new Date().toISOString());
+  } catch(e){ console.warn("copia di sicurezza lead non riuscita", e); }
+}
+function readLocalLeadsCopy(name){
+  try { const raw = localStorage.getItem(LOCAL_PREFIX+name); const v = raw ? JSON.parse(raw) : null; return (v && typeof v === "object") ? v : null; }
+  catch(e){ return null; }
+}
+
 async function dbSet(key, value){
+  if (key === "leads") mirrorLeadsBackup(value);
   if (window.claude && window.claude.db && typeof window.claude.db.set === "function"){
     try { await window.claude.db.set(key, value); RUNTIME.db = true; return; }
     catch(e){ console.warn("db.set fallita, uso fallback locale", e); }
@@ -628,7 +645,17 @@ async function init(){
     state.profile = JSON.parse(JSON.stringify(COMPANY_PROFILE_DEFAULT));
     await dbSet("company/profile", state.profile);
   }
-  state.leadsHistory = await dbGet("leads", {});
+  let leadsLoaded = await dbGet("leads", null);
+  if (leadsLoaded === null || typeof leadsLoaded !== "object") {
+    // chiave "leads" assente (non svuotata dall'utente): se esiste una copia automatica la recupero
+    const copia = readLocalLeadsCopy("leads_backup");
+    if (copia && Object.keys(copia).length) {
+      leadsLoaded = copia;
+      await dbSet("leads", leadsLoaded);
+      setTimeout(() => alert("Storico lead non trovato: ho ripristinato automaticamente " + Object.keys(copia).length + " lead dalla copia di sicurezza."), 300);
+    } else leadsLoaded = {};
+  }
+  state.leadsHistory = leadsLoaded;
   render();
   // I font Google (Manrope/IBM Plex) si caricano in modo asincrono: se il testo
   // viene misurato con il font di sistema mentre quello vero è ancora in arrivo,
@@ -1941,6 +1968,22 @@ function importLeadsBackup(evt){
   reader.readAsText(file);
 }
 
+async function recoverFromAutoCopy(){
+  const extra = Object.assign({}, readLocalLeadsCopy("leads_prev") || {}, readLocalLeadsCopy("leads_backup") || {});
+  const missing = Object.values(extra).filter(r => r && r.id && !state.leadsHistory[r.id]);
+  if (!missing.length) { setHistoryBackupMsg("Nessun lead mancante: lo storico attuale contiene già tutto ciò che c'è nelle copie automatiche ✓"); return; }
+  if (!confirm("Nelle copie automatiche ci sono " + missing.length + " lead che nello storico attuale non ci sono (es. eliminati per errore).\nLi riaggiungo? Quelli attuali non vengono toccati.")) return;
+  missing.forEach(r => { state.leadsHistory[r.id] = r; });
+  await dbSet("leads", state.leadsHistory);
+  render();
+  setHistoryBackupMsg(missing.length + " lead recuperati ✓");
+}
+
+function autoBackupInfo(){
+  let at = ""; try { at = localStorage.getItem(LOCAL_PREFIX+"leads_backup_at") || ""; } catch(e){}
+  return at ? "Copia automatica: " + new Date(at).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : "Copia automatica: attiva";
+}
+
 function renderHistoryTab(){
   const all = Object.values(state.leadsHistory);
   const filtered = filteredHistoryList();
@@ -1974,6 +2017,8 @@ function renderHistoryTab(){
         <button class="btn-primary" onclick="exportLeadsBackup()" title="Scarica un file con TUTTI i lead (indipendente dal browser)">${icon('save')}Scarica backup lead</button>
         <button class="btn-secondary" onclick="document.getElementById('leads_backup_import_input').click()" title="Unisce i lead di un backup a quelli attuali, senza cancellare nulla">${icon('upload')}Ripristina da backup</button>
         <input type="file" id="leads_backup_import_input" accept="application/json,.json" style="display:none" onchange="importLeadsBackup(event)">
+        <button class="btn-secondary" onclick="recoverFromAutoCopy()" title="Riaggiunge lead presenti nelle copie automatiche ma non più nello storico (es. eliminati per errore)">${icon('refresh')}Recupera da copia automatica</button>
+        <span class="hint">${autoBackupInfo()}</span>
         <span id="history_backup_msg" class="hint"></span>
       </div>
     </div>
