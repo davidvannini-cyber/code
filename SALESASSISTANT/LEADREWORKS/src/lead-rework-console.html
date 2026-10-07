@@ -98,6 +98,25 @@
   table{width:100%;border-collapse:collapse;font-size:9px;}
   th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);}
   th{color:var(--text-dim);font-size:9px;text-transform:uppercase;letter-spacing:.03em;}
+  /* Storico: finestra "Apri" compatta (sezioni sempre aperte) */
+  .modal.hm{padding:10px;font-size:11px;max-width:720px;}
+  .hm-head{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:8px;}
+  .hm-title{flex:1;min-width:0;} .hm-title b{font-family:var(--font-head);font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hm-title span{font-size:9px;color:var(--text-dim);}
+  .hm-ib{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:5px 7px;display:inline-flex;cursor:pointer;color:var(--text-dim);}
+  .hm-ib.hm-pri{background:var(--topnav-active);color:#fff;border-color:var(--topnav-active);}
+  .hm-info{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:10px;color:var(--text-dim);} .hm-info b{color:var(--text);}
+  .hm-sec{border:1px solid var(--border);border-radius:2px;margin-top:8px;background:var(--panel-raised);}
+  .hm-sh{display:flex;align-items:center;gap:6px;padding:6px 8px;font-family:var(--font-head);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--text-dim);}
+  .hm-sp{margin-left:auto;}
+  .hm-body{padding:2px 8px 8px;font-size:11px;line-height:1.45;color:var(--text);}
+  .hm-ai{background:rgba(167,243,208,.18);}
+  .hm-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:0 8px 6px;font-size:11px;line-height:1.45;}
+  .hm-lab{font-weight:700;font-size:9px;text-transform:uppercase;color:var(--text-dim);margin:2px 0 1px;}
+  .hm-txt{white-space:pre-wrap;}
+  .hm-contact{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 8px 4px;font-size:10px;color:var(--text-dim);}
+  .hm-contact b{color:var(--text-dim);}
+  .modal.hm .btn-ghost{padding:2px 5px;}
   /* Storico lead: pannello filtri/backup compatto */
   .hist-panel select,.hist-panel input[type=date]{padding:4px 6px;font-size:11px;height:28px;width:100%;min-width:0;}
   .hp-row{display:flex;gap:8px;align-items:center;}
@@ -2090,50 +2109,49 @@ function closeHistoryModal(){ state.historyOpen = null; render(); }
 function renderHistoryModal(id){
   const r = state.leadsHistory[id];
   if (!r) return "";
+  const d = r.dati_lead_input || {};
   const stato = statoById(r.stato_lead);
+  const small = svg => svg.replace('width="20" height="20"', 'width="14" height="14"');
+  const sec = (title, iconHtml, inner) => `<div class="hm-sec"><div class="hm-sh">${iconHtml}${title}<span class="hm-sp">▾</span></div>${inner}</div>`;
+  const rowCopy = (label, kind, key, text) => `<div class="hm-row"><div style="min-width:0;"><div class="hm-lab">${label}</div><div class="hm-txt">${nl2br(text||'')}</div></div><span class="no-print">${copyBtn(kind, key, r.id)}</span></div>`;
+  // riga contatto: icona "invio" accanto al dato, copia sempre incolonnata a destra con le altre
+  const contactRow = (canale, key) => {
+    const label = canale === "whatsapp" ? "Numero WhatsApp" : (canale === "email" ? "Indirizzo email" : "Numero di telefono");
+    const value = canale === "email" ? String(d.email||"").trim()
+      : (canale === "whatsapp" ? (mobileNumberOf(d) || String(d.telefono1||"").trim()) : String(d.telefono1||"").trim());
+    const send = (canale !== "telefono" && value) ? `<span class="no-print">${openBtn(canale, key, r.id)}</span>` : "";
+    const copy = (canale !== "telefono" && value) ? `<span class="no-print">${copyBtn("contact", canale, r.id)}</span>` : "";
+    return `<div class="hm-contact"><span style="display:flex;align-items:center;gap:6px;"><span><b>${label}:</b> ${escapeHtml(value || "—")}</span>${send}</span>${copy}</div>`;
+  };
+  const scripts = Object.entries(r.script_generati||{}).map(([k,v]) => {
+    const isEmail = /^email/i.test(k) || (v && typeof v === "object" && v.oggetto !== undefined);
+    const canale = isEmail ? "email" : (/^whatsapp/i.test(k) ? "whatsapp" : "telefono");
+    const iconHtml = canale === "whatsapp" ? small(WHATSAPP_LOGO_SVG) : (canale === "email" ? small(MAC_MAIL_LOGO_SVG) : icon('phone',{size:13,noMargin:true}));
+    const body = isEmail && v && typeof v === "object"
+      ? rowCopy("Oggetto", "oggetto", k, v.oggetto) + rowCopy("Corpo", "corpo", k, v.corpo)
+      : (canale === "whatsapp" ? rowCopy("Testo", "text", k, typeof v === "string" ? v : "") : `<div class="hm-body">${nl2br(v)}</div>`);
+    return sec(escapeHtml(k), iconHtml, contactRow(canale, k) + body);
+  }).join("");
   return `
     <div class="modal-overlay" onclick="if(event.target===this) closeHistoryModal()">
-      <div class="modal">
-        <span class="close-x no-print" onclick="closeHistoryModal()">×</span>
-        <div class="row no-print" style="float:right;margin-right:28px;">
-          <button class="btn-secondary" onclick="exportHistoryItemToSuggerimentiVendita('${r.id}')">${icon('upload')}Invia a Suggerimenti Vendita</button>
-          <span id="suggerimenti_vendita_msg_history" class="hint"></span>
-          <button class="btn-secondary" onclick="window.print()">${icon('print')}Stampa</button>
+      <div class="modal hm">
+        <div class="hm-head">
+          <div class="hm-title"><b>${escapeHtml(d.nome || 'Lead')} — ${escapeHtml(stato ? stato.label : '')}</b>
+            <span>Creato il ${new Date(r.data_creazione).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}${r.script_modificati_manualmente ? ' · modificato manualmente' : ''} <span id="suggerimenti_vendita_msg_history"></span></span></div>
+          <span class="hm-ib hm-pri no-print" title="Invia a Suggerimenti Vendita" onclick="exportHistoryItemToSuggerimentiVendita('${r.id}')">${icon('upload',{size:13,noMargin:true})}</span>
+          <span class="hm-ib no-print" title="Stampa" onclick="window.print()">${icon('print',{size:13,noMargin:true})}</span>
+          <span class="hm-ib no-print" title="Chiudi" onclick="closeHistoryModal()">${icon('close',{size:13,noMargin:true})}</span>
         </div>
-        <h2>${escapeHtml(r.dati_lead_input.nome || 'Lead')} — ${escapeHtml(stato ? stato.label : '')}</h2>
-        <div class="small">Creato il ${new Date(r.data_creazione).toLocaleString('it-IT')}${r.script_modificati_manualmente ? ' · modificato manualmente' : ''}</div>
-        <hr class="divider">
-        ${r.dati_lead_input.analisi_strategia ? `
-          <div class="output-block card-ai-generated">
-            <h3>${icon('sparkles')}Analisi e strategia</h3>
-            <p style="white-space:pre-wrap;">${nl2br(r.dati_lead_input.analisi_strategia)}</p>
-          </div>
-        ` : ""}
-        <div class="grid2 small">
-          <div><b>Prodotto:</b> ${escapeHtml(r.dati_lead_input.prodotto||'—')}</div>
-          <div><b>Zona:</b> ${escapeHtml(r.dati_lead_input.zona||'—')}</div>
-          <div><b>Telefono:</b> ${escapeHtml(r.dati_lead_input.telefono1||'—')}</div>
-          <div><b>Telefono (secondario):</b> ${escapeHtml(r.dati_lead_input.telefono2||'—')}</div>
-          <div><b>Email:</b> ${escapeHtml(r.dati_lead_input.email||'—')}</div>
-          <div><b>Prezzo esistente:</b> ${escapeHtml(r.dati_lead_input.prezzo_esistente||'—')}</div>
-          <div><b>Tempistica:</b> ${escapeHtml(r.dati_lead_input.tempistica||'—')}</div>
+        <div class="hm-info">
+          <div><b>Prodotto:</b> ${escapeHtml(d.prodotto||'—')}</div><div><b>Zona:</b> ${escapeHtml(d.zona||'—')}</div>
+          <div><b>Tel:</b> ${escapeHtml(d.telefono1||'—')}</div><div><b>Tel 2:</b> ${escapeHtml(d.telefono2||'—')}</div>
+          <div style="grid-column:1/-1;"><b>Email:</b> ${escapeHtml(d.email||'—')}</div>
+          ${(d.prezzo_esistente || d.tempistica) ? `<div><b>Prezzo esistente:</b> ${escapeHtml(d.prezzo_esistente||'—')}</div><div><b>Tempistica:</b> ${escapeHtml(d.tempistica||'—')}</div>` : ""}
         </div>
-        <p class="small">${escapeHtml(r.dati_lead_input.note||'')}</p>
-        ${(r.screenshots && r.screenshots.length) ? `<div class="row no-print" style="margin-bottom:10px;">${r.screenshots.map(s => `<img class="thumb" style="max-width:100px;max-height:70px;" src="${s.base64}" title="${escapeHtml(s.name)}">`).join("")}</div>` : ""}
-        <hr class="divider">
-        ${Object.entries(r.script_generati||{}).map(([k,v]) => {
-          const isEmail = /^email/i.test(k) || (v && typeof v === "object" && v.oggetto !== undefined);
-          const canale = isEmail ? "email" : (/^whatsapp/i.test(k) ? "whatsapp" : "telefono");
-          const row = (label, kind, text, extra) => `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div style="min-width:0;"><b>${label}</b>${extra||""}<div style="white-space:pre-wrap;">${nl2br(text||'')}</div></div><span class="no-print">${copyBtn(kind, k, r.id)}</span></div>`;
-          return `
-          <div class="output-block">
-            <h3>${escapeHtml(k)}</h3>
-            ${contactLineFor(canale, r.dati_lead_input, r.id, k)}
-            ${isEmail && v && typeof v === "object"
-              ? row("Oggetto", "oggetto", v.oggetto) + row("Corpo", "corpo", v.corpo)
-              : (canale === "whatsapp" ? row("Testo", "text", typeof v === "string" ? v : "") : `<p style="white-space:pre-wrap;">${nl2br(v)}</p>`)}
-          </div>`;
-        }).join("")}
+        ${(r.screenshots && r.screenshots.length) ? `<div class="row no-print" style="margin-top:6px;">${r.screenshots.map(sh => `<img class="thumb" style="max-width:100px;max-height:70px;" src="${sh.base64}" title="${escapeHtml(sh.name)}">`).join("")}</div>` : ""}
+        ${d.analisi_strategia ? sec("Analisi e strategia", icon('sparkles',{size:13,noMargin:true}), `<div class="hm-body hm-ai">${nl2br(d.analisi_strategia)}</div>`) : ""}
+        ${d.note ? sec("Note", icon('clipboard',{size:13,noMargin:true}), `<div class="hm-body">${nl2br(d.note)}</div>`) : ""}
+        ${scripts}
       </div>
     </div>
   `;
