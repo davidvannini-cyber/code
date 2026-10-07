@@ -30,15 +30,16 @@
   a{color:#5eead4;text-decoration:none;}
   a:hover{color:#2dd4bf;text-decoration:underline;}
   #app{min-height:100vh;background:var(--bg);}
-  .topnav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--topnav);border-bottom:1px solid var(--border);padding:5px 14px;}
-  .topnav .brand{font-family:var(--font-head);font-weight:800;font-size:9px;color:var(--text);letter-spacing:-.01em;white-space:nowrap;}
+  .topnav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;background:var(--topnav);border-bottom:1px solid var(--border);padding:0 10px;min-height:30px;}
+  .topnav .brand{font-family:var(--font-head);font-weight:800;font-size:9px;color:var(--text);letter-spacing:-.01em;white-space:nowrap;text-transform:uppercase;}
   .topnav .navtabs{display:flex;gap:4px;}
-  .navbtn{padding:8px 14px;border-radius:2px;cursor:pointer;font-family:var(--font-head);font-weight:700;font-size:9px;user-select:none;color:var(--topnav-text);background:transparent;}
+  .navbtn{padding:6px 10px;border-radius:0;cursor:pointer;font-family:var(--font-head);font-weight:700;font-size:9px;user-select:none;color:var(--text-dim);background:transparent;display:flex;align-items:center;gap:5px;border-bottom:2px solid transparent;white-space:nowrap;}
   .navbtn:hover{background:rgba(0,0,0,.04);}
-  .navbtn.active{background:var(--topnav-active);color:var(--primary-text);}
-  .navbtn.active:hover{background:var(--topnav-active);}
+  .navbtn.active{color:#0f766e;border-bottom-color:var(--topnav-active);}
+  .navbtn:not(.active) .lbl{display:none;}
   .topnav-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
-  .topnav-status{display:flex;align-items:center;gap:6px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--text-dim);}
+  .topnav-status{display:flex;align-items:center;gap:0;font-size:0;}
+  .topnav-status .dot{margin:0;}
   .topnav-copy{font-size:9px;color:var(--text-dim);white-space:nowrap;}
   textarea.autogrow{overflow:hidden;resize:none;}
   .card-header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
@@ -49,7 +50,7 @@
   .page{max-width:1120px;margin:0 auto;padding:8px 14px 16px;display:flex;gap:7px;align-items:flex-start;flex-wrap:wrap;}
   .page.page-narrow{max-width:800px;display:block;}
   .main{flex:1 1 660px;min-width:0;}
-  .rail{flex:0 1 300px;min-width:260px;display:flex;flex-direction:column;gap:6px;position:sticky;top:44px;}
+  .rail{flex:0 1 300px;min-width:260px;display:flex;flex-direction:column;gap:6px;position:sticky;top:36px;}
   .rail-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:7px;width:100%;}
   .rail-card:nth-child(1),.rail-card:nth-child(2){display:none;}
   .rail-card-title{font-family:var(--font-head);font-weight:700;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;}
@@ -97,6 +98,15 @@
   table{width:100%;border-collapse:collapse;font-size:9px;}
   th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);}
   th{color:var(--text-dim);font-size:9px;text-transform:uppercase;letter-spacing:.03em;}
+  /* Storico lead: pannello filtri/backup compatto */
+  .hist-panel select,.hist-panel input[type=date]{padding:4px 6px;font-size:11px;height:28px;width:100%;min-width:0;}
+  .hp-row{display:flex;gap:8px;align-items:center;}
+  .hp-lbl{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.03em;font-weight:700;display:block;margin-bottom:2px;}
+  .hp-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;}
+  .hp-filtri{border:1px solid var(--border);background:#fff;color:var(--text);font-size:11px;}
+  .hp-badge{background:var(--topnav-active);color:#fff;border-radius:8px;padding:0 6px;font-size:9px;font-weight:700;}
+  .hp-backup{border-top:1px solid var(--border);margin-top:8px;padding-top:5px;font-size:10px;color:var(--text-dim);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .hp-link{cursor:pointer;text-decoration:underline;font-size:10px;color:var(--text-dim);} .hp-link:hover{color:var(--text);}
   /* Storico lead: righe compatte */
   .tbl-storico th,.tbl-storico td{padding:3px 8px;white-space:nowrap;vertical-align:middle;}
   .tbl-storico td,.tbl-storico th{line-height:1.2;}
@@ -426,6 +436,7 @@ let state = {
   leadsHistory: {},
   historyFilter: Object.assign({ stato:"", da:"", a:"", lavorato:"", nascondiLavorati:false, ordina:"data_desc" }, loadHistoryPrefs()),
   historyOpen: null,
+  historyFiltersOpen: false,
   draft: emptyDraft(),
   generating: false,
   generatedOutput: null,
@@ -681,12 +692,12 @@ function render(){
     <div class="topnav">
       <div class="brand">Lead Rework Console</div>
       <div class="navtabs">
-        <div class="navbtn ${state.tab==='nuovo'?'active':''}" onclick="switchTab('nuovo')">Lead</div>
-        <div class="navbtn ${state.tab==='storico'?'active':''}" onclick="switchTab('storico')">Storico Lead</div>
-        <div class="navbtn ${state.tab==='profilo'?'active':''}" onclick="switchTab('profilo')">Profilo Azienda</div>
+        <div class="navbtn ${state.tab==='nuovo'?'active':''}" title="Lead" onclick="switchTab('nuovo')">${icon('lead',{size:14,noMargin:true})}<span class="lbl">Lead</span></div>
+        <div class="navbtn ${state.tab==='storico'?'active':''}" title="Storico Lead" onclick="switchTab('storico')">${icon('history',{size:14,noMargin:true})}<span class="lbl">Storico Lead</span></div>
+        <div class="navbtn ${state.tab==='profilo'?'active':''}" title="Profilo Azienda" onclick="switchTab('profilo')">${icon('settings',{size:14,noMargin:true})}<span class="lbl">Profilo Azienda</span></div>
       </div>
       <div class="topnav-right">
-        <div class="topnav-status"><span class="dot ${RUNTIME.db?'ok':'ko'}"></span>Sistema attivo</div>
+        <div class="topnav-status" title="Sistema attivo"><span class="dot ${RUNTIME.db?'ok':'ko'}"></span>Sistema attivo</div>
         <div class="topnav-copy">© momandis</div>
       </div>
     </div>
@@ -1979,6 +1990,15 @@ async function recoverFromAutoCopy(){
   setHistoryBackupMsg(missing.length + " lead recuperati ✓");
 }
 
+function activeHistoryFilters(){
+  const f = state.historyFilter;
+  return (f.stato?1:0) + (f.lavorato?1:0) + (f.da?1:0) + (f.a?1:0);
+}
+function resetHistoryFilters(){
+  Object.assign(state.historyFilter, { stato:"", da:"", a:"", lavorato:"" });
+  render();
+}
+
 function autoBackupInfo(){
   let at = ""; try { at = localStorage.getItem(LOCAL_PREFIX+"leads_backup_at") || ""; } catch(e){}
   return at ? "Copia automatica: " + new Date(at).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : "Copia automatica: attiva";
@@ -1990,36 +2010,45 @@ function renderHistoryTab(){
   return `
     <h1>Storico Lead</h1>
     <div class="subtitle">${all.length} lead lavorati salvati.</div>
-    <div class="card">
-      <div class="row">
-        <select onchange="state.historyFilter.stato=this.value; render();">
-          <option value="">Tutti gli stati</option>
-          ${LEAD_STATES.map(s => `<option value="${s.id}" ${state.historyFilter.stato===String(s.id)?'selected':''}>${s.id}. ${escapeHtml(s.label)}</option>`).join("")}
-        </select>
-        <select onchange="state.historyFilter.lavorato=this.value; render();">
-          <option value="" ${state.historyFilter.lavorato===''?'selected':''}>Tutti i lead</option>
-          <option value="si" ${state.historyFilter.lavorato==='si'?'selected':''}>Solo lavorati</option>
-          <option value="no" ${state.historyFilter.lavorato==='no'?'selected':''}>Solo da lavorare</option>
-        </select>
-        <label class="small" style="display:flex;align-items:center;gap:6px;">Ordina per
+    <div class="card hist-panel">
+      <div class="hp-row" style="align-items:flex-end;">
+        <div style="flex:1;min-width:0;"><span class="hp-lbl">Ordina per</span>
           <select onchange="setHistoryPref('ordina', this.value)">
             ${Object.entries(HISTORY_SORTS).map(([k,v]) => `<option value="${k}" ${state.historyFilter.ordina===k?'selected':''}>${v.label}</option>`).join("")}
-          </select>
-        </label>
-        <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          </select></div>
+        <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding-bottom:6px;white-space:nowrap;">
           <input type="checkbox" ${state.historyFilter.nascondiLavorati?'checked':''} onchange="setHistoryPref('nascondiLavorati', this.checked)"> Nascondi lavorati
         </label>
-        <input type="date" onchange="state.historyFilter.da=this.value; render();" value="${state.historyFilter.da}">
-        <input type="date" onchange="state.historyFilter.a=this.value; render();" value="${state.historyFilter.a}">
-        <button class="btn-secondary" onclick="esportaStoricoExcel()">${icon('download')}Esporta storico</button>
       </div>
-      <div class="row" style="margin-top:10px;">
-        <button class="btn-primary" onclick="exportLeadsBackup()" title="Scarica un file con TUTTI i lead (indipendente dal browser)">${icon('save')}Scarica backup lead</button>
-        <button class="btn-secondary" onclick="document.getElementById('leads_backup_import_input').click()" title="Unisce i lead di un backup a quelli attuali, senza cancellare nulla">${icon('upload')}Ripristina da backup</button>
+      <div class="hp-row" style="margin-top:7px;">
+        <button class="btn-secondary" onclick="esportaStoricoExcel()">${icon('download')}Esporta storico</button>
+        <button class="btn-ghost hp-filtri" style="margin-left:auto;" onclick="state.historyFiltersOpen=!state.historyFiltersOpen; render();">${icon('settings')}Filtri <span class="hp-badge">${activeHistoryFilters()}</span> ${state.historyFiltersOpen ? '▾' : '▸'}</button>
+      </div>
+      ${state.historyFiltersOpen ? `
+      <div class="hp-grid">
+        <div><span class="hp-lbl">Stato</span>
+          <select onchange="state.historyFilter.stato=this.value; render();">
+            <option value="">Tutti gli stati</option>
+            ${LEAD_STATES.map(s => `<option value="${s.id}" ${state.historyFilter.stato===String(s.id)?'selected':''}>${s.id}. ${escapeHtml(s.label)}</option>`).join("")}
+          </select></div>
+        <div><span class="hp-lbl">Lavorati</span>
+          <select onchange="state.historyFilter.lavorato=this.value; render();">
+            <option value="" ${state.historyFilter.lavorato===''?'selected':''}>Tutti i lead</option>
+            <option value="si" ${state.historyFilter.lavorato==='si'?'selected':''}>Solo lavorati</option>
+            <option value="no" ${state.historyFilter.lavorato==='no'?'selected':''}>Solo da lavorare</option>
+          </select></div>
+        <div><span class="hp-lbl">Dal</span><input type="date" onchange="state.historyFilter.da=this.value; render();" value="${state.historyFilter.da}"></div>
+        <div><span class="hp-lbl">Al</span><input type="date" onchange="state.historyFilter.a=this.value; render();" value="${state.historyFilter.a}"></div>
+        ${activeHistoryFilters() ? `<div style="grid-column:1/-1;"><span class="hp-link" onclick="resetHistoryFilters()">Azzera filtri</span></div>` : ""}
+      </div>` : ""}
+      <div class="hp-backup">
+        <span>Backup:</span>
+        <span class="hp-link" onclick="exportLeadsBackup()" title="Scarica un file con TUTTI i lead (indipendente dal browser)">Scarica</span>
+        <span class="hp-link" onclick="document.getElementById('leads_backup_import_input').click()" title="Unisce i lead di un backup a quelli attuali, senza cancellare nulla">Ripristina</span>
+        <span class="hp-link" onclick="recoverFromAutoCopy()" title="Riaggiunge lead presenti nelle copie automatiche ma non più nello storico (es. eliminati per errore)">Recupera copia automatica</span>
         <input type="file" id="leads_backup_import_input" accept="application/json,.json" style="display:none" onchange="importLeadsBackup(event)">
-        <button class="btn-secondary" onclick="recoverFromAutoCopy()" title="Riaggiunge lead presenti nelle copie automatiche ma non più nello storico (es. eliminati per errore)">${icon('refresh')}Recupera da copia automatica</button>
-        <span class="hint">${autoBackupInfo()}</span>
-        <span id="history_backup_msg" class="hint"></span>
+        <span style="margin-left:auto;">${autoBackupInfo()}</span>
+        <span id="history_backup_msg" style="flex-basis:100%;"></span>
       </div>
     </div>
     <div class="card" style="overflow-x:auto;">
