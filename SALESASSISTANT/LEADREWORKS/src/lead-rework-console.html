@@ -2212,6 +2212,7 @@ function renderHistoryTab(){
               ${ck('telefono','Telefonata fatta')}${ck('whatsapp','WhatsApp inviato')}${ck('email','Email inviata')}
               <td class="ck"><input type="checkbox" ${r.lavorato?'checked':''} onchange="toggleLavorato('${r.id}')" title="Segna come lavorato"></td>
               <td class="acts">
+                <button class="btn-ghost" title="${r.dati_lead_input.crm_lead_id ? 'Apri questo lead nel CRM Facile Salire' : 'Apri l\'elenco lead del CRM (ID non ancora collegato)'}" aria-label="CRM" style="font-size:12px;font-weight:600;" onclick="openCrmFromHistory('${r.id}')">${icon('external',{size:13,noMargin:true})} CRM</button>
                 <button class="btn-ghost" title="Apri" aria-label="Apri" onclick="openHistoryItem('${r.id}')">${icon('eye',{noMargin:true})}</button>
                 <button class="btn-ghost" title="Duplica" aria-label="Duplica" onclick="duplicateHistoryItem('${r.id}')">${icon('copy',{noMargin:true})}</button>
                 <button class="btn-ghost" title="Elimina" aria-label="Elimina" style="color:var(--danger)" onclick="deleteHistoryItem('${r.id}')">${icon('trash',{noMargin:true})}</button>
