@@ -1459,7 +1459,18 @@ async function linkHistoryToCrm(data){
   const id = String((data && data.crm_lead_id) || "").trim();
   if (!id) return null;
   const list = Object.values(state.leadsHistory || {});
-  if (list.some(r => String((r.dati_lead_input||{}).crm_lead_id||"") === id)) return { status:"gia" };
+  // Allinea la data dello Storico a quella di assegnazione a YesMobility (data_attivita dal CRM)
+  const aggiornaData = async (r) => {
+    const t = data.data_attivita && new Date(data.data_attivita);
+    if (!r || !t || isNaN(t) || r.data_creazione === t.toISOString()) return false;
+    if (!r.data_importazione) r.data_importazione = r.data_creazione;
+    r.data_creazione = t.toISOString();
+    await dbSet("leads", state.leadsHistory);
+    render();
+    return true;
+  };
+  const gia = list.find(r => String((r.dati_lead_input||{}).crm_lead_id||"") === id);
+  if (gia) return { status:"gia", dataAggiornata: await aggiornaData(gia) };
   const digits = s => String(s||"").replace(/\D/g,"").slice(-9);
   const norm = s => String(s||"").trim().toLowerCase().replace(/\s+/g," ");
   const free = list.filter(r => !String((r.dati_lead_input||{}).crm_lead_id||"").trim());
@@ -1474,6 +1485,7 @@ async function linkHistoryToCrm(data){
   if (cand.length > 1) return { status:"dubbio", n:cand.length };
   cand[0].dati_lead_input.crm_lead_id = id;
   await dbSet("leads", state.leadsHistory);
+  await aggiornaData(cand[0]);
   return { status:"collegato", nome: cand[0].dati_lead_input.nome || "" };
 }
 
@@ -1500,7 +1512,8 @@ function applyCrmImport(data){
   linkHistoryToCrm(data).then(res => {
     const el2 = document.getElementById("crm_import_msg");
     if (!res || !el2) return;
-    const txt = res.status === "collegato" ? "Collegato al lead già in storico: " + res.nome + " ✓"
+    const txt = res.status === "gia" && res.dataAggiornata ? "Data dello Storico aggiornata ✓"
+      : res.status === "collegato" ? "Collegato al lead già in storico: " + res.nome + " ✓"
       : res.status === "dubbio" ? "Più lead in storico corrispondono (" + res.n + "): nessun collegamento automatico"
       : "";
     if (txt){ el2.textContent = "Dati importati dal CRM ✓ · " + txt; setTimeout(()=>{ if(el2) el2.textContent=""; }, 7000); }
