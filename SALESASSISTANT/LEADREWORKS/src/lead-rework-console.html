@@ -360,7 +360,7 @@ function extractSampleText(res){
    La chiave resta solo nel browser (localStorage) e viene inviata solo ad api.anthropic.com.
    Richiede l'header "anthropic-dangerous-direct-browser-access" che Anthropic espone
    proprio per il pattern "bring your own API key" nei tool client-side come questo. */
-const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5";
+const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5-5";
 function getAnthropicApiKey(){ try { return localStorage.getItem(LOCAL_PREFIX+"anthropic_api_key") || ""; } catch(e){ return ""; } }
 function setAnthropicApiKey(v){ try { if (v) localStorage.setItem(LOCAL_PREFIX+"anthropic_api_key", v); else localStorage.removeItem(LOCAL_PREFIX+"anthropic_api_key"); } catch(e){} }
 function getAnthropicModel(){ try { return localStorage.getItem(LOCAL_PREFIX+"anthropic_model") || DEFAULT_ANTHROPIC_MODEL; } catch(e){ return DEFAULT_ANTHROPIC_MODEL; } }
@@ -386,14 +386,19 @@ async function callAnthropicDirect({system, user, images, apiKey, model, workspa
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers,
-    body: JSON.stringify({ model: model || DEFAULT_ANTHROPIC_MODEL, max_tokens: 4096, system, messages:[{role:"user", content}] })
+    body: JSON.stringify({ model: model || DEFAULT_ANTHROPIC_MODEL, max_tokens: 16000, system, messages:[{role:"user", content}] })
   });
   if (!resp.ok){
     const bodyText = await resp.text().catch(()=> "");
     throw new Error("Anthropic API " + resp.status + ": " + bodyText.slice(0,200));
   }
   const data = await resp.json();
-  return (data.content||[]).filter(b => b.type === "text").map(b => b.text).join("\n");
+  const text = (data.content||[]).filter(b => b.type === "text").map(b => b.text).join("\n");
+  if (!text.trim()){
+    // risposta 200 senza testo: riporta stop_reason e tipi di blocco per capire il perché
+    throw new Error("risposta vuota dall'API (stop_reason: " + (data.stop_reason || "?") + ", blocchi: " + ((data.content||[]).map(b => b.type).join(",") || "nessuno") + ", output_tokens: " + ((data.usage && data.usage.output_tokens) || "?") + ")");
+  }
+  return text;
 }
 
 function hasAiRuntime(){
