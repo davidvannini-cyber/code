@@ -129,11 +129,10 @@ function readCrmPageData() {
       orario_appuntamento = parti[1] || "";
     }
   }
-  // Data dell'attività (campo "duedate" del CRM) più recente: usata dalla console come data
-  // del lead nello Storico, al posto della data di importazione.
-  const conData = activities.filter((a) => a.duedate && !isNaN(new Date(a.duedate)));
-  const attivitaRecente = conData.slice().sort((a, b) => new Date(b.duedate) - new Date(a.duedate))[0];
-  const data_attivita = attivitaRecente ? new Date(attivitaRecente.duedate).toISOString() : "";
+  // Data in cui il lead è stato assegnato a YesMobility (campo del lead "yes_mobility_started_at"):
+  // la console la usa come data del lead nello Storico, al posto della data di importazione.
+  const dataYm = lead.yes_mobility_started_at ? new Date(lead.yes_mobility_started_at) : null;
+  const data_attivita = dataYm && !isNaN(dataYm) ? dataYm.toISOString() : "";
   const indirizzo = [lead.address, lead.city_display].filter(Boolean).join(", ");
 
   return {
