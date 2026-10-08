@@ -132,7 +132,9 @@ function readCrmPageData() {
   // Data in cui il lead è stato assegnato a YesMobility (campo del lead "yes_mobility_started_at"):
   // la console la usa come data del lead nello Storico, al posto della data di importazione.
   const dataYm = lead.yes_mobility_started_at ? new Date(lead.yes_mobility_started_at) : null;
-  const data_attivita = dataYm && !isNaN(dataYm) ? dataYm.toISOString() : "";
+  // Il CRM mostra questa data con 1 ora in più rispetto all'ora italiana (mostra UTC+3): per
+  // avere le stesse ore del CRM, che è il riferimento, si aggiunge 1 ora.
+  const data_attivita = dataYm && !isNaN(dataYm) ? new Date(dataYm.getTime() + 3600000).toISOString() : "";
   const indirizzo = [lead.address, lead.city_display].filter(Boolean).join(", ");
 
   return {
