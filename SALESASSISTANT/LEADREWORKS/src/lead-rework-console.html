@@ -351,6 +351,7 @@ function extractSampleText(res){
     if (typeof res.content === "string") return res.content;
     if (Array.isArray(res.content)) return res.content.map(b => (b && b.text) ? b.text : "").join("\n");
   }
+  if (res === undefined || res === null) return "";
   return JSON.stringify(res);
 }
 
@@ -419,16 +420,20 @@ async function callSample({system, user, images}){
       const payload = { system, messages:[{role:"user", content:user}] };
       if (images && images.length) payload.images = images;
       const res = await window.claude.sample(payload);
+      const txt = extractSampleText(res);
+      if (!txt || !String(txt).trim()) throw new Error("risposta vuota (tipo restituito: " + typeof res + ")");
       RUNTIME.sample = true; RUNTIME.sampleVia = "artifact";
-      return extractSampleText(res);
+      return txt;
     } catch(e){ console.warn("window.claude.sample fallita, provo fallback legacy", e); lastError = e; lastErrorVia = "Claude Artifact (window.claude.sample)"; }
   }
   if (window.claude && typeof window.claude.complete === "function"){
     try {
       const full = system ? (system + "\n\n---\n\n" + user) : user;
       const res = await window.claude.complete(full);
+      const txt = extractSampleText(res);
+      if (!txt || !String(txt).trim()) throw new Error("risposta vuota (tipo restituito: " + typeof res + ")");
       RUNTIME.sample = true; RUNTIME.sampleVia = "legacy";
-      return extractSampleText(res);
+      return txt;
     } catch(e){ console.warn("window.claude.complete fallita", e); lastError = e; lastErrorVia = "Claude Artifact legacy (window.claude.complete)"; }
   }
   const apiKey = getAnthropicApiKey();
@@ -437,6 +442,7 @@ async function callSample({system, user, images}){
     const workspaceId = getAnthropicWorkspaceId();
     try {
       const text = await callAnthropicDirect({ system, user, images, apiKey, model, workspaceId });
+      if (!text || !String(text).trim()) throw new Error("risposta vuota dall'API");
       RUNTIME.sample = true; RUNTIME.sampleVia = "api_key";
       return text;
     } catch(e){
