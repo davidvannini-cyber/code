@@ -42,3 +42,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-08 | `e66159f` | SALESASSISTANT/LEADREWORKS/browser-extension/crm-content.js, SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (data Storico = duedate attività CRM invece della data di importazione), REGISTRO-SALVATAGGI.md | `git checkout e66159f` |
 | 2026-10-08 | `35d8786` | SALESASSISTANT/LEADREWORKS/browser-extension/crm-content.js (data Storico = yes_mobility_started_at, assegnazione a YesMobility), REGISTRO-SALVATAGGI.md | `git checkout 35d8786` |
 | 2026-10-08 | `7927f64` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (reinvio dal CRM aggiorna la data dello Storico dei lead già presenti), REGISTRO-SALVATAGGI.md | `git checkout 7927f64` |
+| 2026-10-08 | `476080b` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (pulsante CRM sulle righe dello Storico), REGISTRO-SALVATAGGI.md | `git checkout 476080b` |
