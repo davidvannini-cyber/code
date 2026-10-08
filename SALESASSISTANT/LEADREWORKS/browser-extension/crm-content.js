@@ -129,6 +129,11 @@ function readCrmPageData() {
       orario_appuntamento = parti[1] || "";
     }
   }
+  // Data dell'attività (campo "duedate" del CRM) più recente: usata dalla console come data
+  // del lead nello Storico, al posto della data di importazione.
+  const conData = activities.filter((a) => a.duedate && !isNaN(new Date(a.duedate)));
+  const attivitaRecente = conData.slice().sort((a, b) => new Date(b.duedate) - new Date(a.duedate))[0];
+  const data_attivita = attivitaRecente ? new Date(attivitaRecente.duedate).toISOString() : "";
   const indirizzo = [lead.address, lead.city_display].filter(Boolean).join(", ");
 
   return {
@@ -142,6 +147,7 @@ function readCrmPageData() {
     motivazione_rifiuto,
     data_appuntamento,
     orario_appuntamento,
+    data_attivita,
     indirizzo,
     prodotto: mapProdottoCategoria(prodottoNome),
     // ID del lead sul CRM: la console lo salva per poter riaprire la pagina del lead

@@ -501,6 +501,7 @@ function emptyDraft(){
     data_appuntamento: "", orario_appuntamento: "", indirizzo: "", tempistica: "",
     analisi_strategia: "",
     crm_lead_id: "",
+    data_attivita: "",
     stato_lead: 1,
     canali_attivi: defaultChannelsFor(1),
     obiezioni_attive: [],
@@ -1483,7 +1484,7 @@ function applyCrmImport(data){
   const setIfPresent = (key) => {
     if (data[key] !== undefined && String(data[key]).trim() !== "") state.draft[key] = String(data[key]).trim();
   };
-  ["nome","zona","telefono1","email","note","storico","prezzo_esistente","motivazione_rifiuto","data_appuntamento","orario_appuntamento","indirizzo","crm_lead_id"].forEach(setIfPresent);
+  ["nome","zona","telefono1","email","note","storico","prezzo_esistente","motivazione_rifiuto","data_appuntamento","orario_appuntamento","indirizzo","crm_lead_id","data_attivita"].forEach(setIfPresent);
   if (data.prodotto && state.profile.prodotti_selezionabili.includes(data.prodotto)){
     state.draft.prodotto = data.prodotto;
   }
@@ -1919,9 +1920,12 @@ function exportHistoryItemToSuggerimentiVendita(id){
 async function saveLeadToHistory(){
   const id = "lead_" + Date.now();
   const d = state.draft;
+  // Se il lead viene dal CRM, lo Storico mostra la data dell'attività CRM (duedate) invece di quella di importazione.
+  const dataAttivita = d.data_attivita && !isNaN(new Date(d.data_attivita)) ? new Date(d.data_attivita).toISOString() : "";
   const record = {
     id,
-    data_creazione: new Date().toISOString(),
+    data_creazione: dataAttivita || new Date().toISOString(),
+    data_importazione: new Date().toISOString(),
     stato_lead: d.stato_lead,
     lavorato: false,
     canali_generati: Object.keys(state.generatedOutput||{}),
