@@ -226,7 +226,7 @@ def crm_mock_html(inviato=False):
     return ('<div class="crm"><div class="crm-top"><span class="crm-d"></span><span class="crm-d"></span><span class="crm-d"></span>'
             '<span class="crm-url">app.facilesalire.it/leads/…</span></div>'
             '<div class="crm-body"><div class="crm-h">Scheda lead</div>%s'
-            '%s<div class="crm-btn%s">%s</div></div></div>' % (corpo, "" if inviato else '<div class="crm-call">DA QUI PARTE TUTTO</div>', " ok" if inviato else "", btn))
+            '<div class="crm-btn%s">%s</div></div></div>' % (corpo, " ok" if inviato else "", btn))
 
 
 def tre_pezzi_html():

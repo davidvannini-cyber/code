@@ -106,7 +106,7 @@ CSS_BLOCCHI = """
 .arch-r2{gap:2.4mm}
 .arch-mid{display:flex;align-items:center;justify-content:center;gap:3mm;color:var(--muted);font-size:calc(var(--fs)*.8);font-style:italic}
 .nodo{flex:1;background:var(--card);border:var(--card-border);border-radius:var(--radius);padding:3.2mm 2.4mm;text-align:center;box-shadow:var(--card-shadow)}
-.nodo.crm{border-top:1.2mm solid #f59e0b}.nodo.est{border-top:1.2mm solid #4fc99b}.nodo.con{border-top:1.2mm solid var(--accent)}.nodo.usc{border-top:1.2mm solid var(--ink-h)}
+.nodo.crm{border-top:1.2mm solid var(--accent)}.nodo.est{border-top:1.2mm solid #4fc99b}.nodo.con{border-top:1.2mm solid var(--accent)}.nodo.usc{border-top:1.2mm solid var(--ink-h)}
 .nodo-ic{font-size:8mm;color:var(--accent);display:flex;justify-content:center;margin-bottom:1.2mm}
 .nodo-t{font-weight:700;color:var(--ink-h);font-size:calc(var(--fs)*.95);margin-bottom:.8mm}
 .nodo-s{font-size:calc(var(--fs)*.76);color:var(--muted);line-height:1.32}
@@ -136,10 +136,8 @@ CSS_BLOCCHI = """
 .crm-r{display:flex;align-items:center;gap:3mm;margin:1.6mm 0}
 .crm-l{width:12mm;height:2.4mm;border-radius:1mm;background:#dfe5e9}
 .crm-v{font-size:3mm;color:#6b7780}
-.crm-btn{position:absolute;right:3mm;bottom:3mm;background:#2454e0;color:#fff;border-radius:2mm;padding:2.6mm 4mm;font-size:3.1mm;font-weight:600;box-shadow:0 1mm 3mm rgba(0,0,0,.28);font-family:'Inter',sans-serif;outline:.9mm solid rgba(36,84,224,.28);outline-offset:.5mm}
-.crm-call{position:absolute;right:3mm;bottom:15.5mm;background:#e11d48;color:#fff;font-weight:700;font-size:2.7mm;letter-spacing:.2mm;padding:1mm 2.6mm;border-radius:5mm;font-family:'Inter',sans-serif}
-.crm-call:after{content:'';position:absolute;right:9mm;bottom:-1.6mm;border:1.8mm solid transparent;border-top-color:#e11d48;border-bottom:0}
-.crm-btn.ok{background:#1f9d6b;outline-color:rgba(31,157,107,.28)}
+.crm-btn{position:absolute;right:3mm;bottom:3mm;background:#2454e0;color:#fff;border-radius:2mm;padding:2.6mm 4mm;font-size:3.1mm;font-weight:600;box-shadow:0 1mm 3mm rgba(0,0,0,.28);font-family:'Inter',sans-serif;}
+.crm-btn.ok{background:#1f9d6b}
 .gs-c{flex:1}.gs-r{display:flex;gap:1.6mm;align-items:baseline;margin-top:.9mm;font-size:calc(var(--fs)*.82);line-height:1.3;color:var(--muted)}
 .gs-k{flex:none;font-size:2.3mm;font-weight:800;letter-spacing:.2mm;background:var(--accent);color:#fff;border-radius:.8mm;padding:.2mm 1.2mm}.gs-k.ric{background:#1f9d6b}
 .ar{display:flex;align-items:stretch;gap:2.4mm}
