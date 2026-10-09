@@ -50,48 +50,7 @@ class MainActivity : Activity() {
         colonna.addView(bottone("1. Salva e avvia l'ascolto") { salvaEAvvia() })
         colonna.addView(bottone("2. Concedi i permessi (contatti e notifiche)") { chiediPermessi() })
         colonna.addView(bottone("3. Non limitare la batteria") { escludiBatteria() })
-        colonna.addView(bottone("Prova Lyber (con l'ultimo numero ricevuto)") {
-            val numero = Prefs.ultimoNumero(this)
-            if (numero.isNotEmpty()) {
-                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                cm.setPrimaryClip(android.content.ClipData.newPlainText("Numero lead", numero))
-            }
-            val esito = Lyber.apri(this, numero)
-            Prefs.aggiungiLog(this, "Prova Lyber: $esito")
-            Toast.makeText(this, esito, Toast.LENGTH_LONG).show()
-            aggiorna()
-        })
-        colonna.addView(testo("Prove per far comparire il numero in Lyber (premi uno alla volta e guarda se il numero compare):"))
-        listOf(
-            "A" to "A: tel:+39… (con prefisso)",
-            "B" to "B: tel:… (senza +39)",
-            "C" to "C: apri numero (VIEW)",
-            "D" to "D: link lyber://"
-        ).forEach { (v, nome) ->
-            colonna.addView(bottone(nome) {
-                val numero = Prefs.ultimoNumero(this).ifEmpty { "+393331234567" }
-                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                cm.setPrimaryClip(android.content.ClipData.newPlainText("Numero lead", numero))
-                val esito = Lyber.prova(this, v, numero)
-                Prefs.aggiungiLog(this, esito)
-                Toast.makeText(this, esito, Toast.LENGTH_LONG).show()
-                aggiorna()
-            })
-        }
-        colonna.addView(bottone("Scopri come parlare a Lyber") {
-            val testo = LyberDiagnosi.rapporto(this, Prefs.ultimoNumero(this))
-            val t = TextView(this).apply { text = testo; textSize = 12f; setPadding(p, p, p, p); setTextIsSelectable(true) }
-            android.app.AlertDialog.Builder(this)
-                .setTitle("Cosa accetta Lyber")
-                .setView(ScrollView(this).apply { addView(t) })
-                .setPositiveButton("Copia") { _, _ ->
-                    val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                    cm.setPrimaryClip(android.content.ClipData.newPlainText("Rapporto Lyber", testo))
-                    Toast.makeText(this, "Rapporto copiato: incollalo nella chat", Toast.LENGTH_LONG).show()
-                }
-                .setNegativeButton("Chiudi", null)
-                .show()
-        })
+        colonna.addView(bottone("4. Consenti \"Mostra sopra altre app\" (serve per far partire Lyber)") { chiediSovrapposizione() })
         colonna.addView(bottone("Ferma l'ascolto") {
             stopService(Intent(this, NtfyService::class.java)); aggiorna()
         })
@@ -131,6 +90,14 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun chiediSovrapposizione() {
+        if (Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "Permesso già concesso", Toast.LENGTH_SHORT).show()
+        } else {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+        }
+    }
+
     private fun salvaEAvvia() {
         val codice = campoCodice.text.toString().trim()
         if (codice.isEmpty()) { Toast.makeText(this, "Inserisci il codice segreto", Toast.LENGTH_SHORT).show(); return }
@@ -145,8 +112,9 @@ class MainActivity : Activity() {
         val perm = if (permessiDaChiedere().isEmpty()) "concessi ✓" else "da concedere (tocca il pulsante 2)"
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         val batt = if (pm.isIgnoringBatteryOptimizations(packageName)) "non limitata ✓" else "da escludere (tocca il pulsante 3)"
+        val sopra = if (Settings.canDrawOverlays(this)) "concesso ✓" else "da concedere (tocca il pulsante 4)"
         val log = Prefs.log(this).ifEmpty { "(nessun lead ricevuto)" }
         stato.text = "Codice: " + (if (Prefs.topic(this).isEmpty()) "non impostato" else "impostato ✓") +
-            "\nPermessi: $perm\nBatteria: $batt\n\nUltimi lead:\n$log"
+            "\nPermessi: $perm\nBatteria: $batt\nMostra sopra altre app: $sopra\n\nUltimi lead:\n$log"
     }
 }

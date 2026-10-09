@@ -443,9 +443,33 @@
   const elLeadNome = document.getElementById("lead-nome");
   const elLeadTelefono = document.getElementById("lead-telefono");
 
-  // "Invia a telefono": manda nome, cognome, numero ed email del lead all'app Android
-  // "Rubrica YesMobility" tramite ntfy.sh (stesso invio del pulsante della Lead Rework Console).
+  // "Invia a telefono": conferma sul computer (Salva e chiama / Solo salva / Annulla), poi manda
+  // nome, cognome, numero ed email all'app Android "Rubrica YesMobility" tramite ntfy.sh
+  // (stesso invio e stessa conferma del pulsante della Lead Rework Console).
   // Il codice segreto si chiede la prima volta e resta salvato in questo browser.
+  function chiediAzioneTelefono(nomeCompleto, telefono) {
+    return new Promise((resolve) => {
+      document.querySelectorAll(".conferma-telefono").forEach((e) => e.remove());
+      const box = document.createElement("div");
+      box.className = "conferma-telefono";
+      box.style.cssText = "position:fixed;right:8px;top:8px;left:8px;background:#fff;border:1px solid rgba(0,0,0,.15);border-left:4px solid #14b8a6;border-radius:2px;box-shadow:0 8px 28px rgba(0,0,0,.28);padding:12px 14px;z-index:99999;font-family:inherit;color:#1a1f2e;";
+      const nome = document.createElement("b"); nome.textContent = nomeCompleto || "(senza nome)"; nome.style.fontSize = "14px";
+      const tel = document.createElement("span"); tel.textContent = telefono; tel.style.cssText = "font-size:13px;color:#374151;margin-left:10px;";
+      const dom = document.createElement("div"); dom.textContent = "COSA FACCIO CON QUESTO LEAD?"; dom.style.cssText = "font-size:9px;font-weight:700;letter-spacing:.04em;color:#6b7280;margin:4px 0 10px;";
+      const riga = document.createElement("div"); riga.style.cssText = "display:flex;gap:6px;";
+      [["chiama", "Salva e chiama", "background:#14b8a6;color:#042f2a;border:0;flex:1.3;"],
+       ["salva", "Solo salva", "background:#fff;color:#1a1f2e;border:1px solid rgba(0,0,0,.18);flex:1;"],
+       ["", "Annulla", "background:transparent;color:#6b7280;border:0;"]].forEach(([az, testo, stile]) => {
+        const bt = document.createElement("button");
+        bt.textContent = testo; bt.style.cssText = stile + "border-radius:2px;font:700 12px inherit;font-family:inherit;padding:10px 12px;cursor:pointer;";
+        bt.addEventListener("click", () => { box.remove(); resolve(az || null); });
+        riga.appendChild(bt);
+      });
+      box.append(nome, tel, dom, riga);
+      document.body.appendChild(box);
+    });
+  }
+
   document.getElementById("pulsante-telefono").addEventListener("click", async () => {
     const esito = document.getElementById("esito-telefono");
     const dica = (t) => { esito.textContent = t; setTimeout(() => { if (esito.textContent === t) esito.textContent = ""; }, 5000); };
@@ -459,17 +483,20 @@
     const nomeCompleto = elLeadNome.textContent.trim().replace(/^—$/, "");
     const telefono = elLeadTelefono.textContent.trim().replace(/^—$/, "");
     if (!telefono) { dica("Nessun numero da inviare."); return; }
+    const azione = await chiediAzioneTelefono(nomeCompleto, telefono);
+    if (!azione) { dica("Annullato"); return; }
     const parti = nomeCompleto.split(/\s+/).filter(Boolean);
     const payload = {
       nome: parti[0] || "",
       cognome: parti.slice(1).join(" "),
       telefono: telefono,
-      email: (document.getElementById("lead-info").dataset.email || "").trim()
+      email: (document.getElementById("lead-info").dataset.email || "").trim(),
+      azione: azione
     };
     try {
       const r = await fetch("https://ntfy.sh/" + encodeURIComponent(topic), { method: "POST", body: JSON.stringify(payload) });
       if (!r.ok) throw new Error("HTTP " + r.status);
-      dica("Inviato al telefono ✓");
+      dica(azione === "chiama" ? "Inviato: il telefono chiama ✓" : "Contatto inviato ✓");
     } catch (e) {
       dica("Invio non riuscito: " + e.message);
     }
