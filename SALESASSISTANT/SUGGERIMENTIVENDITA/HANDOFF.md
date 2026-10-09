@@ -178,7 +178,7 @@ Il bundle `Suggerimenti Vendita.app` contiene una **copia completa** del progett
 
 - [ ] **Tarare l'audio in una chiamata reale** seguendo §4 (dispositivo esplicito → livello macOS → AGC / echo / noise uno alla volta). Annotare qui la configurazione che funziona.
 - [x] ~~Spia prima del compressore + avviso clipping~~: fatto il 2026-10-09 (seconda barra "prima del limiter", avviso rosso se un campione tocca il fondo scala; l'AGC del browser resta a monte e non è leggibile).
-- [x] ~~Avviso microfono integrato~~: fatto il 2026-10-09 (avviso ambra se l'etichetta del dispositivo in uso contiene integrato/built-in/MacBook/internal). Da verificare dal vivo con lo splitter.
+- [x] ~~Avviso microfono integrato~~: fatto il 2026-10-09 (avviso ambra se l'etichetta del dispositivo in uso contiene integrato/built-in/MacBook/internal). Verificato dal vivo il 2026-10-09: il jack compare come "External Microphone (Built-in)", quindi un nome con external/esterno/line esclude l'avviso (corretto un falso positivo).
 - [ ] Migrare `ScriptProcessor` → `AudioWorklet`.
 - [ ] Testare dal vivo: bagliore sulla porta 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 35/15/25 (overlay che si posiziona da solo).
 - [x] ~~Aggiornare `README.md`~~: fatto il 2026-09-25 (flusso via estensione, 3 modalità, porta 8767, struttura attuale, rimossi finestra flottante e `lead-corrente.json`).

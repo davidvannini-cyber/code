@@ -637,12 +637,16 @@
   // Avviso se il dispositivo realmente in uso è il microfono integrato del
   // Mac: succede in silenzio quando lo splitter non è l'ingresso predefinito
   // di macOS ed è selezionato "Predefinito di sistema".
-  const RE_MIC_INTEGRATO = /integrat|built-?in|macbook|internal/i;
+  // Il jack del Mac compare come "External Microphone (Built-in)": contiene
+  // "Built-in" ma è lo splitter, quindi un nome "esterno"/"linea" esclude
+  // l'avviso. Scatta solo per "Internal Microphone" / "Microfono integrato".
+  const RE_MIC_INTEGRATO = /integrat|built-?in|macbook|internal|interno/i;
+  const RE_MIC_ESTERNO = /extern|estern|line/i;
   function controllaDispositivoInUso(stream) {
     try {
       const traccia = stream.getAudioTracks()[0];
       const etichetta = traccia && traccia.label ? traccia.label : "";
-      if (RE_MIC_INTEGRATO.test(etichetta)) {
+      if (RE_MIC_INTEGRATO.test(etichetta) && !RE_MIC_ESTERNO.test(etichetta)) {
         elAvvisoIngresso.textContent = "Stai ascoltando il microfono integrato del Mac (\u201c" + etichetta + "\u201d), non lo splitter del telefono. Scegli lo splitter nel selettore in alto.";
         elAvvisoIngresso.style.display = "block";
       } else {
