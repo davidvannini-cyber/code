@@ -37,6 +37,7 @@ class MainActivity : Activity() {
         }
 
         colonna.addView(testo("Rubrica YesMobility", 22f))
+        colonna.addView(testo("Versione " + packageManager.getPackageInfo(packageName, 0).versionName))
         colonna.addView(testo("Riceve i lead dal Mac, salva il contatto nella rubrica del telefono (etichetta «YesMobility») e copia il numero negli appunti."))
         colonna.addView(testo("Codice segreto (lo stesso della Lead Rework Console):"))
         campoCodice = EditText(this).apply {
@@ -49,6 +50,17 @@ class MainActivity : Activity() {
         colonna.addView(bottone("1. Salva e avvia l'ascolto") { salvaEAvvia() })
         colonna.addView(bottone("2. Concedi i permessi (contatti e notifiche)") { chiediPermessi() })
         colonna.addView(bottone("3. Non limitare la batteria") { escludiBatteria() })
+        colonna.addView(bottone("Prova Lyber (con l'ultimo numero ricevuto)") {
+            val numero = Prefs.ultimoNumero(this)
+            if (numero.isNotEmpty()) {
+                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("Numero lead", numero))
+            }
+            val esito = Lyber.apri(this, numero)
+            Prefs.aggiungiLog(this, "Prova Lyber: $esito")
+            Toast.makeText(this, esito, Toast.LENGTH_LONG).show()
+            aggiorna()
+        })
         colonna.addView(bottone("Ferma l'ascolto") {
             stopService(Intent(this, NtfyService::class.java)); aggiorna()
         })
