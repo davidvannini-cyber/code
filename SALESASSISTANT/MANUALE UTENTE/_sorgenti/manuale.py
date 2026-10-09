@@ -227,7 +227,7 @@ def _pg_E(n, cls, parte, cap_titolo, cap_num, cont, corpo, toc=False):
 
 
 def _pg_C(n, cls, parte_idx, parte, cap_titolo, cap_num, cont, corpo, toc=False, total=0, cid=None):
-    lato = ['<a class="torna-indice" href="#p2">%s<span>Indice</span></a>' % icona("indice")] if n != 2 else []
+    lato = ['<a class="torna-indice" href="#p2">%s<span>Indice</span></a>' % icona("indice")]
     lato.append(schema_laterale_html(set(NODI_CAP.get(cid, [])), PARTE_ANCORE))
     kick = parte if not toc else "Sales Assistant"
     tit = cap_titolo if cls == "first" else cap_titolo + " <span style='font-weight:400;opacity:.6;font-size:.7em'>· continua</span>"
