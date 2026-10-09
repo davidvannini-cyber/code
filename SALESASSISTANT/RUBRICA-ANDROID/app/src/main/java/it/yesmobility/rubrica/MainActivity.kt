@@ -61,6 +61,20 @@ class MainActivity : Activity() {
             Toast.makeText(this, esito, Toast.LENGTH_LONG).show()
             aggiorna()
         })
+        colonna.addView(bottone("Scopri come parlare a Lyber") {
+            val testo = LyberDiagnosi.rapporto(this, Prefs.ultimoNumero(this))
+            val t = TextView(this).apply { text = testo; textSize = 12f; setPadding(p, p, p, p); setTextIsSelectable(true) }
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Cosa accetta Lyber")
+                .setView(ScrollView(this).apply { addView(t) })
+                .setPositiveButton("Copia") { _, _ ->
+                    val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    cm.setPrimaryClip(android.content.ClipData.newPlainText("Rapporto Lyber", testo))
+                    Toast.makeText(this, "Rapporto copiato: incollalo nella chat", Toast.LENGTH_LONG).show()
+                }
+                .setNegativeButton("Chiudi", null)
+                .show()
+        })
         colonna.addView(bottone("Ferma l'ascolto") {
             stopService(Intent(this, NtfyService::class.java)); aggiorna()
         })
