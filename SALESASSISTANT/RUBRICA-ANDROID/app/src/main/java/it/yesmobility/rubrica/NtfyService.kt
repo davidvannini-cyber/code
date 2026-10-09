@@ -106,6 +106,7 @@ class NtfyService : Service() {
 
     private fun gestisci(lead: Lead) {
         val numero = Contatti.normalizza(lead.telefono)
+        Prefs.setUltimoNumero(this, numero)
         val esito = try {
             if (Contatti.salva(this, lead)) "salvato in rubrica" else "già in rubrica"
         } catch (e: Exception) {
@@ -128,7 +129,7 @@ class NtfyService : Service() {
         val n = Notification.Builder(this, CANALE_LEAD)
             .setSmallIcon(android.R.drawable.sym_action_call)
             .setContentTitle("Nuovo lead: " + lead.nomeCompleto.ifEmpty { numero })
-            .setContentText("$numero — $esito. Tocca per copiare il numero.")
+            .setContentText("$numero — $esito. Tocca per copiare il numero e aprire Lyber.")
             .setContentIntent(pi)
             .setAutoCancel(true)
             .build()
