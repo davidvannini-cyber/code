@@ -46,15 +46,7 @@ async function snap(p, name, sel, targets, clipH) {
   }
 }
 
-(async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium',
-    args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--autoplay-policy=no-user-gesture-required',
-           '--use-file-for-fake-audio-capture=' + path.join(QUI, 'assets/audio-prova.wav')] });
-
-  // =============== LEAD REWORK CONSOLE ===============
-  const ctx = await b.newContext({ viewport: { width: 620, height: 900 }, deviceScaleFactor: 2, permissions: ['clipboard-read', 'clipboard-write'] });
-  const p = await ctx.newPage();
-  p.on('dialog', d => d.accept());
+const rotteConsole = async (p) => {
   await p.route('https://api.anthropic.com/**', async route => {
     const out = await p.evaluate(() => JSON.stringify(localFallbackGenerate()));
     const body = route.request().postData() || '';
@@ -64,6 +56,18 @@ async function snap(p, name, sel, targets, clipH) {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ content: [{ type: 'text', text }], stop_reason: 'end_turn' }) });
   });
   await p.route('https://ntfy.sh/**', route => route.fulfill({ status: 200, body: '{}' }));
+};
+
+(async () => {
+  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium',
+    args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--autoplay-policy=no-user-gesture-required',
+           '--use-file-for-fake-audio-capture=' + path.join(QUI, 'assets/audio-prova.wav')] });
+
+  // =============== LEAD REWORK CONSOLE ===============
+  const ctx = await b.newContext({ viewport: { width: 620, height: 900 }, deviceScaleFactor: 2, permissions: ['clipboard-read', 'clipboard-write'] });
+  const p = await ctx.newPage();
+  p.on('dialog', d => d.accept());
+  await rotteConsole(p);
   await p.goto(BASE + 'LEADREWORKS/src/lead-rework-console.html'); await p.waitForTimeout(700);
   const prefix = await p.evaluate(() => LOCAL_PREFIX);
   await p.evaluate(([pre]) => { localStorage.setItem(pre + 'anthropic_api_key', 'sk-ant-test-0000'); localStorage.setItem(pre + 'phone_topic', 'ym-prova1234567890abcdef12'); }, [prefix]);
@@ -112,7 +116,7 @@ async function snap(p, name, sel, targets, clipH) {
   await p.evaluate(() => { const ids = Object.keys(state.leadsHistory); state.leadsHistory[ids[1]].attivita = { telefono: true, whatsapp: false, email: false };
     state.leadsHistory[ids[2]].lavorato = true; state.leadsHistory[ids[2]].attivita = { telefono: true, whatsapp: true, email: false }; state.leadsHistory[ids[0]].dati_lead_input.crm_lead_id = '12345'; render(); });
   await p.click('.navbtn[title="Storico Lead"]'); await p.waitForTimeout(500);
-  await snap(p, 'console-11-storico-intera', null);
+  await snap(p, 'console-11-storico-intera', null, [['tab', '.navbtn[title="Storico Lead"]'], ['cerca', '#hist_search'], ['pannello', '.hist-panel'], ['tabella', '.tbl-storico thead'], ['riga', '.tbl-storico tbody tr >> nth=0'], ['spunte', '.tbl-storico tbody tr >> nth=1 >> td.ck >> nth=0'], ['azioni', '.tbl-storico tbody tr >> nth=0 >> td.acts']]);
   await snap(p, 'console-12-storico-pannello', '.hist-panel', [['ordina', '.hist-panel select >> nth=0'], ['nascondi', '.hist-panel input[type=checkbox]'], ['esporta', 'button:has-text("Esporta storico")'], ['filtri', '.hp-filtri'],
     ['scarica', '.hp-link:has-text("Scarica")'], ['ripristina', '.hp-link:has-text("Ripristina")'], ['recupera', '.hp-link:has-text("Recupera")'], ['copiaauto', '.hp-backup span >> nth=-1']]);
   await snap(p, 'console-13-storico-tabella', '.tbl-storico', [['data', 'th:has-text("Data")'], ['cliente', 'th:has-text("Cliente")'], ['icotel', 'thead th.ck >> nth=0'], ['icowa', 'thead th.ck >> nth=1'], ['icomail', 'thead th.ck >> nth=2'], ['lav', 'thead th:has-text("Lav")'],
@@ -141,6 +145,25 @@ async function snap(p, name, sel, targets, clipH) {
   await p.setInputFiles('#file_input_hidden', ['/tmp/lead-prova.csv', path.join(OUT, 'console-05-stato-canali.png')]); await p.waitForTimeout(1500);
   await snap(p, 'console-23-file-caricati', '.card:has(#dropzone)', [['file', '.uploaded-file-card >> nth=0'], ['rimuovi', '.uploaded-file-remove >> nth=0'], ['riga', 'select:has(option:has-text("seleziona una riga"))'], ['estrai', 'button:has-text("Estrai dati dai file")']]);
   await ctx.close();
+
+  // ---- Console dopo l'importazione dal CRM (pagina intera, con i numeri)
+  {
+    const ctx3 = await b.newContext({ viewport: { width: 620, height: 1750 }, deviceScaleFactor: 2 });
+    const p3 = await ctx3.newPage(); p3.on('dialog', d => d.accept());
+    await rotteConsole(p3);
+    await p3.goto(BASE + 'LEADREWORKS/src/lead-rework-console.html'); await p3.waitForTimeout(600);
+    const pre3 = await p3.evaluate(() => LOCAL_PREFIX);
+    await p3.evaluate(([pre]) => { localStorage.setItem(pre + 'anthropic_api_key', 'sk-ant-test-0000'); }, [pre3]);
+    await p3.reload(); await p3.waitForTimeout(600);
+    await p3.evaluate(() => window.crmImport({ nome: 'Mario Rossi', zona: 'Bologna (BO)', telefono1: '+39 333 1234567', email: 'mario.rossi@example.com',
+      note: 'Cerca un montascale per la scala interna di casa: 14 gradini, rampa dritta, nessuna curva.',
+      storico: '[Telefonata - 12/09/2026 10:30] Non ha risposto. Richiamare nel pomeriggio.', prezzo_esistente: '€ 4.800', motivazione_rifiuto: 'Prezzo',
+      data_appuntamento: '15/10/2026', orario_appuntamento: '10:00', indirizzo: 'Via Roma 10, Bologna', prodotto: 'Montascale', crm_lead_id: '12345' }));
+    await p3.waitForTimeout(1800);
+    await snap(p3, 'console-00-dopo-import', null, [['nome', '#ld_nome'], ['tel', '#ld_telefono1'], ['note', '#ld_note'], ['storico', '#ld_storico'],
+      ['stato', '#ld_stato'], ['canali', 'label.chip[data-canale="telefono"]'], ['analisi', '#ld_analisi'], ['genera', 'button:has-text("Genera script")']], 1290);
+    await ctx3.close();
+  }
 
   // =============== MENU ===============
   let c2 = await b.newContext({ viewport: { width: 300, height: 1000 }, deviceScaleFactor: 2 });

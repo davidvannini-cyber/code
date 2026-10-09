@@ -38,11 +38,12 @@ def _ic(n):
 
 # ---------------------------------------------------------------- blocchi
 def cap(num, titolo, parte, anc, intro=None):
-    return dict(k="cap", num=str(num), titolo=titolo, parte=parte, id=anc, html=("<p class='lead'>%s</p>" % intro) if intro else "")
+    return dict(k="cap", num=None if num is None else str(num), titolo=titolo, parte=parte, id=anc, html=("<p class='lead'>%s</p>" % intro) if intro else "")
 
 
 def h2(anc, num, titolo):
-    return dict(k="h2", id=anc, num=num, titolo=titolo, html='<h2 class="h2" id="%s"><span class="hn">%s</span>%s</h2>' % (anc, num, titolo))
+    """num viene ignorato: la numerazione è automatica (vedi manuale.numera)."""
+    return dict(k="h2", id=anc, num=None, titolo=titolo, html="")
 
 
 def p(html):
@@ -70,7 +71,7 @@ def box(tipo, html, titolo=None):
     return dict(k="box", html='<div class="bx bx-%s"><div class="bx-ic">%s</div><div><b>%s.</b> %s</div></div>' % (tipo, _ic(ic), titolo, html))
 
 
-def tab(head, rows, cols=None, cls=""):
+def tab(head, rows, cols=None, cls=""):  # cls="sec" = tabella in secondo piano (testo piccolo)
     th = "".join("<th>%s</th>" % h for h in head)
     tr = "".join("<tr>%s</tr>" % "".join("<td>%s</td>" % c for c in r) for r in rows)
     return dict(k="tab", html='<table class="tbl %s"><thead><tr>%s</tr></thead><tbody>%s</tbody></table>' % (cls, th, tr))
@@ -81,7 +82,7 @@ def tab_split(head, rows, per=9, cls=""):
     return [tab(head, rows[i:i + per], cls=cls) for i in range(0, len(rows), per)]
 
 
-def fig(img, key=None, legend=None, layout="side", w=None, did=None, pos=None):
+def fig(img, key=None, legend=None, layout="side", w=None, did=None, pos=None, fm=None):
     """Schermata con numeri. legend = [(chiave, titolo, testo)] nello stesso ordine dei numeri.
     layout: side = immagine a sinistra + legenda a destra; stack = immagine sopra e legenda sotto in 2 colonne;
     solo = solo immagine."""
@@ -97,10 +98,11 @@ def fig(img, key=None, legend=None, layout="side", w=None, did=None, pos=None):
         badges += '<span class="bd%s" style="left:%.2f%%;top:%.2f%%">%d</span>' % (" up" if mode != "l" else "", x * 100, y * 100, n)
     im = '<div class="fig-img"><div class="fig-in"><img src="screenshots/%s.png" alt="">%s</div>%s</div>' % (
         img, badges, ('<div class="didascalia">%s</div>' % did) if did else "")
+    fmx = (";--figmax:%s" % fm) if fm else ""
     if not legend:
-        return dict(k="fig", html='<div class="fig solo" style="--fw:%s">%s</div>' % (w or "var(--figw)", im))
+        return dict(k="fig", html='<div class="fig solo" style="--fw:%s%s">%s</div>' % (w or "var(--figw)", fmx, im))
     leg = "".join('<li><span class="bd fisso">%d</span><div><b>%s</b> %s</div></li>' % (n, t, d) for n, (_, t, d) in enumerate(legend, 1))
-    return dict(k="fig", html='<div class="fig %s" style="--fw:%s">%s<ol class="legenda">%s</ol></div>' % (layout, w or "var(--figw)", im, leg))
+    return dict(k="fig", html='<div class="fig %s" style="--fw:%s%s">%s<ol class="legenda">%s</ol></div>' % (layout, w or "var(--figw)", fmx, im, leg))
 
 
 def info(html):
@@ -133,37 +135,87 @@ def arch_html():
 
 
 def giornata_html():
+    """Gli otto passi: per ognuno cosa fai e cosa ricevi."""
     passi_g = [
-        ("cloud", "Apri il lead nel CRM", "Sul CRM Facile Salire apri la pagina del lead da lavorare."),
-        ("puzzle", "Premi «Invia a Lead Rework Console»", "Un clic: i dati del lead partono dal CRM verso la Console."),
-        ("search", "La Console raccoglie e studia", "Compila i campi, propone stato, obiezioni e <b>strategia</b>."),
-        ("messaggio", "Genera gli script", "Telefono, WhatsApp, email: tutti costruiti sulla strategia."),
-        ("telefono", "Telefona", "«Invia a SV» e «Chiamata Gestione Lead»: la guida compare mentre parli."),
-        ("chat", "Se non risponde: WhatsApp", "Il messaggio è già scritto: si apre WhatsApp, premi Invio."),
-        ("mail", "Se serve: email", "La lettera è già compilata: si apre la posta, premi Invia."),
-        ("ok", "Segna l'esito", "Spunte nello Storico; «CRM» riapre il lead sul gestionale."),
+        ("cloud", "Apri il lead nel CRM", "Apri la pagina del lead da lavorare.", "La scheda del lead sul CRM."),
+        ("puzzle", "Premi «Invia a Lead Rework Console»", "Un clic sul pulsante blu.", "La Console si apre già compilata."),
+        ("search", "La Console studia il lead", "Aspetti qualche secondo.", "Stato, obiezioni e <b>strategia</b> proposti."),
+        ("messaggio", "Genera gli script", "Premi «Genera script».", "Telefono, WhatsApp, email pronti."),
+        ("telefono", "Telefona", "«Invia a SV», poi «Chiamata Gestione Lead».", "La guida e i suggerimenti mentre parli."),
+        ("chat", "Non risponde? WhatsApp", "Premi il logo WhatsApp e Invio.", "Il messaggio è già scritto."),
+        ("mail", "Ancora niente? Email", "Premi la busta e Invia.", "La lettera è già compilata."),
+        ("ok", "Segna l'esito", "Spunta le caselle nello Storico.", "Il lead aggiornato; «CRM» lo riapre."),
     ]
-    r = "".join('<div class="gs"><div class="gs-n">%d</div><div class="gs-i">%s</div><div><b>%s</b><br>%s</div></div>' % (i, _ic(ic), t, d)
-                for i, (ic, t, d) in enumerate(passi_g, 1))
+    r = "".join('<div class="gs"><div class="gs-n">%d</div><div class="gs-i">%s</div><div class="gs-c"><b>%s</b>'
+                '<div class="gs-r"><span class="gs-k">FAI</span>%s</div><div class="gs-r"><span class="gs-k ric">RICEVI</span>%s</div></div></div>' % (i, _ic(ic), t, f, ric)
+                for i, (ic, t, f, ric) in enumerate(passi_g, 1))
     return '<div class="giornata">%s</div>' % r
 
 
-def cascata_html():
-    """Il flusso reale del lead: CRM -> Console (dati + strategia + script) -> telefonata -> cascata WhatsApp / email -> Storico."""
+def azione_risultato(fai, ricevi):
+    """Riquadro «Tu fai → Ricevi»: cosa deve fare l'utente e cosa ottiene, senza spiegare cosa c'è dietro."""
+    li = lambda items: "".join("<li>%s</li>" % i for i in items)
+    return ('<div class="ar"><div class="ar-b fai"><div class="ar-t">TU FAI</div><ul>%s</ul></div>%s'
+            '<div class="ar-b ric"><div class="ar-t">RICEVI</div><ul>%s</ul></div></div>' % (li(fai), _fr(), li(ricevi)))
+
+
+def stati_cards_html():
+    T, W, M = "telefono", "chat", "mail"
+    st = [(1, "Nuovo lead da portale", [T]), (2, "Lead freddo / secondo preventivo", [T]), (3, "Già visitato da un altro installatore", [T, M]),
+          (4, "Trattativa persa — recupero", [T, M]), (5, "Contatto non valido — ultimo richiamo", [T]), (6, "Cliente interessato — sopralluogo", [T, W]),
+          (7, "Cliente irraggiungibile", [T, W]), (8, "Cliente accetta — chiusura", [T, M]), (9, "Post-sopralluogo non chiuso", [T]), (10, "Budget limitato", [T])]
+    r = "".join('<div class="sc"><span class="sc-n">%d</span><span class="sc-t">%s</span><span class="sc-i">%s</span></div>' % (n, t, "".join(_ic(i) for i in ic)) for n, t, ic in st)
+    return '<div class="stati-c">%s</div><div class="didascalia">Le icone indicano i canali che lo stato prepara: telefono, WhatsApp, email.</div>' % r
+
+
+def canali_obiezioni_html():
+    can = "".join('<span class="chp">%s%s</span>' % (_ic(i), t) for i, t in (("telefono", "Telefono"), ("chat", "WhatsApp"), ("mail", "Email")))
+    obi = "".join('<span class="chp o">%s</span>' % t for t in ("Prezzo troppo alto", "Tempi lunghi", "Scetticismo sul modello", "Vuole pensarci", "Familiare / caregiver"))
+    return ('<div class="co"><div class="co-b"><div class="co-t">Canali</div><div class="co-c">%s</div><div class="co-s">WhatsApp ed Email si accendono da soli se il lead ha un cellulare e un indirizzo.</div></div>'
+            '<div class="co-b"><div class="co-t">Obiezioni (facoltative)</div><div class="co-c">%s</div><div class="co-s">Ogni obiezione accesa aggiunge allo script la risposta adatta.</div></div></div>' % (can, obi))
+
+
+def _frl(label):
+    return ('<div class="frl"><span>%s</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'
+            '<line x1="3" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></div>' % label)
+
+
+def cascata_contatti_html():
+    """La cascata: telefono, se non risponde WhatsApp, se non risponde email."""
+    nodo = lambda ic, t, s, cls: '<div class="nodo %s"><div class="nodo-ic">%s</div><div class="nodo-t">%s</div><div class="nodo-s">%s</div></div>' % (cls, _ic(ic), t, s)
+    riga = "".join([nodo("telefono", "1. Telefonata", "sempre per prima", "usc"), _frl("NON RISPONDE"),
+                    nodo("chat", "2. WhatsApp", "messaggio già scritto", "usc"), _frl("NON RISPONDE"),
+                    nodo("mail", "3. Email", "lettera già compilata", "usc")])
+    ok = '<div class="casc-ok"><b>Se il cliente risponde</b> a qualunque passo, la cascata si ferma: prosegui con quel cliente e segna l\'esito.</div>'
+    return '<div class="arch cmp"><div class="arch-r1">%s</div>%s</div>' % (riga, ok)
+
+
+def flusso_chiamata_html():
     nodo = lambda ic, t, s, cls="": '<div class="nodo %s"><div class="nodo-ic">%s</div><div class="nodo-t">%s</div><div class="nodo-s">%s</div></div>' % (cls, _ic(ic), t, s)
-    r1 = "".join([nodo("cloud", "1. CRM", "pagina del lead", "crm"), _fr(),
-                  nodo("puzzle", "2. Pulsante", "«Invia a Lead Rework Console»", "est"), _fr(),
-                  nodo("monitor", "3. Raccolta dati", "la Console si compila da sola", "con")])
-    r2 = "".join([nodo("star", "4. Strategia", "stato, obiezioni, analisi", "con"), _fr(),
-                  nodo("messaggio", "5. Script", "telefono, WhatsApp, email", "con")])
-    r3 = nodo("telefono", "6. TELEFONATA", "azione base: «Invia a SV» + «Chiamata Gestione Lead»", "usc")
-    r4 = "".join([nodo("chat", "7a. WhatsApp", "se la chiamata non va a buon fine", "usc"), _fr(),
-                  nodo("mail", "7b. Email", "se serve ancora un contatto", "usc")])
-    r5 = "".join([nodo("ok", "8. Storico", "spunte: telefonata, WhatsApp, email, lavorato", "crm"), _fr(),
-                  nodo("cloud", "9. CRM", "pulsante «CRM» per riaprire il lead", "crm")])
-    mid = lambda t: '<div class="arch-mid">%s<span>%s</span>%s</div>' % (_frg(), t, _frg())
-    return ('<div class="arch cmp"><div class="arch-r1">%s</div>%s<div class="arch-r1">%s</div>%s<div class="arch-r1 solo">%s</div>%s<div class="arch-r1">%s</div>%s<div class="arch-r1">%s</div></div>'
-            % (r1, mid("la Console studia il lead"), r2, mid("si passa all'azione"), r3, mid("a cascata, in base a lead e strategia"), r4, mid("in ogni caso"), r5))
+    r1 = "".join([nodo("monitor", "Lead Rework Console", "premi «Invia a Suggerimenti Vendita»", "con"), _fr(),
+                  nodo("telefono", "Menu di Suggerimenti Vendita", "il pulsante viola «Chiamata Gestione Lead» si <b>illumina</b>", "est"), _fr(),
+                  nodo("messaggio", "Pannello di chiamata", "premi il pulsante: si apre con la guida del lead", "usc")])
+    return '<div class="arch cmp"><div class="arch-r1">%s</div></div>' % r1
+
+
+NODI = [("1", "CRM", "pagina del lead", "c-pulsante"), ("2", "Pulsante", "Invia a Lead Rework Console", "c-pulsante"), ("3", "Raccolta dati", "", "c-raccolta"),
+        ("4", "Strategia", "", "c-stato"), ("5", "Script", "", "c-gen"), ("6", "Telefonata", "", "c-chiamata"),
+        ("7a", "WhatsApp", "", "c-wa"), ("7b", "Email", "", "c-mail"), ("8", "Storico", "", "c-storico"), ("9", "CRM", "", "c-crm")]
+
+# capitolo -> nodi dello schema da evidenziare nella colonna di sinistra
+NODI_CAP = {"c-come": [], "c-pulsante": ["1", "2"], "c-raccolta": ["3"], "c-stato": ["4"], "c-analisi": ["4"], "c-gen": ["5"], "c-rivedi": ["5"],
+            "c-chiamata": ["6"], "c-pannello": ["6"], "c-guida": ["6"], "c-dopo": ["6"], "c-cascata": ["7a", "7b"], "c-wa": ["7a"], "c-mail": ["7b"],
+            "c-seguito": ["7a", "7b", "8"], "c-storico": ["8"], "c-crm": ["9"], "c-backup": ["8"]}
+
+
+def schema_laterale_html(attivi, ancore):
+    """Lo schema del flusso per la colonna di sinistra: i nodi del capitolo che si sta leggendo sono evidenziati."""
+    d = {n[0]: n for n in NODI}
+    nd = lambda k: '<a class="sn%s%s" href="#%s"><b>%s</b><span>%s</span></a>' % (
+        " on" if k in attivi else "", " start" if k == "2" else "", ancore.get(d[k][3], "p2"), k, d[k][1] if k != "2" else "Pulsante estensione")
+    fr = '<div class="sf">&#9660;</div>'
+    righe = [nd("1"), nd("2"), nd("3"), nd("4"), nd("5"), nd("6"), '<div class="sn2">%s%s</div>' % (nd("7a"), nd("7b")), nd("8"), nd("9")]
+    return '<div class="sch">%s</div>' % fr.join(righe)
 
 
 def crm_mock_html(inviato=False):
@@ -223,3 +275,27 @@ def fig_crm(inviato=False):
            else "La pagina di un lead sul CRM Facile Salire (rappresentazione) con il pulsante blu dell'estensione in basso a destra.")
     return dict(k="fig", html='<div class="fig solo" style="--fw:118mm"><div class="fig-img" style="width:118mm">%s<div class="didascalia">%s</div></div></div>'
                 % (crm_mock_html(inviato), did))
+
+
+def cascata_html():
+    """Il flusso reale del lead: CRM -> Console (dati + strategia + script) -> telefonata -> cascata WhatsApp / email -> Storico."""
+    nodo = lambda ic, t, s, cls="": '<div class="nodo %s"><div class="nodo-ic">%s</div><div class="nodo-t">%s</div><div class="nodo-s">%s</div></div>' % (cls, _ic(ic), t, s)
+    r1 = "".join([nodo("cloud", "1. CRM", "pagina del lead", "crm"), _fr(),
+                  nodo("puzzle", "2. Pulsante", "«Invia a Lead Rework Console»", "est"), _fr(),
+                  nodo("monitor", "3. Raccolta dati", "la Console si compila da sola", "con")])
+    r2 = "".join([nodo("star", "4. Strategia", "stato, obiezioni, analisi", "con"), _fr(),
+                  nodo("messaggio", "5. Script", "telefono, WhatsApp, email", "con")])
+    r3 = nodo("telefono", "6. TELEFONATA", "azione base: «Invia a SV» + «Chiamata Gestione Lead»", "usc")
+    r4 = "".join([nodo("chat", "7a. WhatsApp", "se non risponde al telefono", "usc"), _fr(),
+                  nodo("mail", "7b. Email", "se non risponde a WhatsApp", "usc")])
+    r5 = "".join([nodo("ok", "8. Storico", "spunte: telefonata, WhatsApp, email, lavorato", "crm"), _fr(),
+                  nodo("cloud", "9. CRM", "pulsante «CRM» per riaprire il lead", "crm")])
+    mid = lambda t: '<div class="arch-mid">%s<span>%s</span>%s</div>' % (_frg(), t, _frg())
+    return ('<div class="arch cmp"><div class="arch-r1">%s</div>%s<div class="arch-r1">%s</div>%s<div class="arch-r1 solo">%s</div>%s<div class="arch-r1">%s</div>%s<div class="arch-r1">%s</div></div>'
+            % (r1, mid("la Console studia il lead"), r2, mid("si passa all'azione"), r3, mid("a cascata"), r4, mid("in ogni caso"), r5))
+
+
+def fig2(img1, cap1, img2, cap2, w="50mm"):
+    """Due schermate affiancate, ognuna con la sua didascalia."""
+    f = lambda im, c: '<figure><div class="fig-in" style="width:%s"><img src="screenshots/%s.png" alt=""></div><figcaption>%s</figcaption></figure>' % (w, im, c)
+    return dict(k="fig", html='<div class="fig2">%s%s</div>' % (f(img1, cap1), f(img2, cap2)))

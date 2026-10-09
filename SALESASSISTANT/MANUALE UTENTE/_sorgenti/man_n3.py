@@ -24,53 +24,37 @@ def _script_sv():
 def blocchi():
     B = []
     # ---------------------------------------------------------------- 19
-    B.append(cap(21, "Lo Storico dei lead", P6, "c21",
+    B.append(cap(None, "Lo Storico dei lead", P6, "c-storico",
                  "È la seconda scheda (l'icona dell'orologio). Qui trovi tutti i lead salvati e segni cosa hai già fatto."))
-    B.append(h2("c21-elenco", "21.1", "L'elenco e le colonne"))
-    B.append(fig("console-13-storico-tabella", legend=[
-        ("data", "Data.", "Quando è stato creato o assegnato il lead."),
-        ("cliente", "Cliente.", "Il nome. Passando il mouse vedi stato e prodotto."),
-        ("icotel", "Telefonata.", "Spunta se hai già telefonato."),
-        ("icowa", "WhatsApp.", "Spunta se hai già inviato il WhatsApp."),
-        ("icomail", "Email.", "Spunta se hai già inviato l'email."),
-        ("lav", "Lav. (Lavorato).", "Spunta quando hai finito con questo lead."),
-        ("ckrow", "Le caselle.", "Si cambiano con un clic e restano salvate."),
-        ("tel", "Tel.", "Invia il lead al telefono."),
-        ("crm", "CRM.", "Apre il lead nel CRM."),
-        ("apri", "Occhio.", "Apre la scheda del lead."),
-        ("duplica", "Copia.", "Duplica il lead."),
-        ("elimina", "Cestino.", "Elimina il lead."),
-    ], layout="stack", w="100%"))
-    B.append(box("nota", "Se la finestra è stretta, le colonne «Prodotto», «Stato» e «Gen.» (numero di canali generati) si nascondono per lasciare spazio. Allarga la finestra per vederle."))
-    B.append(h2("c21-cerca", "21.2", "Cercare un lead"))
-    B.append(fig("console-15-storico-ricerca", legend=[("cerca", "Campo di ricerca.", "Scrivi nome, telefono, email o zona."), ("conta", "Contatore.", "Quanti lead vedi sul totale.")], layout="stack", w="100%"))
-    B.append(ul([
-        "La ricerca ignora maiuscole e accenti. Per cercare un telefono bastano 3 cifre.",
-        "Se scrivi più parole, il lead deve contenerle tutte.",
-        "Per svuotare la ricerca premi la ✕ nel campo.",
-    ]))
+    B.append(h2("c21-arrivo", None, "Come arrivarci e cosa vedi"))
+    B.append(info(azione_risultato(["Nella barra in alto premi la seconda scheda (l'icona dell'orologio), oppure salva un lead con «Salva lead in storico»: ci arrivi da solo.", "Cerca il lead con il campo di ricerca."],
+                                   ["L'elenco di tutti i lead salvati, dal più recente.", "Per ognuno: spunte, pulsanti «Tel» e «CRM», occhio, copia e cestino."])))
+    B.append(fig("console-11-storico-intera", legend=[
+        ("tab", "La scheda Storico Lead.", "L'icona dell'orologio in alto: è da qui che ci arrivi."),
+        ("cerca", "Ricerca.", "Scrivi nome, telefono, email o zona."),
+        ("pannello", "Pannello comandi.", "Ordinare, nascondere i lavorati, filtrare, esportare, fare il backup."),
+        ("tabella", "Intestazioni.", "Data, Cliente, spunte Telefonata / WhatsApp / Email, Lavorato."),
+        ("riga", "Un lead.", "Una riga per ogni lead salvato."),
+        ("spunte", "Le caselle.", "Si cambiano con un clic e restano salvate."),
+        ("azioni", "Le azioni.", "Tel, CRM, occhio (apri), copia (duplica), cestino (elimina)."),
+    ], layout="side", w="62mm", fm="150mm"))
+    B.append(box("nota", "Se la finestra è stretta le colonne «Prodotto», «Stato» e «Gen.» si nascondono: allargala per vederle. Per cercare un lead scrivi nome, telefono (bastano 3 cifre), email o zona; "
+                         "con più parole il lead deve contenerle tutte."))
     B.append(h2("c21-ordina", "21.3", "Ordinare, nascondere e filtrare"))
     B.append(fig("console-12-storico-pannello", legend=[
         ("ordina", "Ordina per.", "Data (più o meno recenti prima) oppure Cliente A→Z / Z→A."),
         ("nascondi", "Nascondi lavorati.", "Toglie dall'elenco i lead già segnati come lavorati."),
-        ("esporta", "Esporta storico.", "Scarica un foglio Excel (21.4)."),
+        ("esporta", "Esporta storico.", "Scarica un foglio Excel ({s:c21-excel})."),
         ("filtri", "Filtri.", "Apre i filtri. Il numero indica quanti sono attivi."),
     ], layout="stack", w="100%"))
-    B.append(fig("console-14-storico-filtri", legend=[
-        ("stato", "Stato.", "Mostra solo i lead di uno stato."),
-        ("lavorati", "Lavorati.", "Tutti, solo lavorati o solo da lavorare."),
-        ("dal", "Dal.", "Data di inizio."),
-        ("al", "Al.", "Data di fine."),
-    ], layout="stack", w="100%"))
-    B.append(p("Quando almeno un filtro è attivo compare il link <b>«Azzera filtri»</b>. L'ordinamento e «Nascondi lavorati» vengono ricordati la volta dopo."))
+    B.append(p("Con «Filtri» scegli stato, lavorati o no, e un periodo; «Azzera filtri» toglie tutto. L'ordinamento e «Nascondi lavorati» vengono ricordati la volta dopo."))
     B.append(h2("c21-excel", "21.4", "Esportare in Excel"))
-    B.append(p("«Esporta storico» scarica un file <code>storico_lead_AAAA-MM-GG.xlsx</code> con i lead che vedi in quel momento (quindi anche con ricerca e filtri applicati). "
-               "Le colonne sono: Data, Cliente, Telefono, Telefono (secondario), Email, Prodotto, Zona, Stato, Canali generati, Telefonata, WhatsApp, Email inviata, Lavorato."))
+    B.append(p("«Esporta storico» scarica un foglio Excel con i lead che vedi in quel momento (quindi anche con ricerca e filtri applicati)."))
 
     # ---------------------------------------------------------------- 20
     B.append(h2("c21-apri", "21.5", "Aprire la scheda del lead"))
     B.append(p("Premi l'<b>occhio</b> sulla riga. Si apre una finestra con tutto quello che hai salvato: dati, analisi, note e gli script, ognuno con il suo contatto, "
-               "il pulsante per copiare e quello per inviare (WhatsApp ed email, come nei capitoli 16 e 17)."))
+               "il pulsante per copiare e quello per inviare (WhatsApp ed email, come nei capitoli {c:c-wa} e {c:c-mail})."))
     B.append(fig("console-17-storico-apri-testata", legend=[
         ("crm", "Collegamento esterno.", "Apre il lead nel CRM."),
         ("telefono", "Cornetta.", "Invia il lead al telefono."),
@@ -84,10 +68,10 @@ def blocchi():
                "Gli script vecchi non vengono copiati. È comodo per riprendere un lead dopo qualche giorno."))
     B.append(h2("c21-elimina", "21.7", "Eliminare un lead"))
     B += passi(["Premi il <b>cestino</b> rosso sulla riga.", "Conferma «Eliminare definitivamente questo lead dallo storico?»."])
-    B.append(box("attenzione", "L'eliminazione è definitiva. Se elimini un lead per errore, prova subito «Recupera copia automatica» (capitolo 23)."))
+    B.append(box("attenzione", "L'eliminazione è definitiva. Se elimini un lead per errore, prova subito «Recupera copia automatica» (capitolo {c:c-backup})."))
 
     # ---------------------------------------------------------------- 17
-    B.append(cap(22, "Il pulsante «CRM»", P6, "c22",
+    B.append(cap(None, "Il pulsante «CRM»", P6, "c-crm",
                  "Il pulsante CRM apre il lead nel CRM Facile Salire, senza dover cercare a mano."))
     B.append(h2("c22-dove", "22.1", "I tre posti dove si trova"))
     B.append(tab(["Dove", "Come si presenta"], [
@@ -101,10 +85,10 @@ def blocchi():
         "Se il codice non c'è ancora, apre l'<b>elenco dei lead</b> del CRM (il suggerimento sul pulsante dice «ID non ancora collegato»).",
         "Il CRM si apre in una finestra di Chrome a parte, larga il 40% e alta l'80% dello schermo, in alto a destra. Se il browser blocca la finestra, la apre in una scheda normale.",
     ]))
-    B.append(box("consiglio", "Per far collegare un lead dello Storico al CRM basta importarlo una volta dal CRM con il pulsante blu (capitolo 1): la Console lo riconosce e salva il collegamento."))
+    B.append(box("consiglio", "Per far collegare un lead dello Storico al CRM basta importarlo una volta dal CRM con il pulsante blu (capitolo {c:c-pulsante}): la Console lo riconosce e salva il collegamento."))
 
     # ---------------------------------------------------------------- 21
-    B.append(cap(23, "Backup dei dati", P6, "c23",
+    B.append(cap(None, "Backup dei dati", P6, "c-backup",
                  "I lead sono salvati nel browser di questo Mac. Il backup su file ti protegge se i dati del browser vengono cancellati."))
     B.append(fig("console-12-storico-pannello", legend=[
         ("scarica", "Scarica.", "Crea il file di backup."),
@@ -131,16 +115,16 @@ def blocchi():
                "Prima ti chiede conferma; i lead attuali non vengono toccati."))
     B.append(p("Se aprendo la Console lo Storico risulta assente ma esiste una copia, la Console lo ripristina da sola e avvisa «Storico lead non trovato: ho ripristinato automaticamente N lead dalla copia di sicurezza»."))
     B.append(box("consiglio", "La copia automatica sta nello stesso browser: se i dati del browser vengono cancellati sparisce anche lei. Scarica un backup su file ogni settimana."))
-    B.append(cap("A", "Appendice A — Gli script della Lead Rework Console", P7, "cA",
+    B.append(cap("A", "Gli script della Lead Rework Console", P7, "cA",
                  "La libreria di riferimento che la Console usa per scrivere gli script. Sono 26, numerati da 1 a 27 (il numero 22 non esiste più)."))
     B += tab_split(["N.", "Canale", "Titolo"], _script_console(), per=9)
     B.append(box("nota", "Questa libreria è diversa da quella di Suggerimenti Vendita (Appendice B): ognuna ha il suo scopo."))
 
-    B.append(cap("B", "Appendice B — Gli script di Suggerimenti Vendita", P7, "cB",
+    B.append(cap("B", "Gli script di Suggerimenti Vendita", P7, "cB",
                  "La libreria che il sistema usa per i suggerimenti durante la chiamata. Sono 17, di cui 16 attivi."))
     B += tab_split(["Fase", "Script", "Situazione", "Attivo"], _script_sv(), per=9)
 
-    B.append(cap("C", "Appendice C — Le regole che l'AI rispetta sempre", P7, "cC",
+    B.append(cap("C", "Le regole che l'AI rispetta sempre", P7, "cC",
                  "Sono sempre attive, anche se il profilo azienda è vecchio. Servono a evitare errori già visti nella pratica."))
     B.append(tab(["N.", "Regola, in parole semplici"], [
         ["1", "Il cliente si chiama sempre per cognome con «Sig.» o «Sig.ra» (per esempio «Sig. Rossi»). Mai solo il nome, mai nome e cognome insieme. Se il nome non è noto, si usa «Buongiorno,»."],
@@ -155,32 +139,26 @@ def blocchi():
     B.append(box("nota", "Le regole complete e i testi che la Console invia all'AI si trovano nei quattro PDF della cartella <code>PDF-REGOLE-ISTRUZIONI</code>."))
 
     # ---------------------------------------------------------------- 34
-    B.append(cap("D", "Appendice D — Glossario", P7, "cD", "Le parole usate nel sistema, in ordine alfabetico."))
+    B.append(cap("D", "Glossario", P7, "cD", "Le parole usate nel sistema, in ordine alfabetico."))
     B += tab_split(["Parola", "Significato"], sorted([
-        ["AGC", "Regolazione automatica del volume del microfono, fatta dal browser."],
         ["API key", "Chiave segreta che dà accesso a un servizio (Anthropic, Deepgram). Tratta come una password."],
         ["Cascata", "L'ordine dei contatti: prima la telefonata, poi WhatsApp ed email se la telefonata non va a buon fine."],
         ["Canale", "Il mezzo di contatto: telefono, WhatsApp o email."],
         ["Canovaccio / Guida chiamata", "Lo script del lead mostrato nel riquadro verde durante la chiamata."],
-        ["Clipping", "Il segnale audio è troppo forte e si «taglia»: la voce risulta distorta."],
         ["CRM", "Il gestionale dove si trovano i lead (Facile Salire)."],
         ["Deepgram", "Il servizio che trascrive la voce del cliente in testo."],
         ["Estensione", "Un piccolo programma aggiunto a Chrome."],
         ["Lead", "Un cliente che ha chiesto informazioni."],
-        ["Limiter", "Un limitatore che evita che l'audio diventi troppo forte."],
         ["Lyber", "L'app del telefono Android con cui parte la chiamata."],
         ["Matching", "Il confronto tra la frase del cliente e gli script, per scegliere il suggerimento."],
-        ["Modello", "Quale versione dell'intelligenza artificiale usare."],
-        ["ntfy.sh", "Il servizio di messaggi che porta il lead dal Mac al telefono."],
         ["Obiezione", "Un dubbio o un'opposizione del cliente (prezzo, tempi, fiducia)."],
         ["Script", "Il testo da dire o da inviare."],
         ["Splitter", "Il cavo a Y che separa la voce del cliente da quella dell'operatore."],
         ["Stato del lead", "A che punto è il lead; decide gli script preparati."],
         ["Suggerimento", "La frase consigliata che compare mentre il cliente parla."],
-        ["Workspace ID", "Un codice che alcune chiavi Anthropic richiedono."],
-    ], key=lambda r: r[0].lower()), per=10)
+    ], key=lambda r: r[0].lower()), per=14)
 
-    B.append(cap("E", "Appendice E — Gestire la libreria di Suggerimenti Vendita", P7, "cE",
+    B.append(cap("E", "Gestire la libreria di Suggerimenti Vendita", P7, "cE",
                  "La libreria contiene le frasi che il sistema suggerisce durante la chiamata. Si usa di rado: serve per vederla, farla crescere e provarla."))
     # ---------------------------------------------------------------- 27
     B.append(h2("cE-vedi", "E.1", "Vedere la libreria"))

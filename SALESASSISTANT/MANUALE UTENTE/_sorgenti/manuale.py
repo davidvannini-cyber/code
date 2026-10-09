@@ -7,10 +7,10 @@ Il contenuto sta in man_n1.py, man_n2.py, man_n3.py; la grafica dei layout in te
 Il PDF si ottiene misurando ogni blocco con Chromium, distribuendolo sulle pagine (nessun taglio) e stampando.
 Vedi LINEE-GUIDA-GENERAZIONE-PDF.md.
 """
-import json, os, subprocess, sys, html as _html
+import json, os, re, subprocess, sys, html as _html
 from temi import BASE_CSS, CSS_C, CSS_E, documento, NOME_SISTEMA
 from contenuto import icona
-from man_lib import h2 as _h2  # noqa
+from man_lib import h2 as _h2, schema_laterale_html, NODI_CAP  # noqa
 import man_n1, man_n2, man_n3
 
 QUI = os.path.dirname(os.path.abspath(__file__))
@@ -28,11 +28,40 @@ PARTI = [
 ]
 
 
+def numera(b):
+    """Numera capitoli e paragrafi e risolve i rimandi {c:ancora} (capitolo) e {s:ancora} (paragrafo)."""
+    cnt, sub, cur, mc, ms = 0, 0, "", {}, {}
+    for x in b:
+        if x["k"] == "cap":
+            if x["num"] is None:
+                cnt += 1
+                x["num"] = str(cnt)
+            cur, sub = x["num"], 0
+            mc[x["id"]] = x["num"]
+        elif x["k"] == "h2":
+            sub += 1
+            x["num"] = "%s.%d" % (cur, sub)
+            ms[x["id"]] = x["num"]
+            x["html"] = '<h2 class="h2" id="%s"><span class="hn">%s</span>%s</h2>' % (x["id"], x["num"], x["titolo"])
+
+    def ris(t):
+        def f(m):
+            tab = mc if m.group(1) == "c" else ms
+            if m.group(2) not in tab:
+                raise KeyError("rimando sconosciuto: " + m.group(0))
+            return tab[m.group(2)]
+        return re.sub(r"\{([cs]):([\w-]+)\}", f, t)
+    for x in b:
+        x["html"] = ris(x["html"])
+        x["titolo"] = ris(x["titolo"]) if "titolo" in x else None
+    return b
+
+
 def tutti_i_blocchi():
     b = []
     for m in (man_n1, man_n2, man_n3):
         b += m.blocchi()
-    return b
+    return numera(b)
 
 
 # ---------------------------------------------------------------- CSS comune dei blocchi
@@ -111,6 +140,30 @@ CSS_BLOCCHI = """
 .crm-call{position:absolute;right:3mm;bottom:15.5mm;background:#e11d48;color:#fff;font-weight:700;font-size:2.7mm;letter-spacing:.2mm;padding:1mm 2.6mm;border-radius:5mm;font-family:'Inter',sans-serif}
 .crm-call:after{content:'';position:absolute;right:9mm;bottom:-1.6mm;border:1.8mm solid transparent;border-top-color:#e11d48;border-bottom:0}
 .crm-btn.ok{background:#1f9d6b;outline-color:rgba(31,157,107,.28)}
+.gs-c{flex:1}.gs-r{display:flex;gap:1.6mm;align-items:baseline;margin-top:.9mm;font-size:calc(var(--fs)*.82);line-height:1.3;color:var(--muted)}
+.gs-k{flex:none;font-size:2.3mm;font-weight:800;letter-spacing:.2mm;background:var(--accent);color:#fff;border-radius:.8mm;padding:.2mm 1.2mm}.gs-k.ric{background:#1f9d6b}
+.ar{display:flex;align-items:stretch;gap:2.4mm}
+.ar-b{flex:1;border-radius:var(--radius);padding:2.6mm 3.4mm}
+.ar-b.fai{background:#e6f1f6;border:.3mm solid #b9d5e2}.ar-b.ric{background:#e3f7ee;border:.3mm solid #b5e3cf}
+.ar-t{font-size:2.6mm;font-weight:800;letter-spacing:.35mm;margin-bottom:1mm}.ar-b.fai .ar-t{color:#1b6a86}.ar-b.ric .ar-t{color:#0b7a4c}
+.ar-b ul{margin:0;padding-left:4mm;font-size:calc(var(--fs)*.9);line-height:1.38;color:var(--ink)}.ar-b li{margin:.5mm 0}
+.ar .fr{width:6mm}
+.stati-c{display:grid;grid-template-columns:1fr 1fr;gap:1.4mm 4mm}
+.sc{display:flex;align-items:center;gap:2.4mm;background:var(--card);border:var(--card-border);border-radius:var(--radius);padding:1.5mm 2.4mm;font-size:calc(var(--fs)*.84);line-height:1.25}
+.sc-n{flex:none;width:5.2mm;height:5.2mm;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:2.8mm;display:flex;align-items:center;justify-content:center}
+.sc-t{flex:1;color:var(--ink-h);font-weight:600}.sc-i{flex:none;display:flex;gap:1mm;color:var(--accent);font-size:4.2mm}
+.co{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.co-b{background:var(--card);border:var(--card-border);border-radius:var(--radius);padding:2.8mm 3.2mm}
+.co-t{font-weight:700;color:var(--ink-h);margin-bottom:1.6mm}.co-c{display:flex;flex-wrap:wrap;gap:1.4mm}
+.chp{display:inline-flex;align-items:center;gap:1.2mm;background:#e3f7ee;color:#0b5d3b;border-radius:5mm;padding:.8mm 2.6mm;font-size:calc(var(--fs)*.82);font-weight:600}
+.chp.o{background:#fff1dc;color:#8a4b00}
+.co-s{margin-top:1.8mm;font-size:calc(var(--fs)*.76);color:var(--muted);line-height:1.3}
+.frl{flex:none;width:19mm;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c0392b;font-size:2.4mm;font-weight:800;letter-spacing:.2mm;text-align:center}
+.frl svg{width:100%;margin-top:.6mm}
+.casc-ok{margin-top:2mm;background:#e3f7ee;color:#0b5d3b;border-radius:var(--radius);padding:2.2mm 3.4mm;text-align:center;font-size:calc(var(--fs)*.86)}
+.fig2{display:flex;gap:8mm;justify-content:center;align-items:flex-start}.fig2 figure{margin:0;text-align:center}.fig2 figcaption{margin-top:1.8mm;font-size:calc(var(--fs)*.84);line-height:1.3;color:var(--muted);max-width:56mm}
+.fig2 .fig-in img{max-height:none}
+.tbl.sec{font-size:calc(var(--fs)*.74);opacity:.9}.tbl.sec th{background:#6f8995;padding:1.2mm 2mm}.tbl.sec td{padding:1.1mm 2mm}
 .phone{width:100%;background:#fafafa;border:.5mm solid #2b2b2b;border-radius:5mm;padding:4mm 3.4mm 5mm;text-align:left;line-height:1.3;font-family:Roboto,'Inter',sans-serif}
 .ph-bar{width:14mm;height:1.2mm;border-radius:1mm;background:#c9c9c9;margin:0 auto 3mm}
 .ph-r{position:relative;margin:1.4mm 0}
@@ -132,7 +185,16 @@ CSS_MAN_C = """
 .pagina.cont .dx .tit{font-size:5.2mm}
 .rt{display:none}
 .lato .voce.cap{font-size:3.1mm}
-.lato .parte{display:block;padding:1.6mm 2.4mm;border-radius:1.4mm;font-size:2.9mm;color:#cfe3ec;margin-top:.6mm}
+.lato img{width:17mm!important;margin:0 0 2.5mm!important}.lato .torna-indice{margin-bottom:3mm!important;padding:1.8mm 3mm!important}
+.sch{margin-top:1mm}.sf{text-align:center;color:#4fc99b;font-size:2.2mm;line-height:2.4mm;opacity:.7}
+.sn{display:flex;align-items:center;gap:2mm;border:.3mm solid rgba(207,227,236,.28);border-radius:1.6mm;padding:1.5mm 2.2mm;color:#9fc0cf;font-size:2.9mm;line-height:1.15;text-decoration:none;position:relative}
+.sn b{flex:none;width:5mm;height:5mm;border-radius:50%;border:.3mm solid rgba(207,227,236,.5);display:flex;align-items:center;justify-content:center;font-size:2.4mm}
+.sn span{flex:1}
+.sn.on{background:#4fc99b;border-color:#4fc99b;color:#0f3d52;font-weight:800;box-shadow:0 0 0 .7mm rgba(79,201,155,.35)}.sn.on b{background:#0f3d52;color:#4fc99b;border-color:#0f3d52}
+.sn.start{border-color:#f59e0b}.sn.start:after{content:'DA QUI';position:absolute;right:1.4mm;top:-1.6mm;background:#f59e0b;color:#fff;font-size:1.9mm;font-weight:800;border-radius:1mm;padding:.1mm 1mm;letter-spacing:.2mm}
+.sn.start.on:after{background:#0f3d52}
+.sn2{display:flex;gap:1.6mm}.sn2 .sn{flex:1;padding:1.5mm 1.6mm;gap:1.2mm;font-size:2.6mm}.sn2 .sn b{width:4.6mm;height:4.6mm}
+.lato .parte{display:none}
 .lato .parte small{display:block;color:#7fa6b8;font-size:2.3mm;text-transform:uppercase;letter-spacing:.3mm}
 .lato .parte.on{background:rgba(79,201,155,.22);color:#fff}
 .lato .parte.on small{color:#4fc99b}
@@ -168,13 +230,12 @@ def _pg_E(n, cls, parte, cap_titolo, cap_num, cont, corpo, toc=False):
             % (cls, n, NOME_SISTEMA, parte, head, cls, corpo, ('<a class="torna-indice" href="#p2">%s<span>Indice</span></a>' % icona("indice")) if n != 2 else "", n))
 
 
-def _pg_C(n, cls, parte_idx, parte, cap_titolo, cap_num, cont, corpo, toc=False, total=0):
+def _pg_C(n, cls, parte_idx, parte, cap_titolo, cap_num, cont, corpo, toc=False, total=0, cid=None):
     lato = ['<a class="torna-indice" href="#p2">%s<span>Indice</span></a>' % icona("indice")] if n != 2 else []
-    for i, (sig, nome) in enumerate(PARTI):
-        lato.append('<a class="parte %s" href="#%s"><small>%s</small>%s</a>' % ("on" if i == parte_idx else "", PARTE_ANCORE.get(i, "p2"), sig, nome))
+    lato.append(schema_laterale_html(set(NODI_CAP.get(cid, [])), PARTE_ANCORE))
     kick = parte if not toc else "Sales Assistant"
     tit = cap_titolo if cls == "first" else cap_titolo + " <span style='font-weight:400;opacity:.6;font-size:.7em'>· continua</span>"
-    num = ("%s. " % cap_num) if (cap_num and not toc) else ""
+    num = (("%s. " % cap_num) if str(cap_num).isdigit() else ("Appendice %s · " % cap_num)) if (cap_num and not toc) else ""
     return ('<section class="pagina %s" id="p%d"><div class="lato"><img src="assets/logo-yesmobility.png" alt="">%s<div class="pg">%d / %d</div></div>'
             '<div class="dx"><div class="kick">%s</div><div class="tit">%s%s</div><div class="corpo %s">%s</div></div></section>'
             % (cls, n, "".join(lato), n, total, kick, num, tit, cls, corpo))
@@ -268,9 +329,9 @@ def impagina(blocchi, altezze, cap_first, cap_cont):
         elif b["k"] == "h2" and i + 1 < n:
             need += min(altezze[i + 1], capa * 0.45)
             if i + 2 < n and blocchi[i + 1]["k"] == "p" and blocchi[i + 2]["k"] == "fig":
-                need += min(altezze[i + 2], capa * 0.5)
+                need += min(altezze[i + 2], capa)
         elif b["k"] == "p" and i + 1 < n and blocchi[i + 1]["k"] == "fig":
-            need += min(altezze[i + 1], capa * 0.5)
+            need += min(altezze[i + 1], capa)
         if used + need > capa and cur["blocchi"]:
             nuova("cont", ci)
             capa = cap_cont * 0.985
@@ -279,6 +340,12 @@ def impagina(blocchi, altezze, cap_first, cap_cont):
         cur["blocchi"].append(i)
         used += h
         i += 1
+    # pagine quasi vuote (ultima pagina di un capitolo con poche righe)
+    for k, pg in enumerate(pagine):
+        usato = sum(altezze[j] for j in pg["blocchi"])
+        capp = cap_first if pg["cls"] == "first" else cap_cont
+        if usato < 0.22 * capp and pg["cls"] == "cont":
+            avvisi.append("PAGINA QUASI VUOTA (%d%%): %s" % (100 * usato / capp, " | ".join(blocchi[j]["html"][:40] for j in pg["blocchi"][:2])))
     return pagine, avvisi
 
 
@@ -322,8 +389,7 @@ def costruisci(tema):
     # ancore di parte (per la barra laterale del layout C)
     PARTE_ANCORE.clear()
     for c in capitoli:
-        idx = int(c["parte"].split()[1]) - 1
-        PARTE_ANCORE.setdefault(idx, "p%s" % pagina_di[c["id"]])
+        PARTE_ANCORE[c["id"]] = "p%s" % pagina_di[c["id"]]
     total = primo + len(pagine) - 1
     out = [cover_html(tema)]
     # pagine indice
@@ -340,7 +406,7 @@ def costruisci(tema):
         parte_idx = int(c["parte"].split()[1]) - 1
         corpo = _wrap_blocchi_sel(blocchi, pg["blocchi"], pg["cls"] == "first")
         if tema == "C":
-            out.append(_pg_C(n, pg["cls"], parte_idx, PARTI[parte_idx][0] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo, False, total))
+            out.append(_pg_C(n, pg["cls"], parte_idx, PARTI[parte_idx][0] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo, False, total, c["id"]))
         else:
             out.append(_pg_E(n, pg["cls"], PARTI[parte_idx][0] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo))
     costruisci.pagina_di = pagina_di
