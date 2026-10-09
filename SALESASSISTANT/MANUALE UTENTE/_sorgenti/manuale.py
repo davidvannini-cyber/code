@@ -52,6 +52,8 @@ def numera(b):
             return tab[m.group(2)]
         return re.sub(r"\{([cs]):([\w-]+)\}", f, t)
     for x in b:
+        if x.get("split"):
+            x["split"]["legend"] = [(k, ris(t), ris(d)) for k, t, d in x["split"]["legend"]]
         x["html"] = ris(x["html"])
         x["titolo"] = ris(x["titolo"]) if "titolo" in x else None
     return b
@@ -161,7 +163,15 @@ CSS_BLOCCHI = """
 .frl svg{width:100%;margin-top:.6mm}
 .casc-ok{margin-top:2mm;background:#e3f7ee;color:#0b5d3b;border-radius:var(--radius);padding:2.2mm 3.4mm;text-align:center;font-size:calc(var(--fs)*.86)}
 .fig2{display:flex;gap:10mm;justify-content:center;align-items:flex-start;margin-top:3mm}.fig-in2{border:.3mm solid var(--line);border-radius:1mm;overflow:hidden;box-shadow:var(--shot-shadow);background:#fff;line-height:0}.fig-in2 img{width:100%;height:100%;display:block}.fig2 figure{margin:0;text-align:center}.fig2 figcaption{margin-top:1.8mm;font-size:calc(var(--fs)*.84);line-height:1.3;color:var(--muted);max-width:56mm}
-.tbl.sec{font-size:calc(var(--fs)*.74);opacity:.9}.tbl.sec th{background:#6f8995;padding:1.2mm 2mm}.tbl.sec td{padding:1.1mm 2mm}
+.tbl.sec{font-size:calc(var(--fs)*.74)}.tbl.sec th{background:#6f8995;padding:1.2mm 2mm}.tbl.sec td{padding:1.1mm 2mm}
+*{box-shadow:none!important;text-shadow:none!important}
+.bd{border:.6mm solid #fff;box-sizing:border-box}
+.fig,.fig2{margin-top:3.5mm}
+.dx.sp{display:flex;gap:7mm;padding:10mm 7mm 0 13mm}
+.sp-l{flex:1;min-width:0}.sp-r{flex:none}
+.sp-l .tit{font-size:7mm;margin-bottom:5mm;line-height:1.12}
+.sp-l .lead{margin:0 0 6mm}
+.sp-leg{margin-top:3mm}
 .gs-k{display:inline-block;width:14mm;text-align:center;padding:.2mm 0!important}
 .sa{display:flex;flex-direction:column;gap:1.6mm}.sa-row{display:flex;align-items:stretch;gap:1.6mm}
 .sa-ph{flex:none;width:12mm;border-radius:1.6mm;color:#fff;font-weight:800;font-size:2.6mm;letter-spacing:.3mm;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;transform:rotate(180deg)}
@@ -195,7 +205,7 @@ CSS_MAN_C = """
 .rt{display:none}
 .lato .voce.cap{font-size:3.1mm}
 .lato img{width:17mm!important;margin:0 0 2.5mm!important}.lato .torna-indice{margin-bottom:3mm!important;padding:1.8mm 3mm!important}
-.sch{margin-top:1mm}.sf{text-align:center;color:#4fc99b;font-size:2.2mm;line-height:2.4mm;opacity:.7}
+.sch{margin-top:1mm}.sf{text-align:center;color:#3aa57f;font-size:2.2mm;line-height:2.4mm}
 .sn{display:flex;align-items:center;gap:2mm;border:.3mm solid rgba(207,227,236,.28);border-radius:1.6mm;padding:1.5mm 2.2mm;color:#9fc0cf;font-size:2.9mm;line-height:1.15;text-decoration:none;position:relative}
 .sn b{flex:none;width:5mm;height:5mm;border-radius:50%;border:.3mm solid rgba(207,227,236,.5);display:flex;align-items:center;justify-content:center;font-size:2.4mm}
 .sn span{flex:1}
@@ -241,11 +251,21 @@ def _pg_C(n, cls, parte_idx, parte, cap_titolo, cap_num, cont, corpo, toc=False,
     lato = ['<a class="torna-indice" href="#p2">%s<span>Indice</span></a>' % icona("indice")]
     lato.append(schema_laterale_html(set(NODI_CAP.get(cid, [])), PARTE_ANCORE))
     kick = parte if not toc else "Sales Assistant"
-    tit = cap_titolo if cls == "first" else cap_titolo + " <span style='font-weight:400;opacity:.6;font-size:.7em'>· continua</span>"
+    tit = cap_titolo if cls == "first" else cap_titolo + " <span style='font-weight:400;color:#6b8794;font-size:.7em'>· continua</span>"
     num = (("%s. " % cap_num) if str(cap_num).isdigit() else ("Appendice %s · " % cap_num)) if (cap_num and not toc) else ""
     return ('<section class="pagina %s" id="p%d"><div class="lato"><img src="assets/logo-yesmobility.png" alt="">%s<div class="pg">%d / %d</div></div>'
             '<div class="dx"><div class="kick">%s</div><div class="tit">%s%s</div><div class="corpo %s">%s</div></div></section>'
             % (cls, n, "".join(lato), n, total, kick, num, tit, cls, corpo))
+
+
+def _pg_C_split(n, parte_idx, c, total):
+    from man_lib import split_html
+    box, leg = split_html(c["split"])
+    lato = ['<a class="torna-indice" href="#p2">%s<span>Indice</span></a>' % icona("indice"), schema_laterale_html(set(NODI_CAP.get(c["id"], [])), PARTE_ANCORE)]
+    return ('<section class="pagina first split" id="p%d"><div class="lato"><img src="assets/logo-yesmobility.png" alt="">%s<div class="pg">%d / %d</div></div>'
+            '<div class="dx sp"><div class="sp-l" id="%s"><div class="kick">%s</div><div class="tit">%s. %s</div>%s<ol class="legenda sp-leg">%s</ol></div>'
+            '<div class="sp-r">%s</div></div></section>'
+            % (n, "".join(lato), n, total, c["id"], PARTI[parte_idx][0] + " · " + PARTI[parte_idx][1], c["num"], c["titolo"], c["html"], leg, box))
 
 
 PARTE_ANCORE = {}
@@ -302,7 +322,7 @@ def misura(tema, blocchi, toc_demo):
     return json.load(open(out))
 
 
-def impagina(blocchi, altezze, cap_first, cap_cont):
+def impagina(blocchi, altezze, cap_first, cap_cont, var_h=None):
     """Distribuisce i blocchi in pagine. 'cap' apre sempre una nuova pagina; 'h2' resta unito al blocco successivo."""
     pagine = []  # lista di dict(cap_idx, cls, blocchi[])
     cur = None
@@ -327,18 +347,41 @@ def impagina(blocchi, altezze, cap_first, cap_cont):
             cur["blocchi"].append(i)
             used += h
             i += 1
+            if b.get("split"):          # la prima pagina è tutta della schermata: il resto va a pagina nuova
+                if i < n and blocchi[i]["k"] != "cap":
+                    nuova("cont", ci)
             continue
         capa = (cap_first if cur["cls"] == "first" else cap_cont) * 0.985
-        # blocchi da tenere uniti: h2 con il successivo (e un eventuale intro)
-        need = h
-        if b["k"] == "h2" and i + 1 < n and blocchi[i + 1]["k"] == "info":
-            need += altezze[i + 1]
-        elif b["k"] == "h2" and i + 1 < n:
-            need += min(altezze[i + 1], capa * 0.45)
-            if i + 2 < n and blocchi[i + 1]["k"] == "p" and blocchi[i + 2]["k"] == "fig":
-                need += min(altezze[i + 2], capa)
-        elif b["k"] == "p" and i + 1 < n and blocchi[i + 1]["k"] == "fig":
-            need += min(altezze[i + 1], capa)
+
+        def calcola_need():
+            nd = altezze[i]
+            f = None
+            if b["k"] == "h2" and i + 1 < n and blocchi[i + 1]["k"] == "info":
+                nd += altezze[i + 1]
+            elif b["k"] == "h2" and i + 1 < n:
+                nd += min(altezze[i + 1], capa * 0.45)
+                if i + 2 < n and blocchi[i + 1]["k"] == "p" and blocchi[i + 2]["k"] == "fig":
+                    nd += min(altezze[i + 2], capa); f = i + 2
+            elif b["k"] == "p" and i + 1 < n and blocchi[i + 1]["k"] == "fig":
+                nd += min(altezze[i + 1], capa); f = i + 1
+            elif b["k"] == "fig":
+                f = i
+            return nd, f
+
+        need, fidx = calcola_need()
+        # se la figura del gruppo non entra, provo le versioni ridotte (85%, 72%) prima di lasciare la pagina vuota
+        if used + need > capa and cur["blocchi"] and fidx is not None and var_h and fidx in var_h:
+            orig = altezze[fidx]
+            for s, hv in enumerate(var_h[fidx]):
+                altezze[fidx] = hv
+                need, _f = calcola_need()
+                if used + need <= capa:
+                    blocchi[fidx]["html"] = blocchi[fidx]["var"][s]
+                    break
+            else:
+                altezze[fidx] = orig
+                need, _f = calcola_need()
+        h = altezze[i]
         if used + need > capa and cur["blocchi"]:
             nuova("cont", ci)
             capa = cap_cont * 0.985
@@ -356,8 +399,23 @@ def impagina(blocchi, altezze, cap_first, cap_cont):
     return pagine, avvisi
 
 
+def prepara(blocchi, tema):
+    """Layout C: la schermata «split» va a tutta pagina sulla metà destra della prima pagina del capitolo; layout E: figura normale."""
+    out, capo = [], None
+    for b in blocchi:
+        if b["k"] == "cap":
+            capo = b
+        if b["k"] == "figsplit":
+            if tema == "C":
+                capo["split"] = b["split"]
+                continue
+            b = dict(b, k="fig")
+        out.append(b)
+    return out
+
+
 def costruisci(tema):
-    blocchi = tutti_i_blocchi()
+    blocchi = prepara(tutti_i_blocchi(), tema)
     capitoli = [b for b in blocchi if b["k"] == "cap"]
     h2s = {}
     ci = None
@@ -367,9 +425,16 @@ def costruisci(tema):
         elif b["k"] == "h2":
             h2s.setdefault(ci, []).append(b)
     toc_demo = _toc_rows(capitoli, h2s, {})
-    m = misura(tema, blocchi, toc_demo)
-    altezze = m["altezze"]; cap_first = m["capFirst"]; cap_cont = m["capCont"]
-    pagine, avvisi = impagina(blocchi, altezze, cap_first, cap_cont)
+    ext, mappa = list(blocchi), []
+    for i, b in enumerate(blocchi):
+        for k, v in enumerate(b.get("var", [])):
+            ext.append(dict(k="fig", html=v)); mappa.append((i, k, len(ext) - 1))
+    m = misura(tema, ext, toc_demo)
+    altezze = m["altezze"][:len(blocchi)]; cap_first = m["capFirst"]; cap_cont = m["capCont"]
+    var_h = {}
+    for i, k, j in mappa:
+        var_h.setdefault(i, []).append(m["altezze"][j])
+    pagine, avvisi = impagina(blocchi, altezze, cap_first, cap_cont, var_h)
     # pagine dell'indice
     toc_alt = m["altezzeToc"]
     toc_pag = []
@@ -412,7 +477,9 @@ def costruisci(tema):
         c = capitoli[pg["ci"]]
         parte_idx = int(c["parte"].split()[1]) - 1
         corpo = _wrap_blocchi_sel(blocchi, pg["blocchi"], pg["cls"] == "first")
-        if tema == "C":
+        if tema == "C" and pg["cls"] == "first" and c.get("split"):
+            out.append(_pg_C_split(n, parte_idx, c, total))
+        elif tema == "C":
             out.append(_pg_C(n, pg["cls"], parte_idx, PARTI[parte_idx][0] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo, False, total, c["id"]))
         else:
             out.append(_pg_E(n, pg["cls"], PARTI[parte_idx][0] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo))

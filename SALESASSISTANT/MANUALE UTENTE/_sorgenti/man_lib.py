@@ -163,9 +163,19 @@ def _fig_img(img, key, legend, W, H, did=None):
     return box, num
 
 
+SCALE = (0.85, 0.72)   # taglie ridotte provate dall'impaginatore quando la figura non entra nella pagina
+
+
 def fig(img, key=None, legend=None, layout="side", w=None, did=None, pos=None, fm=None):
     """Schermata con numeri nei margini e legenda ordinata come i numeri.
-    layout: side = immagine a sinistra + legenda a destra; stack = immagine sopra e legenda sotto; solo = solo immagine."""
+    layout: side = immagine a sinistra + legenda a destra; stack = immagine sopra e legenda sotto; solo = solo immagine.
+    Il blocco porta anche le versioni ridotte (var) tra cui l'impaginatore sceglie la più grande che entra."""
+    b = _fig_s(img, key, legend, layout, w, did, pos, fm, 1.0)
+    b["var"] = [_fig_s(img, key, legend, layout, w, did, pos, fm, s)["html"] for s in SCALE]
+    return b
+
+
+def _fig_s(img, key, legend, layout, w, did, pos, fm, k):
     pw, ph = _png_size(img)
     asp = pw / ph
     fmax = _mm(fm, 140.0)
@@ -177,15 +187,37 @@ def fig(img, key=None, legend=None, layout="side", w=None, did=None, pos=None, f
             W = min(150.0, fmax * asp)
     if not legend:
         W = min(_mm(w, 120.0) if _mm(w, 0) > 0 else 150.0, fmax * asp, 150.0)
+    W *= k
     H = W / asp
     box, num = _fig_img(img, key, legend, W, H, did)
     cap = ('<div class="didascalia" style="max-width:%.1fmm">%s</div>' % (W + 2 * GUT, did)) if did else ""
     if not legend:
         return dict(k="fig", html='<div class="fig solo"><div class="fig-img">%s%s</div></div>' % (box, cap))
-    # legenda nello stesso ordine dei numeri; le voci senza posizione in coda
-    ordine = sorted(num, key=lambda i: num[i]) + [i for i in range(len(legend)) if i not in num]
-    leg = "".join('<li><span class="bd fisso">%d</span><div><b>%s</b> %s</div></li>' % (n, legend[i][1], legend[i][2]) for n, i in enumerate(ordine, 1))
+    leg = _legenda(legend, num)
     return dict(k="fig", html='<div class="fig %s"><div class="fig-img">%s%s</div><ol class="legenda">%s</ol></div>' % (layout, box, cap, leg))
+
+
+def _legenda(legend, num):
+    """Voci della legenda nello stesso ordine dei numeri; le voci senza posizione in coda."""
+    ordine = sorted(num, key=lambda i: num[i]) + [i for i in range(len(legend)) if i not in num]
+    return "".join('<li><span class="bd fisso">%d</span><div><b>%s</b> %s</div></li>' % (n, legend[i][1], legend[i][2]) for n, i in enumerate(ordine, 1))
+
+
+def fig_split(img, key, legend, did=None):
+    """Schermata a tutta altezza sulla metà destra della pagina (layout C); titolo, testo e legenda a sinistra.
+    Nel layout E diventa una figura normale."""
+    b = fig(img, key, legend, layout="side", w="62mm", fm="128mm", did=did)
+    b["k"] = "figsplit"
+    b["split"] = dict(img=img, key=key, legend=legend)
+    return b
+
+
+def split_html(sp, altezza_mm=176.0):
+    pw, ph = _png_size(sp["img"])
+    H = altezza_mm
+    W = H * pw / ph
+    box, num = _fig_img(sp["img"], sp["key"], sp["legend"], W, H)
+    return box, _legenda(sp["legend"], num)
 
 
 def info(html):
@@ -379,13 +411,15 @@ def cascata_html():
 
 
 def fig2(img1, cap1, img2, cap2, w="62mm"):
-    """Due schermate affiancate, ognuna con la sua didascalia, a misura esatta."""
-    def f(im, c):
-        pw, ph = _png_size(im)
-        W = _mm(w, 62.0)
-        return ('<figure><div class="fig-in2" style="width:%.1fmm;height:%.1fmm"><img src="screenshots/%s.png" alt=""></div><figcaption>%s</figcaption></figure>'
-                % (W, W * ph / pw, im, c))
-    return dict(k="fig", html='<div class="fig2">%s%s</div>' % (f(img1, cap1), f(img2, cap2)))
+    """Due schermate affiancate, ognuna con la sua didascalia, a misura esatta (con versioni ridotte)."""
+    def one(k):
+        def f(im, c):
+            pw, ph = _png_size(im)
+            W = _mm(w, 62.0) * k
+            return ('<figure><div class="fig-in2" style="width:%.1fmm;height:%.1fmm"><img src="screenshots/%s.png" alt=""></div><figcaption>%s</figcaption></figure>'
+                    % (W, W * ph / pw, im, c))
+        return '<div class="fig2">%s%s</div>' % (f(img1, cap1), f(img2, cap2))
+    return dict(k="fig", html=one(1.0), var=[one(s) for s in SCALE])
 
 
 # ---- Schema del flusso (variante A scelta dall'autore): fasi a colori, per ogni passo AZIONE e RICEVI

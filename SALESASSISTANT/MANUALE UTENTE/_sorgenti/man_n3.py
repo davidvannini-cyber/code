@@ -117,12 +117,12 @@ def blocchi():
     B.append(box("consiglio", "La copia automatica sta nello stesso browser: se i dati del browser vengono cancellati sparisce anche lei. Scarica un backup su file ogni settimana."))
     B.append(cap("A", "Gli script della Lead Rework Console", P7, "cA",
                  "La libreria di riferimento che la Console usa per scrivere gli script. Sono 26, numerati da 1 a 27 (il numero 22 non esiste più)."))
-    B += tab_split(["N.", "Canale", "Titolo"], _script_console(), per=9)
+    B += tab_split(["N.", "Canale", "Titolo"], _script_console(), per=4)
     B.append(box("nota", "Questa libreria è diversa da quella di Suggerimenti Vendita (Appendice B): ognuna ha il suo scopo."))
 
     B.append(cap("B", "Gli script di Suggerimenti Vendita", P7, "cB",
                  "La libreria che il sistema usa per i suggerimenti durante la chiamata. Sono 17, di cui 16 attivi."))
-    B += tab_split(["Fase", "Script", "Situazione", "Attivo"], _script_sv(), per=9)
+    B += tab_split(["Fase", "Script", "Situazione", "Attivo"], _script_sv(), per=4)
 
     B.append(cap("C", "Le regole che l'AI rispetta sempre", P7, "cC",
                  "Sono sempre attive, anche se il profilo azienda è vecchio. Servono a evitare errori già visti nella pratica."))
@@ -156,7 +156,7 @@ def blocchi():
         ["Splitter", "Il cavo a Y che separa la voce del cliente da quella dell'operatore."],
         ["Stato del lead", "A che punto è il lead; decide gli script preparati."],
         ["Suggerimento", "La frase consigliata che compare mentre il cliente parla."],
-    ], key=lambda r: r[0].lower()), per=14)
+    ], key=lambda r: r[0].lower()), per=5)
 
     B.append(cap("E", "Gestire la libreria di Suggerimenti Vendita", P7, "cE",
                  "La libreria contiene le frasi che il sistema suggerisce durante la chiamata. Si usa di rado: serve per vederla, farla crescere e provarla."))

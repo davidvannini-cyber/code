@@ -41,14 +41,14 @@ def blocchi():
 
     B.append(cap(None, "La Console si apre e si compila da sola", P1, "c-raccolta",
                  "Dopo il clic non devi scrivere niente: la Console si apre da sola con tutti i dati del lead già al loro posto. Ecco la pagina «Lead» appena aperta: i numeri indicano cosa è stato compilato per te."))
-    B.append(fig("console-00-dopo-import", legend=[
+    B.append(fig_split("console-00-dopo-import", None, [
         ("dati", "Dati lead.", "Compilati dal CRM: nome, prodotto, zona, telefono, email, prezzo, motivo del rifiuto, note, appuntamento."),
         ("storico", "Storico contatti.", "Tutte le attività del CRM, una sotto l'altra: la storia del lead."),
         ("stato", "Stato del lead.", "Proposto dall'AI sui dati letti (capitolo {c:c-stato})."),
         ("canali", "Canali.", "Telefono, WhatsApp, Email: si accendono secondo stato e recapiti."),
         ("analisi", "Analisi e strategia.", "Il piano per avvicinare il lead, scritto dall'AI (capitolo {c:c-analisi})."),
         ("genera", "Genera script.", "Il passo successivo (capitolo {c:c-gen})."),
-    ], layout="side", w="62mm", fm="128mm", did="La pagina «Lead» subito dopo l'apertura automatica (dati di prova)."))
+    ], did="La pagina «Lead» subito dopo l'apertura automatica (dati di prova)."))
     B.append(info(azione_risultato(["Niente: aspetta qualche secondo.", "Guarda i campi ambrati (se ci sono)."],
                                    ["Tutti i dati del lead nella sezione «2. Dati lead».", "Stato, canali e strategia proposti dall'AI."])))
     B.append(h2("c-raccolta-ambra", None, "I campi ambrati"))
