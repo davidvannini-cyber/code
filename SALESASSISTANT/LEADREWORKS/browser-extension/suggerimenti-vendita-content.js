@@ -34,6 +34,9 @@ function mostraLeadInfo(lead) {
   const elTelefono = document.getElementById("lead-telefono");
   if (elNome && lead.nome) elNome.textContent = lead.nome;
   if (elTelefono && lead.telefono) elTelefono.textContent = lead.telefono;
+  // L'email non è mostrata, ma serve al pulsante "Invia a telefono" della pagina.
+  const riquadro = document.getElementById("lead-info");
+  if (riquadro) riquadro.dataset.email = lead.email || "";
 }
 
 // La pagina della chiamata ha 3 modalità, scelte dal menu principale
