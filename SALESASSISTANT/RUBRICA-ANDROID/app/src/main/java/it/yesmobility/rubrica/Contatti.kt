@@ -13,6 +13,9 @@ data class Lead(val nome: String, val cognome: String, val telefono: String, val
 object Contatti {
     const val ETICHETTA = "YesMobility"
 
+    /** Davanti al nome del contatto: "YM_Mario Rossi". */
+    const val PREFISSO = "YM_"
+
     /** +39 se manca il prefisso, tolti spazi e simboli. */
     fun normalizza(numero: String): String {
         var n = numero.filter { it.isDigit() || it == '+' }
@@ -61,7 +64,7 @@ object Contatti {
             ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                 .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, lead.nome)
+                .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, PREFISSO + lead.nome)
                 .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, lead.cognome)
                 .build()
         )
