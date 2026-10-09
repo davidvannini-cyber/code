@@ -79,3 +79,6 @@ Da riallineare nel bundle: i commenti in `Contents/MacOS/avvia` citano ancora le
 - [x] ~~Migrare `ScriptProcessor` → `AudioWorklet`~~: fatto il 2026-10-09 (con fallback a ScriptProcessor).
 - [ ] Testare dal vivo: bagliore 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 35/15/25.
 - [ ] Espandere la libreria script a 20–30 voci; valutare condizioni CRM nei dialoghi di "Aggiungi script".
+
+## 11. Manuale utente (2026-10-09)
+Cartella `MANUALE UTENTE/`: manuale completo in PDF, due layout scelti dall'utente (**C** barra laterale orizzontale, **E** editoriale verticale), con copertina, indice cliccabile, icona «Indice» su ogni pagina, infografiche e schermate numerate. Copre Console, estensione Chrome, Suggerimenti Vendita, app Android, manutenzione e appendici. Per rigenerarlo e per le regole di scrittura e di grafica: `MANUALE UTENTE/LINEE-GUIDA-GENERAZIONE-PDF.md` (comando unico: `bash _sorgenti/genera_manuale.sh`). I 5 campioni di layout sono in `layout-proposte/`. Da rivedere quando cambiano Console, menu, pannello o app Android (tabella nelle linee guida).
