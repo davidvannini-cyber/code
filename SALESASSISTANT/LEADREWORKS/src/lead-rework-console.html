@@ -2335,7 +2335,7 @@ function renderHistoryModal(id){
             <span>Creato il ${new Date(r.data_creazione).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}${r.script_modificati_manualmente ? ' · modificato manualmente' : ''} <span id="suggerimenti_vendita_msg_history"></span></span></div>
           <span class="hm-ib no-print" title="${d.crm_lead_id ? 'Apri questo lead nel CRM' : 'Apri l\'elenco lead del CRM (ID non ancora collegato)'}" onclick="openCrmFromHistory('${r.id}')">${icon('external',{size:13,noMargin:true})}</span>
           <span id="phone_msg_history" class="hint no-print"></span>
-          <span class="hm-ib no-print" title="Invia a telefono" style="width:auto;padding:0 8px;font-size:12px;font-weight:600;" onclick="sendHistoryToPhone('${r.id}')">Invia a telefono</span>
+          <span class="hm-ib no-print" title="Invia a telefono" onclick="sendHistoryToPhone('${r.id}')">${icon('phone',{size:13,noMargin:true})}</span>
           <span class="hm-ib hm-pri no-print" title="Invia a Suggerimenti Vendita" onclick="exportHistoryItemToSuggerimentiVendita('${r.id}')">${icon('upload',{size:13,noMargin:true})}</span>
           <span class="hm-ib no-print" title="Stampa" onclick="window.print()">${icon('print',{size:13,noMargin:true})}</span>
           <span class="hm-ib no-print" title="Chiudi" onclick="closeHistoryModal()">${icon('close',{size:13,noMargin:true})}</span>
