@@ -10,6 +10,12 @@
 # Se al doppio click macOS si rifiuta di aprirlo (Gatekeeper, file scaricato
 # da internet): tasto destro sul file -> Apri -> conferma "Apri" nel
 # dialogo. Va fatto solo la prima volta.
+#
+# Versione a terminale per il debug (log a video). Il launcher vero, con tutte
+# le funzioni (menu grafico, porta 8767 "lead in attesa", layout finestre,
+# strumenti), è Suggerimenti Vendita.app/Contents/MacOS/avvia. Qui l'audio è
+# catturato dal browser come nell'app; "Gestione Lead" richiede che l'estensione
+# Chrome di LEADREWORKS abbia un lead in attesa (nessun bagliore nel menu).
 # ============================================================================
 
 set -e
@@ -251,37 +257,48 @@ test_motore_matching() {
 # Passaggio: avvio sistema completo — Parte 4 del README
 # ---------------------------------------------------------------------------
 
+# $1 (facoltativo): parametro "avvio" dell'overlay ("gestione_lead",
+# "rinforzo_facile_salire"); vuoto = Chiamata YesMobility (nessun canovaccio).
+# Stesso flusso dell'app (Contents/MacOS/avvia): il microfono è catturato dal
+# BROWSER, il server Python (HTTP 8766 + WebSocket 8765) fa da ponte verso
+# Deepgram. Qui il server gira in primo piano, così i log si vedono a video.
 avvia_sistema_completo() {
+  local parametro_avvio="$1"
   intestazione
-  echo "--- Avvio sistema completo (audio + matching + overlay) ---"
+  echo "--- Avvio chiamata (browser + server + matching) ---"
   echo ""
   attiva_venv_o_avvisa || { pausa; return; }
   carica_api_key_o_avvisa || { pausa; return; }
 
-  read -p "Indice del device audio: " INDICE
-  read -p "Path del contesto sessione [INVIO per usare l'esempio]: " CONTESTO
-  if [ -z "$CONTESTO" ]; then
-    CONTESTO="contesto-sessione-esempio.json"
-  fi
+  local url="http://localhost:8766/"
+  [ -n "$parametro_avvio" ] && url="${url}?avvio=${parametro_avvio}"
 
+  # Layout a 3 finestre (stesso dell'app): console 35% · menu 15% · pannello
+  # chiamata 25% (parte dal 50%), tutte alte il 60% dello schermo.
+  local bounds screen_w screen_h
+  bounds=$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null)
+
+  # Apre Chrome in modalità app quando il server risponde.
+  (
+    until curl -s -o /dev/null "http://localhost:8766/"; do sleep 0.3; done
+    if [ -n "$bounds" ]; then
+      screen_w=$(echo "$bounds" | awk -F', ' '{print $3}')
+      screen_h=$(echo "$bounds" | awk -F', ' '{print $4}')
+      open -na "Google Chrome" --args --app="$url" \
+        --window-position=$(( screen_w * 50 / 100 )),0 \
+        --window-size=$(( screen_w * 25 / 100 )),$(( screen_h * 60 / 100 ))
+    else
+      open -na "Google Chrome" --args --app="$url"
+    fi
+  ) &
+  PID_APRI=$!
+
+  echo "Avvio il server (carica il modello: può richiedere qualche secondo)."
+  echo "Il pannello si apre da solo in Chrome. Premi Ctrl+C per fermare la chiamata e tornare al menu."
   echo ""
-  echo "Apro l'overlay in una finestra flottante (sempre in primo piano)..."
-  python overlay/overlay_finestra.py > logs/overlay.log 2>&1 &
-  PID_OVERLAY=$!
-  sleep 1.5
-  if kill -0 "$PID_OVERLAY" 2>/dev/null; then
-    echo "Overlay aperto in una finestra sempre in primo piano."
-  else
-    echo "Finestra flottante non disponibile (dettagli in logs/overlay.log), apro nel browser..."
-    PID_OVERLAY=""
-    open "$RADICE/overlay/index.html"
-  fi
+  (cd server && python -u server_suggerimenti.py --browser-audio) || true
 
-  echo "Avvio il server. Premi Ctrl+C per fermare la chiamata e tornare al menu."
-  echo ""
-  (cd server && python server_suggerimenti.py --contesto "$CONTESTO" --device "$INDICE") || true
-
-  [ -n "$PID_OVERLAY" ] && kill "$PID_OVERLAY" 2>/dev/null
+  kill "$PID_APRI" 2>/dev/null
   pausa
 }
 
@@ -296,10 +313,12 @@ while true; do
   echo "3) Elenca device audio disponibili"
   echo "4) Test: solo cattura audio + trascrizione"
   echo "5) Test: solo motore di matching (senza audio)"
-  echo "6) Avvia il sistema completo per una chiamata"
-  echo "7) Esci"
+  echo "6) Chiamata YesMobility            (suggerimenti live, nessun canovaccio)"
+  echo "7) Chiamata Gestione Lead           (canovaccio dalla Lead Rework Console)"
+  echo "8) Rinforzo Facile Salire           (canovaccio fisso)"
+  echo "9) Esci"
   echo ""
-  read -p "Scelta [1-7]: " SCELTA
+  read -p "Scelta [1-9]: " SCELTA
   echo ""
 
   case "$SCELTA" in
@@ -308,8 +327,10 @@ while true; do
     3) elenca_device_audio ;;
     4) test_cattura_audio ;;
     5) test_motore_matching ;;
-    6) avvia_sistema_completo ;;
-    7) echo "A presto."; exit 0 ;;
+    6) avvia_sistema_completo "" ;;
+    7) avvia_sistema_completo "gestione_lead" ;;
+    8) avvia_sistema_completo "rinforzo_facile_salire" ;;
+    9) echo "A presto."; exit 0 ;;
     *) echo "Scelta non valida."; pausa ;;
   esac
 done

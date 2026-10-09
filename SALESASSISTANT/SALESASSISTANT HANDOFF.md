@@ -65,10 +65,9 @@ Diagnosi in ordine: spia → log server (`picco ultimo secondo` ≈ 0 = niente a
 - Da non ribaltare: microfono dal browser; niente file fuori dal bundle (`~/Documents` è bloccato per app non firmata); canovaccio solo via estensione; `exec` nel launcher (evita la doppia istanza).
 
 ## 9. Discrepanze rilevate tra i documenti
-- `README.md` §4.3 dice pannello a "40% della larghezza"; il valore corrente è **25%** (layout 35/15/25).
-- Verificare in `README.md` altri riferimenti al layout a 40% (es. "colonna destra"): da riallineare.
-- `RIEPILOGO_SISTEMA.md` è superato: elenca ancora il pulsante "Avvia sistema per una chiamata", descrive il pannello come pagina nel browser predefinito con grande pulsante microfono, e non cita le 3 modalità, la porta 8767 né l'integrazione con la Lead Rework Console.
-- `../LEADREWORKS/apri-console.command` usa `COL_W = 30%`, mentre `background.js` usa 35%.
+Risolte il 2026-10-09: `README.md` §4.3 (ora 25%, layout 35/15/25), `RIEPILOGO_SISTEMA.md` (3 modalità, porta 8767, pannello in Chrome app), `apri-console.command` (ora 35% × 60%), `avvia_sistema.command` (ora usa l'audio dal browser e ha le 3 modalità).
+Restano volutamente separate: la libreria di LEADREWORKS (26 script, numerati 1–27) e quella di SUGGERIMENTIVENDITA (17 script).
+Da riallineare nel bundle: i commenti in `Contents/MacOS/avvia` citano ancora le vecchie percentuali (40%/19%); non toccati per non dover rifirmare l'app.
 
 ## 10. TODO
 - [ ] Tarare l'audio in una chiamata reale (§7) e annotare qui la configurazione che funziona.
@@ -76,7 +75,4 @@ Diagnosi in ordine: spia → log server (`picco ultimo secondo` ≈ 0 = niente a
 - [ ] Avviso visibile se è selezionato "Predefinito di sistema" ma il predefinito è il microfono integrato.
 - [ ] Migrare `ScriptProcessor` → `AudioWorklet`.
 - [ ] Testare dal vivo: bagliore 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 35/15/25.
-- [ ] Aggiornare `RIEPILOGO_SISTEMA.md` e i riferimenti al 40% in `README.md`.
-- [ ] Decidere se eliminare o riallineare `avvia_sistema.command`.
-- [ ] Riallineare `apri-console.command` (30% → 35%).
 - [ ] Espandere la libreria script a 20–30 voci; valutare condizioni CRM nei dialoghi di "Aggiungi script".

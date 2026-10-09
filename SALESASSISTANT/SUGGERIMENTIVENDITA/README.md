@@ -280,8 +280,9 @@ con una latenza di rete percepibile ma limitata a quei casi.
 
 Dall'app, ogni pulsante di chiamata apre il pannello (`http://localhost:8766/`)
 in **Chrome in modalità app**: una finestra senza barra degli indirizzi né
-schede, posizionata da sola nella colonna destra dello schermo (40% della
-larghezza, accanto al menu e alla Lead Rework Console). Deve comparire
+schede, posizionata da sola a destra del menu (25% della larghezza e 60% dell'altezza
+dello schermo, partendo dal 50%; layout a tre finestre: Lead Rework Console 35% ·
+menu 15% · pannello 25%). Deve comparire
 "connesso" in alto a destra.
 
 Nel pannello:

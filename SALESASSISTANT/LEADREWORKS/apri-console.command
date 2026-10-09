@@ -13,18 +13,18 @@ DIR_URL="${DIR// /%20}"
 # si limita a riportarlo in primo piano e ignora i parametri (--app, l'indirizzo
 # da aprire) perché vengono letti solo all'avvio di un nuovo processo.
 
-# Prima colonna (sinistra) sullo schermo principale, larghezza 30%: stesso
-# schema usato per il menu di Suggerimenti Vendita (19%, menu_finestra.py) e
-# per il pannello chiamata (40%, Contents/MacOS/avvia dentro Suggerimenti
-# Vendita.app) — tre finestre affiancate in proporzioni fisse, invece di
-# finestre sparse di dimensioni diverse. Proporzioni scelte dall'utente.
-# 30% invece di 40%: richiesta esplicita dell'utente il 2026-09-28 ("25% più stretta").
+# Prima colonna (sinistra) sullo schermo principale, larghezza 35%, altezza 60%:
+# stesso layout di background.js (browser-extension) e degli altri due pannelli
+# di Suggerimenti Vendita — menu 15% (menu_finestra.py, parte dal 35%) e
+# pannello chiamata 25% (Contents/MacOS/avvia, parte dal 50%). Layout approvato
+# dall'utente il 2026-09-29: tre finestre affiancate, tutte alte il 60%.
 BOUNDS=$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null)
 if [ -n "$BOUNDS" ]; then
   SCREEN_W=$(echo "$BOUNDS" | awk -F', ' '{print $3}')
   SCREEN_H=$(echo "$BOUNDS" | awk -F', ' '{print $4}')
-  COL_W=$(( SCREEN_W * 30 / 100 ))
-  open -na "Google Chrome" --args --app="file://$DIR_URL/src/lead-rework-console.html" --window-position=0,0 --window-size=${COL_W},${SCREEN_H}
+  COL_W=$(( SCREEN_W * 35 / 100 ))
+  COL_H=$(( SCREEN_H * 60 / 100 ))
+  open -na "Google Chrome" --args --app="file://$DIR_URL/src/lead-rework-console.html" --window-position=0,0 --window-size=${COL_W},${COL_H}
 else
   # Fallback se osascript non è disponibile per qualche motivo: comportamento precedente.
   open -na "Google Chrome" --args --app="file://$DIR_URL/src/lead-rework-console.html" --start-maximized

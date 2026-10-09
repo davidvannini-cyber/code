@@ -4,7 +4,7 @@ Documento unico di ripresa per **Suggerimenti Vendita**, l'assistente live per l
 
 Copre le sessioni del **21–29 settembre 2026**. Le parti che riguardano l'integrazione con la Lead Rework Console sono documentate anche in `../LEADREWORKS/docs/HANDOFF.md`.
 
-> Nota: `README.md` è stato aggiornato il 2026-09-25; `RIEPILOGO_SISTEMA.md` è ancora in parte superato (vedi §7). In caso di conflitto vale questo file, e sopra a tutto il codice.
+> Nota: `README.md` è stato aggiornato il 2026-09-25; `RIEPILOGO_SISTEMA.md` è stato riallineato il 2026-10-09. In caso di conflitto vale questo file, e sopra a tutto il codice.
 
 ---
 
@@ -71,7 +71,7 @@ Tre finestre affiancate, tutte alte il **60%** dello schermo.
 - **Perché l'overlay si posiziona anche da solo**: con Chrome già aperto, `open -na … --window-position/--window-size` viene passato all'istanza esistente, che ignora quei parametri e riapre la finestra dell'app dove era stata lasciata. Per questo `overlay/index.html` contiene uno script che chiama `resizeTo`/`moveTo` all'apertura e di nuovo dopo 0,3 e 1,2 s (25% larghezza, offset 50%, 60% altezza dell'area disponibile). Se si cambiano le proporzioni dell'overlay vanno aggiornati **entrambi** i punti.
 - **Nessun `osascript` per ridimensionare Chrome** in `avvia`: chiede il permesso "controllare Google Chrome" e non risolve il problema. `avvia` usa `osascript` solo per leggere le dimensioni dello schermo (Finder).
 - Il menu non è "sempre in primo piano" (`NSFloatingWindowLevel` rimosso).
-- Nota: `../LEADREWORKS/apri-console.command` usa ancora `COL_W = 30%`, mentre `background.js` usa 35%: se la console si apre da quello script la larghezza è diversa.
+- `../LEADREWORKS/apri-console.command` è stato allineato a 35% × 60% il 2026-10-09.
 
 ### Punti di ripristino (grafica approvata)
 | Tag git | Cartella di backup (in `SUGGERIMENTIVENDITA/`) | Contenuto |
@@ -182,10 +182,10 @@ Il bundle `Suggerimenti Vendita.app` contiene una **copia completa** del progett
 - [ ] Migrare `ScriptProcessor` → `AudioWorklet`.
 - [ ] Testare dal vivo: bagliore sulla porta 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 35/15/25 (overlay che si posiziona da solo).
 - [x] ~~Aggiornare `README.md`~~: fatto il 2026-09-25 (flusso via estensione, 3 modalità, porta 8767, struttura attuale, rimossi finestra flottante e `lead-corrente.json`).
-- [ ] Aggiornare `RIEPILOGO_SISTEMA.md` (elenco pulsanti del menu non più attuale).
+- [x] ~~Aggiornare `RIEPILOGO_SISTEMA.md`~~: fatto il 2026-10-09.
 - [x] ~~Allineare `../LEADREWORKS/docs/HANDOFF.md` sul layout 40/19/40~~: fatto il 2026-09-25.
 - [x] ~~Pulizia repo~~: fatto il 2026-09-25 (rimossi log, `venv/`, `__pycache__`, file `._*`; aggiunto `.gitignore`).
-- [ ] Decidere se eliminare o riallineare `avvia_sistema.command` (vecchio e divergente da `avvia`).
+- [x] ~~Riallineare `avvia_sistema.command`~~: fatto il 2026-10-09 (audio dal browser, 3 modalità, layout 25%).
 
 ---
 
