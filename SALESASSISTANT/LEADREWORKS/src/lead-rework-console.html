@@ -368,6 +368,46 @@ function setAnthropicModel(v){ try { localStorage.setItem(LOCAL_PREFIX+"anthropi
 function getAnthropicWorkspaceId(){ try { return localStorage.getItem(LOCAL_PREFIX+"anthropic_workspace_id") || ""; } catch(e){ return ""; } }
 function setAnthropicWorkspaceId(v){ try { if (v) localStorage.setItem(LOCAL_PREFIX+"anthropic_workspace_id", v); else localStorage.removeItem(LOCAL_PREFIX+"anthropic_workspace_id"); } catch(e){} }
 
+/* --- Invio del lead al telefono Android (app "Rubrica YesMobility"), tramite ntfy.sh ---
+   Il codice segreto resta solo in questo browser; l'app sul telefono ascolta lo stesso codice. */
+function getPhoneTopic(){ try { return localStorage.getItem(LOCAL_PREFIX+"phone_topic") || ""; } catch(e){ return ""; } }
+function setPhoneTopic(v){ try { if (v) localStorage.setItem(LOCAL_PREFIX+"phone_topic", v); else localStorage.removeItem(LOCAL_PREFIX+"phone_topic"); } catch(e){} }
+function newPhoneTopic(){
+  const a = new Uint8Array(14); crypto.getRandomValues(a);
+  return "ym-" + Array.from(a, b => b.toString(36).padStart(2,"0")).join("").slice(0,24);
+}
+function regeneratePhoneTopic(){
+  if (getPhoneTopic() && !confirm("Generare un nuovo codice? Quello attuale smetterà di funzionare: andrà reinserito anche nell'app sul telefono.")) return;
+  const t = newPhoneTopic(); setPhoneTopic(t);
+  const el = document.getElementById("phone_topic"); if (el) el.value = t;
+}
+// "Mario Rossi" -> nome "Mario", cognome "Rossi"
+function splitNomeCognome(full){
+  const parts = String(full||"").trim().split(/\s+/).filter(Boolean);
+  return { nome: parts[0] || "", cognome: parts.slice(1).join(" ") };
+}
+async function sendToPhone(nomeCompleto, telefono, email, msgElId){
+  const el = document.getElementById(msgElId);
+  const say = (t, ms) => { if (el){ el.textContent = t; if (ms) setTimeout(()=>{ if (el && el.textContent === t) el.textContent = ""; }, ms); } else alert(t); };
+  const topic = getPhoneTopic();
+  if (!topic){ alert("Prima imposta il codice del telefono: tab Profilo Azienda → Invio al telefono."); return; }
+  if (!String(telefono||"").trim()){ alert("Questo lead non ha un numero di telefono."); return; }
+  const nc = splitNomeCognome(nomeCompleto);
+  const payload = { nome: nc.nome, cognome: nc.cognome, telefono: String(telefono).trim(), email: String(email||"").trim() };
+  say("Invio al telefono…");
+  try {
+    const r = await fetch("https://ntfy.sh/" + encodeURIComponent(topic), { method:"POST", body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    say("Inviato al telefono ✓", 4000);
+  } catch(e){ say("Invio non riuscito: " + e.message, 6000); }
+}
+function sendDraftToPhone(){ const d = state.draft; sendToPhone(d.nome, d.telefono1, d.email, "phone_msg"); }
+function sendHistoryToPhone(id){
+  const r = state.leadsHistory[id]; if (!r) return;
+  const d = r.dati_lead_input || {};
+  sendToPhone(d.nome, d.telefono1, d.email, "phone_msg_history");
+}
+
 async function callAnthropicDirect({system, user, images, apiKey, model, workspaceId}){
   const content = [];
   if (images && images.length){
@@ -838,6 +878,13 @@ function renderProfileTab(){
     </div>
 
     <div class="card">
+      <h2>Invio al telefono</h2>
+      <div class="subtitle" style="margin-bottom:14px;">Il pulsante "Invia a telefono" manda nome, cognome, numero ed email del lead all'app Android "Rubrica YesMobility". Il lead passa dal servizio pubblico ntfy.sh, protetto solo da questo codice segreto: non condividerlo. Incolla lo stesso codice nell'app sul telefono.</div>
+      <div class="field"><label>Codice segreto</label><input type="text" id="phone_topic" value="${escapeHtml(getPhoneTopic())}" placeholder="premi Genera codice" oninput="setPhoneTopic(this.value.trim())" autocomplete="off" autocapitalize="off"></div>
+      <div class="row"><button class="btn-secondary" onclick="regeneratePhoneTopic()">${icon('zap')}Genera codice</button></div>
+    </div>
+
+    <div class="card">
       <h2>Impostazioni AI (opzionale)</h2>
       <div class="subtitle" style="margin-bottom:14px;">Se l'ambiente Claude Artifact non è disponibile (es. test in locale nel browser), puoi collegare direttamente una API key Anthropic per usare comunque la generazione script e l'interpretazione screenshot. La chiave resta solo in questo browser (<code>localStorage</code>) e viene inviata solo ad <code>api.anthropic.com</code>, mai altrove.</div>
       <div class="grid3">
@@ -965,7 +1012,8 @@ function renderNewLeadTab(){
   return `
     <div class="card-header-row">
       <h1 style="margin:0;">Nuovo Lead</h1>
-      <button class="btn-secondary" onclick="openCrmFromDraft()" title="${d.crm_lead_id ? 'Apri questo lead nel CRM Facile Salire' : 'Apri l\'elenco lead del CRM Facile Salire'}">${icon('external')}CRM</button>
+      <span style="display:flex;align-items:center;gap:8px;"><span id="phone_msg" class="hint"></span><button class="btn-secondary" onclick="sendDraftToPhone()" title="Invia nome, numero ed email al telefono Android">Invia a telefono</button>
+      <button class="btn-secondary" onclick="openCrmFromDraft()" title="${d.crm_lead_id ? 'Apri questo lead nel CRM Facile Salire' : 'Apri l\'elenco lead del CRM Facile Salire'}">${icon('external')}CRM</button></span>
     </div>
     <div class="subtitle">Compila i dati del lead, seleziona lo stato e genera gli script per i canali giusti.</div>
 
@@ -1853,7 +1901,7 @@ function renderGeneratedOutputs(){
    EXPORT PER "SUGGERIMENTI VENDITA" (altra app YesMobility, chiamate live)
    ========================================================= */
 
-function buildSuggerimentiVenditaExport(nome, telefono, prodotto, scriptTelefono){
+function buildSuggerimentiVenditaExport(nome, telefono, prodotto, scriptTelefono, email){
   // SOLO il canale telefono: Suggerimenti Vendita gestisce esclusivamente
   // telefonate, mai testi scritti (email/WhatsApp) né l'analisi interna
   // (quella non è testo da dire al cliente, è una nota per l'operatore).
@@ -1862,7 +1910,8 @@ function buildSuggerimentiVenditaExport(nome, telefono, prodotto, scriptTelefono
   return {
     lead: {
       nome: nome || "",
-      telefono: telefono || ""
+      telefono: telefono || "",
+      email: email || ""
     },
     canovaccio: {
       titolo: "Script — " + (nome || "lead") + (prodotto ? (" (" + prodotto + ")") : ""),
@@ -1875,8 +1924,8 @@ function buildSuggerimentiVenditaExport(nome, telefono, prodotto, scriptTelefono
 // state.draft, così la può usare sia la generazione live (sezione 5) sia un
 // lead riaperto dallo storico (vedi exportHistoryItemToSuggerimentiVendita),
 // che non ha un state.draft aggiornato.
-function sendToSuggerimentiVendita(nome, telefono, prodotto, scriptTelefono, msgElId){
-  const payload = buildSuggerimentiVenditaExport(nome, telefono, prodotto, scriptTelefono);
+function sendToSuggerimentiVendita(nome, telefono, prodotto, scriptTelefono, msgElId, email){
+  const payload = buildSuggerimentiVenditaExport(nome, telefono, prodotto, scriptTelefono, email);
   if (!payload.canovaccio.testo){
     alert("Nessuno script TELEFONO disponibile per questo lead: Suggerimenti Vendita gestisce solo chiamate, non email/WhatsApp — senza uno script telefono non c'è nulla di adatto da esportare.");
     return;
@@ -1915,7 +1964,7 @@ function exportForSuggerimentiVendita(){
   const d = state.draft;
   const scriptTelefono = state.generatedOutput && typeof state.generatedOutput.telefono === "string"
     ? state.generatedOutput.telefono : "";
-  sendToSuggerimentiVendita(d.nome, d.telefono1, d.prodotto, scriptTelefono, "suggerimenti_vendita_msg");
+  sendToSuggerimentiVendita(d.nome, d.telefono1, d.prodotto, scriptTelefono, "suggerimenti_vendita_msg", d.email);
 }
 
 function exportHistoryItemToSuggerimentiVendita(id){
@@ -1923,7 +1972,7 @@ function exportHistoryItemToSuggerimentiVendita(id){
   if (!r) return;
   const scriptTelefono = r.script_generati && typeof r.script_generati.telefono === "string"
     ? r.script_generati.telefono : "";
-  sendToSuggerimentiVendita(r.dati_lead_input.nome, r.dati_lead_input.telefono1, r.dati_lead_input.prodotto, scriptTelefono, "suggerimenti_vendita_msg_history");
+  sendToSuggerimentiVendita(r.dati_lead_input.nome, r.dati_lead_input.telefono1, r.dati_lead_input.prodotto, scriptTelefono, "suggerimenti_vendita_msg_history", r.dati_lead_input.email);
 }
 
 /* =========================================================
@@ -2212,6 +2261,7 @@ function renderHistoryTab(){
               ${ck('telefono','Telefonata fatta')}${ck('whatsapp','WhatsApp inviato')}${ck('email','Email inviata')}
               <td class="ck"><input type="checkbox" ${r.lavorato?'checked':''} onchange="toggleLavorato('${r.id}')" title="Segna come lavorato"></td>
               <td class="acts">
+                <button class="btn-ghost" title="Invia questo lead al telefono Android" aria-label="Telefono" style="font-size:12px;font-weight:600;" onclick="sendHistoryToPhone('${r.id}')">Tel</button>
                 <button class="btn-ghost" title="${r.dati_lead_input.crm_lead_id ? 'Apri questo lead nel CRM Facile Salire' : 'Apri l\'elenco lead del CRM (ID non ancora collegato)'}" aria-label="CRM" style="font-size:12px;font-weight:600;" onclick="openCrmFromHistory('${r.id}')">CRM</button>
                 <button class="btn-ghost" title="Apri" aria-label="Apri" onclick="openHistoryItem('${r.id}')">${icon('eye',{noMargin:true})}</button>
                 <button class="btn-ghost" title="Duplica" aria-label="Duplica" onclick="duplicateHistoryItem('${r.id}')">${icon('copy',{noMargin:true})}</button>
@@ -2261,6 +2311,8 @@ function renderHistoryModal(id){
           <div class="hm-title"><b>${escapeHtml(d.nome || 'Lead')} — ${escapeHtml(stato ? stato.label : '')}</b>
             <span>Creato il ${new Date(r.data_creazione).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}${r.script_modificati_manualmente ? ' · modificato manualmente' : ''} <span id="suggerimenti_vendita_msg_history"></span></span></div>
           <span class="hm-ib no-print" title="${d.crm_lead_id ? 'Apri questo lead nel CRM' : 'Apri l\'elenco lead del CRM (ID non ancora collegato)'}" onclick="openCrmFromHistory('${r.id}')">${icon('external',{size:13,noMargin:true})}</span>
+          <span id="phone_msg_history" class="hint no-print"></span>
+          <span class="hm-ib no-print" title="Invia a telefono" style="width:auto;padding:0 8px;font-size:12px;font-weight:600;" onclick="sendHistoryToPhone('${r.id}')">Invia a telefono</span>
           <span class="hm-ib hm-pri no-print" title="Invia a Suggerimenti Vendita" onclick="exportHistoryItemToSuggerimentiVendita('${r.id}')">${icon('upload',{size:13,noMargin:true})}</span>
           <span class="hm-ib no-print" title="Stampa" onclick="window.print()">${icon('print',{size:13,noMargin:true})}</span>
           <span class="hm-ib no-print" title="Chiudi" onclick="closeHistoryModal()">${icon('close',{size:13,noMargin:true})}</span>

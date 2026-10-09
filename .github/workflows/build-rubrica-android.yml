@@ -1,0 +1,38 @@
+name: Compila app Rubrica YesMobility (Android)
+
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths:
+      - "SALESASSISTANT/RUBRICA-ANDROID/**"
+      - ".github/workflows/build-rubrica-android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+      - name: Compila l'APK
+        working-directory: SALESASSISTANT/RUBRICA-ANDROID
+        run: gradle --no-daemon assembleDebug
+      - name: Rinomina l'APK
+        run: cp SALESASSISTANT/RUBRICA-ANDROID/app/build/outputs/apk/debug/app-debug.apk RubricaYesMobility.apk
+      - name: Pubblica l'APK nella release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: rubrica-android
+          name: Rubrica YesMobility (Android)
+          body: "APK più recente dell'app Rubrica YesMobility. Scaricalo sul telefono e installalo."
+          files: RubricaYesMobility.apk
+          make_latest: false
