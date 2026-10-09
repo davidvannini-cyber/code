@@ -191,8 +191,6 @@ CSS_MAN_C = """
 .sn b{flex:none;width:5mm;height:5mm;border-radius:50%;border:.3mm solid rgba(207,227,236,.5);display:flex;align-items:center;justify-content:center;font-size:2.4mm}
 .sn span{flex:1}
 .sn.on{background:#4fc99b;border-color:#4fc99b;color:#0f3d52;font-weight:800;box-shadow:0 0 0 .7mm rgba(79,201,155,.35)}.sn.on b{background:#0f3d52;color:#4fc99b;border-color:#0f3d52}
-.sn.start{border-color:#f59e0b}.sn.start:after{content:'DA QUI';position:absolute;right:1.4mm;top:-1.6mm;background:#f59e0b;color:#fff;font-size:1.9mm;font-weight:800;border-radius:1mm;padding:.1mm 1mm;letter-spacing:.2mm}
-.sn.start.on:after{background:#0f3d52}
 .sn2{display:flex;gap:1.6mm}.sn2 .sn{flex:1;padding:1.5mm 1.6mm;gap:1.2mm;font-size:2.6mm}.sn2 .sn b{width:4.6mm;height:4.6mm}
 .lato .parte{display:none}
 .lato .parte small{display:block;color:#7fa6b8;font-size:2.3mm;text-transform:uppercase;letter-spacing:.3mm}
