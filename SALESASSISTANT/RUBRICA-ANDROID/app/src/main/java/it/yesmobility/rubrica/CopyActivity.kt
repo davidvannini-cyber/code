@@ -7,7 +7,7 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 
-/** Toccando la notifica: copia il numero negli appunti e apre Lyber (Android lo consente solo con un'app in primo piano). */
+/** Ripiego: se la chiamata automatica non è partita, toccando la notifica copia il numero e chiama con Lyber. */
 class CopyActivity : Activity() {
     private var fatto = false
 
@@ -24,9 +24,9 @@ class CopyActivity : Activity() {
                 val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 cm.setPrimaryClip(ClipData.newPlainText("Numero lead", numero))
             }
-            val esito = Lyber.apri(this, numero)
+            val esito = if (intent.getBooleanExtra("chiama", false)) Lyber.chiama(this, numero) else "Numero copiato"
             Prefs.aggiungiLog(this, "Notifica: $esito")
-            Toast.makeText(this, "Numero copiato. $esito", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, esito, Toast.LENGTH_LONG).show()
             finish()
         }
     }

@@ -386,19 +386,42 @@ function splitNomeCognome(full){
   const parts = String(full||"").trim().split(/\s+/).filter(Boolean);
   return { nome: parts[0] || "", cognome: parts.slice(1).join(" ") };
 }
+// Striscia di conferma in alto a destra: "Salva e chiama" / "Solo salva" / "Annulla". Risolve con "chiama", "salva" o null.
+function askPhoneAction(nomeCompleto, telefono){
+  return new Promise(resolve => {
+    document.querySelectorAll(".phone-confirm").forEach(e => e.remove());
+    const box = document.createElement("div");
+    box.className = "phone-confirm";
+    box.style.cssText = "position:fixed;right:16px;top:44px;width:430px;max-width:calc(100vw - 32px);background:#fff;border:1px solid rgba(0,0,0,.15);border-left:4px solid #14b8a6;border-radius:2px;box-shadow:0 8px 28px rgba(0,0,0,.28);padding:12px 14px;z-index:99999;font-family:var(--font-head);color:#1a1f2e;";
+    const nome = escapeHtml(nomeCompleto || "(senza nome)"), tel = escapeHtml(telefono || "");
+    box.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><b style="font-size:14px;">' + nome + '</b><span style="font-size:13px;color:#374151;">' + tel + '</span></div>'
+      + '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;margin:4px 0 10px;">Cosa faccio con questo lead?</div>'
+      + '<div style="display:flex;gap:6px;">'
+      + '<button data-a="chiama" style="flex:1.3;border:0;border-radius:2px;background:#14b8a6;color:#042f2a;font:700 12px inherit;font-family:inherit;padding:10px 14px;cursor:pointer;">Salva e chiama</button>'
+      + '<button data-a="salva" style="flex:1;border:1px solid rgba(0,0,0,.18);border-radius:2px;background:#fff;color:#1a1f2e;font:700 12px inherit;font-family:inherit;padding:10px 14px;cursor:pointer;">Solo salva</button>'
+      + '<button data-a="" style="border:0;border-radius:2px;background:transparent;color:#6b7280;font:700 12px inherit;font-family:inherit;padding:10px 14px;cursor:pointer;">Annulla</button></div>';
+    box.addEventListener("click", ev => {
+      const b = ev.target.closest("button"); if (!b) return;
+      box.remove(); resolve(b.dataset.a || null);
+    });
+    document.body.appendChild(box);
+  });
+}
 async function sendToPhone(nomeCompleto, telefono, email, msgElId){
   const el = document.getElementById(msgElId);
   const say = (t, ms) => { if (el){ el.textContent = t; if (ms) setTimeout(()=>{ if (el && el.textContent === t) el.textContent = ""; }, ms); } else alert(t); };
   const topic = getPhoneTopic();
   if (!topic){ alert("Prima imposta il codice del telefono: tab Profilo Azienda → Invio al telefono."); return; }
   if (!String(telefono||"").trim()){ alert("Questo lead non ha un numero di telefono."); return; }
+  const azione = await askPhoneAction(nomeCompleto, String(telefono).trim());
+  if (!azione){ say("Annullato", 2500); return; }
   const nc = splitNomeCognome(nomeCompleto);
-  const payload = { nome: nc.nome, cognome: nc.cognome, telefono: String(telefono).trim(), email: String(email||"").trim() };
+  const payload = { nome: nc.nome, cognome: nc.cognome, telefono: String(telefono).trim(), email: String(email||"").trim(), azione };
   say("Invio al telefono…");
   try {
     const r = await fetch("https://ntfy.sh/" + encodeURIComponent(topic), { method:"POST", body: JSON.stringify(payload) });
     if (!r.ok) throw new Error("HTTP " + r.status);
-    say("Inviato al telefono ✓", 4000);
+    say(azione === "chiama" ? "Inviato: il telefono chiama ✓" : "Contatto inviato al telefono ✓", 4000);
   } catch(e){ say("Invio non riuscito: " + e.message, 6000); }
 }
 function sendDraftToPhone(){ const d = state.draft; sendToPhone(d.nome, d.telefono1, d.email, "phone_msg"); }
