@@ -3,7 +3,7 @@
 
 Uso:  python3 manuale.py            (genera entrambi)
       python3 manuale.py C|E        (solo uno)
-Il contenuto sta in man_c1.py, man_c2.py, man_c3.py; la grafica dei layout in temi.py + qui sotto.
+Il contenuto sta in man_n1.py, man_n2.py, man_n3.py; la grafica dei layout in temi.py + qui sotto.
 Il PDF si ottiene misurando ogni blocco con Chromium, distribuendolo sulle pagine (nessun taglio) e stampando.
 Vedi LINEE-GUIDA-GENERAZIONE-PDF.md.
 """
@@ -11,25 +11,26 @@ import json, os, subprocess, sys, html as _html
 from temi import BASE_CSS, CSS_C, CSS_E, documento, NOME_SISTEMA
 from contenuto import icona
 from man_lib import h2 as _h2  # noqa
-import man_c1, man_c2, man_c3
+import man_n1, man_n2, man_n3
 
 QUI = os.path.dirname(os.path.abspath(__file__))
 USCITA = os.path.abspath(os.path.join(QUI, ".."))
 PX_MM = 96 / 25.4
 
 PARTI = [
-    ("Parte 1", "Presentazione"),
-    ("Parte 2", "Installazione e primo avvio"),
-    ("Parte 3", "Lead Rework Console"),
-    ("Parte 4", "Suggerimenti Vendita"),
-    ("Parte 5", "App Android"),
-    ("Parte 6", "Manutenzione e aiuto"),
+    ("Parte 1", "Raccolta dati dal CRM"),
+    ("Parte 2", "Strategia e script"),
+    ("Parte 3", "La telefonata"),
+    ("Parte 4", "WhatsApp ed email"),
+    ("Parte 5", "Modalità stand-alone"),
+    ("Parte 6", "Dopo il lavoro"),
+    ("Appendici", "Riferimenti"),
 ]
 
 
 def tutti_i_blocchi():
     b = []
-    for m in (man_c1, man_c2, man_c3):
+    for m in (man_n1, man_n2, man_n3):
         b += m.blocchi()
     return b
 
@@ -95,6 +96,21 @@ CSS_BLOCCHI = """
 .toc-riga.liv2{padding-left:5mm!important}
 .toc-tit{flex:0 1 auto}
 .misura .toc{columns:1!important;height:auto!important;display:flex!important}
+.arch.cmp{gap:.6mm}.arch.cmp .nodo{padding:1.5mm 2mm}.arch.cmp .nodo-ic{font-size:5.2mm;margin-bottom:.3mm}.arch.cmp .nodo-t{margin-bottom:.2mm}.arch.cmp .arch-mid{font-size:calc(var(--fs)*.72)}.arch.cmp .frg{width:3.4mm}.arch.cmp .arch-mid{gap:2mm}
+.arch-r1.solo{justify-content:center}.arch-r1.solo .nodo{flex:none;width:64%;border-top-width:1.6mm;background:#eaf6f0}
+.crm{width:100%;border:.4mm solid #b9c4cc;border-radius:2mm;background:#fff;overflow:hidden;box-shadow:var(--shot-shadow)}
+.crm-top{display:flex;align-items:center;gap:1.4mm;background:#e9edf0;padding:1.8mm 2.4mm}
+.crm-d{width:2.2mm;height:2.2mm;border-radius:50%;background:#c4cbd1}
+.crm-url{margin-left:3mm;font-size:2.8mm;color:#5b6770;background:#fff;border-radius:1mm;padding:.6mm 3mm;flex:1}
+.crm-body{position:relative;padding:3.5mm 4mm 15mm;min-height:52mm}
+.crm-h{font-weight:700;color:#1b3340;font-size:3.6mm;margin-bottom:2.4mm}
+.crm-r{display:flex;align-items:center;gap:3mm;margin:1.6mm 0}
+.crm-l{width:12mm;height:2.4mm;border-radius:1mm;background:#dfe5e9}
+.crm-v{font-size:3mm;color:#6b7780}
+.crm-btn{position:absolute;right:3mm;bottom:3mm;background:#2454e0;color:#fff;border-radius:2mm;padding:2.6mm 4mm;font-size:3.1mm;font-weight:600;box-shadow:0 1mm 3mm rgba(0,0,0,.28);font-family:'Inter',sans-serif;outline:.9mm solid rgba(36,84,224,.28);outline-offset:.5mm}
+.crm-call{position:absolute;right:3mm;bottom:15.5mm;background:#e11d48;color:#fff;font-weight:700;font-size:2.7mm;letter-spacing:.2mm;padding:1mm 2.6mm;border-radius:5mm;font-family:'Inter',sans-serif}
+.crm-call:after{content:'';position:absolute;right:9mm;bottom:-1.6mm;border:1.8mm solid transparent;border-top-color:#e11d48;border-bottom:0}
+.crm-btn.ok{background:#1f9d6b;outline-color:rgba(31,157,107,.28)}
 .phone{width:100%;background:#fafafa;border:.5mm solid #2b2b2b;border-radius:5mm;padding:4mm 3.4mm 5mm;text-align:left;line-height:1.3;font-family:Roboto,'Inter',sans-serif}
 .ph-bar{width:14mm;height:1.2mm;border-radius:1mm;background:#c9c9c9;margin:0 auto 3mm}
 .ph-r{position:relative;margin:1.4mm 0}
@@ -156,7 +172,7 @@ def _pg_C(n, cls, parte_idx, parte, cap_titolo, cap_num, cont, corpo, toc=False,
     lato = ['<a class="torna-indice" href="#p2">%s<span>Indice</span></a>' % icona("indice")] if n != 2 else []
     for i, (sig, nome) in enumerate(PARTI):
         lato.append('<a class="parte %s" href="#%s"><small>%s</small>%s</a>' % ("on" if i == parte_idx else "", PARTE_ANCORE.get(i, "p2"), sig, nome))
-    kick = parte if not toc else "Suggerimenti Vendita"
+    kick = parte if not toc else "Sales Assistant"
     tit = cap_titolo if cls == "first" else cap_titolo + " <span style='font-weight:400;opacity:.6;font-size:.7em'>· continua</span>"
     num = ("%s. " % cap_num) if (cap_num and not toc) else ""
     return ('<section class="pagina %s" id="p%d"><div class="lato"><img src="assets/logo-yesmobility.png" alt="">%s<div class="pg">%d / %d</div></div>'
@@ -247,7 +263,9 @@ def impagina(blocchi, altezze, cap_first, cap_cont):
         capa = (cap_first if cur["cls"] == "first" else cap_cont) * 0.985
         # blocchi da tenere uniti: h2 con il successivo (e un eventuale intro)
         need = h
-        if b["k"] == "h2" and i + 1 < n:
+        if b["k"] == "h2" and i + 1 < n and blocchi[i + 1]["k"] == "info":
+            need += altezze[i + 1]
+        elif b["k"] == "h2" and i + 1 < n:
             need += min(altezze[i + 1], capa * 0.45)
             if i + 2 < n and blocchi[i + 1]["k"] == "p" and blocchi[i + 2]["k"] == "fig":
                 need += min(altezze[i + 2], capa * 0.5)
@@ -322,9 +340,9 @@ def costruisci(tema):
         parte_idx = int(c["parte"].split()[1]) - 1
         corpo = _wrap_blocchi_sel(blocchi, pg["blocchi"], pg["cls"] == "first")
         if tema == "C":
-            out.append(_pg_C(n, pg["cls"], parte_idx, c["parte"] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo, False, total))
+            out.append(_pg_C(n, pg["cls"], parte_idx, PARTI[parte_idx][0] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo, False, total))
         else:
-            out.append(_pg_E(n, pg["cls"], c["parte"] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo))
+            out.append(_pg_E(n, pg["cls"], PARTI[parte_idx][0] + " · " + PARTI[parte_idx][1], c["titolo"], c["num"], pg["cls"] == "cont", corpo))
     costruisci.pagina_di = pagina_di
     return "".join(out), avvisi, total, n_toc
 

@@ -23,7 +23,7 @@ Dentro `_sorgenti/`:
 | `manuale.py` | Impaginatore: misura i blocchi, li distribuisce sulle pagine, crea indice e collegamenti, stampa il PDF |
 | `man_render.js` | Chromium: misura le altezze e stampa il PDF |
 | `man_lib.py` | Mattoncini per scrivere i contenuti (`cap`, `h2`, `p`, `passi`, `box`, `tab`, `fig`, infografiche) |
-| `man_c1.py`, `man_c2.py`, `man_c3.py` | **Il testo del manuale** (Parti 1-2, Parte 3, Parti 4-6 e appendici) |
+| `man_n1.py`, `man_n2.py`, `man_n3.py` | **Il testo del manuale** (Parti 1-2, Parti 3-5, Parte 6 e appendici) |
 | `contenuto.py`, `temi.py` | Icone, componenti di base e CSS dei layout |
 | `assets/` | Loghi YesMobility e Momandis, audio di prova |
 | `screenshots/` | Le schermate catturate (generate, non modificarle a mano) |
@@ -88,7 +88,7 @@ Regole fisse:
 
 ## 5. Come si scrive o si modifica un contenuto
 
-Il testo sta in `man_c1.py`, `man_c2.py`, `man_c3.py`: ogni funzione `blocchi()` restituisce una lista di mattoncini.
+Il testo sta in `man_n1.py`, `man_n2.py`, `man_n3.py`: ogni funzione `blocchi()` restituisce una lista di mattoncini.
 
 ```python
 B.append(cap(9, "Titolo del capitolo", "Parte 3", "c9", "Frase introduttiva."))   # nuovo capitolo (nuova pagina)
@@ -117,7 +117,7 @@ Regole di scrittura (il manuale è per persone **senza nozioni tecniche**):
 4. Se un elemento non viene trovato, lo script lo dice: `target non trovato: …`.
 
 ### Cose che NON sono schermate vere
-- La **schermata dell'app Android** (capitolo 8) è una *rappresentazione* disegnata nel manuale con i testi reali dell'app (`man_c1.py`).
+- La **schermata dell'app Android** è una *rappresentazione* disegnata nel manuale con i testi reali dell'app (`man_lib.py`); lo stesso vale per la pagina del CRM con il pulsante blu (`crm_mock_html`).
   Per sostituirla con una foto vera, salva lo screenshot in `_sorgenti/screenshots/` e usa `fig('nome', ...)`.
 - Le **finestre di dialogo di macOS** (aggiungi script, API key, ecc.) sono spiegate a parole, con i testi esatti, perché non
   si possono catturare in automatico. Se vuoi inserirle: fai lo screenshot sul Mac, copialo in `_sorgenti/screenshots/` e usa `fig(...)`.
@@ -160,3 +160,14 @@ Dopo una modifica: aggiorna il testo, rilancia `genera_manuale.sh`, sfoglia le p
 | I numeri sulle schermate sono fuori posto | Rilancia `genera_manuale.sh` (non solo `solo-pdf`) dopo aver cambiato una schermata: le posizioni sono in `callouts.json`. |
 | Il testo è più largo o va a capo diversamente | Mancano i font Inter / Bitstream Charter: installali. |
 | `target non trovato` | Il selettore in `cattura_tutto.js` non corrisponde più alla pagina (è cambiata la Console): aggiornalo. |
+
+
+## Impostazione del contenuto (decisa dall'autore, ottobre 2026)
+Il manuale **non contiene istruzioni di installazione o di configurazione**: racconta il lavoro vero su un lead.
+- Parte **1** – raccolta dati dal CRM: tutto parte dal pulsante blu dell'estensione «📤 Invia a Lead Rework Console» (sempre evidenziato, «DA QUI PARTE TUTTO»).
+- Parte **2** – studio della strategia e generazione degli script.
+- Parte **3** – la telefonata è l'azione base («Invia a SV» → «Chiamata Gestione Lead», che si evidenzia quando è alimentata dal lead).
+- Parte **4** – a cascata, se la telefonata non va a buon fine: WhatsApp ed email, in base alle caratteristiche del lead e alla strategia.
+- Parte **5** – le due modalità **stand-alone**: «Chiamata YesMobility» (solo obiezioni, nessuna guida) e «Rinforzo Facile Salire» (guida fissa per rinforzare Facile Salire).
+- Parte **6** – dopo il lavoro: Storico, pulsante «CRM», backup. Nessuna parte «problemi frequenti».
+- Appendici A-E: script Console, script Suggerimenti Vendita, regole AI, glossario, gestione della libreria.

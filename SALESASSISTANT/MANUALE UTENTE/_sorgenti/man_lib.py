@@ -135,17 +135,46 @@ def arch_html():
 def giornata_html():
     passi_g = [
         ("cloud", "Apri il lead nel CRM", "Sul CRM Facile Salire apri la pagina del lead da lavorare."),
-        ("puzzle", "Invia alla Console", "Premi il pulsante blu «Invia a Lead Rework Console»: i dati arrivano da soli."),
-        ("search", "Controlla i dati", "Verifica nome, telefono, note. I campi ambrati sono da completare a mano."),
-        ("star", "Scegli lo stato", "L'AI propone stato del lead, obiezioni e strategia: confermi o correggi."),
-        ("messaggio", "Genera gli script", "Premi «Genera script»: telefono, WhatsApp ed email pronti da usare."),
-        ("chat", "Contatta il cliente", "Invia WhatsApp o email con un clic, oppure invia il numero al telefono."),
-        ("telefono", "Chiama con i suggerimenti", "«Chiamata Gestione Lead»: guida e suggerimenti live durante la telefonata."),
-        ("ok", "Segna e salva", "Salva il lead nello Storico e spunta cosa hai fatto (telefonata, WhatsApp, email)."),
+        ("puzzle", "Premi «Invia a Lead Rework Console»", "Un clic: i dati del lead partono dal CRM verso la Console."),
+        ("search", "La Console raccoglie e studia", "Compila i campi, propone stato, obiezioni e <b>strategia</b>."),
+        ("messaggio", "Genera gli script", "Telefono, WhatsApp, email: tutti costruiti sulla strategia."),
+        ("telefono", "Telefona", "«Invia a SV» e «Chiamata Gestione Lead»: la guida compare mentre parli."),
+        ("chat", "Se non risponde: WhatsApp", "Il messaggio è già scritto: si apre WhatsApp, premi Invio."),
+        ("mail", "Se serve: email", "La lettera è già compilata: si apre la posta, premi Invia."),
+        ("ok", "Segna l'esito", "Spunte nello Storico; «CRM» riapre il lead sul gestionale."),
     ]
     r = "".join('<div class="gs"><div class="gs-n">%d</div><div class="gs-i">%s</div><div><b>%s</b><br>%s</div></div>' % (i, _ic(ic), t, d)
                 for i, (ic, t, d) in enumerate(passi_g, 1))
     return '<div class="giornata">%s</div>' % r
+
+
+def cascata_html():
+    """Il flusso reale del lead: CRM -> Console (dati + strategia + script) -> telefonata -> cascata WhatsApp / email -> Storico."""
+    nodo = lambda ic, t, s, cls="": '<div class="nodo %s"><div class="nodo-ic">%s</div><div class="nodo-t">%s</div><div class="nodo-s">%s</div></div>' % (cls, _ic(ic), t, s)
+    r1 = "".join([nodo("cloud", "1. CRM", "pagina del lead", "crm"), _fr(),
+                  nodo("puzzle", "2. Pulsante", "«Invia a Lead Rework Console»", "est"), _fr(),
+                  nodo("monitor", "3. Raccolta dati", "la Console si compila da sola", "con")])
+    r2 = "".join([nodo("star", "4. Strategia", "stato, obiezioni, analisi", "con"), _fr(),
+                  nodo("messaggio", "5. Script", "telefono, WhatsApp, email", "con")])
+    r3 = nodo("telefono", "6. TELEFONATA", "azione base: «Invia a SV» + «Chiamata Gestione Lead»", "usc")
+    r4 = "".join([nodo("chat", "7a. WhatsApp", "se la chiamata non va a buon fine", "usc"), _fr(),
+                  nodo("mail", "7b. Email", "se serve ancora un contatto", "usc")])
+    r5 = "".join([nodo("ok", "8. Storico", "spunte: telefonata, WhatsApp, email, lavorato", "crm"), _fr(),
+                  nodo("cloud", "9. CRM", "pulsante «CRM» per riaprire il lead", "crm")])
+    mid = lambda t: '<div class="arch-mid">%s<span>%s</span>%s</div>' % (_frg(), t, _frg())
+    return ('<div class="arch cmp"><div class="arch-r1">%s</div>%s<div class="arch-r1">%s</div>%s<div class="arch-r1 solo">%s</div>%s<div class="arch-r1">%s</div>%s<div class="arch-r1">%s</div></div>'
+            % (r1, mid("la Console studia il lead"), r2, mid("si passa all'azione"), r3, mid("a cascata, in base a lead e strategia"), r4, mid("in ogni caso"), r5))
+
+
+def crm_mock_html(inviato=False):
+    """Rappresentazione della pagina lead del CRM con il pulsante galleggiante dell'estensione (stesso aspetto del pulsante vero)."""
+    btn = "✓ Inviato" if inviato else "📤 Invia a Lead Rework Console"
+    righe = ["Nome e cognome", "Telefono · Email", "Città · Indirizzo", "Prodotto · Offerta", "Attività e note"]
+    corpo = "".join('<div class="crm-r"><span class="crm-l"></span><span class="crm-v">%s</span></div>' % r for r in righe)
+    return ('<div class="crm"><div class="crm-top"><span class="crm-d"></span><span class="crm-d"></span><span class="crm-d"></span>'
+            '<span class="crm-url">app.facilesalire.it/leads/…</span></div>'
+            '<div class="crm-body"><div class="crm-h">Scheda lead</div>%s'
+            '%s<div class="crm-btn%s">%s</div></div></div>' % (corpo, "" if inviato else '<div class="crm-call">DA QUI PARTE TUTTO</div>', " ok" if inviato else "", btn))
 
 
 def tre_pezzi_html():
@@ -187,3 +216,10 @@ def stati_tabella():
         ("10", "Budget limitato — proposta alternativa", "Due opzioni di prezzo", "Telefono"),
     ]
     return tab_split(["N.", "Stato del lead", "Cosa fare", "Script che prepara"], [list(r) for r in rows], per=5)
+
+
+def fig_crm(inviato=False):
+    did = ("Dopo il clic il pulsante diventa verde per un attimo e dice «✓ Inviato»." if inviato
+           else "La pagina di un lead sul CRM Facile Salire (rappresentazione) con il pulsante blu dell'estensione in basso a destra.")
+    return dict(k="fig", html='<div class="fig solo" style="--fw:118mm"><div class="fig-img" style="width:118mm">%s<div class="didascalia">%s</div></div></div>'
+                % (crm_mock_html(inviato), did))
