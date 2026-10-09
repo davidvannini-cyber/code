@@ -22,7 +22,7 @@ object Lyber {
         val pkg = pacchetto(c) ?: return "Lyber non trovata sul telefono"
         val pm = c.packageManager
         if (numero.isNotEmpty()) {
-            val dial = Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode(numero)))
+            val dial = Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + numero))
                 .setPackage(pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             if (dial.resolveActivity(pm) != null) {
                 try {
@@ -40,6 +40,29 @@ object Lyber {
             "Lyber aperta SENZA il numero (non lo accetta da altre app): incolla dagli appunti"
         } catch (e: Exception) {
             "Lyber non si è aperta: " + (e.message ?: "errore")
+        }
+    }
+
+    /**
+     * Prove per capire in che forma Lyber legge il numero. Ogni variante apre Lyber in un modo diverso.
+     * Mai ACTION_CALL: Lyber potrebbe avviare la chiamata da solo.
+     */
+    fun prova(c: Context, variante: String, numero: String): String {
+        val pkg = pacchetto(c) ?: return "Lyber non trovata sul telefono"
+        val internazionale = Contatti.normalizza(numero)            // +393357258836
+        val nazionale = internazionale.removePrefix("+39")             // 3357258836
+        val intent = when (variante) {
+            "A" -> Intent(Intent.ACTION_DIAL, Uri.parse("tel:$internazionale"))
+            "B" -> Intent(Intent.ACTION_DIAL, Uri.parse("tel:$nazionale"))
+            "C" -> Intent(Intent.ACTION_VIEW, Uri.parse("tel:$internazionale"))
+            "D" -> Intent(Intent.ACTION_VIEW, Uri.parse("lyber://call/$internazionale"))
+            else -> return "Variante sconosciuta"
+        }.setPackage(pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            c.startActivity(intent)
+            "Provata $variante: " + (intent.dataString ?: "")
+        } catch (e: Exception) {
+            "Variante $variante non riuscita: " + (e.message ?: "errore")
         }
     }
 }

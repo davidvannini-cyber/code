@@ -49,3 +49,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-09 | `8c73bcc` | SALESASSISTANT/RUBRICA-ANDROID/app/src/main/java/it/yesmobility/rubrica/Contatti.kt (nome contatto con prefisso YM_), REGISTRO-SALVATAGGI.md | `git checkout 8c73bcc` |
 | 2026-10-09 | `5c57b72` | SALESASSISTANT/RUBRICA-ANDROID/ (app Android v1.1: apertura di Lyber da notifica e pulsante di prova, versione visibile), REGISTRO-SALVATAGGI.md | `git checkout 5c57b72` |
 | 2026-10-09 | `7304b49` | SALESASSISTANT/RUBRICA-ANDROID/ (app Android v1.2: pulsante "Scopri come parlare a Lyber"), REGISTRO-SALVATAGGI.md | `git checkout 7304b49` |
+| 2026-10-09 | `c53d8b8` | SALESASSISTANT/RUBRICA-ANDROID/ (app Android v1.3: numero senza codifica verso Lyber e quattro prove A/B/C/D), REGISTRO-SALVATAGGI.md | `git checkout c53d8b8` |
