@@ -162,6 +162,17 @@ CSS_BLOCCHI = """
 .fig2{display:flex;gap:8mm;justify-content:center;align-items:flex-start}.fig2 figure{margin:0;text-align:center}.fig2 figcaption{margin-top:1.8mm;font-size:calc(var(--fs)*.84);line-height:1.3;color:var(--muted);max-width:56mm}
 .fig2 .fig-in img{max-height:none}
 .tbl.sec{font-size:calc(var(--fs)*.74);opacity:.9}.tbl.sec th{background:#6f8995;padding:1.2mm 2mm}.tbl.sec td{padding:1.1mm 2mm}
+.gs-k{display:inline-block;width:14mm;text-align:center;padding:.2mm 0!important}
+.sa{display:flex;flex-direction:column;gap:1.6mm}.sa-row{display:flex;align-items:stretch;gap:1.6mm}
+.sa-ph{flex:none;width:12mm;border-radius:1.6mm;color:#fff;font-weight:800;font-size:2.6mm;letter-spacing:.3mm;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;transform:rotate(180deg)}
+.sa-cd{flex:1;min-width:0;background:#f3f8fa;border-radius:1.8mm;padding:2mm 2.4mm;border-top:1.2mm solid var(--c);display:flex;gap:2mm;align-items:flex-start}
+.sa-ic{flex:none;font-size:6.5mm;color:#0f3d52;display:inline-flex}
+.sa-t{font-weight:700;font-size:3.1mm;color:#0f3d52}
+.sa-l{font-size:2.7mm;line-height:1.28;margin-top:.8mm;color:#4a5b66}
+.sa-l b{display:inline-block;width:14mm;text-align:center;font-size:2.1mm;font-weight:800;letter-spacing:.2mm;color:#fff;border-radius:.8mm;padding:.2mm 0;margin-right:1.2mm;vertical-align:middle}
+.sa-a{background:#1b6a86}.sa-r{background:#1f9d6b}
+.sa-fr{flex:none;width:4.4mm;display:flex;align-items:center;color:#4fc99b}.sa-fr svg{width:100%}
+.sa-nr{flex:none;width:13mm;font-size:2.2mm;color:#c0392b;font-weight:800;text-align:center;line-height:1.1;align-self:center}
 .phone{width:100%;background:#fafafa;border:.5mm solid #2b2b2b;border-radius:5mm;padding:4mm 3.4mm 5mm;text-align:left;line-height:1.3;font-family:Roboto,'Inter',sans-serif}
 .ph-bar{width:14mm;height:1.2mm;border-radius:1mm;background:#c9c9c9;margin:0 auto 3mm}
 .ph-r{position:relative;margin:1.4mm 0}

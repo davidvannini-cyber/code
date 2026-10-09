@@ -147,7 +147,7 @@ def giornata_html():
         ("ok", "Segna l'esito", "Spunta le caselle nello Storico.", "Il lead aggiornato; «CRM» lo riapre."),
     ]
     r = "".join('<div class="gs"><div class="gs-n">%d</div><div class="gs-i">%s</div><div class="gs-c"><b>%s</b>'
-                '<div class="gs-r"><span class="gs-k">FAI</span>%s</div><div class="gs-r"><span class="gs-k ric">RICEVI</span>%s</div></div></div>' % (i, _ic(ic), t, f, ric)
+                '<div class="gs-r"><span class="gs-k">AZIONE</span>%s</div><div class="gs-r"><span class="gs-k ric">RICEVI</span>%s</div></div></div>' % (i, _ic(ic), t, f, ric)
                 for i, (ic, t, f, ric) in enumerate(passi_g, 1))
     return '<div class="giornata">%s</div>' % r
 
@@ -155,7 +155,7 @@ def giornata_html():
 def azione_risultato(fai, ricevi):
     """Riquadro «Tu fai → Ricevi»: cosa deve fare l'utente e cosa ottiene, senza spiegare cosa c'è dietro."""
     li = lambda items: "".join("<li>%s</li>" % i for i in items)
-    return ('<div class="ar"><div class="ar-b fai"><div class="ar-t">TU FAI</div><ul>%s</ul></div>%s'
+    return ('<div class="ar"><div class="ar-b fai"><div class="ar-t">AZIONE</div><ul>%s</ul></div>%s'
             '<div class="ar-b ric"><div class="ar-t">RICEVI</div><ul>%s</ul></div></div>' % (li(fai), _fr(), li(ricevi)))
 
 
@@ -299,3 +299,35 @@ def fig2(img1, cap1, img2, cap2, w="50mm"):
     """Due schermate affiancate, ognuna con la sua didascalia."""
     f = lambda im, c: '<figure><div class="fig-in" style="width:%s"><img src="screenshots/%s.png" alt=""></div><figcaption>%s</figcaption></figure>' % (w, im, c)
     return dict(k="fig", html='<div class="fig2">%s%s</div>' % (f(img1, cap1), f(img2, cap2)))
+
+
+# ---- Schema del flusso (variante A scelta dall'autore): fasi a colori, per ogni passo AZIONE e RICEVI
+_SA = {
+    "1": ("cloud", "CRM", "Apri la pagina del lead.", "La scheda del lead.", 0),
+    "2": ("puzzle", "Pulsante", "Premi «Invia a Lead Rework Console».", "I dati partono verso la Console.", 0),
+    "3": ("monitor", "Raccolta dati", "Aspetta qualche secondo.", "La Console già compilata.", 0),
+    "4": ("star", "Strategia", "Leggi e correggi se serve.", "Stato, obiezioni e analisi.", 1),
+    "5": ("messaggio", "Script", "Premi «Genera script».", "Telefono, WhatsApp, email pronti.", 1),
+    "6": ("telefono", "Telefonata", "«Invia a SV» e «Chiamata Gestione Lead».", "Guida e suggerimenti mentre parli.", 2),
+    "7a": ("chat", "WhatsApp", "Logo WhatsApp, poi Invio.", "Messaggio già scritto.", 2),
+    "7b": ("mail", "Email", "Busta blu, poi Invia.", "Lettera già compilata.", 2),
+    "8": ("ok", "Storico", "Spunta le caselle.", "Il lead aggiornato.", 3),
+    "9": ("cloud", "CRM", "Premi «CRM».", "Il lead riaperto sul gestionale.", 3),
+}
+_SA_FASI = [("RACCOGLI", "#1b6a86"), ("STUDIA", "#5b4bb7"), ("CONTATTA", "#1f9d6b"), ("CHIUDI", "#0f3d52")]
+
+
+def schema_a_html():
+    def cd(k):
+        i, t, a, r, f = _SA[k]
+        return ('<div class="sa-cd" style="--c:%s"><span class="sa-ic">%s</span><div><div class="sa-t">%s. %s</div>'
+                '<div class="sa-l"><b class="sa-a">AZIONE</b>%s</div><div class="sa-l"><b class="sa-r">RICEVI</b>%s</div></div></div>' % (_SA_FASI[f][1], _ic(i), k, t, a, r))
+    ph = lambda i: '<div class="sa-ph" style="background:%s">%s</div>' % (_SA_FASI[i][1], _SA_FASI[i][0])
+    fr = '<div class="sa-fr">%s</div>' % _fr().replace('<div class="fr">', "").rsplit("</div>", 1)[0]
+    nr = '<div class="sa-nr">NON<br>RISPONDE</div>'
+    row = lambda *x: '<div class="sa-row">%s</div>' % "".join(x)
+    return '<div class="sa">%s</div>' % "".join([
+        row(ph(0), cd("1"), fr, cd("2"), fr, cd("3")),
+        row(ph(1), cd("4"), fr, cd("5")),
+        row(ph(2), cd("6"), nr, fr, cd("7a"), nr, fr, cd("7b")),
+        row(ph(3), cd("8"), fr, cd("9"))])

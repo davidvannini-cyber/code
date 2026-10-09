@@ -173,7 +173,7 @@ Il manuale **non contiene istruzioni di installazione o di configurazione**: rac
 - Appendici A-E: script Console, script Suggerimenti Vendita, regole AI, glossario, gestione della libreria.
 
 ## Regole di redazione aggiunte (revisione del layout C, ottobre 2026)
-- **Cosa fare e cosa si riceve, non cosa c'è dietro.** Ogni capitolo operativo apre con il riquadro `azione_risultato(fai, ricevi)` («TU FAI → RICEVI»); le spiegazioni tecniche (livelli audio, microfoni, finestre 35/15/25, struttura interna) non vanno nel corpo del manuale.
+- **Cosa fare e cosa si riceve, non cosa c'è dietro.** Ogni capitolo operativo apre con il riquadro `azione_risultato(fai, ricevi)` («AZIONE → RICEVI»); le spiegazioni tecniche (livelli audio, microfoni, finestre 35/15/25, struttura interna) non vanno nel corpo del manuale.
 - **Testo al minimo, grafica al massimo:** infografiche (`cascata_html`, `giornata_html`, `stati_cards_html`, `canali_obiezioni_html`, `cascata_contatti_html`, `flusso_chiamata_html`) invece di tabelle e paragrafi. Le tabelle di riferimento vanno in secondo piano (`cls="sec"`) e in fondo al capitolo.
 - **Schermata intera con numeri e legenda** per le pagine principali (Console dopo l'import: `console-00-dopo-import`; Storico: `console-11-storico-intera`, con il modo per arrivarci).
 - **Colonna di sinistra del layout C = schema del flusso** (`schema_laterale_html`): i nodi del capitolo che si sta leggendo sono evidenziati; ogni nodo è un link. La mappa capitolo→nodi è `NODI_CAP` in `man_lib.py`.
