@@ -103,6 +103,17 @@ telefono → splitter TRRS → mic-in del Mac
 6. **Tecnica.** `createScriptProcessor` è deprecato: andrebbe sostituito da un `AudioWorklet`. Il ricampionamento è lineare senza filtro anti-aliasing: accettabile per il parlato, ma è un possibile fattore di qualità.
 7. **Livello del telefono.** Se la trascrizione esce distorta, prima di tutto abbassare il volume media del telefono (Parte 1 del README).
 
+### Configurazione audio che funziona (annotata il 2026-10-09)
+Taratura fatta sul MacBook Air 2015 con lo splitter TRRS e il telefono:
+- **Dispositivo**: scelto esplicitamente nel selettore del pannello, "External Microphone (Built-in)". È il jack: macOS lo chiama così quando lo splitter è collegato. Con "Internal Microphone (Built-in)" l'avviso ambra segnala che si sta ascoltando il microfono integrato.
+- **Livello di ingresso macOS** (Impostazioni di Sistema → Suono → Ingresso): alzato finché la barra "prima del limiter" sta su verde/arancione, circa 40% della larghezza (picco ≈ 0,3), senza rosso né avviso di clipping. Posizione esatta del cursore: *da annotare*.
+- **Volume del telefono**: quello usato in chiamata, non toccato durante la taratura. Valore esatto: *da annotare*.
+- **Barra "dopo il limiter"**: circa 60%, più lunga di quella a monte perché il compressore di Chrome applica un guadagno automatico di compensazione.
+- **Vincoli `getUserMedia`**: lasciati com'erano (echoCancellation, noiseSuppression, autoGainControl attivi). Non è stato necessario disattivarli.
+- **Cattura**: `AudioWorklet` (dal 2026-10-09).
+- **Sintomo risolto**: frasi trascritte diverse da quelle pronunciate (con suggerimenti comunque giusti). Con il livello di ingresso troppo basso (barra a monte sotto il 15%) la trascrizione era imprecisa; alzato il livello, funziona.
+- **Regola pratica**: nel parlato la barra a monte deve stare tra verde e arancione con qualche picco verso il rosso; se resta rossa o compare l'avviso di clipping, abbassare; se resta corta e verde, alzare.
+
 ### Come diagnosticare (in ordine)
 1. Guardare la spia: resta ferma → dispositivo sbagliato o splitter che non porta segnale.
 2. Guardare il log del server (`logs/server.log` o terminale con `avvia_sistema.command`): con `picco ultimo secondo` vicino a 0 non arriva audio utile; vicino a 32768 c'è saturazione.
@@ -176,7 +187,7 @@ Il bundle `Suggerimenti Vendita.app` contiene una **copia completa** del progett
 
 ## 7. TODO
 
-- [ ] **Tarare l'audio in una chiamata reale** seguendo §4 (dispositivo esplicito → livello macOS → AGC / echo / noise uno alla volta). Annotare qui la configurazione che funziona.
+- [x] ~~Tarare l'audio in una chiamata reale~~: fatto il 2026-10-09, configurazione annotata in §4 (restano da annotare la posizione del cursore macOS e il volume del telefono).
 - [x] ~~Spia prima del compressore + avviso clipping~~: fatto il 2026-10-09 (seconda barra "prima del limiter", avviso rosso se un campione tocca il fondo scala; l'AGC del browser resta a monte e non è leggibile).
 - [x] ~~Avviso microfono integrato~~: fatto il 2026-10-09 (avviso ambra se l'etichetta del dispositivo in uso contiene integrato/built-in/MacBook/internal). Verificato dal vivo il 2026-10-09: il jack compare come "External Microphone (Built-in)", quindi un nome con external/esterno/line esclude l'avviso (corretto un falso positivo).
 - [x] ~~Migrare `ScriptProcessor` → `AudioWorklet`~~: fatto il 2026-10-09 (modulo inline via Blob, blocchi da 4096 campioni; fallback automatico a ScriptProcessor se il modulo non si carica). Provato in Chromium: stessi byte inviati al server della versione vecchia. Da verificare in chiamata reale.

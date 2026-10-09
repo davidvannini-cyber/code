@@ -57,6 +57,9 @@ Tutte alte il 60% dello schermo: **Lead Rework Console 35%** (da 0%) · **Menu 1
 
 Diagnosi in ordine: spia → log server (`picco ultimo secondo` ≈ 0 = niente audio, ≈ 32768 = saturazione) → dispositivo esplicito → livello macOS → volume telefono → vincoli `getUserMedia`.
 
+## 7bis. Configurazione audio che funziona (2026-10-09)
+Dispositivo scelto esplicitamente: "External Microphone (Built-in)" (il jack con lo splitter). Livello di ingresso macOS alzato finché la barra "prima del limiter" sta su verde/arancione (~40%, picco ≈ 0,3), senza rosso né clipping. Volume del telefono quello usato in chiamata. Filtri `getUserMedia` lasciati attivi; cattura con `AudioWorklet`. Con livello troppo basso (barra a monte < 15%) le frasi trascritte erano imprecise anche se i suggerimenti erano giusti. Da annotare: posizione esatta del cursore macOS e volume del telefono. Dettagli in `SUGGERIMENTIVENDITA/HANDOFF.md` §4.
+
 ## 8. Sincronizzazione e regole operative
 - Flusso: sandbox → GitHub (`origin main`) → Mac (`git pull`, poi SYNC SALESASSISTANT).
 - Ogni modifica a un sorgente **non ha effetto sull'app** finché non è copiata anche nel bundle (o si rigenera l'installer). Attenzione: `schema/esempio-libreria-script.json` nel bundle verrebbe sovrascritta.
@@ -70,7 +73,7 @@ Restano volutamente separate: la libreria di LEADREWORKS (26 script, numerati 1�
 Da riallineare nel bundle: i commenti in `Contents/MacOS/avvia` citano ancora le vecchie percentuali (40%/19%); non toccati per non dover rifirmare l'app.
 
 ## 10. TODO
-- [ ] Tarare l'audio in una chiamata reale (§7) e annotare qui la configurazione che funziona.
+- [x] ~~Tarare l'audio in una chiamata reale~~: fatto il 2026-10-09 (vedi §7bis).
 - [x] ~~Spia prima del compressore / avviso clipping~~: fatto il 2026-10-09.
 - [x] ~~Avviso microfono integrato~~: fatto il 2026-10-09 (da verificare dal vivo).
 - [x] ~~Migrare `ScriptProcessor` → `AudioWorklet`~~: fatto il 2026-10-09 (con fallback a ScriptProcessor).
