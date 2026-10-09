@@ -28,9 +28,11 @@ def blocchi():
         "La prima volta Chrome chiede il permesso del microfono: premi «Consenti».",
         "Telefona: il riquadro verde mostra la guida e sotto compaiono i suggerimenti.",
     ])
+    B.append(box("nota", "Se compare «Devi prima usare Configura ambiente» o «Devi prima usare Configura API key», il sistema non è pronto: chiedi a chi cura il sistema. "
+                         "Se compare «Il sistema impiega troppo tempo ad avviarsi», riprova dopo un minuto."))
     B.append(box("consiglio", "Avvia il pannello <b>qualche istante prima</b> di comporre il numero. La prima volta ci vogliono circa 15 secondi; dalle chiamate successive parte quasi subito."))
     B.append(fig2("menu-02-lead-in-attesa", "<b>1.</b> Nel menu il pulsante viola «Chiamata Gestione Lead» si illumina: il lead è in attesa.",
-                  "pannello-07-gestione-lead", "<b>2.</b> Premendolo si apre il pannello, con nome, numero e la guida del lead nel riquadro verde.", w="52mm"))
+                  "pannello-07-gestione-lead", "<b>2.</b> Premendolo si apre il pannello, con nome, numero e la guida del lead nel riquadro verde.", w="70mm"))
     B.append(h2("c-chiamata-menu", None, "Il menu di Suggerimenti Vendita"))
     B.append(p("Nel lavoro sui lead ti serve un solo pulsante, quello viola. Gli altri servono per le modalità stand-alone (Parte 5) o per chi cura il sistema."))
     B.append(fig("menu-01-intero", legend=[
@@ -40,8 +42,6 @@ def blocchi():
         ("libreria", "Vedi libreria.", "Elenco degli script già inseriti."),
         ("esci", "Esci.", "Chiude l'app."),
     ], layout="side", w="62mm"))
-    B.append(box("nota", "Se compare «Devi prima usare Configura ambiente» o «Devi prima usare Configura API key», il sistema non è pronto: chiedi a chi cura il sistema. "
-                         "Se compare «Il sistema impiega troppo tempo ad avviarsi», riprova dopo un minuto."))
 
     B.append(cap(None, "Il pannello di chiamata", P3, "c-pannello",
                  "La finestra a destra dello schermo: ci sono il lead, la guida e i suggerimenti. Ecco cosa c'è e come si usa."))
@@ -55,7 +55,7 @@ def blocchi():
         ("tel", "Invia a telefono.", "Manda il lead al telefono (vedi sotto)."),
         ("sugg", "Suggerimento.", "L'etichetta colorata dice la fase; sotto, il testo da dire."),
         ("frasi", "Frasi cliente.", "Quello che dice il cliente, una frase sotto l'altra."),
-    ], layout="side", w="64mm"))
+    ], layout="side", w="80mm", fm="125mm"))
     B.append(h2("c-pannello-pausa", None, "Pausa e Termina"))
     B.append(fig("pannello-05-pulsanti", legend=[
         ("mic", "Microfono attivo.", "L'ascolto è in corso."),

@@ -180,7 +180,7 @@ const rotteConsole = async (p) => {
 
   // =============== PANNELLO CHIAMATA ===============
   const nuovo = async (query) => {
-    const c = await b.newContext({ viewport: { width: 460, height: 900 }, deviceScaleFactor: 2, permissions: ['microphone'] });
+    const c = await b.newContext({ viewport: { width: 460, height: 780 }, deviceScaleFactor: 2, permissions: ['microphone'] });
     const pg = await c.newPage();
     await pg.addInitScript(() => { try { localStorage.setItem('ym_phone_topic', 'ym-prova1234567890abcdef12'); } catch (e) {} });
     await pg.route('https://ntfy.sh/**', r => r.fulfill({ status: 200, body: '{}' }));

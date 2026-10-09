@@ -48,7 +48,7 @@ def blocchi():
         ("canali", "Canali.", "Telefono, WhatsApp, Email: si accendono secondo stato e recapiti."),
         ("analisi", "Analisi e strategia.", "Il piano per avvicinare il lead, scritto dall'AI (capitolo {c:c-analisi})."),
         ("genera", "Genera script.", "Il passo successivo (capitolo {c:c-gen})."),
-    ], layout="side", w="62mm", fm="150mm", did="La pagina «Lead» subito dopo l'apertura automatica (dati di prova)."))
+    ], layout="side", w="62mm", fm="128mm", did="La pagina «Lead» subito dopo l'apertura automatica (dati di prova)."))
     B.append(info(azione_risultato(["Niente: aspetta qualche secondo.", "Guarda i campi ambrati (se ci sono)."],
                                    ["Tutti i dati del lead nella sezione «2. Dati lead».", "Stato, canali e strategia proposti dall'AI."])))
     B.append(h2("c-raccolta-ambra", None, "I campi ambrati"))
@@ -119,7 +119,7 @@ def blocchi():
         ("email", "Busta Mail.", "Apre la posta con la mail già compilata (capitolo {c:c-mail})."),
         ("salva", "Salva lead in storico.", "Capitolo {c:c-rivedi}."),
         ("sv", "Invia a Suggerimenti Vendita.", "Capitolo {c:c-chiamata}."),
-    ], layout="stack", w="100%", fm="72mm"))
+    ], layout="side", w="80mm", fm="95mm"))
 
     B.append(cap(None, "Rivedere, modificare e salvare gli script", P2, "c-rivedi",
                  "Gli script sono una bozza di partenza: sono tuoi, puoi cambiarli prima di usarli."))

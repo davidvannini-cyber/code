@@ -82,27 +82,110 @@ def tab_split(head, rows, per=9, cls=""):
     return [tab(head, rows[i:i + per], cls=cls) for i in range(0, len(rows), per)]
 
 
+def _png_size(img):
+    from PIL import Image
+    with Image.open(os.path.join(QUI, "screenshots", img + ".png")) as im:
+        return im.size
+
+
+def _mm(v, default):
+    if v is None:
+        return default
+    v = str(v)
+    return float(v[:-2]) if v.endswith("mm") else default
+
+
+GUT = 8.0   # mm: margine ai lati dello screenshot dove stanno i numeri
+
+
+def _fig_img(img, key, legend, W, H, did=None):
+    """Screenshot a misura esatta (mm). I numeri stanno FUORI dallo screenshot (margini laterali o sopra) e sono uniti
+    all'elemento da una linea sottile: nessun numero copre testi o altri numeri. Numerazione: dall'alto in basso, da sinistra a destra."""
+    items = CALL.get(key or img, {}).get("items", []) if legend else []
+    pm = {c["k"]: c for c in items}
+    els = []
+    for i, (k, _, _) in enumerate(legend or []):
+        c = pm.get(k)
+        if c:
+            ytop, ybot = c["y"], 2 * c["yc"] - c["y"]
+            els.append(dict(i=i, xl=c["xl"], xr=c["x"], yt=ytop, yb=ybot, yc=c["yc"], cx=(c["xl"] + c["x"]) / 2))
+    def libero(e, lato):
+        for o in els:
+            if o is e or o["yb"] <= e["yt"] or o["yt"] >= e["yb"]:
+                continue
+            if lato == "L" and o["xr"] <= e["xl"] + .01:
+                return False
+            if lato == "R" and o["xl"] >= e["xr"] - .01:
+                return False
+        return True
+    for e in els:
+        pref = "L" if e["cx"] < .5 else "R"
+        alt = "R" if pref == "L" else "L"
+        e["lato"] = "T" if e["yc"] * H < 8 else (pref if libero(e, pref) else (alt if libero(e, alt) else "T"))
+    GY = 7.0 if any(e["lato"] == "T" for e in els) else 0.0
+    Wt, Ht = W + 2 * GUT, H + 2 * GY
+    pos = {}
+    for lato in ("L", "R"):
+        lst = sorted([e for e in els if e["lato"] == lato], key=lambda e: e["yc"])
+        gap, ys = 6.4, []
+        for e in lst:
+            y = GY + e["yc"] * H
+            if ys and y < ys[-1] + gap:
+                y = ys[-1] + gap
+            ys.append(y)
+        if ys and ys[-1] > Ht - 3:
+            sh = ys[-1] - (Ht - 3)
+            ys = [max(3.0, y - sh) for y in ys]
+            for k in range(1, len(ys)):
+                ys[k] = max(ys[k], ys[k - 1] + gap)
+        for e, y in zip(lst, ys):
+            gx = GUT / 2 if lato == "L" else Wt - GUT / 2
+            tx = GUT + (e["xl"] if lato == "L" else e["xr"]) * W + (1.2 if lato == "L" else -1.2)
+            pos[e["i"]] = (gx, y, tx, GY + e["yc"] * H)
+    # badge "sopra": affiancati ordinati per x, non si sovrappongono
+    top = sorted([e for e in els if e["lato"] == "T"], key=lambda e: e["cx"])
+    last = -99
+    for e in top:
+        x = GUT + e["cx"] * W
+        x = max(x, last + 6.4)
+        last = x
+        pos[e["i"]] = (x, 3.2, GUT + e["cx"] * W, GY + e["yt"] * H + .8)
+    ordine = sorted(els, key=lambda e: (round((e["yc"] * H) / 7), e["cx"]))
+    num = {e["i"]: n for n, e in enumerate(ordine, 1)}
+    svg, bds = "", ""
+    for i, (gx, y, tx, ty) in pos.items():
+        svg += ('<line x1="%.2f" y1="%.2f" x2="%.2f" y2="%.2f" class="ln-n"/><circle cx="%.2f" cy="%.2f" r=".8" class="pt-n"/>' % (gx, y, tx, ty, tx, ty))
+        bds += '<span class="bd" style="left:%.2fmm;top:%.2fmm">%d</span>' % (gx - 2.7, y - 2.7, num[i])
+    box = ('<div class="fig-w" style="width:%.1fmm;height:%.1fmm">'
+           '<div class="fig-in" style="left:%.1fmm;top:%.1fmm;width:%.1fmm;height:%.1fmm"><img src="screenshots/%s.png" alt=""></div>'
+           '<svg class="fig-l" viewBox="0 0 %.1f %.1f" width="%.1fmm" height="%.1fmm">%s</svg>%s</div>'
+           % (Wt, Ht, GUT, GY, W, H, img, Wt, Ht, Wt, Ht, svg, bds))
+    return box, num
+
+
 def fig(img, key=None, legend=None, layout="side", w=None, did=None, pos=None, fm=None):
-    """Schermata con numeri. legend = [(chiave, titolo, testo)] nello stesso ordine dei numeri.
-    layout: side = immagine a sinistra + legenda a destra; stack = immagine sopra e legenda sotto in 2 colonne;
-    solo = solo immagine."""
-    cinfo = CALL.get(key or img, {}).get("items", []) if legend else []
-    pos_map = {c["k"]: c for c in cinfo}
-    badges = ""
-    for n, (k, _, _) in enumerate(legend or [], 1):
-        c = pos_map.get(k)
-        if not c:
-            continue
-        mode = (pos or {}).get(k, "tr")
-        x, y = (c["xl"], c["yc"]) if mode == "l" else (c["x"], c["y"])
-        badges += '<span class="bd%s" style="left:%.2f%%;top:%.2f%%">%d</span>' % (" up" if mode != "l" else "", x * 100, y * 100, n)
-    im = '<div class="fig-img"><div class="fig-in"><img src="screenshots/%s.png" alt="">%s</div>%s</div>' % (
-        img, badges, ('<div class="didascalia">%s</div>' % did) if did else "")
-    fmx = (";--figmax:%s" % fm) if fm else ""
+    """Schermata con numeri nei margini e legenda ordinata come i numeri.
+    layout: side = immagine a sinistra + legenda a destra; stack = immagine sopra e legenda sotto; solo = solo immagine."""
+    pw, ph = _png_size(img)
+    asp = pw / ph
+    fmax = _mm(fm, 140.0)
+    if layout == "side":
+        W = min(_mm(w, 80.0) if _mm(w, 0) > 80 else 80.0, fmax * asp)
+    else:
+        W = min(_mm(w, 150.0) if _mm(w, 0) > 0 else 150.0, fmax * asp)
+        if str(w).endswith("%"):
+            W = min(150.0, fmax * asp)
     if not legend:
-        return dict(k="fig", html='<div class="fig solo" style="--fw:%s%s">%s</div>' % (w or "var(--figw)", fmx, im))
-    leg = "".join('<li><span class="bd fisso">%d</span><div><b>%s</b> %s</div></li>' % (n, t, d) for n, (_, t, d) in enumerate(legend, 1))
-    return dict(k="fig", html='<div class="fig %s" style="--fw:%s%s">%s<ol class="legenda">%s</ol></div>' % (layout, w or "var(--figw)", fmx, im, leg))
+        W = min(_mm(w, 120.0) if _mm(w, 0) > 0 else 150.0, fmax * asp, 150.0)
+    H = W / asp
+    box, num = _fig_img(img, key, legend, W, H, did)
+    cap = ('<div class="didascalia" style="max-width:%.1fmm">%s</div>' % (W + 2 * GUT, did)) if did else ""
+    if not legend:
+        return dict(k="fig", html='<div class="fig solo"><div class="fig-img">%s%s</div></div>' % (box, cap))
+    # legenda nello stesso ordine dei numeri; le voci senza posizione in coda
+    ordine = sorted(num, key=lambda i: num[i]) + [i for i in range(len(legend)) if i not in num]
+    leg = "".join('<li><span class="bd fisso">%d</span><div><b>%s</b> %s</div></li>' % (n, legend[i][1], legend[i][2]) for n, i in enumerate(ordine, 1))
+    return dict(k="fig", html='<div class="fig %s"><div class="fig-img">%s%s</div><ol class="legenda">%s</ol></div>' % (layout, box, cap, leg))
 
 
 def info(html):
@@ -295,9 +378,13 @@ def cascata_html():
             % (r1, mid("la Console studia il lead"), r2, mid("si passa all'azione"), r3, mid("a cascata"), r4, mid("in ogni caso"), r5))
 
 
-def fig2(img1, cap1, img2, cap2, w="50mm"):
-    """Due schermate affiancate, ognuna con la sua didascalia."""
-    f = lambda im, c: '<figure><div class="fig-in" style="width:%s"><img src="screenshots/%s.png" alt=""></div><figcaption>%s</figcaption></figure>' % (w, im, c)
+def fig2(img1, cap1, img2, cap2, w="62mm"):
+    """Due schermate affiancate, ognuna con la sua didascalia, a misura esatta."""
+    def f(im, c):
+        pw, ph = _png_size(im)
+        W = _mm(w, 62.0)
+        return ('<figure><div class="fig-in2" style="width:%.1fmm;height:%.1fmm"><img src="screenshots/%s.png" alt=""></div><figcaption>%s</figcaption></figure>'
+                % (W, W * ph / pw, im, c))
     return dict(k="fig", html='<div class="fig2">%s%s</div>' % (f(img1, cap1), f(img2, cap2)))
 
 
