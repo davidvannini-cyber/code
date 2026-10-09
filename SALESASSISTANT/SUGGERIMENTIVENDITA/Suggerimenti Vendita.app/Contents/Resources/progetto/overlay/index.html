@@ -226,6 +226,17 @@
   .barra-livello-fill.livello-medio { background: #f59e0b; }
   .barra-livello-fill.livello-alto { background: #ef4444; }
 
+  .etichetta-livello { display: flex; justify-content: space-between; }
+  .avviso-audio {
+    display: none;
+    padding: 5px 7px;
+    border-radius: 2px;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  #avviso-clipping { color: #991b1b; background: #fee2e2; font-weight: 600; }
+  #avviso-ingresso { color: #92400e; background: #fef3c7; }
+
   #lead-info {
     display: flex;
     justify-content: center;
@@ -380,8 +391,12 @@
   </div>
 
   <div class="riquadro-livello" id="riquadro-livello">
-    <span>Segnale in ingresso</span>
+    <span class="etichetta-livello"><span>Segnale in ingresso (prima del limiter)</span></span>
+    <div class="barra-livello-track"><div class="barra-livello-fill" id="livello-pre-fill"></div></div>
+    <span>Segnale trascritto (dopo il limiter)</span>
     <div class="barra-livello-track"><div class="barra-livello-fill" id="livello-fill"></div></div>
+    <div class="avviso-audio" id="avviso-clipping">Segnale saturo (clipping): abbassa il volume media del telefono o il livello di ingresso del Mac.</div>
+    <div class="avviso-audio" id="avviso-ingresso"></div>
   </div>
 
   <div class="riquadro" id="lead-info">
@@ -507,6 +522,9 @@
   const elSelettoreMic = document.getElementById("selettore-microfono");
   const elRiquadroLivello = document.getElementById("riquadro-livello");
   const elLivelloFill = document.getElementById("livello-fill");
+  const elLivelloPreFill = document.getElementById("livello-pre-fill");
+  const elAvvisoClipping = document.getElementById("avviso-clipping");
+  const elAvvisoIngresso = document.getElementById("avviso-ingresso");
 
   let wsCorrente = null;
   let microfonoInPausa = false;
@@ -564,11 +582,17 @@
 
   function fermaMicrofono() {
     if (contestoAudio) { contestoAudio.close(); contestoAudio = null; }
+    nodoAnalisi = null;
     if (streamCorrente) { streamCorrente.getTracks().forEach((t) => t.stop()); streamCorrente = null; }
     elRiquadroLivello.style.display = "none";
     elLivelloFill.style.width = "0%";
     elLivelloFill.className = "barra-livello-fill";
     livelloSmussato = 0;
+    livelloPreSmussato = 0;
+    elLivelloPreFill.style.width = "0%";
+    elLivelloPreFill.className = "barra-livello-fill";
+    elAvvisoClipping.style.display = "none";
+    elAvvisoIngresso.style.display = "none";
   }
 
   // ---------- Spia del livello di segnale in ingresso ----------------------
@@ -578,6 +602,57 @@
   // porta il segnale, senza dover aprire le Preferenze di Sistema): non è
   // legata all'invio dei suggerimenti, resta attiva anche durante la pausa.
   let livelloSmussato = 0;
+  let livelloPreSmussato = 0;
+  let ultimoClippingMs = 0;
+  let nodoAnalisi = null;
+  let bufferAnalisi = null;
+
+  function classeLivello(v) {
+    if (v >= 0.55) return "livello-alto";
+    if (v >= 0.2) return "livello-medio";
+    if (v >= 0.02) return "livello-buono";
+    return "";
+  }
+
+  // Livello PRIMA del limiter (dopo l'AGC del browser, che non si può
+  // leggere a monte): mostra il segnale che arriva al compressore e rileva
+  // il clipping, cioè campioni al fondo scala che il limiter non può più
+  // correggere. L'avviso resta visibile 3 secondi dopo l'ultimo clip.
+  function aggiornaLivelloPreLimiter() {
+    if (!nodoAnalisi) return;
+    nodoAnalisi.getFloatTimeDomainData(bufferAnalisi);
+    let picco = 0;
+    for (let i = 0; i < bufferAnalisi.length; i++) {
+      const v = Math.abs(bufferAnalisi[i]);
+      if (v > picco) picco = v;
+    }
+    livelloPreSmussato = picco > livelloPreSmussato ? picco : livelloPreSmussato * 0.85;
+    elLivelloPreFill.style.width = Math.min(100, Math.round(livelloPreSmussato * 140)) + "%";
+    elLivelloPreFill.className = "barra-livello-fill " + classeLivello(livelloPreSmussato);
+    const ora = Date.now();
+    if (picco >= 0.98) ultimoClippingMs = ora;
+    elAvvisoClipping.style.display = (ora - ultimoClippingMs < 3000) ? "block" : "none";
+  }
+
+  // Avviso se il dispositivo realmente in uso è il microfono integrato del
+  // Mac: succede in silenzio quando lo splitter non è l'ingresso predefinito
+  // di macOS ed è selezionato "Predefinito di sistema".
+  const RE_MIC_INTEGRATO = /integrat|built-?in|macbook|internal/i;
+  function controllaDispositivoInUso(stream) {
+    try {
+      const traccia = stream.getAudioTracks()[0];
+      const etichetta = traccia && traccia.label ? traccia.label : "";
+      if (RE_MIC_INTEGRATO.test(etichetta)) {
+        elAvvisoIngresso.textContent = "Stai ascoltando il microfono integrato del Mac (\u201c" + etichetta + "\u201d), non lo splitter del telefono. Scegli lo splitter nel selettore in alto.";
+        elAvvisoIngresso.style.display = "block";
+      } else {
+        elAvvisoIngresso.style.display = "none";
+      }
+    } catch (e) {
+      elAvvisoIngresso.style.display = "none";
+    }
+  }
+
   function aggiornaLivelloMicrofono(campioni) {
     let picco = 0;
     for (let i = 0; i < campioni.length; i++) {
@@ -588,11 +663,8 @@
     // barra lampeggerebbe in modo illeggibile invece di restare leggibile.
     livelloSmussato = picco > livelloSmussato ? picco : livelloSmussato * 0.85;
     elLivelloFill.style.width = Math.min(100, Math.round(livelloSmussato * 140)) + "%";
-    let classe = "";
-    if (livelloSmussato >= 0.55) classe = "livello-alto";
-    else if (livelloSmussato >= 0.2) classe = "livello-medio";
-    else if (livelloSmussato >= 0.02) classe = "livello-buono";
-    elLivelloFill.className = "barra-livello-fill " + classe;
+    elLivelloFill.className = "barra-livello-fill " + classeLivello(livelloSmussato);
+    aggiornaLivelloPreLimiter();
   }
 
   elSelettoreMic.addEventListener("change", async () => {
@@ -677,6 +749,7 @@
       }
       streamCorrente = stream;
       popolaDispositiviAudio();
+      controllaDispositivoInUso(stream);
       contestoAudio = new (window.AudioContext || window.webkitAudioContext)();
 
       // I browser sospendono automaticamente ogni AudioContext creato senza
@@ -722,6 +795,11 @@
         const pcm16 = float32AInt16(ridotti);
         wsCorrente.send(pcm16.buffer);
       };
+
+      nodoAnalisi = contestoAudio.createAnalyser();
+      nodoAnalisi.fftSize = 4096;
+      bufferAnalisi = new Float32Array(nodoAnalisi.fftSize);
+      sorgente.connect(nodoAnalisi);
 
       sorgente.connect(compressore);
       compressore.connect(nodoScript);

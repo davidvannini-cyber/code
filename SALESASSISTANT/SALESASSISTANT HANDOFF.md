@@ -71,8 +71,8 @@ Da riallineare nel bundle: i commenti in `Contents/MacOS/avvia` citano ancora le
 
 ## 10. TODO
 - [ ] Tarare l'audio in una chiamata reale (§7) e annotare qui la configurazione che funziona.
-- [ ] Mostrare nella spia il livello **prima** del compressore / avviso clipping.
-- [ ] Avviso visibile se è selezionato "Predefinito di sistema" ma il predefinito è il microfono integrato.
+- [x] ~~Spia prima del compressore / avviso clipping~~: fatto il 2026-10-09.
+- [x] ~~Avviso microfono integrato~~: fatto il 2026-10-09 (da verificare dal vivo).
 - [ ] Migrare `ScriptProcessor` → `AudioWorklet`.
 - [ ] Testare dal vivo: bagliore 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 35/15/25.
 - [ ] Espandere la libreria script a 20–30 voci; valutare condizioni CRM nei dialoghi di "Aggiungi script".
