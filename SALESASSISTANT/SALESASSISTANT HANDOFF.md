@@ -53,7 +53,7 @@ Tutte alte il 60% dello schermo: **Lead Rework Console 35%** (da 0%) · **Menu 1
 3. **`echoCancellation` / `noiseSuppression`** attivi ma inutili (nessun altoparlante da cancellare): provarli disattivati, uno alla volta.
 4. La **spia** misura il segnale *dopo* AGC e compressore: non mostra la saturazione a monte.
 5. Nessun guadagno digitale nel browser (`GUADAGNO_AUDIO` vale solo da terminale): leve = livello di ingresso macOS + AGC + volume del telefono.
-6. `ScriptProcessor` è deprecato (→ `AudioWorklet`); il ricampionamento è lineare senza anti-aliasing.
+6. il ricampionamento è lineare senza anti-aliasing (la cattura ora usa `AudioWorklet`).
 
 Diagnosi in ordine: spia → log server (`picco ultimo secondo` ≈ 0 = niente audio, ≈ 32768 = saturazione) → dispositivo esplicito → livello macOS → volume telefono → vincoli `getUserMedia`.
 
@@ -73,6 +73,6 @@ Da riallineare nel bundle: i commenti in `Contents/MacOS/avvia` citano ancora le
 - [ ] Tarare l'audio in una chiamata reale (§7) e annotare qui la configurazione che funziona.
 - [x] ~~Spia prima del compressore / avviso clipping~~: fatto il 2026-10-09.
 - [x] ~~Avviso microfono integrato~~: fatto il 2026-10-09 (da verificare dal vivo).
-- [ ] Migrare `ScriptProcessor` → `AudioWorklet`.
+- [x] ~~Migrare `ScriptProcessor` → `AudioWorklet`~~: fatto il 2026-10-09 (con fallback a ScriptProcessor).
 - [ ] Testare dal vivo: bagliore 8767 al primo avvio a freddo, istanza singola dopo `exec`, layout 35/15/25.
 - [ ] Espandere la libreria script a 20–30 voci; valutare condizioni CRM nei dialoghi di "Aggiungi script".

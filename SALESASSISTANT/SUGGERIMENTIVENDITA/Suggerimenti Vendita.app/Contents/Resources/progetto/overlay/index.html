@@ -786,12 +786,12 @@
       compressore.attack.value = 0.003;
       compressore.release.value = 0.25;
 
-      const nodoScript = contestoAudio.createScriptProcessor(4096, 1, 1);
       const silenzio = contestoAudio.createGain();
       silenzio.gain.value = 0; // non far sentire in altoparlante quello che cattura
 
-      nodoScript.onaudioprocess = (evento) => {
-        const campioni = evento.inputBuffer.getChannelData(0);
+      // Blocchi di 4096 campioni consegnati al thread principale: stessa
+      // dimensione e stesso comportamento del vecchio ScriptProcessor.
+      const gestisciBlocco = (campioni) => {
         aggiornaLivelloMicrofono(campioni);
         if (microfonoInPausa) return;
         if (!wsCorrente || wsCorrente.readyState !== WebSocket.OPEN) return;
@@ -800,14 +800,54 @@
         wsCorrente.send(pcm16.buffer);
       };
 
+      // AudioWorklet (ScriptProcessor è deprecato e gira sul thread
+      // principale); se il browser non lo supporta o il modulo non si
+      // carica, si ripiega sul vecchio ScriptProcessor.
+      let nodoCattura = null;
+      try {
+        const codiceWorklet = `
+          class Cattura extends AudioWorkletProcessor {
+            constructor() { super(); this.buf = new Float32Array(4096); this.n = 0; }
+            process(inputs) {
+              const canale = inputs[0] && inputs[0][0];
+              if (canale) {
+                for (let i = 0; i < canale.length; i++) {
+                  this.buf[this.n++] = canale[i];
+                  if (this.n === this.buf.length) {
+                    this.port.postMessage(this.buf);
+                    this.buf = new Float32Array(4096);
+                    this.n = 0;
+                  }
+                }
+              }
+              return true;
+            }
+          }
+          registerProcessor("cattura-audio", Cattura);`;
+        const urlWorklet = URL.createObjectURL(new Blob([codiceWorklet], { type: "application/javascript" }));
+        try {
+          await contestoAudio.audioWorklet.addModule(urlWorklet);
+        } finally {
+          URL.revokeObjectURL(urlWorklet);
+        }
+        nodoCattura = new AudioWorkletNode(contestoAudio, "cattura-audio", {
+          numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1],
+        });
+        nodoCattura.port.onmessage = (evento) => gestisciBlocco(evento.data);
+      } catch (erroreWorklet) {
+        console.warn("AudioWorklet non disponibile, uso ScriptProcessor:", erroreWorklet);
+        nodoCattura = contestoAudio.createScriptProcessor(4096, 1, 1);
+        nodoCattura.onaudioprocess = (evento) => gestisciBlocco(evento.inputBuffer.getChannelData(0));
+      }
+
       nodoAnalisi = contestoAudio.createAnalyser();
       nodoAnalisi.fftSize = 4096;
       bufferAnalisi = new Float32Array(nodoAnalisi.fftSize);
       sorgente.connect(nodoAnalisi);
 
       sorgente.connect(compressore);
-      compressore.connect(nodoScript);
-      nodoScript.connect(silenzio);
+      compressore.connect(nodoCattura);
+      nodoCattura.connect(silenzio);
       silenzio.connect(contestoAudio.destination);
 
       elRiquadroLivello.style.display = "flex";
