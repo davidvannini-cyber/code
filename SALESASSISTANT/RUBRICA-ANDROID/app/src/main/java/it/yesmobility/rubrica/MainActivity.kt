@@ -61,6 +61,23 @@ class MainActivity : Activity() {
             Toast.makeText(this, esito, Toast.LENGTH_LONG).show()
             aggiorna()
         })
+        colonna.addView(testo("Prove per far comparire il numero in Lyber (premi uno alla volta e guarda se il numero compare):"))
+        listOf(
+            "A" to "A: tel:+39… (con prefisso)",
+            "B" to "B: tel:… (senza +39)",
+            "C" to "C: apri numero (VIEW)",
+            "D" to "D: link lyber://"
+        ).forEach { (v, nome) ->
+            colonna.addView(bottone(nome) {
+                val numero = Prefs.ultimoNumero(this).ifEmpty { "+393331234567" }
+                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("Numero lead", numero))
+                val esito = Lyber.prova(this, v, numero)
+                Prefs.aggiungiLog(this, esito)
+                Toast.makeText(this, esito, Toast.LENGTH_LONG).show()
+                aggiorna()
+            })
+        }
         colonna.addView(bottone("Scopri come parlare a Lyber") {
             val testo = LyberDiagnosi.rapporto(this, Prefs.ultimoNumero(this))
             val t = TextView(this).apply { text = testo; textSize = 12f; setPadding(p, p, p, p); setTextIsSelectable(true) }
