@@ -16,8 +16,6 @@ def blocchi():
                  "Tutto il lavoro su un lead segue sempre lo stesso percorso: parte dal pulsante blu «Invia a Lead Rework Console» e finisce con l'esito segnato."))
     B.append(h2("c-come-schema", None, "Lo schema"))
     B.append(info(schema_a_html()))
-    B.append(h2("c-come-giornata", None, "Gli otto passi: cosa fai e cosa ricevi"))
-    B.append(info(giornata_html()))
     B.append(box("nota", "Esistono anche due modalità che si usano <b>da sole</b>, senza passare da questo percorso: «Chiamata YesMobility» e «Rinforzo Facile Salire» (capitoli {c:c-yes} e {c:c-rinforzo})."))
 
     B.append(cap(None, "Il pulsante da cui parte tutto", P1, "c-pulsante",
