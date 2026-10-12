@@ -724,7 +724,7 @@ function runAI(id,fix){
   var key=getKey();if(!key){toast('Inserisci la chiave API in Impostazioni');return}
   var sp=AIS[id],st=S.ai[id],out=$('#ai-out'),wrap=$('#ai-wrap'),after=$('#ai-after'),web=$('#ai-web')?$('#ai-web').checked:false;
   AITEXT='';wrap.hidden=false;out.innerHTML='<p class="mut">Sto scrivendo…</p>';after.innerHTML='<div class="btns"><button class="btn small" data-act="ai-stop">Interrompi</button></div>';
-  var body={model:S.settings.model||'claude-sonnet-5-5',max_tokens:sp.mt||4000,system:sysPrompt(),messages:st.msgs,stream:true};
+  var body={model:S.settings.model||'claude-sonnet-5-5',max_tokens:sp.mt||4000,thinking:{type:'disabled'},system:sysPrompt(),messages:st.msgs,stream:true};
   if(web)body.tools=[{type:'web_search_20250305',name:'web_search',max_uses:sp.wu||5}];
   var ctrl=AICTRL=new AbortController(),stop=null,evTypes={},uIn=0,uOut=0,uWeb=0,uBlk=0,uDone=false;
   function uFlush(){if(uDone)return;uDone=true;addUsage(uIn,uOut,Math.max(uWeb,uBlk))}
