@@ -66,3 +66,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-12 | `57af35d` | RELAUNCH/PUBBLICAZIONE.md (nuovo: procedura di pubblicazione), RELAUNCH/README.md, RELAUNCH/index.html (riallineato alla versione pubblicata), REGISTRO-SALVATAGGI.md | `git checkout 57af35d` |
 | 2026-10-12 | `6be2356` | RELAUNCH/index.html (riallineato: ragionamento esteso disattivato nell'assistente AI, causa dello stop max_tokens), REGISTRO-SALVATAGGI.md | `git checkout 6be2356` |
 | 2026-10-12 | `7e7ef0c` | RELAUNCH/PUBBLICAZIONE.md (procedura aggiornata: a fine lavoro si uniscono sempre entrambe le PR), REGISTRO-SALVATAGGI.md | `git checkout 7e7ef0c` |
+| 2026-10-12 | `6eab428` | RELAUNCH/index.html (riallineato: limite di lunghezza minimo 16000 e diagnostica blocchi nell'assistente AI), REGISTRO-SALVATAGGI.md | `git checkout 6eab428` |

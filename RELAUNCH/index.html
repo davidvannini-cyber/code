@@ -724,9 +724,9 @@ function runAI(id,fix){
   var key=getKey();if(!key){toast('Inserisci la chiave API in Impostazioni');return}
   var sp=AIS[id],st=S.ai[id],out=$('#ai-out'),wrap=$('#ai-wrap'),after=$('#ai-after'),web=$('#ai-web')?$('#ai-web').checked:false;
   AITEXT='';wrap.hidden=false;out.innerHTML='<p class="mut">Sto scrivendo…</p>';after.innerHTML='<div class="btns"><button class="btn small" data-act="ai-stop">Interrompi</button></div>';
-  var body={model:S.settings.model||'claude-sonnet-5-5',max_tokens:sp.mt||4000,thinking:{type:'disabled'},system:sysPrompt(),messages:st.msgs,stream:true};
+  var body={model:S.settings.model||'claude-sonnet-5-5',max_tokens:Math.max(sp.mt||4000,16000),thinking:{type:'disabled'},system:sysPrompt(),messages:st.msgs,stream:true};
   if(web)body.tools=[{type:'web_search_20250305',name:'web_search',max_uses:sp.wu||5}];
-  var ctrl=AICTRL=new AbortController(),stop=null,evTypes={},uIn=0,uOut=0,uWeb=0,uBlk=0,uDone=false;
+  var ctrl=AICTRL=new AbortController(),stop=null,evTypes={},blkT={},dltT={},uIn=0,uOut=0,uWeb=0,uBlk=0,uDone=false;
   function uFlush(){if(uDone)return;uDone=true;addUsage(uIn,uOut,Math.max(uWeb,uBlk))}
   function usageEv(j){var u;if(j.type==='message_start'&&j.message&&j.message.usage){u=j.message.usage;uIn+=(u.input_tokens||0)+(u.cache_creation_input_tokens||0)+(u.cache_read_input_tokens||0);uOut=Math.max(uOut,u.output_tokens||0)}
     else if(j.type==='message_delta'&&j.usage){u=j.usage;uOut=Math.max(uOut,u.output_tokens||0);if(u.server_tool_use&&u.server_tool_use.web_search_requests)uWeb=Math.max(uWeb,u.server_tool_use.web_search_requests)}
@@ -741,14 +741,14 @@ function runAI(id,fix){
       handle(parts);return pump()})}
     function handle(parts){
       parts.forEach(function(p){var m=p.match(/^data: ?(.*)$/m);if(!m)return;var j;try{j=JSON.parse(m[1])}catch(e){return}
-        evTypes[j.type]=1;usageEv(j);
+        evTypes[j.type]=1;if(j.type==='content_block_start'&&j.content_block)blkT[j.content_block.type]=1;if(j.type==='content_block_delta'&&j.delta)dltT[j.delta.type]=1;usageEv(j);
         if(j.type==='content_block_start'&&j.content_block&&j.content_block.type==='text'&&AITEXT)AITEXT+='\n\n';
         else if(j.type==='content_block_delta'&&j.delta&&j.delta.type==='text_delta'){AITEXT+=j.delta.text;upd()}
         else if(j.type==='message_delta'&&j.delta&&j.delta.stop_reason)stop=j.delta.stop_reason;
         else if(j.type==='error')throw new Error((j.error&&j.error.message)||'Errore del servizio')})}
     return pump()}).then(function(){
       uFlush();if(AICTRL!==ctrl)return;AICTRL=null;
-      if(!AITEXT){st.msgs.pop();save();var o=$('#ai-out');if(o)o.innerHTML='<p class="err">Nessuna risposta ricevuta'+(stop==='max_tokens'?': il modello ha esaurito il limite di lunghezza prima di scrivere il testo. Riprova.':stop==='refusal'?': la richiesta è stata rifiutata dal modello. Riprova cambiando il testo.':stop==='pause_turn'?': la ricerca web si è interrotta. Riprova senza la ricerca web.':'. Riprova.')+' <span class="mut small">(dettaglio tecnico: motivo di stop «'+esc(stop||'nessuno')+'», eventi ricevuti: '+esc(Object.keys(evTypes).join(', ')||'nessuno')+')</span></p>';var a=$('#ai-after');if(a)a.innerHTML='';return}
+      if(!AITEXT){st.msgs.pop();save();var o=$('#ai-out');if(o)o.innerHTML='<p class="err">Nessuna risposta ricevuta'+(stop==='max_tokens'?': il modello ha esaurito il limite di lunghezza prima di scrivere il testo. Riprova.':stop==='refusal'?': la richiesta è stata rifiutata dal modello. Riprova cambiando il testo.':stop==='pause_turn'?': la ricerca web si è interrotta. Riprova senza la ricerca web.':'. Riprova.')+' <span class="mut small">(dettaglio tecnico: motivo di stop «'+esc(stop||'nessuno')+'», eventi ricevuti: '+esc(Object.keys(evTypes).join(', ')||'nessuno')+'; blocchi: '+esc(Object.keys(blkT).join(', ')||'nessuno')+'; contenuti: '+esc(Object.keys(dltT).join(', ')||'nessuno')+'; v3)</span></p>';var a=$('#ai-after');if(a)a.innerHTML='';return}
       st.msgs.push({role:'assistant',content:AITEXT});
       var ov=overs(AITEXT,id),n0=fix||0;
       if(ov.length&&n0<2&&stop!=='max_tokens'){st.msgs.push({role:'user',content:fixPrompt(ov)});save();var af=$('#ai-after');if(af)af.innerHTML='<p class="note">Correggo in automatico: '+esc(ov.map(function(x){return flabel(x.name)+' '+x.n+' su '+x.max}).join(', '))+'.</p>';setTimeout(function(){runAI(id,n0+1)},60);return}
