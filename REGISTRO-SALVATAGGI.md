@@ -69,3 +69,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-12 | `6eab428` | RELAUNCH/index.html (riallineato: limite di lunghezza minimo 16000 e diagnostica blocchi nell'assistente AI), REGISTRO-SALVATAGGI.md | `git checkout 6eab428` |
 | 2026-10-12 | `dd1442e` | RELAUNCH/index.html (riallineato: thinking between_tools richiesto dal modello), REGISTRO-SALVATAGGI.md | `git checkout dd1442e` |
 | 2026-10-12 | `9cd80ad` | RELAUNCH/index.html (riallineato: aggiornamento trascinando verso il basso), RELAUNCH/PUBBLICAZIONE.md (istruzioni per l'icona sulla Home), REGISTRO-SALVATAGGI.md | `git checkout 9cd80ad` |
+| 2026-10-12 | `6c1fe8b` | RELAUNCH/index.html (riallineato: se la ricerca web è rifiutata l'assistente AI riprova senza), REGISTRO-SALVATAGGI.md | `git checkout 6c1fe8b` |

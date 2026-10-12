@@ -735,7 +735,7 @@ function runAI(id,fix){
     else if(j.type==='content_block_start'&&j.content_block&&j.content_block.type==='server_tool_use')uBlk++}
   function upd(){var o=$('#ai-out');if(o)o.innerHTML=renderOut(AITEXT,id)}
   fetch(AIURL,{method:'POST',headers:aiHeaders(key),body:JSON.stringify(body),signal:ctrl.signal}).then(function(r){
-    if(!r.ok)return r.json().catch(function(){return {}}).then(function(j){throw new Error(errMsg(r.status,j))});
+    if(!r.ok)return r.json().catch(function(){return {}}).then(function(j){var er=new Error(errMsg(r.status,j));er.status=r.status;throw er});
     var rd=r.body.getReader(),dec=new TextDecoder(),buf='';
     function pump(){return rd.read().then(function(x){
       if(x.done){buf+=dec.decode();if(buf.trim())handle([buf]);return}
@@ -758,6 +758,7 @@ function runAI(id,fix){
       save();upd();var a2=$('#ai-after');if(a2)a2.innerHTML=(stop==='max_tokens'?'<p class="note warn">La risposta è stata troncata: scrivi «continua» qui sotto.</p>':'')+(ov.length?'<p class="note bad">Anche dopo 2 correzioni automatiche questi campi superano ancora il limite: '+esc(ov.map(function(x){return flabel(x.name)+' '+x.n+' su '+x.max}).join(', '))+'. Scrivi qui sotto «accorcia» oppure cambia il testo a mano.</p>':'')+afterHtml(id)
     }).catch(function(e){
       uFlush();var sup=(AICTRL!==ctrl);if(AICTRL===ctrl)AICTRL=null;
+      if(e&&e.status===400&&body.tools&&!sup){var wb=$('#ai-web');if(wb)wb.checked=false;var a0=$('#ai-after');if(a0)a0.innerHTML='<p class="note warn">La ricerca web è stata rifiutata ('+esc(e.message)+'). Riprovo senza ricerca web.</p>';setTimeout(function(){runAI(id,fix)},60);return}
       st.msgs.pop();if(sup){save();return}
       var o=$('#ai-out'),a=$('#ai-after');
       if(e&&e.name==='AbortError'){if(o&&AITEXT)o.innerHTML=renderOut(AITEXT,id)+'<p class="mut small">Interrotto.</p>';else{var w2=$('#ai-wrap');if(w2)w2.hidden=true}if(a)a.innerHTML='';save();return}
