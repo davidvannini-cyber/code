@@ -1,0 +1,1 @@
+{"v":1,"settings":{"start":"2026-10-09","hours":8,"reserve":1,"days":[1,2,3,4,5,6],"model":"claude-sonnet-5-5","conn":{"shopify":true,"amazon":false},"price":{"in":2,"out":10,"web":10},"alertUsd":10},"t":{},"log":[],"dayCap":{},"kpi":{},"ui":{"help":true,"month":null},"ai":{},"usage":{"m":{},"tot":{"in":0,"out":0,"web":0,"usd":0},"last":null}}

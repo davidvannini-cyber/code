@@ -6,7 +6,7 @@
   - Repository che la pubblica: `davidvannini-cyber/RE-LAUNCH-MMNDS`, branch `main`, file `index.html` nella radice.
 - Unire una PR in `davidvannini-cyber/code` **non cambia l'app**. Cambia l'app solo ciò che arriva su `main` di `RE-LAUNCH-MMNDS`.
 - La **fonte di verità** è `index.html` di `RE-LAUNCH-MMNDS` (il backup automatico dal MacBook Air può aggiornarlo). La copia in `RELAUNCH/index.html` di questo repository è solo una copia di lavoro: prima di modificarla va riallineata a quella pubblicata.
-- Nello stesso repository c'è anche `relaunch-mmnds-backup.json` (backup dei dati): non va toccato.
+- Nello stesso repository c'è anche `relaunch-mmnds-backup.json` (backup dei dati): non va modificato, ma ne esiste una copia identica in `RELAUNCH/`.
 
 ## Procedura (la fa Claude, in quest'ordine, senza lasciare nulla a metà)
 Regola d'oro: **a fine lavoro tutto è allineato**. Le due PR (app e `code`) si uniscono entrambe, e l'ultimo messaggio a David dice che non resta nulla da unire.
@@ -18,10 +18,10 @@ Regola d'oro: **a fine lavoro tutto è allineato**. Le due PR (app e `code`) si 
 4. Creare un branch (`claude/...`), commit, `git push -u origin <branch>`.
 5. Aprire la PR verso `main` di `RE-LAUNCH-MMNDS` e **unirla** (squash).
 6. Verificare in Actions che «pages build and deployment» finisca con successo.
-7. Riallineare la copia: portare l'`index.html` pubblicato in `RELAUNCH/index.html` di questo repository.
+7. Riallineare la copia: portare **tutti** i file del repository pubblicato (`index.html`, `relaunch-mmnds-backup.json`) in `RELAUNCH/` di questo repository, poi **verificare con sha256** che ogni file sia identico: `git -C <pubblicato> show origin/main:<file> | sha256sum` contro `git show origin/main:RELAUNCH/<file> | sha256sum` in `code`.
 8. Aggiungere la riga a `REGISTRO-SALVATAGGI.md` (data, commit di partenza, file modificati, `git checkout <commit>`).
 9. Commit e push sul branch di lavoro di `code`, poi **unire anche quella PR** su `main` di `code`. Se la PR non esiste ancora, aprirla.
-10. Verificare che non restino PR aperte né branch non unite per questo lavoro.
+10. Rifare la verifica sha256 su `main` di `code` **dopo** l'unione e verificare che non restino PR aperte né branch non unite per questo lavoro.
 11. Scrivere a David: «Fatto, tutto allineato» (app pubblicata, copia e procedure su main).
 
 ## Cosa deve fare David
