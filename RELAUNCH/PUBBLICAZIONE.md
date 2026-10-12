@@ -25,6 +25,8 @@ Regola d'oro: **a fine lavoro tutto è allineato**. Le due PR (app e `code`) si 
 11. Scrivere a David: «Fatto, tutto allineato» (app pubblicata, copia e procedure su main).
 
 ## Cosa deve fare David
+- Se usa l'app dall'icona sulla Home: trascinare la pagina verso il basso dalla cima per aggiornarla (funzione aggiunta il 2026-10-12). In alternativa chiudere del tutto l'app e riaprirla.
+- **Non** aprire l'app da un altro indirizzo o browser (per esempio con `?v=...`): i dati stanno nel contesto dell'icona sulla Home e altrove l'app appare vuota.
 - Aspettare 1-2 minuti dopo l'unione.
 - Aprire l'indirizzo con **ricarica forzata** (Cmd/Ctrl+Shift+R), altrimenti il browser mostra la versione vecchia.
 
