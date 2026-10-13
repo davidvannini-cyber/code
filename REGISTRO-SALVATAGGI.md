@@ -71,3 +71,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-12 | `9cd80ad` | RELAUNCH/index.html (riallineato: aggiornamento trascinando verso il basso), RELAUNCH/PUBBLICAZIONE.md (istruzioni per l'icona sulla Home), REGISTRO-SALVATAGGI.md | `git checkout 9cd80ad` |
 | 2026-10-12 | `6c1fe8b` | RELAUNCH/index.html (riallineato: se la ricerca web è rifiutata l'assistente AI riprova senza), REGISTRO-SALVATAGGI.md | `git checkout 6c1fe8b` |
 | 2026-10-12 | `b5a5086` | RELAUNCH/relaunch-mmnds-backup.json (copia aggiunta, identica alla pubblicata), RELAUNCH/PUBBLICAZIONE.md (verifica sha256 di tutti i file), REGISTRO-SALVATAGGI.md | `git checkout b5a5086` |
+| 2026-10-13 | `a552455` | .claude/hooks/consensi-avvio.sh (procedura di avvio: prima Nuovo/Esistente, poi cartelle, poi un solo permesso multiplo di sicurezza), REGISTRO-SALVATAGGI.md | `git checkout a552455` |
