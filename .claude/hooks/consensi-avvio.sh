@@ -18,15 +18,19 @@ FASE 2 - SELEZIONE CARTELLE (elenchi calcolati all'avvio, qui sotto)
    C) RECUPERO STATO: scegli tra i .md di stato (+ "Parto da zero, nessun recupero").
       Se scelto un file: leggilo per intero e riassumi in 3-5 righe a che punto siamo.
 
-FASE 3 - SICUREZZA PER LE MODIFICHE (UNA sola domanda, multiSelect: true)
-   Chiedi: "Quali permessi concedi per questa sessione? (ciò che non selezioni = No)" con 4 opzioni:
-   1. "Push diretto su main": solo fast-forward, mai force push, senza fermarmi sul branch claude/...
-   2. "Pubblica a fine lavoro": senza aspettare la richiesta, poi scrivi: "Fatto, fai sync"
-   3. "Crea Pull request": se servono, poi scrivi: "Fai sync"
-   4. "Aggiorna registro": dopo ogni pubblicazione aggiungi una riga a REGISTRO-SALVATAGGI.md
-      (data, commit di partenza, file modificati, come tornare indietro con git checkout <commit>)
-   Agisci SOLO secondo le opzioni selezionate. Per ogni opzione non selezionata non fare quell'azione
-   e chiedi conferma caso per caso.
+FASE 3 - SICUREZZA (UNA sola domanda, Sì/No)
+   Chiedi: "Autorizzi il passaggio dal branch claude/... a main (push fast-forward, mai force push)?"
+   - Sì: puoi pubblicare su main.
+   - No: lavora e pubblica solo sul branch; per main chiedi conferma caso per caso.
+   TUTTO IL RESTO È SEMPRE PERMESSO, senza chiedere:
+   - pubblicare sul branch a fine lavoro, poi scrivere: "Fatto, fai sync"
+   - creare Pull request se servono, poi scrivere: "Fai sync"
+   - dopo ogni pubblicazione aggiungere una riga a REGISTRO-SALVATAGGI.md
+     (data, commit di partenza, file modificati, come tornare indietro con git checkout <commit>)
+
+PROMEMORIA OBBLIGATORIO: subito dopo la FASE 3 scrivi in chat, in una riga:
+   "Ricorda: con /restore vedi gli ultimi 20 salvataggi e puoi tornare a una versione precedente."
+   Ripetilo anche a fine lavoro, insieme a "Fatto, fai sync".
 
 REGOLA PAGINAZIONE: AskUserQuestion ammette max 4 opzioni, quindi NON troncare gli elenchi.
 Mostra TUTTI gli elementi a pagine di 3, con la 4ª opzione = "Altri (pagina successiva)" finché ne restano;
