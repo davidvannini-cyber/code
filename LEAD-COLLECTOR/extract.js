@@ -48,7 +48,8 @@ function extractLead(mail, ownAddresses = []) {
     if (!matched && !/^(da|from|a|to|cc|bcc|oggetto|subject|date|data|inviato|sent|reply-to)$/i.test(key) && val.length < 200) extra[m[1].trim()] = val;
   }
 
-  const sender = parseNameAddr(mail.replyTo || mail.from);
+  let sender = parseNameAddr(mail.replyTo || mail.from);
+  if (own.includes(sender.email.toLowerCase())) sender = { name: '', email: '' }; // chi inoltra non è il lead
   let email = (found.email && (found.email.match(EMAIL_RE) || [''])[0]) || '';
   if (!email) {
     const all = mail.text.match(new RegExp(EMAIL_RE.source, 'gi')) || [];

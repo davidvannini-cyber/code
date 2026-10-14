@@ -10,6 +10,9 @@ const OWN = (process.env.OWN_ADDRESSES || '').split(',').map(s => s.trim()).filt
 const IGNORE = ['mailer-daemon', 'postmaster', 'accounts.google.com', '@google.com']
   .concat((process.env.IGNORE_SENDERS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
 
+// Se impostato, accetta solo email inviate da questi indirizzi (es. ALLOWED_SENDERS=info@yesmobility.it)
+const ALLOWED = (process.env.ALLOWED_SENDERS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
 // Accetta una email grezza (RFC822) oppure { raw } / { subject, from, text }.
 function ingest(input) {
   const mail = typeof input === 'string' ? parseEmail(input)
@@ -17,6 +20,7 @@ function ingest(input) {
     : { from: input.from || '', replyTo: '', subject: input.subject || '', date: input.date || '', messageId: input.messageId || '', text: input.text || input.body || '' };
   const sender = (mail.from || '').toLowerCase();
   if (sender && IGNORE.some(w => sender.includes(w))) return { added: false, reason: 'mittente automatico ignorato' };
+  if (ALLOWED.length && mail.from && !ALLOWED.some(a => sender.includes(a))) return { added: false, reason: 'mittente non autorizzato' };
   if (!mail.text) return { added: false, reason: 'email vuota' };
   const leads = store.load();
   const key = mail.messageId || crypto.createHash('sha1').update(mail.from + mail.subject + mail.text).digest('hex');

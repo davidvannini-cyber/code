@@ -54,3 +54,10 @@ console.log('OK');
   assert(!r.added && /ignorato/.test(r.reason), JSON.stringify(r));
   console.log('OK3');
 }
+{
+  process.env.OWN_ADDRESSES = 'info@yesmobility.it';
+  delete require.cache[require.resolve('../ingest')];
+  const r = require('../ingest').ingest('From: YesMobility <info@yesmobility.it>\nSubject: Fwd: richiesta\n\nCliente interessato, chiama 347 7654321');
+  assert(r.added && r.lead.email === '' && r.lead.name === '' && r.lead.phone === '347 7654321', JSON.stringify(r));
+  console.log('OK4');
+}
