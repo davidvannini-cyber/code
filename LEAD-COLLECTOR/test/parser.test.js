@@ -49,3 +49,8 @@ console.log('OK');
   require('fs').unlinkSync(process.env.LEADS_FILE);
   console.log('OK2');
 }
+{
+  const r = require('../ingest').ingest('From: Google <x@accounts.google.com>\nSubject: Avviso di sicurezza\n\nControlla l\'attività 1791972837009');
+  assert(!r.added && /ignorato/.test(r.reason), JSON.stringify(r));
+  console.log('OK3');
+}
