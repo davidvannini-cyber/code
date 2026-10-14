@@ -183,3 +183,52 @@ Cell: +39 345 601 6630 <tel:+393456016630>
   ]);
   console.log('OK8');
 }
+{
+  delete require.cache[require.resolve('../ingest')];
+  delete require.cache[require.resolve('../extract')];
+  const t = `yesmobility
+info@yesmobility.it <mailto:info@yesmobility.it>
+Tel: +39 050 791 7337 <tel:+390507917337>
+
+> Inizio messaggio inoltrato:
+> 
+> Da: David Vannini <david.vannini@me.com>
+> Oggetto: I: Lead YesMobility - Consulenza
+> 
+> David Vannini
+> david.vannini@me.com
+> +393483312650
+> 
+> Inizio messaggio inoltrato:
+> 
+>> Da: Kiko Corsentino <kiko@facilesalire.it>
+>> A: david.vannini@me.com
+>> Oggetto: Lead YesMobility - Consulenza
+>> 
+>> \ufeff
+>> name
+>> 
+>> 
+>> Vito
+>> 
+>> email
+>> 
+>> 
+>> vito.latartara@gmail.com <mailto:vito.latartara@gmail.com>
+>> phone
+>> 
+>> 
+>> 3287220261
+>> 
+>> service
+>> 
+>> 
+>> consulenza
+>> 
+>>`;
+  const r = require('../ingest').ingest({ subject: 'Fwd: Lead', from: 'Yesmobility <info@yesmobility.it>', text: t, messageId: '<real2>' });
+  assert(r.added, JSON.stringify(r));
+  const l = r.lead;
+  assert.deepStrictEqual([l.name, l.email, l.phone, l.city, l.message], ['Vito', 'vito.latartara@gmail.com', '3287220261', '', 'consulenza'], JSON.stringify(l));
+  console.log('OK9');
+}

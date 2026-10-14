@@ -8,7 +8,7 @@ const LABELS = {
   phone: ['telefono', 'cellulare', 'numero di telefono', 'tel', 'cell', 'mobile', 'phone', 'whatsapp'],
   company: ['azienda', 'societ[àa]', 'ragione sociale', 'company', 'organization', 'ditta'],
   city: ['citt[àa]', 'comune', 'localit[àa]', 'city', 'zona', 'provincia'],
-  message: ['messaggio', 'richiesta', 'note', 'commento', 'esigenza', 'message', 'comments', 'interesse', 'prodotto'],
+  message: ['messaggio', 'servizio', 'service', 'tipo di servizio', 'richiesta', 'note', 'commento', 'esigenza', 'message', 'comments', 'interesse', 'prodotto'],
 };
 
 const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
@@ -38,11 +38,16 @@ function extractLead(mail, ownAddresses = []) {
   if (fm) text = text.slice(fm.index + fm[0].length);
   const HEADER = /^\s*(da|from|a|to|cc|ccn|bcc|oggetto|subject|data|date|inviato|sent|rispondi a|reply-to)\s*:/i;
   const skip = new Set();
-  const norm = l => l.replace(/[\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u00a0/g, ' ').replace(/^[\s>*•|\-]+/, '').replace(/\*+/g, '').trim();
+  const norm = l => l.replace(/<(mailto|tel):[^>]*>/gi, '').replace(/[\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u00a0/g, ' ').replace(/^[\s>*•|\-]+/, '').replace(/\*+/g, '').trim();
   const lines = text.split(/\r?\n/)
     .flatMap(l => l.split(/\t+| {3,}/))              // celle di una tabella
     .map(norm).filter(Boolean)
     .filter(l => { if (HEADER.test(l)) { (l.match(new RegExp(EMAIL_RE.source, 'gi')) || []).forEach(e => skip.add(e.toLowerCase())); return false; } return true; });
+  // Etichetta e valore su righe separate ("name" / "Vito"): si uniscono in "name: Vito"
+  const isLabel = l => Object.values(LABELS).flat().some(n => new RegExp('^' + n + '$', 'i').test(l));
+  for (let i = 0; i < lines.length - 1; i++) {
+    if (isLabel(lines[i]) && !isLabel(lines[i + 1]) && !/[:@]\s*$/.test(lines[i])) lines.splice(i, 2, lines[i] + ': ' + lines[i + 1]);
+  }
   const found = {};
   const extra = {};
   for (const line of lines) {
@@ -118,7 +123,7 @@ function extractRows(text, own, skip) {
 function extractColumnar(text, own, skip) {
   const HEADER = /^\s*(da|from|a|to|cc|ccn|bcc|oggetto|subject|data|date|inviato|sent|rispondi a|reply-to)\s*:/i;
   const lines = text.split(/\r?\n/)
-    .map(l => l.replace(/[\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u00a0/g, ' ').replace(/^[\s>*•|\-]+/, '').replace(/\*+/g, '').trim())
+    .map(l => l.replace(/[\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u00a0/g, ' ').replace(/<(mailto|tel):[^>]*>/gi, '').replace(/^[\s>*•|\-]+/, '').replace(/\*+/g, '').trim())
     .filter(l => !HEADER.test(l));
   const idx = [];
   lines.forEach((l, i) => { if (FULL_EMAIL.test(l) && !own.includes(l.toLowerCase()) && !skip.has(l.toLowerCase())) idx.push(i); });
