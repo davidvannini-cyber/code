@@ -84,6 +84,7 @@ $('add').onclick = async () => {
 $('quit').onclick = async () => {
   if (!confirm('Chiudere Lead Collector? Il server si ferma e non riceverai nuovi lead finché non lo riavvii.')) return;
   try { await fetch('/api/shutdown', { method: 'POST' }); } catch {}
+  setTimeout(() => window.close(), 400);
   document.body.innerHTML = '<p style="padding:48px;text-align:center;font:16px system-ui">Lead Collector chiuso. Puoi chiudere questa scheda.</p>';
 };
 load(); setInterval(load, 30000);
