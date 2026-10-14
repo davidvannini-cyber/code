@@ -76,3 +76,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-13 | `3d9090c` | .claude/hooks/consensi-avvio.sh (sicurezza: solo autorizzazione branch→main, resto sempre permesso; promemoria /restore), REGISTRO-SALVATAGGI.md | `git checkout 3d9090c` |
 | 2026-10-13 | `3d9090c` | .claude/hooks/consensi-avvio.sh (avvio riordinato: Nuovo/Esistente, cartella, sicurezza unica con SÌ=tutto permesso e solo "Fai Sync", NO=4 domande; promemoria /restore), REGISTRO-SALVATAGGI.md | `git checkout 3d9090c` |
 | 2026-10-13 | `0f262a5` | NUOVO-PROGETTO/LEAD-COLLECT/.gitkeep (nuova cartella di progetto), REGISTRO-SALVATAGGI.md | `git checkout 0f262a5` |
+| 2026-10-14 | `e8a654a` | LEAD-COLLECTOR/ (nuovo progetto: riceve email con lead e li mostra in tabella web; IMAP, webhook, incolla; export CSV), REGISTRO-SALVATAGGI.md | `git checkout e8a654a` |

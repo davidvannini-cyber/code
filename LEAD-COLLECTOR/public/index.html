@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead Collector</title>
+<style>
+  :root { --bg:#f6f7f9; --fg:#1b1f24; --muted:#6a737d; --card:#fff; --line:#e1e4e8; --acc:#1f6feb; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14171a; --fg:#e6e8eb; --muted:#8b949e; --card:#1c2128; --line:#30363d; --acc:#58a6ff; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+  header { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:16px; border-bottom:1px solid var(--line); background:var(--card); }
+  h1 { font-size:18px; margin:0 auto 0 0; }
+  input, select, textarea, button { font:inherit; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:6px; padding:6px 10px; }
+  button { cursor:pointer; } button.p { background:var(--acc); color:#fff; border-color:var(--acc); }
+  main { padding:16px; }
+  .wrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; }
+  table { border-collapse:collapse; width:100%; min-width:760px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; cursor:pointer; white-space:nowrap; }
+  td.msg { max-width:320px; color:var(--muted); }
+  .muted { color:var(--muted); } .empty { padding:32px; text-align:center; color:var(--muted); }
+  details { margin-bottom:16px; } summary { cursor:pointer; color:var(--acc); }
+  textarea { width:100%; min-height:140px; margin:8px 0; font-family:ui-monospace,monospace; }
+  #msg { margin-left:8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Lead Collector <span class="muted" id="count"></span></h1>
+  <input id="q" type="search" placeholder="Cerca…">
+  <select id="st"><option value="">Tutti gli stati</option><option>nuovo</option><option>contattato</option><option>qualificato</option><option>perso</option></select>
+  <button id="refresh">Aggiorna</button>
+  <a href="/api/export.csv"><button type="button">Esporta CSV</button></a>
+</header>
+<main>
+  <details>
+    <summary>Aggiungi a mano una email (incolla il testo o il sorgente .eml)</summary>
+    <textarea id="paste" placeholder="Incolla qui l'email…"></textarea>
+    <button class="p" id="add">Estrai lead</button><span id="msg" class="muted"></span>
+  </details>
+  <div class="wrap"><table>
+    <thead><tr id="head"></tr></thead><tbody id="body"></tbody>
+  </table></div>
+</main>
+<script>
+const COLS = [['receivedAt','Ricevuto'],['name','Nome'],['email','Email'],['phone','Telefono'],['company','Azienda'],['city','Città'],['message','Messaggio'],['status','Stato'],['subject','Oggetto']];
+let leads = [], sort = ['receivedAt', -1];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('head').innerHTML = COLS.map(([k,l]) => `<th data-k="${k}">${l}</th>`).join('') + '<th></th>';
+$('head').onclick = e => { const k = e.target.dataset.k; if (!k) return; sort = [k, sort[0] === k ? -sort[1] : 1]; render(); };
+
+async function load() { leads = await (await fetch('/api/leads')).json(); render(); }
+function render() {
+  const q = $('q').value.toLowerCase(), st = $('st').value;
+  let rows = leads.filter(l => (!st || l.status === st) && (!q || Object.values(l).join(' ').toLowerCase().includes(q)));
+  rows.sort((a,b) => String(a[sort[0]]||'').localeCompare(String(b[sort[0]]||'')) * sort[1]);
+  $('count').textContent = `(${rows.length}/${leads.length})`;
+  $('body').innerHTML = rows.length ? rows.map(l => `<tr>
+    <td>${esc(new Date(l.receivedAt).toLocaleString('it-IT'))}</td>
+    <td>${esc(l.name)}</td>
+    <td>${l.email ? `<a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ''}</td>
+    <td>${l.phone ? `<a href="tel:${esc(l.phone.replace(/[^\d+]/g,''))}">${esc(l.phone)}</a>` : ''}</td>
+    <td>${esc(l.company)}</td><td>${esc(l.city)}</td>
+    <td class="msg">${esc(l.message)}</td>
+    <td><select data-id="${l.id}" class="s">${['nuovo','contattato','qualificato','perso'].map(s => `<option${s===l.status?' selected':''}>${s}</option>`).join('')}</select></td>
+    <td class="muted">${esc(l.subject)}</td>
+    <td><button data-del="${l.id}" title="Elimina">✕</button></td></tr>`).join('')
+    : `<tr><td colspan="${COLS.length+1}" class="empty">Nessun lead. Inoltra una email all'endpoint o incollala qui sopra.</td></tr>`;
+}
+$('body').onchange = async e => { if (e.target.classList.contains('s')) { await fetch('/api/leads/' + e.target.dataset.id, { method:'PATCH', body: JSON.stringify({ status: e.target.value }) }); load(); } };
+$('body').onclick = async e => { const id = e.target.dataset.del; if (id && confirm('Eliminare il lead?')) { await fetch('/api/leads/' + id, { method:'DELETE' }); load(); } };
+$('q').oninput = $('st').onchange = render;
+$('refresh').onclick = load;
+$('add').onclick = async () => {
+  const r = await (await fetch('/api/paste', { method:'POST', body: $('paste').value })).json();
+  $('msg').textContent = r.added ? 'Lead aggiunto ✓' : 'Non aggiunto: ' + (r.reason || r.error);
+  if (r.added) { $('paste').value = ''; load(); }
+};
+load(); setInterval(load, 30000);
+</script>
+</body>
+</html>
