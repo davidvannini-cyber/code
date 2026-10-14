@@ -77,6 +77,11 @@ function collect(part, out) {
 
 function parseEmail(raw) {
   raw = String(raw);
+  // Testo semplice incollato a mano (senza intestazioni email): lo si usa così com'è.
+  const head = raw.replace(/^\s+/, '').split(/\r?\n\r?\n/)[0];
+  if (!/^(from|to|subject|date|message-id|received|return-path|mime-version|content-type|reply-to|delivered-to):/im.test(head)) {
+    return { from: '', replyTo: '', subject: '', date: '', messageId: '', text: raw.trim() };
+  }
   const { headers } = splitHeaders(raw);
   const out = { text: [], html: [] };
   collect(raw, out);

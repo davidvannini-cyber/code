@@ -61,13 +61,19 @@ function extractLead(mail, ownAddresses = []) {
     for (const l of lines) { const m = l.match(PHONE_RE); if (m && normPhone(m[0])) { phone = clean(m[0]); break; } }
   }
 
+  // Righe senza etichetta (es. "Udine / +39... / mail / Nome Cognome")
+  const loose = lines.filter(l => !/[:@]/.test(l) && !PHONE_RE.test(l) && /^[A-Za-zÀ-ÿ'’. -]{2,40}$/.test(l));
+  const looksName = l => /^\S+\s+\S+(\s+\S+)?$/.test(l);
+  if (!found.name && !found.surname) { const n = loose.find(looksName); if (n) found.name = n; }
+  if (!found.city) { const c = loose.find(l => l !== found.name && !looksName(l)); if (c) found.city = c; }
+
   let name = clean([found.name, found.surname && !(found.name || '').includes(found.surname) ? found.surname : ''].join(' '));
   if (!name) name = sender.name;
 
   return {
     name, email, phone,
     company: found.company || '', city: found.city || '',
-    message: found.message || '',
+    message: found.message || (Object.keys(found).length < 3 && mail.text.length < 600 ? mail.text.replace(/\s*\n\s*/g, ' · ') : ''),
     extra,
   };
 }

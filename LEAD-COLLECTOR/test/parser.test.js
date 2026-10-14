@@ -34,5 +34,18 @@ assert(r.added && r.lead.email === 'anna@test.it' && r.lead.phone === '333 12345
 
 assert.strictEqual(ingest({ text: 'niente di utile qui' }).added, false);
 assert.strictEqual(store.load().length, 2);
-require('fs').unlinkSync(process.env.LEADS_FILE);
 console.log('OK');
+// testo semplice senza intestazioni
+{
+  const { ingest: ing } = require('../ingest');
+  const r = ing('Udine\n+393391757166\ngrazianomoreale@gmail.com\nGraziano Moreale');
+  assert(r.added, JSON.stringify(r));
+  assert.strictEqual(r.lead.name, 'Graziano Moreale');
+  assert.strictEqual(r.lead.city, 'Udine');
+  assert.strictEqual(r.lead.phone, '+393391757166');
+  assert.strictEqual(r.lead.email, 'grazianomoreale@gmail.com');
+  const r2 = ing('Nome: Mario Rossi\nEmail: m@e.it\nTelefono: 347 1234567');
+  assert(r2.added && r2.lead.name === 'Mario Rossi', JSON.stringify(r2));
+  require('fs').unlinkSync(process.env.LEADS_FILE);
+  console.log('OK2');
+}
