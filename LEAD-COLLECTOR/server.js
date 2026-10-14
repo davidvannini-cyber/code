@@ -41,7 +41,8 @@ function closeBrowserTabs() {
   if (process.platform !== 'darwin') return;
   // finestra "app" di Lead Collector (profilo Chrome separato)
   const profile = path.join(__dirname, 'data', 'chrome-profile').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  require('child_process').spawn('pkill', ['-f', 'user-data-dir=' + profile], { detached: true, stdio: 'ignore' }).unref();
+  const k = require('child_process').spawnSync('pkill', ['-f', 'user-data-dir=' + profile]);
+  console.log('shutdown: pkill esito', k.status, k.error ? k.error.message : '', '| profilo', profile);
   const u = `http://localhost:${PORT}`;
   const chrome = `tell application "Google Chrome"\nrepeat with w in windows\ntry\nrepeat with i from (count of tabs of w) to 1 by -1\nif URL of tab i of w starts with "${u}" then close tab i of w\nend repeat\nend try\nend repeat\nend tell`;
   const safari = chrome.replace(/Google Chrome/, 'Safari');
@@ -80,6 +81,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && url.pathname === '/api/shutdown') {
+      console.log('shutdown richiesto, origin:', req.headers.origin, 'host:', req.headers.host);
       if (req.headers.origin && req.headers.origin !== `http://${req.headers.host}`) return json(res, 403, { error: 'origine non valida' });
       json(res, 200, { ok: true });
       res.on('finish', () => {
