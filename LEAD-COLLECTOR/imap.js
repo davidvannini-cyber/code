@@ -27,7 +27,7 @@ function start() {
         }
       } finally { lock.release(); }
       await client.logout();
-    } catch (e) { console.error('IMAP errore:', e.message); }
+    } catch (e) { console.error('IMAP errore:', e.message, e.authenticationFailed ? '(password o utente non accettati)' : '', e.responseText || ''); }
   }
   poll();
   setInterval(poll, 1000 * +(process.env.IMAP_INTERVAL_SEC || 60));

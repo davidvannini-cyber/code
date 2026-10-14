@@ -80,3 +80,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-14 | `5b09814` | LEAD-COLLECTOR/mime.js, extract.js, test (accetta testo semplice senza intestazioni, riconosce nome/città senza etichette), REGISTRO-SALVATAGGI.md | `git checkout 5b09814` |
 | 2026-10-14 | `8ff7f1a` | LEAD-COLLECTOR/ingest.js, test (ignora email di sistema Google/mailer-daemon), REGISTRO-SALVATAGGI.md | `git checkout 8ff7f1a` |
 | 2026-10-14 | `11017ac` | LEAD-COLLECTOR/extract.js, ingest.js, test (chi inoltra non diventa il lead; ALLOWED_SENDERS), REGISTRO-SALVATAGGI.md | `git checkout 11017ac` |
+| 2026-10-14 | `33ed7d1` | LEAD-COLLECTOR/imap.js (errori IMAP più chiari), REGISTRO-SALVATAGGI.md | `git checkout 33ed7d1` |
