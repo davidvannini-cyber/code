@@ -29,7 +29,16 @@ function parseNameAddr(s) {
 
 function extractLead(mail, ownAddresses = []) {
   const own = ownAddresses.map(a => a.toLowerCase());
-  const lines = mail.text.split(/\r?\n/).map(l => l.replace(/^[\s>*•\-]+/, '').trim()).filter(Boolean);
+  // Messaggio inoltrato: si ignora la firma/intro di chi inoltra e si legge solo l'originale
+  let text = mail.text;
+  const fm = text.match(/^.*(inizio messaggio inoltrato|messaggio inoltrato|forwarded message|original message|messaggio originale|begin forwarded message).*$/im);
+  if (fm) text = text.slice(fm.index + fm[0].length);
+  const HEADER = /^\s*(da|from|a|to|cc|ccn|bcc|oggetto|subject|data|date|inviato|sent|rispondi a|reply-to)\s*:/i;
+  const skip = new Set();
+  const lines = text.split(/\r?\n/)
+    .filter(l => { if (HEADER.test(l)) { (l.match(new RegExp(EMAIL_RE.source, 'gi')) || []).forEach(e => skip.add(e.toLowerCase())); return false; } return true; })
+    .flatMap(l => l.split(/\t+| {3,}/))              // celle di una tabella
+    .map(l => l.replace(/^[\s>*•\-]+/, '').trim()).filter(Boolean);
   const found = {};
   const extra = {};
   for (const line of lines) {
@@ -52,10 +61,10 @@ function extractLead(mail, ownAddresses = []) {
   if (own.includes(sender.email.toLowerCase())) sender = { name: '', email: '' }; // chi inoltra non è il lead
   let email = (found.email && (found.email.match(EMAIL_RE) || [''])[0]) || '';
   if (!email) {
-    const all = mail.text.match(new RegExp(EMAIL_RE.source, 'gi')) || [];
-    email = all.find(e => !own.includes(e.toLowerCase())) || '';
+    const all = text.match(new RegExp(EMAIL_RE.source, 'gi')) || [];
+    email = all.find(e => !own.includes(e.toLowerCase()) && !skip.has(e.toLowerCase())) || '';
   }
-  if (!email) email = sender.email;
+  if (!email && !fm) email = sender.email;
 
   let phone = normPhone(found.phone);
   if (!phone) {
@@ -74,7 +83,7 @@ function extractLead(mail, ownAddresses = []) {
   return {
     name, email, phone,
     company: found.company || '', city: found.city || '',
-    message: found.message || (Object.keys(found).length < 3 && mail.text.length < 600 ? mail.text.replace(/\s*\n\s*/g, ' · ') : ''),
+    message: found.message || (Object.keys(found).length < 3 && text.length < 600 ? lines.join(' · ') : ''),
     extra,
   };
 }

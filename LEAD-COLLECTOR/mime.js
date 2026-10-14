@@ -50,7 +50,7 @@ function param(h, name) {
 function htmlToText(html) {
   return html
     .replace(/<(style|script)[\s\S]*?<\/\1>/gi, '')
-    .replace(/<br\s*\/?>|<\/(p|div|tr|li|h\d|table)>|<\/t[dh]>/gi, m => /t[dh]/i.test(m) ? ' ' : '\n')
+    .replace(/<br\s*\/?>|<\/(p|div|tr|li|h\d|table)>|<\/t[dh]>/gi, m => /t[dh]/i.test(m) ? '\t' : '\n')
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n');

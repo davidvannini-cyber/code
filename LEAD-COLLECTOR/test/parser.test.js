@@ -61,3 +61,19 @@ console.log('OK');
   assert(r.added && r.lead.email === '' && r.lead.name === '' && r.lead.phone === '347 7654321', JSON.stringify(r));
   console.log('OK4');
 }
+{
+  process.env.OWN_ADDRESSES = 'info@yesmobility.it,leads.ym@gmail.com';
+  delete require.cache[require.resolve('../ingest')];
+  delete require.cache[require.resolve('../extract')];
+  const html = '<p>yesmobility info@yesmobility.it Tel: +39 050 791 7337</p><p>Inizio messaggio inoltrato:</p>'
+    + '<p><b>Da:</b> Kiko Corsentino &lt;kiko@facilesalire.it&gt;<br><b>Oggetto:</b> Lead Facebook<br><b>A:</b> info@yesmobility.it</p>'
+    + '<table><tr><td>Udine</td><td>+393391757166</td><td>grazianomoreale@gmail.com</td><td>Graziano Moreale</td></tr></table>';
+  const eml = 'From: Yesmobility <info@yesmobility.it>\nSubject: I: Lead Facebook 2\nMessage-ID: <z1>\nContent-Type: text/html; charset=utf-8\n\n' + html;
+  const r = require('../ingest').ingest(eml);
+  assert(r.added, JSON.stringify(r));
+  assert.strictEqual(r.lead.email, 'grazianomoreale@gmail.com');
+  assert.strictEqual(r.lead.phone, '+393391757166');
+  assert.strictEqual(r.lead.name, 'Graziano Moreale');
+  assert.strictEqual(r.lead.city, 'Udine');
+  console.log('OK5');
+}
