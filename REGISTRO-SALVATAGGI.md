@@ -83,3 +83,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-14 | `33ed7d1` | LEAD-COLLECTOR/imap.js (errori IMAP più chiari), REGISTRO-SALVATAGGI.md | `git checkout 33ed7d1` |
 | 2026-10-14 | `93dcec7` | LEAD-COLLECTOR/server.js, imap.js, .env.example (impostazioni da file .env, spazi tolti dalla password), REGISTRO-SALVATAGGI.md | `git checkout 93dcec7` |
 | 2026-10-14 | `089f925` | LEAD-COLLECTOR/extract.js, mime.js, test (email inoltrate: legge solo il messaggio originale, ignora firma e intestazioni Da:/A:, tabelle cella per cella), REGISTRO-SALVATAGGI.md | `git checkout 089f925` |
+| 2026-10-14 | `0e4d131` | LEAD-COLLECTOR/extract.js, test (righe Da:/A: con caratteri invisibili o citazioni scartate; messaggio non duplicato), REGISTRO-SALVATAGGI.md | `git checkout 0e4d131` |

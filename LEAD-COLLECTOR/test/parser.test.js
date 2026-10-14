@@ -77,3 +77,12 @@ console.log('OK');
   assert.strictEqual(r.lead.city, 'Udine');
   console.log('OK5');
 }
+{
+  delete require.cache[require.resolve('../ingest')];
+  delete require.cache[require.resolve('../extract')];
+  const t = 'Yesmobility\ninfo@yesmobility.it\n\nInizio messaggio inoltrato:\n\n​> *Da:* Kiko Corsentino <kiko@facilesalire.it>\n Oggetto: Lead Facebook\n> Data: 14 ottobre 2026\n> A: "info@yesmobility.it" <info@yesmobility.it>\n\nUdine\t+393391757166\tgrazianomoreale@gmail.com\tGraziano Moreale\n';
+  const r = require('../ingest').ingest({ subject: 'Fwd: Lead 2', from: 'Yesmobility <info@yesmobility.it>', text: t, messageId: '<z2>' });
+  assert(r.added && r.lead.email === 'grazianomoreale@gmail.com' && r.lead.name === 'Graziano Moreale' && r.lead.city === 'Udine', JSON.stringify(r));
+  assert(!/kiko/i.test(r.lead.message), r.lead.message);
+  console.log('OK6');
+}

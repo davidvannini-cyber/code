@@ -35,10 +35,11 @@ function extractLead(mail, ownAddresses = []) {
   if (fm) text = text.slice(fm.index + fm[0].length);
   const HEADER = /^\s*(da|from|a|to|cc|ccn|bcc|oggetto|subject|data|date|inviato|sent|rispondi a|reply-to)\s*:/i;
   const skip = new Set();
+  const norm = l => l.replace(/[\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u00a0/g, ' ').replace(/^[\s>*•|\-]+/, '').replace(/\*+/g, '').trim();
   const lines = text.split(/\r?\n/)
-    .filter(l => { if (HEADER.test(l)) { (l.match(new RegExp(EMAIL_RE.source, 'gi')) || []).forEach(e => skip.add(e.toLowerCase())); return false; } return true; })
     .flatMap(l => l.split(/\t+| {3,}/))              // celle di una tabella
-    .map(l => l.replace(/^[\s>*•\-]+/, '').trim()).filter(Boolean);
+    .map(norm).filter(Boolean)
+    .filter(l => { if (HEADER.test(l)) { (l.match(new RegExp(EMAIL_RE.source, 'gi')) || []).forEach(e => skip.add(e.toLowerCase())); return false; } return true; });
   const found = {};
   const extra = {};
   for (const line of lines) {
@@ -83,7 +84,7 @@ function extractLead(mail, ownAddresses = []) {
   return {
     name, email, phone,
     company: found.company || '', city: found.city || '',
-    message: found.message || (Object.keys(found).length < 3 && text.length < 600 ? lines.join(' · ') : ''),
+    message: found.message || (!found.name && text.length < 600 ? lines.join(' · ') : ''),
     extra,
   };
 }
