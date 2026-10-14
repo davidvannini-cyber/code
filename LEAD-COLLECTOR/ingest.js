@@ -22,6 +22,11 @@ function ingest(input) {
   if (sender && IGNORE.some(w => sender.includes(w))) return { added: false, reason: 'mittente automatico ignorato' };
   if (ALLOWED.length && mail.from && !ALLOWED.some(a => sender.includes(a))) return { added: false, reason: 'mittente non autorizzato' };
   if (!mail.text) return { added: false, reason: 'email vuota' };
+  try { // diagnostica: testo dell'ultima email letta (tab visibili come →)
+    const fs = require('fs'), path = require('path');
+    fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
+    fs.writeFileSync(path.join(__dirname, 'data', 'last-email.txt'), 'FROM: ' + mail.from + '\nSUBJECT: ' + mail.subject + '\n\n' + mail.text.replace(/\t/g, '→'));
+  } catch {}
   const leads = store.load();
   const key = mail.messageId || crypto.createHash('sha1').update(mail.from + mail.subject + mail.text).digest('hex');
   const found = extractLeads(mail, OWN).filter(f => f.email || f.phone || f.name);
