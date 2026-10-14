@@ -21,8 +21,12 @@ function eq(a, b) {
   const x = Buffer.from(a), y = Buffer.from(b);
   return x.length === y.length && crypto.timingSafeEqual(x, y);
 }
+const COOKIE = 'lc_auth';
+const authToken = () => crypto.createHash('sha256').update('lead-collector:' + PAGE_PASSWORD).digest('hex');
 function pageAuthOk(req) {
   if (!PAGE_PASSWORD) return true;
+  const ck = (req.headers.cookie || '').split(/;\s*/).find(c => c.startsWith(COOKIE + '='));
+  if (ck && eq(ck.slice(COOKIE.length + 1), authToken())) return true;
   const h = req.headers.authorization || '';
   if (!h.startsWith('Basic ')) return false;
   const pass = Buffer.from(h.slice(6), 'base64').toString().split(':').slice(1).join(':');
@@ -75,6 +79,13 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, ingest(input));
     }
 
+    // Accesso diretto dall'app: /?pw=PASSWORD imposta un cookie e torna alla pagina pulita
+    if (PAGE_PASSWORD && req.method === 'GET' && url.pathname === '/' && url.searchParams.has('pw')) {
+      if (eq(url.searchParams.get('pw'), PAGE_PASSWORD)) {
+        res.writeHead(302, { 'Set-Cookie': `${COOKIE}=${authToken()}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`, Location: '/' });
+        return res.end();
+      }
+    }
     if (!pageAuthOk(req)) {
       res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="Lead Collector"' });
       return res.end('Autenticazione richiesta');

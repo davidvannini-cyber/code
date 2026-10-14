@@ -38,8 +38,8 @@ fi
 if [ -x "$CHROME" ]; then
   PASS="$(grep -E '^PAGE_PASSWORD=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d "\"'\r")"
   AURL="$URL/"
-  # la password, se semplice, è inclusa nell'indirizzo per non doverla digitare ogni volta
-  if printf '%s' "$PASS" | grep -Eq '^[A-Za-z0-9._~-]+$'; then AURL="http://leads:$PASS@localhost:$PORT/"; fi
+  # la password, se semplice, entra una volta sola (il server la trasforma in cookie) e non va digitata
+  if printf '%s' "$PASS" | grep -Eq '^[A-Za-z0-9._~-]+$'; then AURL="$URL/?pw=$PASS"; fi
   "$CHROME" --user-data-dir="$DIR/data/chrome-profile" --app="$AURL" \
     --no-first-run --no-default-browser-check --window-size=1280,860 >/dev/null 2>&1 &
 else
