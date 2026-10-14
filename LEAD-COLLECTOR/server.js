@@ -36,6 +36,15 @@ function readBody(req, limit = 5e6) {
     req.on('error', reject);
   });
 }
+// Chiude le schede del browser aperte su questa pagina (solo macOS: Chrome e Safari)
+function closeBrowserTabs() {
+  if (process.platform !== 'darwin') return;
+  const u = `http://localhost:${PORT}`;
+  const chrome = `tell application "Google Chrome"\nrepeat with w in windows\ntry\nrepeat with i from (count of tabs of w) to 1 by -1\nif URL of tab i of w starts with "${u}" then close tab i of w\nend repeat\nend try\nend repeat\nend tell`;
+  const safari = chrome.replace(/Google Chrome/, 'Safari');
+  const script = `delay 1\ntell application "System Events" to set procs to name of every process\nif procs contains "Google Chrome" then\ntry\n${chrome}\nend try\nend if\nif procs contains "Safari" then\ntry\n${safari}\nend try\nend if`;
+  require('child_process').spawn('osascript', ['-e', script], { detached: true, stdio: 'ignore' }).unref();
+}
 const json = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
 
 const csvCell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
@@ -67,6 +76,16 @@ const server = http.createServer(async (req, res) => {
       return res.end('Autenticazione richiesta');
     }
 
+    if (req.method === 'POST' && url.pathname === '/api/shutdown') {
+      if (req.headers.origin && req.headers.origin !== `http://${req.headers.host}`) return json(res, 403, { error: 'origine non valida' });
+      json(res, 200, { ok: true });
+      res.on('finish', () => {
+        try { fs.unlinkSync(path.join(__dirname, 'data', 'server.pid')); } catch {}
+        closeBrowserTabs();
+        setTimeout(() => process.exit(0), 300);
+      });
+      return;
+    }
     if (req.method === 'GET' && url.pathname === '/api/leads') return json(res, 200, store.load());
     if (req.method === 'GET' && url.pathname === '/api/export.csv') {
       res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="leads.csv"' });

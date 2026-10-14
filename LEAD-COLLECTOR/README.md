@@ -25,3 +25,7 @@ Righe `Etichetta: valore` (nome, cognome, email, telefono/cellulare, azienda, ci
 `npm test`
 
 Nota: il server va ospitato dove resta acceso (VPS, Render, Fly…); la modalità IMAP non richiede un indirizzo pubblico.
+
+## App con icona (macOS)
+`Lead Collector.app` (nella cartella LEAD-COLLECTOR): un doppio clic avvia il server in background, senza Terminale, e apre `http://localhost:3000`. In fondo alla pagina il pulsante **⏻ Chiudi Lead Collector** ferma il server e chiude la scheda del browser (Chrome/Safari).
+Per metterla sulla scrivania: tieni premuti **Opzione+Cmd** e trascina l'app sulla scrivania (crea un alias). Le impostazioni restano nel file `.env`; eventuali errori sono in `data/server.log`.

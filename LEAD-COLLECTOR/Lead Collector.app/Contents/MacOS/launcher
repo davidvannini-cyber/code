@@ -1,0 +1,37 @@
+#!/bin/bash
+# Avvia il server Lead Collector in background (nessun Terminale) e apre la pagina.
+PORT=3000
+URL="http://localhost:$PORT"
+
+avviso() { osascript -e "display notification \"$1\" with title \"Lead Collector\"" >/dev/null 2>&1; }
+
+# 1) Trova la cartella del progetto: accanto all'app, poi nei posti più comuni.
+QUI="$(cd "$(dirname "$0")/../../.." 2>/dev/null && pwd)"
+DIR=""
+for c in "$QUI" "$HOME/Documents/progetti/code/LEAD-COLLECTOR" "$HOME/Documents/code/LEAD-COLLECTOR" "$HOME/code/LEAD-COLLECTOR"; do
+  if [ -f "$c/server.js" ]; then DIR="$c"; break; fi
+done
+[ -z "$DIR" ] && { avviso "Cartella LEAD-COLLECTOR non trovata."; exit 1; }
+cd "$DIR" || exit 1
+mkdir -p data
+
+# 2) Se il server non è già acceso, lo avvia in background.
+if [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL/" 2>/dev/null)" = "000" ]; then
+  NODE="$(/bin/zsh -lic 'command -v node' 2>/dev/null | tail -1)"
+  [ -x "$NODE" ] || NODE="$(command -v node || ls /opt/homebrew/bin/node /usr/local/bin/node 2>/dev/null | head -1)"
+  [ -x "$NODE" ] || { avviso "Node.js non trovato."; exit 1; }
+  nohup "$NODE" server.js >> data/server.log 2>&1 &
+  echo $! > data/server.pid
+  # attende che il server risponda (max ~15 secondi)
+  for i in $(seq 1 30); do
+    [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL/" 2>/dev/null)" != "000" ] && break
+    sleep 0.5
+  done
+fi
+
+# 3) Apre la pagina.
+if [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL/" 2>/dev/null)" = "000" ]; then
+  avviso "Il server non parte. Vedi data/server.log"
+  exit 1
+fi
+open "$URL/"
