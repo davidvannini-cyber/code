@@ -29,9 +29,19 @@ if [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL/" 2>/dev/null)" = "000" ]; 
   done
 fi
 
-# 3) Apre la pagina.
+# 3) Apre la pagina come app indipendente (finestra senza schede, profilo Chrome separato).
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 if [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL/" 2>/dev/null)" = "000" ]; then
   avviso "Il server non parte. Vedi data/server.log"
   exit 1
 fi
-open "$URL/"
+if [ -x "$CHROME" ]; then
+  PASS="$(grep -E '^PAGE_PASSWORD=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d "\"'\r")"
+  AURL="$URL/"
+  # la password, se semplice, è inclusa nell'indirizzo per non doverla digitare ogni volta
+  if printf '%s' "$PASS" | grep -Eq '^[A-Za-z0-9._~-]+$'; then AURL="http://leads:$PASS@localhost:$PORT/"; fi
+  "$CHROME" --user-data-dir="$DIR/data/chrome-profile" --app="$AURL" \
+    --no-first-run --no-default-browser-check --window-size=1280,860 >/dev/null 2>&1 &
+else
+  open "$URL/"
+fi

@@ -86,3 +86,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-14 | `0e4d131` | LEAD-COLLECTOR/extract.js, test (righe Da:/A: con caratteri invisibili o citazioni scartate; messaggio non duplicato), REGISTRO-SALVATAGGI.md | `git checkout 0e4d131` |
 | 2026-10-14 | `ef917d6` | LEAD-COLLECTOR/Lead Collector.app (avvio con un clic senza Terminale), server.js (/api/shutdown), public/index.html (pulsante Chiudi), README.md, REGISTRO-SALVATAGGI.md | `git checkout ef917d6` |
 | 2026-10-14 | `8128519` | LEAD-COLLECTOR/crea-app-scrivania.sh (crea l'app sulla scrivania con osacompile), REGISTRO-SALVATAGGI.md | `git checkout 8128519` |
+| 2026-10-14 | `e992767` | LEAD-COLLECTOR/Lead Collector.app (finestra app Chrome senza barra né schede, profilo separato), server.js (chiude la finestra app), REGISTRO-SALVATAGGI.md | `git checkout e992767` |
