@@ -1,4 +1,11 @@
 'use strict';
+// Legge le impostazioni dal file .env (se esiste), righe tipo CHIAVE=valore
+try {
+  for (const line of require('fs').readFileSync(require('path').join(__dirname, '.env'), 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/);
+    if (m && !line.trim().startsWith('#') && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+  }
+} catch {}
 const http = require('http');
 const fs = require('fs');
 const path = require('path');

@@ -12,7 +12,7 @@ function start() {
   async function poll() {
     const client = new ImapFlow({
       host: IMAP_HOST, port: +(process.env.IMAP_PORT || 993), secure: process.env.IMAP_SECURE !== 'false',
-      auth: { user: IMAP_USER, pass: IMAP_PASS }, logger: false,
+      auth: { user: IMAP_USER.trim(), pass: IMAP_PASS.replace(/\s+/g, '') }, logger: false,
     });
     try {
       await client.connect();
