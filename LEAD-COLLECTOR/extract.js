@@ -113,10 +113,42 @@ function extractRows(text, own, skip) {
   return out;
 }
 
+// Tabella con una cella per riga (tipico del testo semplice): [città, telefono, email, nome] ripetuti.
+// Ogni email isolata su una riga ne ancora un record; le righe prima/dopo l'email sono le altre celle.
+function extractColumnar(text, own, skip) {
+  const HEADER = /^\s*(da|from|a|to|cc|ccn|bcc|oggetto|subject|data|date|inviato|sent|rispondi a|reply-to)\s*:/i;
+  const lines = text.split(/\r?\n/)
+    .map(l => l.replace(/[\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u00a0/g, ' ').replace(/^[\s>*•|\-]+/, '').replace(/\*+/g, '').trim())
+    .filter(l => !HEADER.test(l));
+  const idx = [];
+  lines.forEach((l, i) => { if (FULL_EMAIL.test(l) && !own.includes(l.toLowerCase()) && !skip.has(l.toLowerCase())) idx.push(i); });
+  if (idx.length < 2) return [];
+  const gaps = idx.slice(1).map((v, k) => v - idx[k] - 1);
+  const g = gaps[0];
+  if (g < 2 || gaps.some(x => x !== g)) return [];          // i record devono essere tutti della stessa lunghezza
+  let b = 0;                                                  // celle dopo l'email = righe piene dopo l'ultima email
+  while (idx[idx.length - 1] + 1 + b < lines.length && lines[idx[idx.length - 1] + 1 + b] && b < g - 1) b++;
+  const a = g - b;
+  const out = [];
+  for (const i of idx) {
+    const cells = lines.slice(i - a, i + b + 1);
+    if (cells.length !== a + b + 1 || cells.some(c => !c)) return [];
+    const rest = cells.filter((c, k) => k !== a);
+    const phoneCell = rest.find(c => !/[A-Za-zÀ-ÿ]/.test(c) && normPhone(c));
+    if (!phoneCell) return [];
+    const others = rest.filter(c => c !== phoneCell);
+    const multi = others.filter(looksName);
+    const name = multi.length ? multi[multi.length - 1] : others[others.length - 1] || '';
+    out.push({ name, email: lines[i], phone: clean(phoneCell), company: '', city: others.find(c => c !== name) || '', message: '', extra: {} });
+  }
+  return out;
+}
+
 // Restituisce uno o più lead (più righe di tabella = più lead).
 function extractLeads(mail, ownAddresses = []) {
   const one = extractLead(mail, ownAddresses);
-  const rows = extractRows(one._text, one._own, one._skip);
+  let rows = extractRows(one._text, one._own, one._skip);
+  if (!rows.length) rows = extractColumnar(one._text, one._own, one._skip);
   const strip = ({ _text, _skip, _own, ...l }) => l;
   return rows.length ? rows : [strip(one)];
 }

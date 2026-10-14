@@ -120,3 +120,66 @@ console.log('OK');
   assert(r2.added && r2.count === 2, JSON.stringify(r2));
   console.log('OK7');
 }
+{
+  // email reale: doppio inoltro, testo semplice con citazioni ">" e una cella per riga
+  process.env.OWN_ADDRESSES = 'info@yesmobility.it,leads.ym@gmail.com';
+  delete require.cache[require.resolve('../ingest')];
+  delete require.cache[require.resolve('../extract')];
+  const t = `yesmobility
+info@yesmobility.it <mailto:info@yesmobility.it>
+Tel: +39 050 791 7337 <tel:+390507917337>
+Cell: +39 345 601 6630 <tel:+393456016630>
+
+> Inizio messaggio inoltrato:
+> 
+> Da: David Vannini <david.vannini@me.com>
+> Oggetto: I: Lead Piattaforme
+> Data: 12 ottobre 2026, 11:21:02 CEST
+> A: Yesmobility <info@yesmobility.it>
+> 
+> 
+> David Vannini
+> david.vannini@me.com
+> +393483312650
+> 
+> Inizio messaggio inoltrato:
+> 
+>> Da: Kiko Corsentino <kiko@facilesalire.it>
+>> Data: 12 ottobre 2026 alle ore 09:44:54 CEST
+>> A: david.vannini@me.com
+>> Oggetto: Lead Piattaforme
+>> 
+>> \ufeff
+>> Ohi,
+>> 
+>> Allora da oggi ti giro dei lead. Quando inserisci a CRM: 
+>> Campagna; YesMobility
+>> Fonte: Online
+>> 
+>> Rovereto
+>> 0464438685
+>> flavio.dalbosco@mail.com
+>> Flavio Dalbosco
+>> Casarano
+>> 3294146388
+>> lucia.ste2003@libero.it
+>> Lucia Stefano
+>> Sanremo
+>> 3358313184
+>> salvatore.cutelle@gmail.com
+>> Salvatore Cutelle
+>> Palermo
+>> 3282817586
+>> mariagraziasaeli@gmail.com
+>> Grazia Saeli
+>>`;
+  const r = require('../ingest').ingest({ subject: 'Fwd: Lead Piattaforme', from: 'Yesmobility <info@yesmobility.it>', text: t, messageId: '<real1>' });
+  assert(r.added && r.count === 4, JSON.stringify(r));
+  assert.deepStrictEqual(r.leads.map(l => [l.name, l.email, l.phone, l.city]), [
+    ['Flavio Dalbosco', 'flavio.dalbosco@mail.com', '0464438685', 'Rovereto'],
+    ['Lucia Stefano', 'lucia.ste2003@libero.it', '3294146388', 'Casarano'],
+    ['Salvatore Cutelle', 'salvatore.cutelle@gmail.com', '3358313184', 'Sanremo'],
+    ['Grazia Saeli', 'mariagraziasaeli@gmail.com', '3282817586', 'Palermo'],
+  ]);
+  console.log('OK8');
+}
