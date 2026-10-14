@@ -90,3 +90,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-14 | `d30a6d1` | LEAD-COLLECTOR/public/index.html (window.close dopo la chiusura), REGISTRO-SALVATAGGI.md | `git checkout d30a6d1` |
 | 2026-10-14 | `67bf65b` | LEAD-COLLECTOR/server.js, public/index.html (log e errori della chiusura), REGISTRO-SALVATAGGI.md | `git checkout 67bf65b` |
 | 2026-10-14 | `8ff08e6` | LEAD-COLLECTOR/server.js, Lead Collector.app (accesso con cookie invece della password nell'indirizzo: la lista non si caricava), REGISTRO-SALVATAGGI.md | `git checkout 8ff08e6` |
+| 2026-10-14 | `b0c5399` | LEAD-COLLECTOR/extract.js, ingest.js, imap.js, test (doppio inoltro: legge l'ultimo messaggio; tabella con più righe = più lead), REGISTRO-SALVATAGGI.md | `git checkout b0c5399` |

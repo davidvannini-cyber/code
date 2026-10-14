@@ -22,6 +22,8 @@ function normPhone(p) {
   return digits.length >= 8 && digits.length <= 15 ? s : '';
 }
 
+const looksName = l => /^\S+\s+\S+(\s+\S+)?$/.test(l);
+
 function parseNameAddr(s) {
   const m = (s || '').match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>/);
   return m ? { name: clean(m[1]), email: m[2].trim() } : { name: '', email: (s.match(EMAIL_RE) || [''])[0] };
@@ -31,7 +33,8 @@ function extractLead(mail, ownAddresses = []) {
   const own = ownAddresses.map(a => a.toLowerCase());
   // Messaggio inoltrato: si ignora la firma/intro di chi inoltra e si legge solo l'originale
   let text = mail.text;
-  const fm = text.match(/^.*(inizio messaggio inoltrato|messaggio inoltrato|forwarded message|original message|messaggio originale|begin forwarded message).*$/im);
+  const fms = [...text.matchAll(/^.*(inizio messaggio inoltrato|messaggio inoltrato|forwarded message|original message|messaggio originale|begin forwarded message).*$/gim)];
+  const fm = fms[fms.length - 1];                      // in un doppio inoltro conta l'ultimo: è il messaggio originale
   if (fm) text = text.slice(fm.index + fm[0].length);
   const HEADER = /^\s*(da|from|a|to|cc|ccn|bcc|oggetto|subject|data|date|inviato|sent|rispondi a|reply-to)\s*:/i;
   const skip = new Set();
@@ -74,7 +77,6 @@ function extractLead(mail, ownAddresses = []) {
 
   // Righe senza etichetta (es. "Udine / +39... / mail / Nome Cognome")
   const loose = lines.filter(l => !/[:@]/.test(l) && !PHONE_RE.test(l) && /^[A-Za-zÀ-ÿ'’. -]{2,40}$/.test(l));
-  const looksName = l => /^\S+\s+\S+(\s+\S+)?$/.test(l);
   if (!found.name && !found.surname) { const n = loose.find(looksName); if (n) found.name = n; }
   if (!found.city) { const c = loose.find(l => l !== found.name && !looksName(l)); if (c) found.city = c; }
 
@@ -86,7 +88,37 @@ function extractLead(mail, ownAddresses = []) {
     company: found.company || '', city: found.city || '',
     message: found.message || (!found.name && text.length < 600 ? lines.join(' · ') : ''),
     extra,
+    _text: text, _skip: skip, _own: own,
   };
 }
 
-module.exports = { extractLead };
+// Tabella con una riga per lead (celle separate da tab o da 3+ spazi): ogni riga con una cella-email è un lead.
+const FULL_EMAIL = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+function extractRows(text, own, skip) {
+  const out = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const cells = raw.split(/\t+| {3,}/).map(c => c.replace(/[\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u00a0/g, ' ').trim()).filter(Boolean);
+    if (cells.length < 3 || cells.length > 8) continue;
+    const emailCell = cells.find(c => FULL_EMAIL.test(c));
+    if (!emailCell) continue;
+    const email = emailCell;
+    if (own.includes(email.toLowerCase()) || skip.has(email.toLowerCase())) continue;
+    const rest = cells.filter(c => c !== emailCell);
+    const phoneCell = rest.find(c => !/[A-Za-zÀ-ÿ]/.test(c) && normPhone(c));
+    const others = rest.filter(c => c !== phoneCell);
+    const multi = others.filter(looksName);
+    const name = multi.length ? multi[multi.length - 1] : others[others.length - 1] || '';
+    out.push({ name, email, phone: phoneCell ? clean(phoneCell) : '', company: '', city: others.find(c => c !== name) || '', message: '', extra: {} });
+  }
+  return out;
+}
+
+// Restituisce uno o più lead (più righe di tabella = più lead).
+function extractLeads(mail, ownAddresses = []) {
+  const one = extractLead(mail, ownAddresses);
+  const rows = extractRows(one._text, one._own, one._skip);
+  const strip = ({ _text, _skip, _own, ...l }) => l;
+  return rows.length ? rows : [strip(one)];
+}
+
+module.exports = { extractLead, extractLeads };

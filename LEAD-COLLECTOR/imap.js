@@ -22,7 +22,7 @@ function start() {
         for (const uid of uids) {
           const msg = await client.fetchOne(uid, { source: true }, { uid: true });
           const r = ingest(msg.source.toString('utf8'));
-          console.log(`IMAP uid ${uid}:`, r.added ? 'lead aggiunto' : r.reason);
+          console.log(`IMAP uid ${uid}:`, r.added ? 'lead aggiunti: ' + (r.count || 1) : r.reason);
           await client.messageFlagsAdd(uid, ['\\Seen'], { uid: true });
         }
       } finally { lock.release(); }
