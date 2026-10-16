@@ -94,3 +94,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-14 | `948db63` | LEAD-COLLECTOR/ingest.js (data/last-email.txt: testo dell'ultima email, diagnostica), REGISTRO-SALVATAGGI.md | `git checkout 948db63` |
 | 2026-10-14 | `57b151e` | LEAD-COLLECTOR/extract.js, test (tabella con una cella per riga e citazioni > : 4 lead dal doppio inoltro reale), REGISTRO-SALVATAGGI.md | `git checkout 57b151e` |
 | 2026-10-14 | `6e76326` | LEAD-COLLECTOR/extract.js, test (etichetta e valore su righe separate: name/email/phone/service; tolti <mailto:> e <tel:>), REGISTRO-SALVATAGGI.md | `git checkout 6e76326` |
+| 2026-10-16 | `e3d0957` | Annullata la modifica e3d0957 (LEADREWORKS: stampa e campo Note), su richiesta | `git checkout e3d0957` |
