@@ -133,6 +133,11 @@
   .hm-edit{width:100%;font:inherit;font-size:11px;line-height:1.5;color:#1b1f27;background:#fff;border:1px solid #d6dde6;border-radius:4px;padding:5px 7px;resize:vertical;}
   .hm-edit:focus{outline:none;border-color:#2bb3a6;box-shadow:0 0 0 2px rgba(43,179,166,.2);}
   .hm-ptxt{display:none;white-space:pre-wrap;}
+  /* Note YM: sfondo verde acqua, a schermo e in stampa */
+  .hm-card[data-ym]{background:#cfeeea;border-color:#2bb3a6;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .hm-card[data-ym] .hm-ch{background:#2bb3a6;color:#fff;border-left-color:#12324f;}
+  .hm-card[data-ym] .hm-cb{background:#cfeeea;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .hm-card[data-ym] .hm-edit{background:#eaf9f7;border-color:#7fcdc4;}
   .modal.hm .btn-ghost{padding:2px 5px;}
   /* Storico lead: ricerca sopra la lista */
   .hs-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
@@ -2454,8 +2459,8 @@ function renderHistoryModal(id){
           <div class="hm-flags no-print"><b>Stampa:</b>${flag("telefono","Telefono")}${flag("whatsapp","WhatsApp")}${flag("email","Email")}</div>
           ${d.analisi_strategia ? card("Analisi e strategia", icon('sparkles',{size:13,noMargin:true}), `<div class="hm-ai">${nl2br(d.analisi_strategia)}</div>`) : ""}
           ${d.note ? card("Note", icon('clipboard',{size:13,noMargin:true}), nl2br(d.note)) : ""}
-          ${card("Note YM:", icon('clipboard',{size:13,noMargin:true}), `<div class="hm-fld"><textarea class="hm-edit" rows="${Math.max(3,hmRows(noteYM))}" placeholder="Scrivi qui le tue note su questo lead…" oninput="saveHistoryNoteYM('${r.id}',this.value,this)">${escapeHtml(noteYM)}</textarea></div>`, 'data-empty="1"')}
           ${scripts}
+          ${card("Note YM:", icon('clipboard',{size:13,noMargin:true}), `<div class="hm-fld"><textarea class="hm-edit" rows="${Math.max(3,hmRows(noteYM))}" placeholder="Scrivi qui le tue note su questo lead…" oninput="saveHistoryNoteYM('${r.id}',this.value,this)">${escapeHtml(noteYM)}</textarea></div>`, 'data-empty="1" data-ym="1"')}
         </div>
       </div>
     </div>
