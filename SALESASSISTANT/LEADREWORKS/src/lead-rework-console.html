@@ -172,21 +172,12 @@
   .uploaded-file-meta{font-size:9px;color:var(--text-dim);}
   .uploaded-file-remove{position:absolute;top:4px;right:6px;cursor:pointer;color:var(--text-dim);font-size:12px;}
   .uploaded-file-remove:hover{color:var(--danger);}
-  .hm-note-ta{width:calc(100% - 16px);margin:0 8px 8px;min-height:64px;font-size:11px;line-height:1.45;}
-  .hm-note-print{display:none;}
   @media print{
-    @page{margin:14mm;}
-    html,body{background:#fff !important;height:auto !important;overflow:visible !important;}
-    /* si stampa solo la copia del modulo (#print-root): nessuna pagina bianca dalla pagina sottostante */
-    body.print-hm > *:not(#print-root){display:none !important;}
-    #print-root{display:block !important;position:static;width:100%;}
-    #print-root .modal-overlay{position:static;background:none;padding:0;display:block;overflow:visible;}
-    #print-root .modal{position:static;width:100%;max-width:none;box-shadow:none;border:none;max-height:none;overflow:visible;padding:0;background:#fff !important;color:#111 !important;}
-    #print-root .modal *{color:#111 !important;}
-    #print-root .hm-sec{break-inside:avoid;page-break-inside:avoid;background:#fff !important;}
-    #print-root .hm-head{break-after:avoid;}
-    #print-root .hm-note-ta{display:none !important;}
-    #print-root .hm-note-print{display:block;}
+    body *{visibility:hidden;}
+    .modal, .modal *{visibility:visible;}
+    .modal-overlay{position:static;background:none;padding:0;display:block;}
+    .modal{position:absolute;top:0;left:0;width:100%;max-width:none;box-shadow:none;border:none;max-height:none;overflow:visible;padding:0;background:#fff !important;color:#111 !important;}
+    .modal *{color:#111 !important;}
     .no-print{display:none !important;}
   }
   /* Suggerimento immediato sui pulsanti senza scritta (il suggerimento nativo del browser compare tardi o per niente) */
@@ -2312,35 +2303,6 @@ function renderHistoryTab(){
 function openHistoryItem(id){ state.historyOpen = id; render(); }
 function closeHistoryModal(){ state.historyOpen = null; render(); }
 
-// Stampa solo il modulo del lead: ne crea una copia fuori da #app, così la pagina sottostante non occupa spazio (niente pagine bianche)
-function printHistoryModal(){
-  const src = document.querySelector('.modal.hm');
-  if (!src) { window.print(); return; }
-  const ta = src.querySelector('.hm-note-ta');
-  const root = document.createElement('div');
-  root.id = 'print-root';
-  root.style.display = 'none';
-  root.innerHTML = '<div class="modal-overlay"></div>';
-  const clone = src.cloneNode(true);
-  const pn = clone.querySelector('.hm-note-print');
-  if (pn && ta) pn.innerHTML = nl2br(ta.value);
-  root.firstChild.appendChild(clone);
-  document.body.appendChild(root);
-  document.body.classList.add('print-hm');
-  const cleanup = () => { document.body.classList.remove('print-hm'); root.remove(); window.removeEventListener('afterprint', cleanup); };
-  window.addEventListener('afterprint', cleanup);
-  window.print();
-}
-
-// Nota modificabile dalla schermata "Vedi": salvata nello storico senza ridisegnare la finestra
-function saveHistoryNote(id, value){
-  const r = state.leadsHistory[id];
-  if (!r) return;
-  r.dati_lead_input = r.dati_lead_input || {};
-  r.dati_lead_input.note = value;
-  dbSet("leads", state.leadsHistory);
-}
-
 function renderHistoryModal(id){
   const r = state.leadsHistory[id];
   if (!r) return "";
@@ -2377,7 +2339,7 @@ function renderHistoryModal(id){
           <span id="phone_msg_history" class="hint no-print"></span>
           <span class="hm-ib no-print" title="Invia a telefono" onclick="sendHistoryToPhone('${r.id}')">${icon('phone',{size:13,noMargin:true})}</span>
           <span class="hm-ib hm-pri no-print" title="Invia a Suggerimenti Vendita" onclick="exportHistoryItemToSuggerimentiVendita('${r.id}')">${icon('upload',{size:13,noMargin:true})}</span>
-          <span class="hm-ib no-print" title="Stampa" onclick="printHistoryModal()">${icon('print',{size:13,noMargin:true})}</span>
+          <span class="hm-ib no-print" title="Stampa" onclick="window.print()">${icon('print',{size:13,noMargin:true})}</span>
           <span class="hm-ib no-print" title="Chiudi" onclick="closeHistoryModal()">${icon('close',{size:13,noMargin:true})}</span>
         </div>
         <div class="hm-info">
@@ -2388,7 +2350,7 @@ function renderHistoryModal(id){
         </div>
         ${(r.screenshots && r.screenshots.length) ? `<div class="row no-print" style="margin-top:6px;">${r.screenshots.map(sh => `<img class="thumb" style="max-width:100px;max-height:70px;" src="${sh.base64}" title="${escapeHtml(sh.name)}">`).join("")}</div>` : ""}
         ${d.analisi_strategia ? sec("Analisi e strategia", icon('sparkles',{size:13,noMargin:true}), `<div class="hm-body hm-ai">${nl2br(d.analisi_strategia)}</div>`) : ""}
-        ${sec("Note", icon('clipboard',{size:13,noMargin:true}), `<textarea class="hm-note-ta" placeholder="Scrivi una nota su questo lead…" oninput="saveHistoryNote('${r.id}', this.value)">${escapeHtml(d.note||'')}</textarea><div class="hm-body hm-note-print">${nl2br(d.note||'')}</div>`)}
+        ${d.note ? sec("Note", icon('clipboard',{size:13,noMargin:true}), `<div class="hm-body">${nl2br(d.note)}</div>`) : ""}
         ${scripts}
       </div>
     </div>
