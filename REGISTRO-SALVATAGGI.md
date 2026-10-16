@@ -97,3 +97,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-16 | `e3d0957` | Annullata la modifica e3d0957 (LEADREWORKS: stampa e campo Note), su richiesta | `git checkout e3d0957` |
 | 2026-10-16 | `36bc473` | SALESASSISTANT/LEADREWORKS/docs/bozze-stampa/bozze-stampa-modulo-lead.html (3 bozze di stampa del modulo lead, solo anteprima), REGISTRO-SALVATAGGI.md | `git checkout 36bc473` |
 | 2026-10-16 | `23370c7` | bozze-stampa-modulo-lead.html (bozza B scelta: dettagli da arancione a verde acqua), REGISTRO-SALVATAGGI.md | `git checkout 23370c7` |
+| 2026-10-16 | `98a39df` | SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html (schermata Vedi ristrutturata come bozza B = stampa; campo Note YM:; flag stampa Telefono/WhatsApp/Email; script editabili con salvataggio automatico), REGISTRO-SALVATAGGI.md | `git checkout 98a39df` |
