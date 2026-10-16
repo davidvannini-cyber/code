@@ -30,3 +30,22 @@ fi
 
 # 3) -n: nuova istanza, altrimenti "open" riporta in primo piano Chrome e ignora gli argomenti.
 open -na "Google Chrome" --args --app="$URL" --window-position=$X,$Y --window-size=$W,$H
+
+# 4) Chrome si ricorda la dimensione dell'ultima finestra "app" e ignora quella richiesta all'avvio:
+#    appena la finestra compare, posizione e dimensione si impongono direttamente (come fa l'estensione).
+#    La prima volta macOS chiede di consentire il controllo di Chrome: va accettato.
+R=$(( X + W )); B=$(( Y + H ))
+for i in $(seq 1 20); do
+  sleep 0.5
+  OK=$(osascript -e "tell application \"Google Chrome\"
+    set n to 0
+    repeat with w in windows
+      if (title of w) contains \"Lead Rework Console\" then
+        set bounds of w to {$X, $Y, $R, $B}
+        set n to n + 1
+      end if
+    end repeat
+    return n
+  end tell" 2>/dev/null)
+  [ "${OK:-0}" -gt 0 ] 2>/dev/null && break
+done
