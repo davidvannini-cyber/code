@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bozze stampa modulo lead</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9dce1;font-family:Helvetica,Arial,sans-serif;color:#1b1f27;padding:24px}
+h1.top{font-size:15px;margin:0 0 4px}p.top{font-size:12px;color:#555;margin-bottom:18px}
+.wrap{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.lab{font-size:13px;font-weight:700;margin-bottom:6px}
+.page{width:210mm;min-height:297mm;background:#fff;padding:16mm;box-shadow:0 4px 18px rgba(0,0,0,.25);font-size:10.5pt;line-height:1.45;transform-origin:top left}
+.small{font-size:9pt;color:#666}
+pre{white-space:pre-wrap;font-family:inherit}
+@media print{body{background:#fff;padding:0}.top,.lab{display:none}.page{box-shadow:none;break-after:page;margin:0}.wrap{display:block}}
+
+/* A — Classico sobrio */
+.A{font-family:Georgia,'Times New Roman',serif}
+.A .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #111;padding-bottom:8px}
+.A .hd h2{font-size:22pt;font-weight:700;letter-spacing:-.3px}
+.A .hd .st{font-family:Helvetica,Arial;font-size:9pt;text-transform:uppercase;letter-spacing:.12em;color:#444}
+.A .meta{display:grid;grid-template-columns:1fr 1fr;gap:3px 24px;margin:12px 0 4px;font-size:10pt}
+.A .meta b{font-family:Helvetica,Arial;font-size:8pt;text-transform:uppercase;letter-spacing:.08em;color:#666;display:block}
+.A h3{font-family:Helvetica,Arial;font-size:9pt;text-transform:uppercase;letter-spacing:.14em;border-bottom:1px solid #999;margin:18px 0 6px;padding-bottom:3px}
+.A .box{padding:2px 0 0}
+.A .ft{margin-top:20px;border-top:1px solid #999;padding-top:5px;font-family:Helvetica,Arial;font-size:8pt;color:#777;display:flex;justify-content:space-between}
+
+/* B — Moderno a schede */
+.B{padding:0;font-family:'Segoe UI',Helvetica,Arial,sans-serif}
+.B .band{background:#12324f;color:#fff;padding:14mm 16mm 10mm}
+.B .band small{opacity:.7;font-size:8.5pt;letter-spacing:.14em;text-transform:uppercase}
+.B .band h2{font-size:22pt;margin:3px 0 8px}
+.B .pill{display:inline-block;background:#f2a900;color:#12324f;font-weight:700;font-size:9pt;padding:2px 10px;border-radius:99px}
+.B .body{padding:8mm 16mm 14mm}
+.B .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:-18px}
+.B .kv{background:#fff;border:1px solid #d6dde6;border-radius:6px;padding:7px 10px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.B .kv b{display:block;font-size:7.5pt;text-transform:uppercase;letter-spacing:.08em;color:#6b7a8c}
+.B .card{border:1px solid #d6dde6;border-radius:6px;margin-top:12px;overflow:hidden;break-inside:avoid}
+.B .card .ch{background:#eef2f7;padding:5px 10px;font-weight:700;font-size:9pt;color:#12324f;border-left:4px solid #f2a900}
+.B .card .cb{padding:8px 10px}
+
+/* C — Compatto a due colonne */
+.C{padding:0;display:grid;grid-template-columns:62mm 1fr;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.C aside{background:#f1f3f5;padding:16mm 8mm;border-right:3px solid #0f766e}
+.C aside h2{font-size:16pt;line-height:1.15;margin-bottom:4px}
+.C aside .st{display:inline-block;background:#0f766e;color:#fff;font-size:8pt;padding:2px 8px;border-radius:3px;margin-bottom:12px}
+.C aside dl dt{font-size:7.5pt;text-transform:uppercase;letter-spacing:.1em;color:#0f766e;font-weight:700;margin-top:9px}
+.C aside dl dd{font-size:9.5pt}
+.C main{padding:16mm 12mm 14mm 10mm}
+.C main h3{font-size:10pt;color:#0f766e;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px}
+.C main section{margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed #b8c2cc;break-inside:avoid}
+.C main section:last-child{border:none}
+</style></head><body>
+<h1 class="top">Bozze di stampa — modulo lead (dati di esempio)</h1>
+<p class="top">Tre impaginazioni A4 per il pulsante Stampa della schermata "Vedi". Dimmi quale preferisci (A, B o C) e cosa cambiare. Dalle bozze si può anche stampare per vedere il risultato su carta.</p>
+<div class="wrap">
+
+<div><div class="lab">Bozza A — Classico sobrio (bianco e nero, serif, righe sottili)</div>
+<div class="page A">
+ <div class="hd"><h2>Mario Rossi</h2><div class="st">Preventivo inviato — nessuna risposta</div></div>
+ <div class="meta">
+  <div><b>Prodotto</b>Scooter elettrico</div><div><b>Zona</b>Bologna (BO)</div>
+  <div><b>Telefono</b>333 123 4567</div><div><b>Telefono 2</b>—</div>
+  <div style="grid-column:1/-1"><b>Email</b>mario.rossi@example.it</div>
+ </div>
+ <h3>Analisi e strategia</h3><div class="box">Lead interessato ma indeciso sul prezzo. Contattato 2 volte senza risposta. Puntare sull'incentivo attivo e proporre prova su strada.</div>
+ <h3>Note</h3><div class="box">Preferisce essere chiamato dopo le 18. Ha già visto un modello concorrente.</div>
+ <h3>Telefono</h3><div class="box"><pre>Buonasera Mario, sono Davide di YesMobility. La chiamo per sapere se ha avuto modo di valutare il preventivo…</pre></div>
+ <h3>WhatsApp</h3><div class="box"><pre>Ciao Mario, ti scrivo per il preventivo dello scooter. C'è un incentivo valido fino a fine mese: ti va di una prova?</pre></div>
+ <h3>Email</h3><div class="box"><pre><b>Oggetto:</b> Il suo preventivo YesMobility
+Gentile Mario, le riscrivo in merito al preventivo…</pre></div>
+ <div class="ft"><span>YesMobility — Lead Rework</span><span>Creato il 16/10/26 · Pagina 1</span></div>
+</div></div>
+
+<div><div class="lab">Bozza B — Moderno a schede (fascia colorata, riquadri)</div>
+<div class="page B">
+ <div class="band"><small>YesMobility · Lead Rework</small><h2>Mario Rossi</h2><span class="pill">Preventivo inviato — nessuna risposta</span></div>
+ <div class="body">
+  <div class="grid">
+   <div class="kv"><b>Prodotto</b>Scooter elettrico</div><div class="kv"><b>Zona</b>Bologna (BO)</div><div class="kv"><b>Creato il</b>16/10/26</div>
+   <div class="kv"><b>Telefono</b>333 123 4567</div><div class="kv"><b>Telefono 2</b>—</div><div class="kv"><b>Email</b>mario.rossi@example.it</div>
+  </div>
+  <div class="card"><div class="ch">Analisi e strategia</div><div class="cb">Lead interessato ma indeciso sul prezzo. Contattato 2 volte senza risposta. Puntare sull'incentivo attivo e proporre prova su strada.</div></div>
+  <div class="card"><div class="ch">Note</div><div class="cb">Preferisce essere chiamato dopo le 18. Ha già visto un modello concorrente.</div></div>
+  <div class="card"><div class="ch">📞 Telefono</div><div class="cb"><pre>Buonasera Mario, sono Davide di YesMobility. La chiamo per sapere se ha avuto modo di valutare il preventivo…</pre></div></div>
+  <div class="card"><div class="ch">💬 WhatsApp</div><div class="cb"><pre>Ciao Mario, ti scrivo per il preventivo dello scooter. C'è un incentivo valido fino a fine mese: ti va di una prova?</pre></div></div>
+  <div class="card"><div class="ch">✉️ Email</div><div class="cb"><pre><b>Oggetto:</b> Il suo preventivo YesMobility
+Gentile Mario, le riscrivo in merito al preventivo…</pre></div></div>
+ </div>
+</div></div>
+
+<div><div class="lab">Bozza C — Compatto a due colonne (dati a sinistra, script a destra)</div>
+<div class="page C">
+ <aside>
+  <h2>Mario Rossi</h2><span class="st">Preventivo inviato — nessuna risposta</span>
+  <dl>
+   <dt>Prodotto</dt><dd>Scooter elettrico</dd>
+   <dt>Zona</dt><dd>Bologna (BO)</dd>
+   <dt>Telefono</dt><dd>333 123 4567</dd>
+   <dt>Telefono 2</dt><dd>—</dd>
+   <dt>Email</dt><dd>mario.rossi@example.it</dd>
+   <dt>Creato il</dt><dd>16/10/26</dd>
+   <dt>Note</dt><dd>Preferisce essere chiamato dopo le 18. Ha già visto un modello concorrente.</dd>
+  </dl>
+ </aside>
+ <main>
+  <section><h3>Analisi e strategia</h3>Lead interessato ma indeciso sul prezzo. Contattato 2 volte senza risposta. Puntare sull'incentivo attivo e proporre prova su strada.</section>
+  <section><h3>Telefono</h3><pre>Buonasera Mario, sono Davide di YesMobility. La chiamo per sapere se ha avuto modo di valutare il preventivo…</pre></section>
+  <section><h3>WhatsApp</h3><pre>Ciao Mario, ti scrivo per il preventivo dello scooter. C'è un incentivo valido fino a fine mese: ti va di una prova?</pre></section>
+  <section><h3>Email</h3><pre><b>Oggetto:</b> Il suo preventivo YesMobility
+Gentile Mario, le riscrivo in merito al preventivo…</pre></section>
+ </main>
+</div></div>
+
+</div></body></html>
