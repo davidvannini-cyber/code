@@ -103,3 +103,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-16 | `44a415d` | SALESASSISTANT/LEADREWORKS/Lead Rework.app, crea-app-scrivania.sh, README.md (icona sulla scrivania che apre la console vuota come l'estensione), REGISTRO-SALVATAGGI.md | `git checkout 44a415d` |
 | 2026-10-16 | `53ca024` | SALESASSISTANT/LEADREWORKS/Crea icona scrivania.command (rinominato da crea-app-scrivania.sh: il .sh non si esegue con doppio clic), README.md, REGISTRO-SALVATAGGI.md | `git checkout 53ca024` |
 | 2026-10-16 | `b5ae486` | SALESASSISTANT/LEADREWORKS/Lead Rework.app/Contents/MacOS/launcher (dimensione e posizione imposte dopo l'apertura, come l'estensione), REGISTRO-SALVATAGGI.md | `git checkout b5ae486` |
+| 2026-10-16 | `2c726f6` | SALESASSISTANT/LEADREWORKS/Lead Rework.app/Contents/Resources/icon.icns (nuova icona liquid glass con logo YesMobility), docs/icona/ (logo, script, anteprima), REGISTRO-SALVATAGGI.md | `git checkout 2c726f6` |
