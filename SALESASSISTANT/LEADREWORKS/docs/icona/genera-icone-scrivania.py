@@ -50,7 +50,7 @@ def glass_tile(top, bottom, g1, g2, g3):
     return Image.alpha_composite(canvas, sp), mask
 
 # ---------- forme 3D (rilievo lucido) ----------
-def bevel(mask, top, bottom, depth=26, shin=70, bbox=None):
+def bevel(mask, top, bottom, depth=26, shin=70, gain=230, bbox=None):
     """Colora una maschera con effetto rilievo: luce da in alto a sinistra + riflesso speculare."""
     m = np.array(mask, float) / 255.0
     h = np.array(mask.filter(ImageFilter.GaussianBlur(depth)), float) / 255.0
@@ -66,7 +66,7 @@ def bevel(mask, top, bottom, depth=26, shin=70, bbox=None):
     t = np.clip((np.arange(S) - y0) / max(y1 - y0, 1), 0, 1)[:, None, None]
     base = np.array(top, float)[None, None, :] * (1 - t) + np.array(bottom, float)[None, None, :] * t
     base = np.repeat(base, S, axis=1)
-    col = base * (0.50 + 0.70 * diff[:, :, None]) + (spec * 230)[:, :, None]
+    col = base * (0.50 + 0.70 * diff[:, :, None]) + (spec * gain)[:, :, None]
     # bordo interno leggermente più scuro/saturo per dare spessore
     rim = np.clip(1 - h / max(h.max(), 1e-6) * 1.0, 0, 1)[:, :, None]
     col = col * (1 - 0.18 * rim)
@@ -171,6 +171,7 @@ def icona_curva():
     m = stroke(pts, 92)
     return place(c, bevel(m, *WHITE, depth=18), **WSH), mask
 
-for name, fn in (("1-suggerimenti-vendita", icona_suggerimenti), ("2-sync", icona_sync), ("3-model3d", icona_model3d),
-                 ("4-lead-collector", icona_collector), ("5-curva", icona_curva)):
-    canvas, mask = fn(); finish(canvas, mask, name)
+if __name__ == "__main__":
+    for name, fn in (("1-suggerimenti-vendita", icona_suggerimenti), ("2-sync", icona_sync), ("3-model3d", icona_model3d),
+                     ("4-lead-collector", icona_collector), ("5-curva", icona_curva)):
+        canvas, mask = fn(); finish(canvas, mask, name)
