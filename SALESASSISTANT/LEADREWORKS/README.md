@@ -15,6 +15,14 @@ libreria script, flusso utente, struttura dati, capacità runtime.
 - `src/data/`    — libreria degli script YesMobility (26 script, numerati 1–27) e profilo azienda di default, in JSON (stessi contenuti incorporati nell'HTML: qui servono da sorgente leggibile/manutenibile; la fonte di verità resta l'HTML)
 - `browser-extension/` — estensione browser (prototipo) che importa i dati del lead direttamente dal CRM proprietario "Facile Salire" nella console, vedi sezione dedicata sotto
 
+## Icona sulla scrivania (macOS)
+`Lead Rework.app` (in questa cartella) apre la console come il pulsante dell'estensione Chrome — finestra senza
+schede, in alto a sinistra, 35% della larghezza e 60% dell'altezza dell'area di lavoro dello schermo principale —
+ma **senza trasportare dati**: i campi partono vuoti. Usa il profilo Chrome normale, quindi lo storico lead è lo stesso.
+Per averla sulla scrivania: eseguire una volta `crea-app-scrivania.sh` (doppio clic o da Terminale). L'icona sulla
+scrivania richiama l'app in questa cartella: dopo un Sync non va rifatta; se sposti la cartella, rieseguire lo script.
+Se la console è già aperta, un nuovo clic apre un'altra finestra (l'estensione invece riusa quella esistente).
+
 ## Import diretto dal CRM (estensione browser, prototipo)
 Alternativa all'upload manuale di screenshot: un'estensione browser legge i dati
 del lead già presenti nella pagina di dettaglio del CRM Facile Salire e li invia
