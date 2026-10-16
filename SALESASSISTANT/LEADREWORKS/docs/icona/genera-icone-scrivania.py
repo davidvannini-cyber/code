@@ -35,11 +35,11 @@ def glass_tile(top, bottom, g1, g2, g3):
     veil.putalpha(ImageChops.multiply(veil.getchannel("A"), vm.filter(ImageFilter.GaussianBlur(40))))
     canvas = Image.alpha_composite(canvas, veil)
     edge = ImageChops.subtract(mask, squircle(14, 10))
-    ec = Image.fromarray(vgrad((255, 255, 255, 255), (190, 235, 245, 255)).astype("uint8"), "RGBA")
+    ec = Image.fromarray(vgrad((255, 255, 255, 255), (170, 235, 230, 255)).astype("uint8"), "RGBA")
     ec.putalpha(edge.point(lambda v: int(v * 0.85)))
     canvas = Image.alpha_composite(canvas, ec)
     inner = ImageChops.subtract(mask, mask.transform((S, S), Image.AFFINE, (1, 0, 0, 0, 1, -26))).filter(ImageFilter.GaussianBlur(14))
-    sh = Image.new("RGBA", (S, S), (10, 60, 110, 0)); sh.putalpha(inner.point(lambda v: int(v * 0.40)))
+    sh = Image.new("RGBA", (S, S), (10, 80, 100, 0)); sh.putalpha(inner.point(lambda v: int(v * 0.40)))
     canvas = Image.alpha_composite(canvas, sh)
     spec = Image.new("L", (S, S), 0)
     ImageDraw.Draw(spec).ellipse([M+BODY*0.06, M+8, M+BODY*0.94, M+BODY*0.50], fill=255)
@@ -97,9 +97,10 @@ def finish(canvas, mask, name):
     open(os.path.join(OUT, name + ".icns"), "wb").write(b"icns" + struct.pack(">I", len(chunks) + 8) + chunks)
     print("ok", name)
 
-BLUE = dict(top=(110, 178, 255), bottom=(22, 84, 206), g1=(60, 140, 255), g2=(20, 70, 190), g3=(215, 235, 255))
-LIGHT = dict(top=(236, 246, 255), bottom=(120, 176, 236), g1=(150, 200, 255), g2=(90, 150, 230), g3=(255, 255, 255))
-WHITE = ((255, 255, 255), (206, 222, 240)); ORANGE = ((255, 190, 60), (238, 104, 8))
+# stessa tessera dell'icona Lead Rework (verde acqua), identica per tutte le icone
+TEAL = dict(top=(228, 248, 245), bottom=(104, 182, 190), g1=(120, 205, 205), g2=(70, 150, 175), g3=(255, 255, 255))
+BLUE = LIGHT = TEAL
+WHITE = ((255, 255, 255), (186, 208, 228)); WSH = dict(shadow=(6, 64, 84), sh_alpha=0.75, off=(6, 26), blur=15); ORANGE = ((255, 190, 60), (238, 104, 8))
 DEEP = ((70, 160, 255), (8, 40, 170))
 
 def rr(box, r):
@@ -111,7 +112,7 @@ def icona_suggerimenti():
     P = lambda x, y: (M + x * k, M + y * k)
     bubble = rr([M+215*k, M+285*k, M+808*k, M+717*k], int(125*k))
     bubble = ImageChops.lighter(bubble, poly_mask([P(345, 640), P(345, 808), P(470, 700)]))
-    c = place(c, bevel(bubble, *WHITE, depth=22))
+    c = place(c, bevel(bubble, *WHITE, depth=22), **WSH)
     bolt = poly_mask([P(473, 255), P(628, 255), P(527, 475), P(659, 475), P(423, 740), P(496, 513), P(363, 513)])
     return place(c, bevel(bolt, *ORANGE, depth=14, shin=50), shadow=(120, 50, 0), sh_alpha=0.5, off=(4, 16), blur=12), mask
 
@@ -155,7 +156,7 @@ def icona_collector():
     bars = Image.new("L", (S, S), 0); d = ImageDraw.Draw(bars)
     for (x0, y0, x1, y1) in ((123, 153, 390, 201), (123, 245, 390, 293), (123, 337, 288, 385)):
         d.rounded_rectangle([M+(x0-31)*k, M+(y0-31)*k, M+(x1-31)*k, M+(y1-31)*k], radius=int(24*k), fill=255)
-    return place(c, bevel(bars, *WHITE, depth=16)), mask
+    return place(c, bevel(bars, *WHITE, depth=16), **WSH), mask
 
 # 5) Curva a S bianca su vetro blu
 def icona_curva():
@@ -168,7 +169,7 @@ def icona_curva():
         u = np.clip((t - 0.2) / 0.6, 0, 1); s = u * u * (3 - 2 * u)
         pts.append((x, 700 - 380 * s))
     m = stroke(pts, 92)
-    return place(c, bevel(m, *WHITE, depth=18)), mask
+    return place(c, bevel(m, *WHITE, depth=18), **WSH), mask
 
 for name, fn in (("1-suggerimenti-vendita", icona_suggerimenti), ("2-sync", icona_sync), ("3-model3d", icona_model3d),
                  ("4-lead-collector", icona_collector), ("5-curva", icona_curva)):
