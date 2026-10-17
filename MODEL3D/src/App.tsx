@@ -15,6 +15,15 @@ export default function App() {
     initEngine();
   }, [initEngine]);
 
+  // Esc leaves whatever tool is active (free-hand sketch, pick modes, selection).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") useEditorStore.getState().clearSelection();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <div className="app">
       <IconSprite />

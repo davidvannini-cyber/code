@@ -116,6 +116,7 @@ function DraftPlane() {
   const snapEnabled = useEditorStore((s) => s.snapEnabled);
   const snapSize = useEditorStore((s) => s.snapSize);
   const lastTapRef = useRef<{ index: number; time: number } | null>(null);
+  const lastClickRef = useRef<{ t: number; x: number; y: number } | null>(null);
 
   const { def, origin3D, quaternion } = usePlaneTransform(sketchPlane, sketchOffset);
 
@@ -125,7 +126,17 @@ function DraftPlane() {
     const local = e.point.clone().sub(origin3D);
     const u = local.dot(def.u);
     const v = local.dot(def.v);
-    const pressure = (e.nativeEvent as PointerEvent).pressure ?? 0.5;
+    const ne = e.nativeEvent as PointerEvent;
+    // Double click: the first click already placed the last point, so the second
+    // one only closes the outline back onto the first point.
+    const prev = lastClickRef.current;
+    if (prev && ne.timeStamp - prev.t < DOUBLE_TAP_MS && Math.hypot(ne.clientX - prev.x, ne.clientY - prev.y) < 14) {
+      lastClickRef.current = null;
+      if (useEditorStore.getState().draftPoints.length >= 3) closeDraft();
+      return;
+    }
+    lastClickRef.current = { t: ne.timeStamp, x: ne.clientX, y: ne.clientY };
+    const pressure = ne.pressure ?? 0.5;
     addDraftPoint([u, v], e.nativeEvent && (e.nativeEvent as PointerEvent).pointerType === "pen" ? pressure : 0.5);
   };
 

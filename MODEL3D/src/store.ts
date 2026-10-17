@@ -123,6 +123,7 @@ interface EditorState {
   addDraftPoint: (pt: [number, number], pressure: number) => void;
   undoDraftPoint: () => void;
   clearDraft: () => void;
+  cancelDraft: () => void;
   closeDraft: () => void;
   setDraftSegmentLength: (index: number, newLength: number) => void;
   createShape2D: () => void;
@@ -172,7 +173,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   sceneBackground: "dark",
   setSceneBackground: (bg) => set({ sceneBackground: bg }),
   activeCard: null,
-  setActiveCard: (card) => set((s) => ({ activeCard: s.activeCard === card ? null : card })),
+  setActiveCard: (card) =>
+    set((s) => {
+      const next = s.activeCard === card ? null : card;
+      // Leaving the sketch card ends any free-hand drafting in progress.
+      return next === "sketch" ? { activeCard: next } : { activeCard: next, drafting: false, draftPoints: [], draftPressures: [], draftClosed: false };
+    }),
 
   features: [],
   bodies: [],
@@ -282,7 +288,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setSketchPlane: (plane) => set({ sketchPlane: plane }),
   setSketchOffset: (offset) => set({ sketchOffset: offset }),
   setSnap: (enabled, size) => set((s) => ({ snapEnabled: enabled, snapSize: size ?? s.snapSize })),
-  setSketchForme: (forme) => set({ sketchForme: forme }),
+  setSketchForme: (forme) =>
+    set(forme === "libero" ? { sketchForme: forme } : { sketchForme: forme, drafting: false, draftPoints: [], draftPressures: [], draftClosed: false }),
   setSketchShapeParam: (patch) => set((s) => ({ sketchShapeParams: { ...s.sketchShapeParams, ...patch } })),
 
   drafting: false,
@@ -304,8 +311,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   undoDraftPoint: () =>
     set((s) => ({ draftPoints: s.draftPoints.slice(0, -1), draftPressures: s.draftPressures.slice(0, -1), draftClosed: false })),
   clearDraft: () => set({ draftPoints: [], draftPressures: [], draftClosed: false }),
+  cancelDraft: () => set({ drafting: false, draftPoints: [], draftPressures: [], draftClosed: false }),
   closeDraft: () => {
-    if (get().draftPoints.length >= 3) set({ draftClosed: true });
+    const { draftPoints, draftPressures } = get();
+    // A closing click that landed on the first point must not duplicate it.
+    const first = draftPoints[0];
+    const last = draftPoints[draftPoints.length - 1];
+    const dup = draftPoints.length > 3 && first && Math.hypot(first[0] - last[0], first[1] - last[1]) < 1e-6;
+    const points = dup ? draftPoints.slice(0, -1) : draftPoints;
+    if (points.length >= 3) set({ draftClosed: true, draftPoints: points, draftPressures: dup ? draftPressures.slice(0, -1) : draftPressures });
   },
   setDraftSegmentLength: (index, newLength) => {
     const points = get().draftPoints;

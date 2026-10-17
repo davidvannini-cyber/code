@@ -38,6 +38,7 @@ export function SketchCard() {
   const draftClosed = useEditorStore((s) => s.draftClosed);
   const undoDraftPoint = useEditorStore((s) => s.undoDraftPoint);
   const clearDraft = useEditorStore((s) => s.clearDraft);
+  const cancelDraft = useEditorStore((s) => s.cancelDraft);
   const closeDraft = useEditorStore((s) => s.closeDraft);
 
   const pendingShapes = useEditorStore((s) => s.pendingShapes);
@@ -159,7 +160,7 @@ export function SketchCard() {
         {isLibero && drafting && (
           <div className="sk-dims">
             <span className="section-label">
-              {draftClosed ? "Poligono chiuso" : "Tocca il piano per punti"} ({draftPoints.length})
+              {draftClosed ? "Poligono chiuso" : "Tocca il piano per i punti · doppio clic per chiudere"} ({draftPoints.length})
             </span>
             {!draftClosed ? (
               <div className="sk-row">
@@ -173,6 +174,9 @@ export function SketchCard() {
             ) : null}
             <button className="ghost-btn" disabled={draftPoints.length === 0} onClick={clearDraft}>
               Svuota
+            </button>
+            <button className="ghost-btn" onClick={cancelDraft}>
+              Esci dallo schizzo (Esc)
             </button>
           </div>
         )}

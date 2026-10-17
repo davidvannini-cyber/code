@@ -118,10 +118,11 @@ export function Viewport() {
       )}
 
       <OrbitControls
-        enabled={orbitEnabled && !drafting}
+        enabled={orbitEnabled}
         makeDefault
-        touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
-        mouseButtons={{ LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN }}
+        // While drafting, the left button / one finger draws; orbit moves to the right button / two fingers.
+        touches={drafting ? { TWO: THREE.TOUCH.DOLLY_PAN } : { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
+        mouseButtons={drafting ? { MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE } : { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN }}
       />
     </Canvas>
   );
