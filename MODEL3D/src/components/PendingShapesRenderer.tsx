@@ -32,14 +32,13 @@ const CORNER_COLOR: Record<string, string> = { none: "#ff8800", fillet: "#4f8dfd
 function PendingShapeOutline({ shape, index }: { shape: PendingShape; index: number }) {
   const { origin3D, quaternion } = usePlaneTransform(shape.plane, shape.offset);
   const extrudePickActive = useEditorStore((s) => s.extrudePickActive);
-  const extrudeTargetId = useEditorStore((s) => s.extrudeTargetId);
   const pickExtrudeTarget = useEditorStore((s) => s.pickExtrudeTarget);
   const filletPickActive = useEditorStore((s) => s.filletPickActive);
   const filletTargetShapeId = useEditorStore((s) => s.filletTargetShapeId);
   const filletCornerIndex = useEditorStore((s) => s.filletCornerIndex);
   const pickFilletCorner = useEditorStore((s) => s.pickFilletCorner);
 
-  const isExtrudeTarget = extrudeTargetId === shape.id;
+  const isExtrudeTarget = false;
   // Outline/fill show the outline with fillets and chamfers already applied,
   // exactly what the extrusion will use; the corner markers stay on the
   // original vertices.

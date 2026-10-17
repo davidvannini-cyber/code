@@ -1,17 +1,18 @@
 import { NumberInput } from "../NumberInput";
 import { useEditorStore } from "../../store";
 
+// Choosing a 2D shape extrudes it at once; the height field then edits that
+// extrusion live (no apply button), like the parameter fields.
 export function ExtrudeCard() {
   const engineReady = useEditorStore((s) => s.engineReady);
   const busy = useEditorStore((s) => s.busy);
   const pendingShapes = useEditorStore((s) => s.pendingShapes);
   const extrudePickActive = useEditorStore((s) => s.extrudePickActive);
-  const extrudeTargetId = useEditorStore((s) => s.extrudeTargetId);
+  const extrudeEditId = useEditorStore((s) => s.extrudeEditId);
   const extrudeHeight = useEditorStore((s) => s.extrudeHeight);
   const startExtrudeTool = useEditorStore((s) => s.startExtrudeTool);
   const cancelExtrudeTool = useEditorStore((s) => s.cancelExtrudeTool);
   const setExtrudeHeight = useEditorStore((s) => s.setExtrudeHeight);
-  const applyExtrusion = useEditorStore((s) => s.applyExtrusion);
   const disabled = !engineReady || busy;
 
   return (
@@ -25,16 +26,21 @@ export function ExtrudeCard() {
               Annulla
             </button>
           </>
-        ) : extrudeTargetId ? (
+        ) : extrudeEditId ? (
           <>
             <label className="sk-field">
               <span>Altezza (mm)</span>
-              <NumberInput autoFocus step={1} min={0.1} value={extrudeHeight} onValue={(v) => setExtrudeHeight(v)} onCommit={() => applyExtrusion()} />
+              <NumberInput step={1} min={0.1} value={extrudeHeight} onValue={(v) => setExtrudeHeight(v)} />
             </label>
-            <p className="hint-text muted">Scrivi l'altezza e premi Tab, Invio o clicca fuori dal campo per estrudere.</p>
-            <button className="ghost-btn full" onMouseDown={(e) => e.preventDefault()} onClick={cancelExtrudeTool}>
-              Annulla
-            </button>
+            <p className="hint-text muted">Si applica mentre cambi l'altezza.</p>
+            <div className="sk-row">
+              <button className="ghost-btn" disabled={disabled || pendingShapes.length === 0} onClick={startExtrudeTool}>
+                Altra forma
+              </button>
+              <button className="ghost-btn" onClick={cancelExtrudeTool}>
+                Fine
+              </button>
+            </div>
           </>
         ) : (
           <>

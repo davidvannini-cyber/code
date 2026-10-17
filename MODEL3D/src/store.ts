@@ -159,30 +159,28 @@ interface EditorState {
   pendingShapes: PendingShape[];
   removePendingShape: (id: string) => void;
 
-  // --- Estrusione tool (separate pick-then-apply flow, mirrors booleanPick) ---
+  // --- Estrusione: choosing a shape extrudes it at once; the height field then edits that feature live ---
   extrudePickActive: boolean;
-  extrudeTargetId: string | null;
+  extrudeEditId: string | null;
   extrudeHeight: number;
   startExtrudeTool: () => void;
   cancelExtrudeTool: () => void;
   pickExtrudeTarget: (pendingId: string) => void;
   setExtrudeHeight: (h: number) => void;
-  applyExtrusion: () => void;
 
-  // --- Raccordo/Smusso tool (pick a corner, then apply) ---
+  // --- Raccordo/Smusso: choosing an edge/corner applies it at once; kind and size then edit it live ---
   filletPickActive: boolean;
+  filletEditId: string | null;
   filletTargetShapeId: string | null;
   filletCornerIndex: number | null;
   filletKind: "fillet" | "chamfer";
   filletAmount: number;
-  filletTargetEdge: { bodyId: string; edgeIndex: number } | null;
   pickFilletEdge: (bodyId: string, edgeIndex: number) => void;
   startFilletTool: () => void;
   cancelFilletTool: () => void;
   pickFilletCorner: (shapeId: string, cornerIndex: number) => void;
   setFilletKind: (kind: "fillet" | "chamfer") => void;
   setFilletAmount: (amount: number) => void;
-  applyFillet: () => void;
 
   // --- Affianca: pick a face on the fixed body, then a face on the body to move ---
   mateActive: boolean;
@@ -259,7 +257,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   updateFeatureParams: (id, patch) => {
     const features = get().features.map((f) => (f.id === id ? ({ ...f, ...patch } as Feature) : f));
-    commit(set, get, features);
+    commit(set, get, features, `feature:${id}`);
   },
 
   toggleFeatureActive: (id) => {
@@ -280,7 +278,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const prev = undoStack[undoStack.length - 1];
     const current = takeSnapshot(get());
     lastEditKey = "";
-    set({ undoStack: undoStack.slice(0, -1), redoStack: [...redoStack, current], placements: prev.placements, colors: prev.colors });
+    set({ undoStack: undoStack.slice(0, -1), redoStack: [...redoStack, current], placements: prev.placements, colors: prev.colors, filletEditId: null, extrudeEditId: null });
     if (prev.features !== current.features) applyFeatures(set, get, prev.features);
   },
 
@@ -290,7 +288,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const next = redoStack[redoStack.length - 1];
     const current = takeSnapshot(get());
     lastEditKey = "";
-    set({ redoStack: redoStack.slice(0, -1), undoStack: [...undoStack, current], placements: next.placements, colors: next.colors });
+    set({ redoStack: redoStack.slice(0, -1), undoStack: [...undoStack, current], placements: next.placements, colors: next.colors, filletEditId: null, extrudeEditId: null });
     if (next.features !== current.features) applyFeatures(set, get, next.features);
   },
 
@@ -301,8 +299,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const s = get();
     set({ selectedBodyId: null, selectedFace: null });
     if (s.drafting) set({ drafting: false, draftPoints: [], draftPressures: [], draftClosed: false });
-    if (s.extrudePickActive) get().cancelExtrudeTool();
-    if (s.filletPickActive) get().cancelFilletTool();
+    if (s.extrudePickActive || s.extrudeEditId) get().cancelExtrudeTool();
+    if (s.filletPickActive || s.filletEditId || s.filletTargetShapeId) get().cancelFilletTool();
     if (s.booleanPick) get().cancelBooleanPick();
     if (s.mateActive) get().cancelMateTool();
   },
@@ -435,21 +433,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   // ---------------- Estrusione tool ----------------
   extrudePickActive: false,
-  extrudeTargetId: null,
+  extrudeEditId: null,
   extrudeHeight: 20,
 
-  startExtrudeTool: () => set({ mateActive: false, mateFaceA: null, mateFaceB: null, extrudePickActive: true, extrudeTargetId: null, filletPickActive: false, booleanPick: null }),
-  cancelExtrudeTool: () => set({ extrudePickActive: false, extrudeTargetId: null }),
-  pickExtrudeTarget: (pendingId) => set({ extrudeTargetId: pendingId, extrudePickActive: false }),
-  setExtrudeHeight: (h) => set({ extrudeHeight: h }),
+  startExtrudeTool: () =>
+    set({ mateActive: false, mateFaceA: null, mateFaceB: null, extrudePickActive: true, extrudeEditId: null, filletPickActive: false, filletEditId: null, booleanPick: null }),
+  cancelExtrudeTool: () => set({ extrudePickActive: false, extrudeEditId: null }),
 
-  applyExtrusion: () => {
-    const { extrudeTargetId, extrudeHeight, pendingShapes, features } = get();
-    const shape = pendingShapes.find((p) => p.id === extrudeTargetId);
-    if (!shape) {
-      get().log("Nessuna forma 2D selezionata per l'estrusione.");
-      return;
-    }
+  pickExtrudeTarget: (pendingId) => {
+    const { extrudeHeight, pendingShapes, features } = get();
+    const shape = pendingShapes.find((p) => p.id === pendingId);
+    if (!shape) return;
     const id = nextFeatureId();
     const count = features.filter((f) => f.type === "sketchExtrude").length + 1;
     const feature: Feature = {
@@ -465,68 +459,80 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       height: extrudeHeight
     };
     ensureDefaults(set, get, id, "#4f8dfd");
-    set((s) => ({ pendingShapes: s.pendingShapes.filter((p) => p.id !== shape.id), extrudeTargetId: null }));
+    set((s) => ({ pendingShapes: s.pendingShapes.filter((p) => p.id !== shape.id), extrudePickActive: false, extrudeEditId: id }));
     commit(set, get, [...features, feature]);
+  },
+
+  setExtrudeHeight: (h) => {
+    set({ extrudeHeight: h });
+    const id = get().extrudeEditId;
+    if (id) get().updateFeatureParams(id, { height: h });
   },
 
   // ---------------- Raccordo/Smusso tool ----------------
   filletPickActive: false,
+  filletEditId: null,
   filletTargetShapeId: null,
   filletCornerIndex: null,
   filletKind: "fillet",
   filletAmount: 2,
-  filletTargetEdge: null,
 
   startFilletTool: () =>
-    set({ mateActive: false, mateFaceA: null, mateFaceB: null, filletPickActive: true, filletTargetShapeId: null, filletCornerIndex: null, filletTargetEdge: null, extrudePickActive: false, booleanPick: null, selectedBodyId: null, selectedFace: null }),
-  cancelFilletTool: () => set({ filletPickActive: false, filletTargetShapeId: null, filletCornerIndex: null, filletTargetEdge: null }),
-  pickFilletCorner: (shapeId, cornerIndex) =>
-    set({ filletTargetShapeId: shapeId, filletCornerIndex: cornerIndex, filletTargetEdge: null, filletPickActive: false }),
-  pickFilletEdge: (bodyId, edgeIndex) =>
-    set({ filletTargetEdge: { bodyId, edgeIndex }, filletTargetShapeId: null, filletCornerIndex: null, filletPickActive: false }),
-  setFilletKind: (kind) => set({ filletKind: kind }),
-  setFilletAmount: (amount) => set({ filletAmount: amount }),
-
-  applyFillet: () => {
-    const { filletTargetShapeId, filletCornerIndex, filletKind, filletAmount, filletTargetEdge, features } = get();
-    if (filletTargetEdge) {
-      const id = nextFeatureId();
-      const count = features.filter((f) => f.type === "edgeFillet").length + 1;
-      const feature: Feature = {
-        id,
-        active: true,
-        label: `${filletKind === "fillet" ? "raccordo" : "smusso"}_${count}`,
-        type: "edgeFillet",
-        bodyId: id,
-        sourceId: filletTargetEdge.bodyId,
-        edgeIndex: filletTargetEdge.edgeIndex,
-        kind: filletKind,
-        amount: filletAmount
-      };
-      // The result stays where the source body was placed, with the same colour.
-      const src = filletTargetEdge.bodyId;
-      set((s) => ({
-        placements: { ...s.placements, [id]: s.placements[src] ?? IDENTITY_PLACEMENT },
-        colors: { ...s.colors, [id]: s.colors[src] ?? "#4f8dfd" },
-        filletTargetEdge: null
-      }));
-      commit(set, get, [...features, feature]);
-      return;
-    }
-    if (!filletTargetShapeId || filletCornerIndex === null) {
-      get().log("Nessuno spigolo selezionato.");
-      return;
-    }
-    set((s) => ({
-      pendingShapes: s.pendingShapes.map((p) =>
-        p.id === filletTargetShapeId
-          ? { ...p, corners: p.corners.map((c, i) => (i === filletCornerIndex ? { kind: filletKind, amount: filletAmount } : c)) }
-          : p
-      ),
+    set({
+      mateActive: false,
+      mateFaceA: null,
+      mateFaceB: null,
+      filletPickActive: true,
+      filletEditId: null,
       filletTargetShapeId: null,
-      filletCornerIndex: null
+      filletCornerIndex: null,
+      extrudePickActive: false,
+      extrudeEditId: null,
+      booleanPick: null,
+      selectedBodyId: null,
+      selectedFace: null
+    }),
+  cancelFilletTool: () => set({ filletPickActive: false, filletEditId: null, filletTargetShapeId: null, filletCornerIndex: null }),
+
+  pickFilletCorner: (shapeId, cornerIndex) => {
+    set({ filletTargetShapeId: shapeId, filletCornerIndex: cornerIndex, filletEditId: null, filletPickActive: false });
+    syncFillet(set, get);
+  },
+
+  pickFilletEdge: (bodyId, edgeIndex) => {
+    const { filletKind, filletAmount, features } = get();
+    const id = nextFeatureId();
+    const count = features.filter((f) => f.type === "edgeFillet").length + 1;
+    const feature: Feature = {
+      id,
+      active: true,
+      label: `${filletKind === "fillet" ? "raccordo" : "smusso"}_${count}`,
+      type: "edgeFillet",
+      bodyId: id,
+      sourceId: bodyId,
+      edgeIndex,
+      kind: filletKind,
+      amount: filletAmount
+    };
+    // The result stays where the source body was placed, with the same colour.
+    set((s) => ({
+      placements: { ...s.placements, [id]: s.placements[bodyId] ?? IDENTITY_PLACEMENT },
+      colors: { ...s.colors, [id]: s.colors[bodyId] ?? "#4f8dfd" },
+      filletEditId: id,
+      filletTargetShapeId: null,
+      filletCornerIndex: null,
+      filletPickActive: false
     }));
-    get().log(`${filletKind === "fillet" ? "Raccordo" : "Smusso"} applicato allo spigolo.`);
+    commit(set, get, [...features, feature]);
+  },
+
+  setFilletKind: (kind) => {
+    set({ filletKind: kind });
+    syncFillet(set, get);
+  },
+  setFilletAmount: (amount) => {
+    set({ filletAmount: amount });
+    syncFillet(set, get);
   },
 
   // ---------------- Affianca ----------------
@@ -595,7 +601,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   // ---------------- Booleane ----------------
   booleanPick: null,
-  startBooleanPick: (op) => set({ mateActive: false, mateFaceA: null, mateFaceB: null, booleanPick: { op, picked: [] }, selectedBodyId: null, extrudePickActive: false, filletPickActive: false }),
+  startBooleanPick: (op) => set({ filletEditId: null, extrudeEditId: null, mateActive: false, mateFaceA: null, mateFaceB: null, booleanPick: { op, picked: [] }, selectedBodyId: null, extrudePickActive: false, filletPickActive: false }),
   cancelBooleanPick: () => set({ booleanPick: null }),
 
   pickForBoolean: (id) => {
@@ -674,6 +680,23 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   }
 }));
 
+// Writes the current kind/size into whatever the fillet tool is editing: the
+// solid's fillet/chamfer feature, or a corner of a 2D shape.
+function syncFillet(set: any, get: () => EditorState) {
+  const { filletEditId, filletTargetShapeId, filletCornerIndex, filletKind, filletAmount } = get();
+  if (filletEditId) {
+    get().updateFeatureParams(filletEditId, { kind: filletKind, amount: filletAmount });
+  } else if (filletTargetShapeId && filletCornerIndex !== null) {
+    set((s: EditorState) => ({
+      pendingShapes: s.pendingShapes.map((p) =>
+        p.id === filletTargetShapeId
+          ? { ...p, corners: p.corners.map((c, i) => (i === filletCornerIndex ? { kind: filletKind, amount: filletAmount } : c)) }
+          : p
+      )
+    }));
+  }
+}
+
 function ensureDefaults(set: any, get: () => EditorState, id: string, color: string) {
   set((s: EditorState) => ({
     placements: s.placements[id] ? s.placements : { ...s.placements, [id]: IDENTITY_PLACEMENT },
@@ -681,9 +704,13 @@ function ensureDefaults(set: any, get: () => EditorState, id: string, color: str
   }));
 }
 
-function commit(set: any, get: () => EditorState, newFeatures: Feature[]): Promise<void> {
-  lastEditKey = "";
-  set((s: EditorState) => ({ undoStack: [...s.undoStack, takeSnapshot(s)], redoStack: [] }));
+function commit(set: any, get: () => EditorState, newFeatures: Feature[], key?: string): Promise<void> {
+  // Repeated edits of one feature (holding a − / + button) count as a single undo step.
+  const now = Date.now();
+  const coalesce = key !== undefined && key === lastEditKey && now - lastEditTime < 1000;
+  lastEditKey = key ?? "";
+  lastEditTime = now;
+  if (!coalesce) set((s: EditorState) => ({ undoStack: [...s.undoStack, takeSnapshot(s)], redoStack: [] }));
   return applyFeatures(set, get, newFeatures);
 }
 

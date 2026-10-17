@@ -1,27 +1,28 @@
 import { NumberInput } from "../NumberInput";
 import { useEditorStore } from "../../store";
 
-// Keeps the focus in the amount field when clicking Raccordo/Smusso/Annulla, so
-// only Tab, Enter or a click elsewhere counts as "leaving the field".
+// Keeps the focus where it is when clicking Raccordo/Smusso/Annulla.
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
 
+// Choosing an edge (solid) or corner (2D shape) applies the fillet/chamfer at
+// once; the kind and size then edit it live (no apply button), like the parameter fields.
 export function FilletCard() {
   const engineReady = useEditorStore((s) => s.engineReady);
   const busy = useEditorStore((s) => s.busy);
   const pendingShapes = useEditorStore((s) => s.pendingShapes);
+  const bodies = useEditorStore((s) => s.bodies);
   const filletPickActive = useEditorStore((s) => s.filletPickActive);
+  const filletEditId = useEditorStore((s) => s.filletEditId);
   const filletTargetShapeId = useEditorStore((s) => s.filletTargetShapeId);
   const filletCornerIndex = useEditorStore((s) => s.filletCornerIndex);
-  const filletTargetEdge = useEditorStore((s) => s.filletTargetEdge);
-  const bodies = useEditorStore((s) => s.bodies);
   const filletKind = useEditorStore((s) => s.filletKind);
   const filletAmount = useEditorStore((s) => s.filletAmount);
   const startFilletTool = useEditorStore((s) => s.startFilletTool);
   const cancelFilletTool = useEditorStore((s) => s.cancelFilletTool);
   const setFilletKind = useEditorStore((s) => s.setFilletKind);
   const setFilletAmount = useEditorStore((s) => s.setFilletAmount);
-  const applyFillet = useEditorStore((s) => s.applyFillet);
   const disabled = !engineReady || busy;
+  const editing = !!filletEditId || (!!filletTargetShapeId && filletCornerIndex !== null);
 
   return (
     <div className="card">
@@ -30,11 +31,11 @@ export function FilletCard() {
         {filletPickActive ? (
           <>
             <p className="hint-text">Tocca uno spigolo di un solido (linea) o un vertice di una forma 2D.</p>
-            <button onMouseDown={keepFocus} className="ghost-btn full" onClick={cancelFilletTool}>
+            <button className="ghost-btn full" onClick={cancelFilletTool}>
               Annulla
             </button>
           </>
-        ) : (filletTargetShapeId && filletCornerIndex !== null) || filletTargetEdge ? (
+        ) : editing ? (
           <>
             <div className="segmented">
               <button onMouseDown={keepFocus} className={filletKind === "fillet" ? "active" : ""} onClick={() => setFilletKind("fillet")}>
@@ -46,19 +47,17 @@ export function FilletCard() {
             </div>
             <label className="sk-field">
               <span>Misura (mm)</span>
-              <NumberInput
-                autoFocus
-                step={0.5}
-                min={0.1}
-                value={filletAmount}
-                onValue={(v) => setFilletAmount(v)}
-                onCommit={() => applyFillet()}
-              />
+              <NumberInput step={0.5} min={0.1} value={filletAmount} onValue={(v) => setFilletAmount(v)} />
             </label>
-            <p className="hint-text muted">Scrivi la misura e premi Tab, Invio o clicca fuori dal campo per applicare.</p>
-            <button onMouseDown={keepFocus} className="ghost-btn full" onClick={cancelFilletTool}>
-              Annulla
-            </button>
+            <p className="hint-text muted">Si applica mentre cambi tipo e misura.</p>
+            <div className="sk-row">
+              <button className="ghost-btn" disabled={disabled} onClick={startFilletTool}>
+                Altro spigolo
+              </button>
+              <button className="ghost-btn" onClick={cancelFilletTool}>
+                Fine
+              </button>
+            </div>
           </>
         ) : (
           <>

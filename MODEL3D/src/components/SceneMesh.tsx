@@ -32,7 +32,6 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
   const mateFaceA = useEditorStore((s) => s.mateFaceA);
   const mateFaceB = useEditorStore((s) => s.mateFaceB);
   const filletPickActive = useEditorStore((s) => s.filletPickActive);
-  const filletTargetEdge = useEditorStore((s) => s.filletTargetEdge);
   const pickFilletEdge = useEditorStore((s) => s.pickFilletEdge);
   const [hoverEdge, setHoverEdge] = useState<number | null>(null);
   const pendingClickRef = useRef<{ time: number; faceIndex: number } | null>(null);
@@ -135,14 +134,13 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
       ))}
       {edgeLines.map((pts, i) => {
         if (pts.length < 2) return null;
-        const chosen = filletTargetEdge?.bodyId === body.bodyId && filletTargetEdge.edgeIndex === i;
         const hovered = filletPickActive && hoverEdge === i;
         return (
           <Line
             key={i}
             points={pts}
-            color={chosen ? "#ffcc00" : hovered ? "#22ddaa" : filletPickActive ? "#7aa2ff" : "#111111"}
-            lineWidth={chosen ? 4 : hovered ? 4 : filletPickActive ? 3 : 1}
+            color={hovered ? "#22ddaa" : filletPickActive ? "#7aa2ff" : "#111111"}
+            lineWidth={hovered ? 4 : filletPickActive ? 3 : 1}
             onPointerOver={filletPickActive ? (e: ThreeEvent<PointerEvent>) => (e.stopPropagation(), setHoverEdge(i)) : undefined}
             onPointerOut={filletPickActive ? () => setHoverEdge((cur) => (cur === i ? null : cur)) : undefined}
             onPointerDown={filletPickActive ? (e: ThreeEvent<PointerEvent>) => (e.stopPropagation(), pickFilletEdge(body.bodyId, i)) : undefined}
