@@ -36,8 +36,8 @@ if lsof -iTCP:$PORTA -sTCP:LISTEN >/dev/null 2>&1; then
 fi
 
 # 3) Prima volta: installa le dipendenze.
-if [ ! -d node_modules ]; then
-  echo "Installo le dipendenze (solo la prima volta)..."
+if [ ! -x node_modules/.bin/vite ]; then
+  echo "Installo le dipendenze (solo la prima volta o se incomplete)..."
   npm install || errore "npm install non è riuscito."
 fi
 

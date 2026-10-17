@@ -111,3 +111,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-17 | `fa67401` | MODEL3D/src/occ/occWorker.ts (cache costruttori/metodi, raccordi/smussi in 2D senza MakeFillet2d, fallback senza raccordi), REGISTRO-SALVATAGGI.md | `git checkout fa67401` |
 | 2026-10-17 | `3450c5d` | MODEL3D/src/occ/occWorker.ts (faceRanges allineati, punti duplicati, guardia mesh vuota), MODEL3D/src/occ/occClient.ts (errori del worker respinti, niente blocco UI), REGISTRO-SALVATAGGI.md | `git checkout 3450c5d` |
 | 2026-10-17 | `9aa8018` | MODEL3D/Avvia-MODEL3D.command (avvia server Vite e apre l'app), REGISTRO-SALVATAGGI.md | `git checkout 9aa8018` |
+| 2026-10-17 | `6d99100` | MODEL3D/Avvia-MODEL3D.command (reinstalla le dipendenze se vite manca), REGISTRO-SALVATAGGI.md | `git checkout 6d99100` |
