@@ -29,12 +29,10 @@ export function ExtrudeCard() {
           <>
             <label className="sk-field">
               <span>Altezza (mm)</span>
-              <NumberInput step={1} min={0.1} value={extrudeHeight} onValue={(v) => setExtrudeHeight(v)} />
+              <NumberInput autoFocus step={1} min={0.1} value={extrudeHeight} onValue={(v) => setExtrudeHeight(v)} onCommit={() => applyExtrusion()} />
             </label>
-            <button className="primary-btn" onClick={applyExtrusion}>
-              APPLICA ESTRUSIONE
-            </button>
-            <button className="ghost-btn full" onClick={cancelExtrudeTool}>
+            <p className="hint-text muted">Scrivi l'altezza e premi Tab, Invio o clicca fuori dal campo per estrudere.</p>
+            <button className="ghost-btn full" onMouseDown={(e) => e.preventDefault()} onClick={cancelExtrudeTool}>
               Annulla
             </button>
           </>
