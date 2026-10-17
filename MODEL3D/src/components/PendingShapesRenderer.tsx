@@ -122,6 +122,8 @@ function DraftPlane() {
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (draftClosed) return;
+    // Fingers navigate the view; only the pen or the mouse place points.
+    if ((e.nativeEvent as PointerEvent).pointerType === "touch") return;
     e.stopPropagation();
     const local = e.point.clone().sub(origin3D);
     const u = local.dot(def.u);

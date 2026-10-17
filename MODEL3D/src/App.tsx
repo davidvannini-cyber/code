@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Viewport } from "./components/Viewport";
 import { Rail } from "./components/Rail";
 import { FloatingDock } from "./components/FloatingDock";
+import { QuickButtons } from "./components/QuickButtons";
 import { TopBar } from "./components/TopBar";
 import { HistoryStrip } from "./components/HistoryStrip";
 import { IconSprite } from "./components/icons/IconSprite";
@@ -32,6 +33,7 @@ export default function App() {
       <TopBar />
       <Rail />
       <FloatingDock />
+      <QuickButtons />
       <HistoryStrip />
 
       {logs.length > 0 && (

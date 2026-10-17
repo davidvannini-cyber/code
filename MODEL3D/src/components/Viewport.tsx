@@ -1,11 +1,45 @@
-import { useCallback, useRef, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Grid, OrbitControls, TransformControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useEditorStore } from "../store";
 import { SceneMesh } from "./SceneMesh";
 import { PendingShapesRenderer } from "./PendingShapesRenderer";
 import { IDENTITY_PLACEMENT } from "../occ/types";
+
+// Apple Pencil (pointerType "pen") draws and selects but never orbits the view,
+// so fingers stay free for rotate/zoom/pan and a resting hand can't turn the scene.
+// While the pen touches the screen the orbit controls are switched off.
+function PenGuard({ orbitEnabled }: { orbitEnabled: boolean }) {
+  const controls = useThree((s) => s.controls) as { enabled: boolean } | null;
+  const root = useThree((s) => s.gl.domElement.parentElement);
+  const penId = useRef<number | null>(null);
+  const enabledRef = useRef(orbitEnabled);
+  enabledRef.current = orbitEnabled;
+
+  useEffect(() => {
+    if (!controls || !root) return;
+    const down = (e: PointerEvent) => {
+      if (e.pointerType !== "pen") return;
+      penId.current = e.pointerId;
+      controls.enabled = false;
+    };
+    const up = (e: PointerEvent) => {
+      if (e.pointerId !== penId.current) return;
+      penId.current = null;
+      controls.enabled = enabledRef.current;
+    };
+    root.addEventListener("pointerdown", down, true); // capture: runs before OrbitControls
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    return () => {
+      root.removeEventListener("pointerdown", down, true);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+    };
+  }, [controls, root]);
+  return null;
+}
 
 export function Viewport() {
   const bodies = useEditorStore((s) => s.bodies);
@@ -120,11 +154,12 @@ export function Viewport() {
         />
       )}
 
+      <PenGuard orbitEnabled={orbitEnabled} />
       <OrbitControls
         enabled={orbitEnabled}
         makeDefault
-        // While drafting, the left button / one finger draws; orbit moves to the right button / two fingers.
-        touches={drafting ? { TWO: THREE.TOUCH.DOLLY_PAN } : { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
+        // Fingers always navigate (the pen draws); with a mouse, drafting moves orbit to the right button.
+        touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
         mouseButtons={drafting ? { MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE } : { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN }}
       />
     </Canvas>

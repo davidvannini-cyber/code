@@ -1,9 +1,8 @@
 # Dependencies
 node_modules/
-package-lock.json
 
 # Build outputs
-# dist/  - Include for GitHub Pages deployment
+dist/  # built by the GitHub Pages workflow
 *.tsbuildinfo
 
 # Environment variables

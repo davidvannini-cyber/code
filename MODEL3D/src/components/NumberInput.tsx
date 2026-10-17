@@ -47,7 +47,7 @@ export function NumberInput({ value, onValue, min, className, onCommit, autoFocu
     <input
       ref={ref}
       type="text"
-      inputMode="decimal"
+      inputMode={min !== undefined && min >= 0 ? "decimal" : "text"}
       className={className}
       value={text}
       onFocus={(e) => {
