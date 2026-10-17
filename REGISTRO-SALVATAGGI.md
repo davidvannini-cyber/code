@@ -129,3 +129,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-17 | `b67be58` | MODEL3D/.gitignore (dist/ davvero escluso dal repository), REGISTRO-SALVATAGGI.md | `git checkout b67be58` |
 | 2026-10-18 | `733336a` | .github/workflows/deploy-model3d.yml (il sito pubblica tutto il repository con MODEL3D compilato, non solo l'app), REGISTRO-SALVATAGGI.md | `git checkout 733336a` |
 | 2026-10-18 | `8b5ec64` | MODEL3D: scheda Parametri anche per estrusioni, raccordi e smussi (ParamsCard.tsx), messaggio d'errore leggibile quando un'operazione geometrica fallisce (occWorker.ts), REGISTRO-SALVATAGGI.md | `git checkout 8b5ec64` |
+| 2026-10-18 | `d12bbb3` | MODEL3D/src/components/Viewport.tsx (iPad: meno pixel, niente antialiasing e ombre, disegno solo quando serve per evitare blocchi di Safari), REGISTRO-SALVATAGGI.md | `git checkout d12bbb3` |

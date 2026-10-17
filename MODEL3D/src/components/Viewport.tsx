@@ -41,6 +41,11 @@ function PenGuard({ orbitEnabled }: { orbitEnabled: boolean }) {
   return null;
 }
 
+// Tablets: cap the pixel ratio and drop antialiasing and shadows. A 12.9" iPad
+// renders ~5.6M pixels at 2x, which with MSAA plus the CAD engine's memory can
+// make Safari freeze or reload the page.
+const COARSE = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+
 export function Viewport() {
   const bodies = useEditorStore((s) => s.bodies);
   const placements = useEditorStore((s) => s.placements);
@@ -102,7 +107,10 @@ export function Viewport() {
 
   return (
     <Canvas
-      shadows
+      shadows={!COARSE}
+      dpr={COARSE ? [1, 1.5] : [1, 2]}
+      frameloop="demand"
+      gl={{ antialias: !COARSE, powerPreference: "high-performance" }}
       camera={{ position: [80, 80, 80], fov: 45, near: 0.1, far: 5000 }}
       onPointerMissed={clearSelection}
     >
