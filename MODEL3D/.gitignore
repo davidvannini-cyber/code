@@ -2,7 +2,8 @@
 node_modules/
 
 # Build outputs
-dist/  # built by the GitHub Pages workflow
+# Built by the GitHub Pages workflow
+dist/
 *.tsbuildinfo
 
 # Environment variables
