@@ -108,3 +108,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-16 | `713a0de` | 5 icone con lo stesso vetro verde acqua di Lead Rework (Suggerimenti Vendita.app, Lead Collector.app, docs/icone-scrivania/), REGISTRO-SALVATAGGI.md | `git checkout 713a0de` |
 | 2026-10-16 | `0ccc344` | SALESASSISTANT/LEADREWORKS/docs/icone-proposte/ (15 proposte PNG 1024, 3 per icona, 3D meno morbido), icone-proposte.zip, docs/icona/genera-icone-proposte.py, REGISTRO-SALVATAGGI.md | `git checkout 0ccc344` |
 | 2026-10-17 | `efc7b9d` | REA/README.md, REA/.gitignore (installazione rea-agents, clone escluso), REGISTRO-SALVATAGGI.md | `git checkout efc7b9d` |
+| 2026-10-17 | `fa67401` | MODEL3D/src/occ/occWorker.ts (cache costruttori/metodi, raccordi/smussi in 2D senza MakeFillet2d, fallback senza raccordi), REGISTRO-SALVATAGGI.md | `git checkout fa67401` |

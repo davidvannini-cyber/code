@@ -19,24 +19,46 @@ let oc: any = null;
  * probe the low-numbered overloads (and the bare, unsuffixed name, used when
  * a class only has a single constructor/overload) instead of hardcoding one.
  */
+// Probing an overload means a throwing embind call per candidate, and
+// construct()/call() run for every face and edge of every rebuild. The first
+// overload that works for a given (class, arity) is remembered so the hot
+// loops hit it directly; if a cached overload later rejects the arguments
+// (same arity, different types) it is dropped and the full probe runs again.
+const ctorCache = new Map<string, string>();
+const methodCache = new WeakMap<object, Map<string, string>>();
+
 function construct(ns: any, className: string, args: any[]): any {
+  const key = `${className}/${args.length}`;
+  const cached = ctorCache.get(key);
+  if (cached !== undefined && ns[cached]) {
+    try {
+      return new ns[cached](...args);
+    } catch {
+      ctorCache.delete(key);
+    }
+  }
   let lastErr: unknown;
   // Some OCCT classes have dozens of constructor overloads (e.g.
   // BRepBuilderAPI_MakeFace goes up to _22, BRepBuilderAPI_MakeEdge to _35) —
   // a low cap here silently skips the real one and reports "no accessible
   // constructor", which is exactly the bug this range fixes.
   for (let i = 1; i <= 40; i++) {
-    const Ctor = ns[`${className}_${i}`];
+    const name = `${className}_${i}`;
+    const Ctor = ns[name];
     if (!Ctor) continue;
     try {
-      return new Ctor(...args);
+      const made = new Ctor(...args);
+      ctorCache.set(key, name);
+      return made;
     } catch (e) {
       lastErr = e;
     }
   }
   if (ns[className]) {
     try {
-      return new ns[className](...args);
+      const made = new ns[className](...args);
+      ctorCache.set(key, className);
+      return made;
     } catch (e) {
       lastErr = e;
     }
@@ -44,20 +66,48 @@ function construct(ns: any, className: string, args: any[]): any {
   throw new Error(`construct(${className}) failed with ${args.length} args: ${lastErr}`);
 }
 
+// Instances share their prototype's overload table; static namespaces
+// (oc.TopoDS, oc.BRep_Tool) are plain objects/functions and are keyed by themselves.
+function methodCacheFor(obj: any): Map<string, string> {
+  const proto = Object.getPrototypeOf(obj);
+  const owner = typeof obj === "function" || proto === null || proto === Object.prototype || proto === Function.prototype ? obj : proto;
+  let m = methodCache.get(owner);
+  if (!m) {
+    m = new Map();
+    methodCache.set(owner, m);
+  }
+  return m;
+}
+
 function call(obj: any, methodBase: string, args: any[]): any {
+  const cache = methodCacheFor(obj);
+  const key = `${methodBase}/${args.length}`;
+  const cached = cache.get(key);
+  if (cached !== undefined && typeof obj[cached] === "function") {
+    try {
+      return obj[cached](...args);
+    } catch {
+      cache.delete(key);
+    }
+  }
   let lastErr: unknown;
   for (let i = 1; i <= 20; i++) {
-    const fn = obj[`${methodBase}_${i}`];
+    const name = `${methodBase}_${i}`;
+    const fn = obj[name];
     if (typeof fn !== "function") continue;
     try {
-      return fn.apply(obj, args);
+      const value = fn.apply(obj, args);
+      cache.set(key, name);
+      return value;
     } catch (e) {
       lastErr = e;
     }
   }
   if (typeof obj[methodBase] === "function") {
     try {
-      return obj[methodBase](...args);
+      const value = obj[methodBase](...args);
+      cache.set(key, methodBase);
+      return value;
     } catch (e) {
       lastErr = e;
     }
@@ -267,54 +317,88 @@ function to3D(pt: [number, number], basis: ReturnType<typeof planeBasis>): [numb
   ];
 }
 
-// Applies each point's own fillet/chamfer treatment to the matching face
-// vertex. TopExp_Explorer's traversal order over a face's vertices is not
-// guaranteed to match the input points[] order, so vertices are matched to
-// points by 3D position instead of by index.
+const ARC_SEGMENTS = 8;
+
+// Rounds/chamfers the sketch outline in 2D instead of asking the WASM kernel
+// (BRepFilletAPI_MakeFillet2d fails on vertices extracted from the face).
+// Fillets become short polyline arcs; chamfers are a single cut. corners[i]
+// belongs to points[i]; the setback is clamped to half of each adjacent edge
+// so neighbouring corners can never overlap.
 function applySketchCorners(
-  face: any,
   points2D: [number, number][],
-  basis: ReturnType<typeof planeBasis>,
   corners: CornerTreatment[],
   warnings: string[]
-): any {
-  const hasAny = corners.some((c) => c.kind !== "none" && c.amount > 0);
-  if (!hasAny) return face;
-  const targets3D = points2D.map((p) => to3D(p, basis));
-  try {
-    const mf = construct(oc, "BRepFilletAPI_MakeFillet2d", [face]);
-    const vExplorer = construct(oc, "TopExp_Explorer", [face, oc.TopAbs_ShapeEnum.TopAbs_VERTEX, oc.TopAbs_ShapeEnum.TopAbs_SHAPE]);
-    let appliedAny = false;
-    for (; vExplorer.More(); vExplorer.Next()) {
-      const vertex = call(oc.TopoDS, "Vertex", [vExplorer.Current()]);
-      const pnt = call(oc.BRep_Tool, "Pnt", [vertex]);
-      const vx = pnt.X();
-      const vy = pnt.Y();
-      const vz = pnt.Z();
-      let bestIdx = -1;
-      let bestDist = Infinity;
-      for (let i = 0; i < targets3D.length; i++) {
-        const [tx, ty, tz] = targets3D[i];
-        const d = (vx - tx) ** 2 + (vy - ty) ** 2 + (vz - tz) ** 2;
-        if (d < bestDist) {
-          bestDist = d;
-          bestIdx = i;
-        }
-      }
-      const c = bestIdx >= 0 ? corners[bestIdx] : undefined;
-      if (!c || c.kind === "none" || c.amount <= 0) continue;
-      const method = c.kind === "fillet" ? "AddFillet" : "AddChamfer";
-      const args = c.kind === "fillet" ? [c.amount] : [c.amount, c.amount];
-      if (tryCall(mf, method, [vertex, ...args]).ok) appliedAny = true;
+): [number, number][] {
+  const n = points2D.length;
+  if (!corners.some((c) => c && c.kind !== "none" && c.amount > 0)) return points2D;
+  const out: [number, number][] = [];
+  for (let i = 0; i < n; i++) {
+    const cur = points2D[i];
+    const c = corners[i];
+    if (!c || c.kind === "none" || !(c.amount > 0)) {
+      out.push(cur);
+      continue;
     }
-    if (!appliedAny) throw new Error("nessuno spigolo modificato (funzione non disponibile in questa build)");
-    call(mf, "Build", []);
-    const result = call(mf, "Shape", []);
-    return call(oc.TopoDS, "Face", [result]);
-  } catch (e) {
-    warnings.push(`Raccordo/smusso non applicato: ${(e as Error).message ?? e}`);
-    return face;
+    const prev = points2D[(i + n - 1) % n];
+    const next = points2D[(i + 1) % n];
+    const ax = prev[0] - cur[0], ay = prev[1] - cur[1];
+    const bx = next[0] - cur[0], by = next[1] - cur[1];
+    const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+    if (la < 1e-9 || lb < 1e-9) {
+      out.push(cur);
+      continue;
+    }
+    const ux = ax / la, uy = ay / la, vx = bx / lb, vy = by / lb;
+    const cosT = Math.max(-1, Math.min(1, ux * vx + uy * vy));
+    const theta = Math.acos(cosT); // interior angle at the corner
+    if (theta < 1e-3 || Math.PI - theta < 1e-3) {
+      out.push(cur); // degenerate or collinear: nothing to round
+      continue;
+    }
+    const maxSetback = 0.5 * Math.min(la, lb);
+    if (c.kind === "chamfer") {
+      const d = Math.min(c.amount, maxSetback);
+      out.push([cur[0] + ux * d, cur[1] + uy * d], [cur[0] + vx * d, cur[1] + vy * d]);
+      continue;
+    }
+    const half = theta / 2;
+    const t = Math.min(c.amount / Math.tan(half), maxSetback);
+    const r = t * Math.tan(half);
+    let bxs = ux + vx, bys = uy + vy;
+    const bl = Math.hypot(bxs, bys);
+    bxs /= bl;
+    bys /= bl;
+    const dc = r / Math.sin(half);
+    const cx = cur[0] + bxs * dc, cy = cur[1] + bys * dc;
+    const t1: [number, number] = [cur[0] + ux * t, cur[1] + uy * t];
+    const t2: [number, number] = [cur[0] + vx * t, cur[1] + vy * t];
+    const a1 = Math.atan2(t1[1] - cy, t1[0] - cx);
+    let delta = Math.atan2(t2[1] - cy, t2[0] - cx) - a1;
+    while (delta > Math.PI) delta -= 2 * Math.PI;
+    while (delta < -Math.PI) delta += 2 * Math.PI;
+    for (let k = 0; k <= ARC_SEGMENTS; k++) {
+      const ang = a1 + (delta * k) / ARC_SEGMENTS;
+      out.push([cx + r * Math.cos(ang), cy + r * Math.sin(ang)]);
+    }
   }
+  if (out.length < 3 || out.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) {
+    warnings.push("Raccordo/smusso non applicato: geometria non valida, schizzo originale usato.");
+    return points2D;
+  }
+  return out;
+}
+
+function prismFromPoints(points2D: [number, number][], basis: ReturnType<typeof planeBasis>, height: number): any {
+  const polygon = construct(oc, "BRepBuilderAPI_MakePolygon", []);
+  for (const pt of points2D) {
+    const [x, y, z] = to3D(pt, basis);
+    call(polygon, "Add", [construct(oc, "gp_Pnt", [x, y, z])]);
+  }
+  call(polygon, "Close", []);
+  const wire = call(polygon, "Wire", []);
+  const face = call(oc.TopoDS, "Face", [call(construct(oc, "BRepBuilderAPI_MakeFace", [wire, true]), "Shape", [])]);
+  const dir = construct(oc, "gp_Vec", [basis.normal[0] * height, basis.normal[1] * height, basis.normal[2] * height]);
+  return call(construct(oc, "BRepPrimAPI_MakePrism", [face, dir, false, true]), "Shape", []);
 }
 
 function extrudeSketch(
@@ -326,21 +410,16 @@ function extrudeSketch(
   warnings: string[]
 ): any {
   const basis = planeBasis(plane, offset);
-  const polygon = construct(oc, "BRepBuilderAPI_MakePolygon", []);
-  for (const pt of points2D) {
-    const [x, y, z] = to3D(pt, basis);
-    call(polygon, "Add", [construct(oc, "gp_Pnt", [x, y, z])]);
+  try {
+    const rounded = applySketchCorners(points2D, corners, warnings);
+    return prismFromPoints(rounded, basis, height);
+  } catch (e) {
+    if (corners.some((c) => c && c.kind !== "none" && c.amount > 0)) {
+      warnings.push(`Raccordo/smusso non applicato: ${(e as Error).message ?? e}`);
+      return prismFromPoints(points2D, basis, height);
+    }
+    throw e;
   }
-  call(polygon, "Close", []);
-  const wire = call(polygon, "Wire", []);
-  let face = call(construct(oc, "BRepBuilderAPI_MakeFace", [wire, true]), "Shape", []);
-  face = call(oc.TopoDS, "Face", [face]);
-
-  face = applySketchCorners(face, points2D, basis, corners, warnings);
-
-  const dir = construct(oc, "gp_Vec", [basis.normal[0] * height, basis.normal[1] * height, basis.normal[2] * height]);
-  const prism = construct(oc, "BRepPrimAPI_MakePrism", [face, dir, false, true]);
-  return call(prism, "Shape", []);
 }
 
 function booleanOp(op: string, a: any, b: any): any {
@@ -468,5 +547,5 @@ async function handle(req: WorkerRequest) {
 }
 
 self.onmessage = (ev: MessageEvent<WorkerRequest>) => {
-  handle(ev.data);
+  handle(ev.data).catch((e) => post({ id: ev.data.id, type: "error", payload: { message: e?.message ?? String(e) } }));
 };
