@@ -4,7 +4,7 @@
 # Per fermare tutto chiudi questa finestra (o premi Ctrl+C).
 
 PORTA=5173
-URL="http://localhost:$PORTA/code/MODEL3D/"
+URL="http://localhost:$PORTA/"
 
 errore() {
   echo ""
