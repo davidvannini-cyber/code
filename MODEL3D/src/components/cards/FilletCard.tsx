@@ -1,6 +1,10 @@
 import { NumberInput } from "../NumberInput";
 import { useEditorStore } from "../../store";
 
+// Keeps the focus in the amount field when clicking Raccordo/Smusso/Annulla, so
+// only Tab, Enter or a click elsewhere counts as "leaving the field".
+const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
+
 export function FilletCard() {
   const engineReady = useEditorStore((s) => s.engineReady);
   const busy = useEditorStore((s) => s.busy);
@@ -26,28 +30,33 @@ export function FilletCard() {
         {filletPickActive ? (
           <>
             <p className="hint-text">Tocca uno spigolo di un solido (linea) o un vertice di una forma 2D.</p>
-            <button className="ghost-btn full" onClick={cancelFilletTool}>
+            <button onMouseDown={keepFocus} className="ghost-btn full" onClick={cancelFilletTool}>
               Annulla
             </button>
           </>
         ) : (filletTargetShapeId && filletCornerIndex !== null) || filletTargetEdge ? (
           <>
             <div className="segmented">
-              <button className={filletKind === "fillet" ? "active" : ""} onClick={() => setFilletKind("fillet")}>
+              <button onMouseDown={keepFocus} className={filletKind === "fillet" ? "active" : ""} onClick={() => setFilletKind("fillet")}>
                 Raccordo
               </button>
-              <button className={filletKind === "chamfer" ? "active" : ""} onClick={() => setFilletKind("chamfer")}>
+              <button onMouseDown={keepFocus} className={filletKind === "chamfer" ? "active" : ""} onClick={() => setFilletKind("chamfer")}>
                 Smusso
               </button>
             </div>
             <label className="sk-field">
               <span>Misura (mm)</span>
-              <NumberInput step={0.5} min={0.1} value={filletAmount} onValue={(v) => setFilletAmount(v)} />
+              <NumberInput
+                autoFocus
+                step={0.5}
+                min={0.1}
+                value={filletAmount}
+                onValue={(v) => setFilletAmount(v)}
+                onCommit={() => applyFillet()}
+              />
             </label>
-            <button className="primary-btn" onClick={applyFillet}>
-              APPLICA RACCORDO/SMUSSO
-            </button>
-            <button className="ghost-btn full" onClick={cancelFilletTool}>
+            <p className="hint-text muted">Scrivi la misura e premi Tab, Invio o clicca fuori dal campo per applicare.</p>
+            <button onMouseDown={keepFocus} className="ghost-btn full" onClick={cancelFilletTool}>
               Annulla
             </button>
           </>
