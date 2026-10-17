@@ -113,3 +113,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-17 | `9aa8018` | MODEL3D/Avvia-MODEL3D.command (avvia server Vite e apre l'app), REGISTRO-SALVATAGGI.md | `git checkout 9aa8018` |
 | 2026-10-17 | `6d99100` | MODEL3D/Avvia-MODEL3D.command (reinstalla le dipendenze se vite manca), REGISTRO-SALVATAGGI.md | `git checkout 6d99100` |
 | 2026-10-17 | `1653fda` | MODEL3D/vite.config.ts (base '/' in sviluppo, '/code/MODEL3D/' solo in build), MODEL3D/Avvia-MODEL3D.command, REGISTRO-SALVATAGGI.md | `git checkout 1653fda` |
+| 2026-10-17 | `cbd6054` | MODEL3D/src/components/cards/ParamsCard.tsx (nuovo), MODEL3D/src/components/Rail.tsx, MODEL3D/src/index.css, REGISTRO-SALVATAGGI.md | `git checkout cbd6054` |

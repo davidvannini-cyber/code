@@ -785,3 +785,14 @@ svg.icon {
   .card.wide { width: 240px; }
   .selection-expand { width: 160px; }
 }
+
+/* Scheda parametri della primitiva selezionata: a destra, per non coprire le altre schede */
+.card.params-card {
+  left: auto;
+  right: 12px;
+  top: 54px;
+  width: 210px;
+}
+.card.params-card.busy {
+  opacity: .7;
+}

@@ -6,6 +6,7 @@ import { ExtrudeCard } from "./cards/ExtrudeCard";
 import { FilletCard } from "./cards/FilletCard";
 import { BooleanCard } from "./cards/BooleanCard";
 import { BodiesCard } from "./cards/BodiesCard";
+import { ParamsCard } from "./cards/ParamsCard";
 
 const RAIL_ITEMS = [
   { key: "primitives", icon: "shapes", title: "Primitive" },
@@ -49,6 +50,7 @@ export function Rail() {
       {activeCard === "fillet" && <FilletCard />}
       {activeCard === "boolean" && <BooleanCard />}
       {activeCard === "bodies" && <BodiesCard />}
+      <ParamsCard />
     </>
   );
 }
