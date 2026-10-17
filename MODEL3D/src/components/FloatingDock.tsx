@@ -10,9 +10,9 @@ import { ParamsCard } from "./cards/ParamsCard";
 import { FaceCard } from "./cards/FaceCard";
 import { SelectionOverlay } from "./SelectionOverlay";
 
-// Tool cards (chosen from the left rail) open next to the rail; the menus of the
-// selected object (transform fields, parameters) are pinned top-centre just under
-// the top bar, so they never sit on top of the object being edited.
+// Everything chosen from the left rail, plus the sizes / face details of the
+// selection, stacks in one column next to the rail. The move/rotate/scale bar of
+// the selected object is pinned top-centre under the top bar, off the object.
 export function FloatingDock() {
   const activeCard = useEditorStore((s) => s.activeCard);
   const selectedBodyId = useEditorStore((s) => s.selectedBodyId);
@@ -34,11 +34,11 @@ export function FloatingDock() {
         {activeCard === "boolean" && <BooleanCard />}
         {activeCard === "mate" && <MateCard />}
         {activeCard === "bodies" && <BodiesCard />}
+        <ParamsCard />
+        <FaceCard />
       </div>
       <div className="dock">
         {showSelection && <SelectionOverlay key={selectedBodyId} bodyId={selectedBodyId} />}
-        <ParamsCard />
-        <FaceCard />
       </div>
     </>
   );

@@ -251,7 +251,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const count = get().features.filter((f) => f.type === "primitive" && f.primType === type).length + 1;
     const feature: Feature = { id, active: true, label: `${type}_${count}`, type: "primitive", bodyId: id, primType: type, params };
     ensureDefaults(set, get, id, defaultColorByType[type]);
-    commit(set, get, [...get().features, feature]);
+    // The new primitive is selected once it exists, so its sizes show up right away.
+    commit(set, get, [...get().features, feature]).then(() => {
+      if (get().bodies.some((b) => b.bodyId === id)) set({ selectedBodyId: id, selectedFace: null });
+    });
   },
 
   updateFeatureParams: (id, patch) => {
@@ -678,10 +681,10 @@ function ensureDefaults(set: any, get: () => EditorState, id: string, color: str
   }));
 }
 
-function commit(set: any, get: () => EditorState, newFeatures: Feature[]) {
+function commit(set: any, get: () => EditorState, newFeatures: Feature[]): Promise<void> {
   lastEditKey = "";
   set((s: EditorState) => ({ undoStack: [...s.undoStack, takeSnapshot(s)], redoStack: [] }));
-  applyFeatures(set, get, newFeatures);
+  return applyFeatures(set, get, newFeatures);
 }
 
 async function applyFeatures(set: any, get: () => EditorState, newFeatures: Feature[]) {

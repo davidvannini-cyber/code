@@ -257,20 +257,23 @@ svg.icon {
 /* ---------- Form fields (shared by cards) ---------- */
 
 .sk-field {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
-  justify-content: space-between;
-  gap: 3px;
+  column-gap: 4px;
   margin-bottom: 2px;
   font-size: 9px;
   color: var(--text-dim);
 }
 
+.sk-field > span:first-child {
+  white-space: nowrap;
+}
+
 .sk-row .sk-field,
 .sk-field.small {
-  flex-direction: column;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 2px;
 }
 
 .sk-field input {
@@ -826,6 +829,14 @@ svg.icon {
   pointer-events: auto;
 }
 
+/* Tutto ciò che sta a sinistra (strumento, misure, faccia) ha la stessa larghezza e lo stesso bordo */
+.dock-left > .card,
+.dock-left > .card.wide,
+.dock-left > .card.params-card,
+.dock-left > .card.face-card {
+  width: 172px;
+}
+
 /* Menu dell'oggetto selezionato (rotazione, parametri...): in alto al centro, sotto la barra */
 .dock {
   position: absolute;
@@ -940,7 +951,7 @@ input, select {
   display: inline-flex;
   align-items: stretch;
   gap: 1px;
-  height: 26px;
+  height: 27px;
 }
 
 .num-field input {
@@ -1027,12 +1038,13 @@ input, select {
 }
 
 @media (pointer: coarse) {
-  .num-field { height: 42px; }
+  .num-field { height: 43px; }
   .num-stack { width: 34px; }
   .num-step svg { width: 14px; height: 14px; }
   .sk-field .num-field { width: 124px; }
   .card { width: 200px; }
   .card.wide { width: 210px; }
   .card.params-card { width: 200px; }
+  .dock-left > .card, .dock-left > .card.wide, .dock-left > .card.params-card, .dock-left > .card.face-card { width: 230px; }
   .selection-expand { width: 160px; }
 }
