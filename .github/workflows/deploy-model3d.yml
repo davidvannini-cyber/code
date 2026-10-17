@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'MODEL3D/**'
-      - '.github/workflows/deploy-model3d.yml'
   workflow_dispatch:
 
 permissions:
@@ -40,13 +37,24 @@ jobs:
         working-directory: MODEL3D
         run: npm run build
 
+      # The site is the whole repository (as before, when Pages published the
+      # branch), with MODEL3D replaced by its built app. Publishing only
+      # MODEL3D/dist would wipe every other folder from the site.
+      - name: Assemble site
+        run: |
+          mkdir _site
+          tar -cf - --exclude='./_site' --exclude='./.git' --exclude='./.github' --exclude='./.claude' --exclude='./MODEL3D' --exclude='node_modules' . | tar -xf - -C _site
+          mkdir -p _site/MODEL3D
+          cp -a MODEL3D/dist/. _site/MODEL3D/
+          touch _site/.nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'MODEL3D/dist'
+          path: '_site'
 
   deploy:
     environment:

@@ -127,3 +127,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-17 | `4b64345` | MODEL3D: interfaccia compatta variante C, font e spazi ridotti (index.css, ParamsCard.tsx), REGISTRO-SALVATAGGI.md | `git checkout 4b64345` |
 | 2026-10-17 | `d57215d` | iPad/Pencil e GitHub Pages: .github/workflows/deploy-model3d.yml (spostato dalla radice giusta), MODEL3D/.gitignore (dist fuori dal repo), MODEL3D/index.html e apple-touch-icon.png, Viewport.tsx (Pencil non ruota, dita navigano), PendingShapesRenderer.tsx, QuickButtons.tsx, NumberInput.tsx, index.css, REGISTRO-SALVATAGGI.md | `git checkout d57215d` |
 | 2026-10-17 | `b67be58` | MODEL3D/.gitignore (dist/ davvero escluso dal repository), REGISTRO-SALVATAGGI.md | `git checkout b67be58` |
+| 2026-10-18 | `733336a` | .github/workflows/deploy-model3d.yml (il sito pubblica tutto il repository con MODEL3D compilato, non solo l'app), REGISTRO-SALVATAGGI.md | `git checkout 733336a` |
