@@ -178,7 +178,7 @@ svg.icon {
 
 .card {
   position: static;
-  width: 118px;
+  width: 150px;
   background: #16171ab8;
   border: none;
   border-radius: var(--radius);
@@ -190,7 +190,7 @@ svg.icon {
 }
 
 .card.wide {
-  width: 132px;
+  width: 170px;
 }
 
 /* Le schede non hanno intestazione: il testo guida dice cosa fare */
@@ -548,7 +548,7 @@ svg.icon {
 }
 
 .selection-expand {
-  width: 112px;
+  width: 120px;
   background: #16171af7;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -849,7 +849,7 @@ svg.icon {
   .dock { flex-wrap: wrap; }
 }
 .card.params-card {
-  width: 108px;
+  width: 150px;
 }
 .card.params-card.busy {
   opacity: .7;
@@ -933,4 +933,106 @@ input, select {
 .info-row span:last-child {
   color: var(--text);
   text-align: right;
+}
+
+/* + above / − below for every numeric field (easier with the pen than typing) */
+.num-field {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 1px;
+  height: 26px;
+}
+
+.num-field input {
+  width: 0;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.num-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 18px;
+}
+
+.num-step {
+  flex: 1;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.num-step svg {
+  width: 10px;
+  height: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.num-step:active {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.sk-field .num-field {
+  width: 74px;
+}
+
+.sk-row .sk-field .num-field,
+.sk-field.small .num-field {
+  width: 100%;
+}
+
+/* Position / rotation / scale: one axis per row, the letter comes from a counter */
+@counter-style xyz {
+  system: fixed;
+  symbols: "X" "Y" "Z";
+  fallback: decimal;
+}
+
+.xyz-row {
+  flex-direction: column;
+  gap: 2px;
+  counter-reset: axis;
+}
+
+.xyz-row .num-field {
+  width: 100%;
+  counter-increment: axis;
+}
+
+.xyz-row .num-field::before {
+  content: counter(axis, xyz);
+  width: 10px;
+  align-self: center;
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+.pivot-degrees-row .num-field {
+  flex: 1;
+}
+
+@media (pointer: coarse) {
+  .num-field { height: 42px; }
+  .num-stack { width: 34px; }
+  .num-step svg { width: 14px; height: 14px; }
+  .sk-field .num-field { width: 124px; }
+  .card { width: 200px; }
+  .card.wide { width: 210px; }
+  .card.params-card { width: 200px; }
+  .selection-expand { width: 160px; }
 }
