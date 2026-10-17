@@ -46,7 +46,6 @@ export function ParamsCard() {
             onCommit={(v) => updateFeatureParams(feature.id, { params: { ...feature.params, [key]: v } })}
           />
         ))}
-        <p className="hint-text muted">Le modifiche si applicano mentre scrivi.</p>
       </div>
     </div>
   );

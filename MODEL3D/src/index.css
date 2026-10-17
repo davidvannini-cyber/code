@@ -42,8 +42,8 @@ body {
 }
 
 svg.icon {
-  width: 15px;
-  height: 15px;
+  width: 13px;
+  height: 13px;
   stroke: currentColor;
   fill: none;
   stroke-width: 1.6;
@@ -60,11 +60,11 @@ svg.icon {
   top: 0;
   left: 0;
   right: 0;
-  height: 32px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px;
+  padding: 0 6px;
   background: #16171aee;
   border-bottom: 1px solid var(--border-soft);
   z-index: 30;
@@ -73,7 +73,7 @@ svg.icon {
 
 .topbar .title {
   font-weight: 600;
-  font-size: 12.5px;
+  font-size: 10.5px;
   letter-spacing: .6px;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -96,8 +96,8 @@ svg.icon {
 }
 
 .icon-btn {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: var(--radius-sm);
   background: transparent;
   border: 1px solid transparent;
@@ -131,23 +131,23 @@ svg.icon {
 
 .rail {
   position: absolute;
-  top: 38px;
-  left: 6px;
-  width: 34px;
+  top: 30px;
+  left: 4px;
+  width: 28px;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0px;
   z-index: 20;
   background: #16171ae6;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius);
-  padding: 2px;
+  padding: 1px;
   backdrop-filter: blur(8px);
 }
 
 .rail-btn {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -171,29 +171,31 @@ svg.icon {
 .rail-sep {
   height: 1px;
   background: var(--border);
-  margin: 2px 3px;
+  margin: 1px 3px;
 }
 
 /* ---------- Floating cards ---------- */
 
 .card {
   position: static;
-  width: 168px;
-  background: #16171af7;
-  border: 1px solid var(--border);
+  width: 118px;
+  background: #16171ab8;
+  border: none;
   border-radius: var(--radius);
   z-index: 25;
   backdrop-filter: blur(10px);
-  box-shadow: 0 6px 14px rgba(0,0,0,.45);
+  box-shadow: none;
   max-height: calc(100vh - 90px);
   overflow-y: auto;
 }
 
 .card.wide {
-  width: 200px;
+  width: 132px;
 }
 
+/* Le schede non hanno intestazione: il testo guida dice cosa fare */
 .card .card-head {
+  display: none;
   padding: 4px 8px;
   border-bottom: 1px solid var(--border-soft);
   font-size: 9.5px;
@@ -207,33 +209,33 @@ svg.icon {
 }
 
 .card .card-body {
-  padding: 6px 8px;
+  padding: 3px 4px;
 }
 
 .io-card {
   position: absolute;
   max-height: none;
-  top: 30px;
+  top: 24px;
   left: auto;
   right: 0;
-  width: 170px;
+  width: 130px;
 }
 
 .io-card .card-body {
-  padding: 3px;
+  padding: 2px;
 }
 
 .menu-item {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 6px;
+  gap: 5px;
+  padding: 3px 5px;
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 12px;
+  font-size: 10px;
   font-family: var(--font);
   text-align: left;
 }
@@ -256,11 +258,34 @@ svg.icon {
 
 .sk-field {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 4px;
-  font-size: 10.5px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  margin-bottom: 2px;
+  font-size: 9px;
   color: var(--text-dim);
+}
+
+.sk-row .sk-field,
+.sk-field.small {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.sk-field input {
+  width: 56px;
+  text-align: right;
+}
+
+.sk-row .sk-field input,
+.sk-field.small input {
+  width: 100%;
+  text-align: left;
+}
+
+.sk-field select {
+  width: 76px;
 }
 
 .sk-field.small {
@@ -277,39 +302,39 @@ svg.icon {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  padding: 3px 5px;
-  font-size: 12px;
+  padding: 1px 3px;
+  font-size: 10px;
   font-family: var(--font);
 }
 
 .sk-row {
   display: flex;
-  gap: 4px;
+  gap: 3px;
 }
 
 .sk-dims {
   border-top: 1px solid var(--border-soft);
-  padding-top: 4px;
-  margin-bottom: 4px;
+  padding-top: 2px;
+  margin-bottom: 2px;
 }
 
 .section-label {
   display: block;
-  font-size: 9.5px;
+  font-size: 8px;
   text-transform: uppercase;
   letter-spacing: .4px;
   color: var(--text-faint);
-  margin-bottom: 3px;
+  margin-bottom: 1px;
 }
 
 .hint-text {
-  font-size: 10.5px;
+  font-size: 9px;
   color: var(--text-dim);
-  line-height: 1.3;
+  line-height: 1.2;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin: 0 0 4px;
+  gap: 1px;
+  margin: 0 0 2px;
 }
 
 .hint-text.muted {
@@ -320,13 +345,13 @@ svg.icon {
 
 .primary-btn {
   width: 100%;
-  padding: 5px;
+  padding: 2px 4px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--accent);
   background: var(--accent);
   color: #fff;
   font-weight: 600;
-  font-size: 11.5px;
+  font-size: 9.5px;
   letter-spacing: .3px;
   font-family: var(--font);
   touch-action: manipulation;
@@ -338,17 +363,17 @@ svg.icon {
 
 .primary-btn.small {
   width: auto;
-  padding: 4px 8px;
-  font-size: 11.5px;
+  padding: 2px 6px;
+  font-size: 9.5px;
 }
 
 .ghost-btn {
-  padding: 4px 8px;
+  padding: 2px 5px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text-dim);
-  font-size: 11.5px;
+  font-size: 9.5px;
   font-family: var(--font);
   touch-action: manipulation;
 }
@@ -359,7 +384,7 @@ svg.icon {
 
 .ghost-btn.full {
   width: 100%;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .segmented {
@@ -367,17 +392,17 @@ svg.icon {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .segmented button {
   flex: 1;
-  padding: 3px 5px;
+  padding: 1px 3px;
   background: var(--panel-2);
   border: none;
   border-right: 1px solid var(--border);
   color: var(--text-dim);
-  font-size: 11.5px;
+  font-size: 9.5px;
   font-family: var(--font);
 }
 
@@ -395,19 +420,19 @@ svg.icon {
 .tile-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .tile-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
+  gap: 4px;
+  padding: 2px 5px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text);
-  font-size: 12px;
+  font-size: 10px;
   font-family: var(--font);
   text-align: left;
   touch-action: manipulation;
@@ -428,12 +453,12 @@ svg.icon {
 .object-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 6px;
+  gap: 4px;
+  padding: 2px 4px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 12px;
-  min-height: 24px;
+  font-size: 10px;
+  min-height: 18px;
 }
 
 .object-row:hover {
@@ -451,8 +476,8 @@ svg.icon {
 }
 
 .swatch {
-  width: 12px;
-  height: 12px;
+  width: 9px;
+  height: 9px;
   border-radius: 2px;
   flex-shrink: 0;
 }
@@ -463,14 +488,14 @@ svg.icon {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .pending-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11.5px;
+  font-size: 9.5px;
   color: var(--text-dim);
 }
 
@@ -480,7 +505,7 @@ svg.icon {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   pointer-events: auto;
 }
 
@@ -496,8 +521,8 @@ svg.icon {
 }
 
 .selection-toolbar button {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: var(--radius-sm);
   border: none;
   background: transparent;
@@ -523,19 +548,19 @@ svg.icon {
 }
 
 .selection-expand {
-  width: 160px;
+  width: 112px;
   background: #16171af7;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 5px;
+  padding: 3px;
   backdrop-filter: blur(10px);
   box-shadow: 0 10px 22px rgba(0,0,0,.45);
 }
 
 .xyz-row {
   display: flex;
-  gap: 3px;
-  margin-bottom: 4px;
+  gap: 2px;
+  margin-bottom: 2px;
 }
 
 .xyz-row input {
@@ -546,15 +571,15 @@ svg.icon {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  padding: 3px;
-  font-size: 11.5px;
+  padding: 1px 2px;
+  font-size: 9.5px;
   font-family: var(--font);
   text-align: center;
 }
 
 .color-input {
   width: 100%;
-  height: 22px;
+  height: 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-0);
@@ -563,7 +588,7 @@ svg.icon {
 
 .pivot-degrees-row {
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .pivot-degrees-row input {
@@ -573,8 +598,8 @@ svg.icon {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  padding: 3px;
-  font-size: 12px;
+  padding: 1px 3px;
+  font-size: 9.5px;
   font-family: var(--font);
 }
 
@@ -582,8 +607,8 @@ svg.icon {
 
 .history-strip {
   position: absolute;
-  left: 8px;
-  bottom: 8px;
+  left: 4px;
+  bottom: 4px;
   z-index: 20;
   background: #16171af7;
   border: 1px solid var(--border-soft);
@@ -594,9 +619,9 @@ svg.icon {
 .history-collapsed {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 8px;
-  height: 28px;
+  gap: 3px;
+  padding: 0 4px;
+  height: 22px;
   max-width: 70vw;
   overflow-x: auto;
 }
@@ -605,12 +630,12 @@ svg.icon {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 3px 7px 3px 5px;
-  font-size: 11px;
+  padding: 1px 5px 1px 4px;
+  font-size: 9px;
   color: var(--text-dim);
 }
 
@@ -633,9 +658,9 @@ svg.icon {
   background: transparent;
   border: none;
   color: var(--text-faint);
-  font-size: 10.5px;
+  font-size: 9px;
   letter-spacing: .3px;
-  padding: 6px 4px;
+  padding: 2px 3px;
   font-family: var(--font);
 }
 
@@ -644,7 +669,7 @@ svg.icon {
 }
 
 .history-expanded {
-  width: 240px;
+  width: 190px;
   max-height: 60vh;
   display: flex;
   flex-direction: column;
@@ -654,24 +679,24 @@ svg.icon {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 8px;
+  padding: 2px 6px;
   border-bottom: 1px solid var(--border-soft);
 }
 
 .history-list {
   list-style: none;
   margin: 0;
-  padding: 5px;
+  padding: 3px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   overflow-y: auto;
 }
 
 .history-row {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 4px;
+  padding: 3px;
   background: var(--panel-2);
 }
 
@@ -682,37 +707,37 @@ svg.icon {
 .history-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 3px;
+  gap: 4px;
+  margin-bottom: 2px;
 }
 
 .history-label {
   flex: 1;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .feature-params {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 3px;
 }
 
 .feature-params label {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: 10.5px;
+  font-size: 9px;
   color: var(--text-dim);
 }
 
 .feature-params input {
-  width: 52px;
+  width: 44px;
   background: var(--bg-0);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  padding: 3px;
-  font-size: 12px;
+  padding: 1px 3px;
+  font-size: 10px;
 }
 
 /* ---------- Sketch quote labels (in-viewport HTML overlays) ---------- */
@@ -721,8 +746,8 @@ svg.icon {
   background: #16171af0;
   border: 1px solid #3a7de6;
   color: #cfe0ff;
-  font-size: 10.5px;
-  padding: 2px 6px;
+  font-size: 9px;
+  padding: 1px 4px;
   border-radius: var(--radius-sm);
   white-space: nowrap;
   cursor: pointer;
@@ -734,17 +759,17 @@ svg.icon {
 
 .log-toast {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
+  right: 4px;
+  bottom: 4px;
   z-index: 15;
   max-width: 320px;
   background: #16171af2;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius);
-  padding: 4px 6px;
-  font-size: 10.5px;
+  padding: 2px 5px;
+  font-size: 9px;
   color: var(--text-dim);
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
 /* ---------- Loading overlay ---------- */
@@ -781,20 +806,20 @@ svg.icon {
 }
 
 @media (max-width: 700px) {
-  .card { width: 160px; }
-  .card.wide { width: 180px; }
+  .card { width: 130px; }
+  .card.wide { width: 140px; }
 }
 
 /* Schede degli strumenti: sempre accanto alla barra laterale */
 .dock-left {
   position: absolute;
-  top: 38px;
-  left: 44px;
+  top: 30px;
+  left: 34px;
   z-index: 25;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 2px;
   pointer-events: none;
 }
 .dock-left > * {
@@ -804,7 +829,7 @@ svg.icon {
 /* Menu dell'oggetto selezionato (rotazione, parametri...): in alto al centro, sotto la barra */
 .dock {
   position: absolute;
-  top: 36px;
+  top: 28px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 25;
@@ -812,7 +837,7 @@ svg.icon {
   flex-wrap: nowrap;
   justify-content: center;
   align-items: flex-start;
-  gap: 4px;
+  gap: 2px;
   max-width: calc(100vw - 260px);
   pointer-events: none;
 }
@@ -824,7 +849,7 @@ svg.icon {
   .dock { flex-wrap: wrap; }
 }
 .card.params-card {
-  width: 150px;
+  width: 108px;
 }
 .card.params-card.busy {
   opacity: .7;
