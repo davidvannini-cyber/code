@@ -66,3 +66,54 @@ export function matePlacement(moving: Placement, fixed: FaceFrame, face: FaceFra
   const e = new Euler().setFromQuaternion(rot);
   return { position: [pos.x, pos.y, pos.z], rotation: [e.x, e.y, e.z], scale: moving.scale };
 }
+
+export interface FaceInfo {
+  planar: boolean;
+  area: number; // mm², world scale
+  size: [number, number, number]; // extent along world X, Y, Z
+  centroid: [number, number, number];
+  normal: [number, number, number] | null; // unit, only for planar faces
+}
+
+/** Read-only characteristics of one face, in world space (placement applied). */
+export function faceInfo(body: LiveBody, faceIndex: number, placement: Placement): FaceInfo | null {
+  const range = body.faceRanges[faceIndex];
+  if (!range || range[1] === 0) return null;
+  const m = placementMatrix(placement);
+  const { positions, indices } = body.mesh;
+  const a = new Vector3(), b = new Vector3(), c = new Vector3();
+  const centroid = new Vector3();
+  const normal = new Vector3();
+  const min = new Vector3(Infinity, Infinity, Infinity);
+  const max = new Vector3(-Infinity, -Infinity, -Infinity);
+  const triNormals: Vector3[] = [];
+  let area = 0;
+  for (let t = range[0]; t < range[0] + range[1]; t++) {
+    a.fromArray(positions, indices[t * 3] * 3).applyMatrix4(m);
+    b.fromArray(positions, indices[t * 3 + 1] * 3).applyMatrix4(m);
+    c.fromArray(positions, indices[t * 3 + 2] * 3).applyMatrix4(m);
+    for (const v of [a, b, c]) {
+      min.min(v);
+      max.max(v);
+    }
+    const n = new Vector3().subVectors(b, a).cross(new Vector3().subVectors(c, a));
+    const triArea = n.length() / 2;
+    if (triArea < 1e-12) continue;
+    area += triArea;
+    centroid.add(new Vector3().add(a).add(b).add(c).multiplyScalar(triArea / 3));
+    normal.add(n);
+    triNormals.push(n.normalize());
+  }
+  if (area === 0) return null;
+  centroid.divideScalar(area);
+  normal.normalize();
+  const planar = triNormals.every((n) => n.dot(normal) > 0.999);
+  const size = new Vector3().subVectors(max, min);
+  return {
+    planar,
+    area,
+    size: [size.x, size.y, size.z],
+    centroid: [centroid.x, centroid.y, centroid.z],
+    normal: planar ? [normal.x, normal.y, normal.z] : null
+  };
+}

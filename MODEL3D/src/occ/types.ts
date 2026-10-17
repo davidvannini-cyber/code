@@ -85,6 +85,7 @@ export interface BodyResult {
   mesh: { positions: number[]; indices: number[] };
   edges: EdgeData[];
   faceRanges: FaceRange[];
+  treatmentFaces: number[]; // faces made by the last fillet/chamfer on this body
 }
 
 /** Client-side body with typed-array mesh data, ready for a BufferGeometry. */
@@ -93,6 +94,7 @@ export interface LiveBody {
   mesh: MeshData;
   edges: EdgeData[];
   faceRanges: FaceRange[];
+  treatmentFaces: number[];
 }
 
 export interface ShapeExportRef {

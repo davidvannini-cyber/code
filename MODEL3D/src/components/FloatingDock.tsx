@@ -7,6 +7,7 @@ import { BooleanCard } from "./cards/BooleanCard";
 import { MateCard } from "./cards/MateCard";
 import { BodiesCard } from "./cards/BodiesCard";
 import { ParamsCard } from "./cards/ParamsCard";
+import { FaceCard } from "./cards/FaceCard";
 import { SelectionOverlay } from "./SelectionOverlay";
 
 // Tool cards (chosen from the left rail) open next to the rail; the menus of the
@@ -37,6 +38,7 @@ export function FloatingDock() {
       <div className="dock">
         {showSelection && <SelectionOverlay key={selectedBodyId} bodyId={selectedBodyId} />}
         <ParamsCard />
+        <FaceCard />
       </div>
     </>
   );

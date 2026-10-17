@@ -917,3 +917,20 @@ input, select {
     opacity: .3;
   }
 }
+
+/* Caratteristiche di una faccia (sola lettura) */
+.card.face-card {
+  width: 150px;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.info-row span:last-child {
+  color: var(--text);
+  text-align: right;
+}

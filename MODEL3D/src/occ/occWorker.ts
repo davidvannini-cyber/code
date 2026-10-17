@@ -381,7 +381,7 @@ function booleanOp(op: string, a: any, b: any): any {
   return call(opShape, "Shape", []);
 }
 
-function edgeTreatment(src: any, edgeIndex: number, kind: "fillet" | "chamfer", amount: number): any {
+function edgeTreatment(src: any, edgeIndex: number, kind: "fillet" | "chamfer", amount: number): { shape: any; generated: any[] } {
   const edge = uniqueEdges(src)[edgeIndex];
   if (!edge) throw new Error(`spigolo ${edgeIndex} non trovato`);
   // MakeFillet's constructor takes the fillet profile; MakeChamfer takes only the shape.
@@ -394,7 +394,26 @@ function edgeTreatment(src: any, edgeIndex: number, kind: "fillet" | "chamfer", 
   if (!call(maker, "IsDone", [])) throw new Error(`${kind === "fillet" ? "raccordo" : "smusso"} non riuscito (misura troppo grande?)`);
   const result = call(maker, "Shape", []);
   if (!result || call(result, "IsNull", [])) throw new Error("risultato nullo");
-  return result;
+  // The new fillet/chamfer face(s), so the client can show their size when picked.
+  const generated: any[] = [];
+  try {
+    const list = maker.Generated(edge);
+    if (list.Size() > 0) generated.push(call(oc.TopoDS, "Face", [list.First_1()]));
+  } catch (e) {
+    console.error("MODEL3D: generated face lookup skipped", e);
+  }
+  return { shape: result, generated };
+}
+
+// Index of a face in shapeToMesh()'s face order (the order faceRanges uses).
+function faceIndexOf(shape: any, face: any): number {
+  const explorer = construct(oc, "TopExp_Explorer", [shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE]);
+  let i = 0;
+  for (; explorer.More(); explorer.Next()) {
+    if (call(call(oc.TopoDS, "Face", [explorer.Current()]), "IsSame", [face])) return i;
+    i++;
+  }
+  return -1;
 }
 
 // ---------- rebuild (parametric history replay) ----------
@@ -414,6 +433,7 @@ let lastShapesById = new Map<string, any>();
 function rebuild(features: Feature[], placements: Record<string, number[]>): { bodies: BodyResult[]; warnings: string[] } {
   const shapes = new Map<string, any>();
   const consumed = new Set<string>();
+  const treatmentFaces = new Map<string, any[]>();
   const warnings: string[] = [];
 
   for (const f of features) {
@@ -429,7 +449,9 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
           warnings.push(`Raccordo/smusso "${f.label}" saltato: corpo di origine mancante.`);
           continue;
         }
-        shapes.set(f.bodyId, edgeTreatment(src, f.edgeIndex, f.kind, f.amount));
+        const treated = edgeTreatment(src, f.edgeIndex, f.kind, f.amount);
+        shapes.set(f.bodyId, treated.shape);
+        treatmentFaces.set(f.bodyId, treated.generated);
         consumed.add(f.sourceId);
       } else if (f.type === "boolean") {
         const rawA = shapes.get(f.inputA);
@@ -460,7 +482,8 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
         warnings.push(`Corpo ${bodyId} senza mesh valida: omesso.`);
         continue;
       }
-      bodies.push({ bodyId, mesh: { positions, indices }, edges: shapeEdges(shape), faceRanges });
+      const treatment = (treatmentFaces.get(bodyId) ?? []).map((face) => faceIndexOf(shape, face)).filter((i) => i >= 0);
+      bodies.push({ bodyId, mesh: { positions, indices }, edges: shapeEdges(shape), faceRanges, treatmentFaces: treatment });
     } catch (e: any) {
       warnings.push(`Errore triangolazione corpo ${bodyId}: ${e?.message ?? e}`);
     }

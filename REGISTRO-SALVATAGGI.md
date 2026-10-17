@@ -132,3 +132,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `d12bbb3` | MODEL3D/src/components/Viewport.tsx (iPad: meno pixel, niente antialiasing e ombre, disegno solo quando serve per evitare blocchi di Safari), REGISTRO-SALVATAGGI.md | `git checkout d12bbb3` |
 | 2026-10-18 | `fd6f722` | MODEL3D/src/components/cards/ParamsCard.tsx (dopo raccordo/smusso la scheda mostra anche le misure del solido di partenza), REGISTRO-SALVATAGGI.md | `git checkout fd6f722` |
 | 2026-10-18 | `b272cca` | MODEL3D: 1 clic seleziona la faccia, doppio clic l'intero oggetto (Viewport.tsx, SceneMesh.tsx, store.ts), REGISTRO-SALVATAGGI.md | `git checkout b272cca` |
+| 2026-10-18 | `6fa3a16` | MODEL3D: scheda Faccia (caratteristiche della faccia selezionata, misura di smusso/raccordo) in FaceCard.tsx, faceMate.ts, occWorker.ts, types.ts, occClient.ts, FloatingDock.tsx, index.css, REGISTRO-SALVATAGGI.md | `git checkout 6fa3a16` |

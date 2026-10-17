@@ -55,7 +55,8 @@ class OccClient {
         indices: new Uint32Array(b.mesh.indices)
       },
       edges: b.edges,
-      faceRanges: b.faceRanges
+      faceRanges: b.faceRanges,
+      treatmentFaces: b.treatmentFaces ?? []
     }));
     return { bodies, warnings: res.payload.warnings };
   }
