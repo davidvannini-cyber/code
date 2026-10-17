@@ -45,9 +45,8 @@ export function faceFrame(body: LiveBody, faceIndex: number, placement: Placemen
 
 /**
  * New placement for the moving body so that its face lies flat against the fixed
- * face: rotated until the normals oppose each other, then moved so the contact
- * point of the moving face lands on the fixed face's plane (or on its centre),
- * then pushed MATE_OVERLAP into the fixed body.
+ * face: rotated until the normals oppose each other, then slid (horizontally)
+ * until it touches, optionally aligned sideways, and pushed MATE_OVERLAP into the fixed body.
  */
 // The faces are pushed this far into each other so a later union fuses the two
 // bodies into one solid instead of leaving a hairline gap or a bare touch.
@@ -59,9 +58,34 @@ export function matePlacement(moving: Placement, fixed: FaceFrame, face: FaceFra
   const pos = new Vector3(...moving.position).sub(pivot).applyQuaternion(q).add(pivot);
   const rot = q.multiply(new Quaternion().setFromEuler(new Euler(...moving.rotation)));
 
-  const toPlane = fixed.normal.dot(new Vector3().subVectors(fixed.centroid, pivot));
-  const shift = center ? new Vector3().subVectors(fixed.centroid, pivot) : fixed.normal.clone().multiplyScalar(toPlane);
-  pos.add(shift).addScaledVector(fixed.normal, -MATE_OVERLAP);
+  // Contact: the moving face has to end up on the fixed face's plane. Slide the
+  // body horizontally when the fixed face is not (nearly) horizontal, so it never
+  // rises or sinks; only a horizontal face (stacking) is reached by moving up/down.
+  const nA = fixed.normal;
+  const dist = new Vector3().subVectors(pivot, fixed.centroid).dot(nA); // moving face to fixed plane
+  const horiz = new Vector3(nA.x, 0, nA.z);
+  const slideHorizontally = horiz.length() > 0.2;
+  const contact = new Vector3();
+  if (slideHorizontally) {
+    const hu = horiz.clone().normalize();
+    contact.copy(hu).multiplyScalar(-dist / hu.dot(nA));
+  } else {
+    contact.copy(nA).multiplyScalar(-dist);
+  }
+  pos.add(contact);
+
+  // Alignment: line the faces up sideways, in the horizontal plane only (never vertically).
+  if (center) {
+    const delta = new Vector3().subVectors(fixed.centroid, new Vector3().addVectors(pivot, contact));
+    if (slideHorizontally) {
+      const hu = horiz.clone().normalize();
+      const along = new Vector3(0, 1, 0).cross(hu); // horizontal, in the contact plane
+      pos.addScaledVector(along, delta.dot(along));
+    } else {
+      pos.add(new Vector3(delta.x, 0, delta.z)); // stacking: centre over the face
+    }
+  }
+  pos.addScaledVector(nA, -MATE_OVERLAP);
 
   const e = new Euler().setFromQuaternion(rot);
   return { position: [pos.x, pos.y, pos.z], rotation: [e.x, e.y, e.z], scale: moving.scale };

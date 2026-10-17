@@ -38,7 +38,7 @@ export function MateCard() {
             </p>
             <label className="sk-field" style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <input type="checkbox" checked={mateCenter} onChange={(e) => setMateCenter(e.target.checked)} style={{ width: "auto" }} />
-              <span>Centra le facce</span>
+              <span>Allinea in orizzontale</span>
             </label>
             <button className="primary-btn" disabled={!mateFaceA || !mateFaceB} onClick={applyMate}>
               AFFIANCA
