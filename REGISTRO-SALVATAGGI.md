@@ -109,3 +109,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-16 | `0ccc344` | SALESASSISTANT/LEADREWORKS/docs/icone-proposte/ (15 proposte PNG 1024, 3 per icona, 3D meno morbido), icone-proposte.zip, docs/icona/genera-icone-proposte.py, REGISTRO-SALVATAGGI.md | `git checkout 0ccc344` |
 | 2026-10-17 | `efc7b9d` | REA/README.md, REA/.gitignore (installazione rea-agents, clone escluso), REGISTRO-SALVATAGGI.md | `git checkout efc7b9d` |
 | 2026-10-17 | `fa67401` | MODEL3D/src/occ/occWorker.ts (cache costruttori/metodi, raccordi/smussi in 2D senza MakeFillet2d, fallback senza raccordi), REGISTRO-SALVATAGGI.md | `git checkout fa67401` |
+| 2026-10-17 | `3450c5d` | MODEL3D/src/occ/occWorker.ts (faceRanges allineati, punti duplicati, guardia mesh vuota), MODEL3D/src/occ/occClient.ts (errori del worker respinti, niente blocco UI), REGISTRO-SALVATAGGI.md | `git checkout 3450c5d` |

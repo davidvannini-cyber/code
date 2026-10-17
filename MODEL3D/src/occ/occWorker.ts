@@ -147,7 +147,10 @@ function shapeToMesh(shape: any): { positions: number[]; indices: number[]; face
       const face = call(oc.TopoDS, "Face", [explorer.Current()]);
       const location = construct(oc, "TopLoc_Location", []);
       const triHandle = call(oc.BRep_Tool, "Triangulation", [face, location]);
-      if (!triHandle || triHandle.IsNull()) continue;
+      if (!triHandle || triHandle.IsNull()) {
+        faceRanges.push([indices.length / 3, 0]);
+        continue;
+      }
       const tri = triHandle.get();
       const trsf = location.Transformation();
 
@@ -176,6 +179,7 @@ function shapeToMesh(shape: any): { positions: number[]; indices: number[]; face
       faceRanges.push([triangleStart, nbTriangles]);
     } catch (e) {
       console.error("MODEL3D: face triangulation skipped", e);
+      faceRanges.push([indices.length / 3, 0]);
     }
   }
 
@@ -389,8 +393,14 @@ function applySketchCorners(
 }
 
 function prismFromPoints(points2D: [number, number][], basis: ReturnType<typeof planeBasis>, height: number): any {
+  const clean = points2D.filter((p, i) => {
+    const q = points2D[(i + points2D.length - 1) % points2D.length];
+    return i === 0 || Math.hypot(p[0] - q[0], p[1] - q[1]) > 1e-9;
+  });
+  while (clean.length > 1 && Math.hypot(clean[0][0] - clean[clean.length - 1][0], clean[0][1] - clean[clean.length - 1][1]) <= 1e-9) clean.pop();
+  if (clean.length < 3) throw new Error("schizzo con meno di 3 punti distinti");
   const polygon = construct(oc, "BRepBuilderAPI_MakePolygon", []);
-  for (const pt of points2D) {
+  for (const pt of clean) {
     const [x, y, z] = to3D(pt, basis);
     call(polygon, "Add", [construct(oc, "gp_Pnt", [x, y, z])]);
   }
@@ -469,6 +479,10 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
     if (consumed.has(bodyId)) continue;
     try {
       const { positions, indices, faceRanges } = shapeToMesh(shape);
+      if (positions.length === 0 || indices.length === 0) {
+        warnings.push(`Corpo ${bodyId} senza mesh valida: omesso.`);
+        continue;
+      }
       bodies.push({ bodyId, mesh: { positions, indices }, edges: shapeEdges(shape), faceRanges });
     } catch (e: any) {
       warnings.push(`Errore triangolazione corpo ${bodyId}: ${e?.message ?? e}`);

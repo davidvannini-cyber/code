@@ -11,6 +11,14 @@ class OccClient {
   constructor() {
     this.worker = new Worker(new URL("./occWorker.ts", import.meta.url), { type: "module" });
     this.worker.onmessage = (ev: MessageEvent<WorkerResponse>) => this.onMessage(ev.data);
+    // A WASM abort or uncaught worker error never posts a reply: reject every
+    // pending request so the UI does not stay busy forever.
+    const fail = (reason: string) => {
+      for (const p of this.pending.values()) p.reject(new Error(reason));
+      this.pending.clear();
+    };
+    this.worker.onerror = (ev) => fail(`Errore nel worker geometrico: ${ev.message ?? "sconosciuto"}`);
+    this.worker.onmessageerror = () => fail("Messaggio del worker geometrico non leggibile");
     this.readyPromise = this.send({ type: "init" } as any).then(() => undefined);
   }
 
