@@ -115,3 +115,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-17 | `1653fda` | MODEL3D/vite.config.ts (base '/' in sviluppo, '/code/MODEL3D/' solo in build), MODEL3D/Avvia-MODEL3D.command, REGISTRO-SALVATAGGI.md | `git checkout 1653fda` |
 | 2026-10-17 | `cbd6054` | MODEL3D/src/components/cards/ParamsCard.tsx (nuovo), MODEL3D/src/components/Rail.tsx, MODEL3D/src/index.css, REGISTRO-SALVATAGGI.md | `git checkout cbd6054` |
 | 2026-10-17 | `a41c4e4` | MODEL3D/src/components/Viewport.tsx, MODEL3D/src/components/HistoryStrip.tsx, MODEL3D/src/index.css, REGISTRO-SALVATAGGI.md | `git checkout a41c4e4` |
+| 2026-10-17 | `7c89ea6` | MODEL3D: raccordo/smusso su spigoli di solidi 3D (occWorker.ts, types.ts, store.ts, FilletCard, SceneMesh), anteprima 2D arrotondata e pallini piccoli (PendingShapesRenderer, utils/sketchCorners.ts), HistoryStrip, REGISTRO-SALVATAGGI.md | `git checkout 7c89ea6` |

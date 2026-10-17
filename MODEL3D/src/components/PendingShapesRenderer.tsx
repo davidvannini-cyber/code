@@ -4,6 +4,7 @@ import { Line, Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEditorStore, type PendingShape } from "../store";
 import type { PlaneKind } from "../occ/types";
+import { applySketchCorners } from "../utils/sketchCorners";
 
 const SIZE = 400; // mm
 const DOUBLE_TAP_MS = 400;
@@ -39,13 +40,17 @@ function PendingShapeOutline({ shape, index }: { shape: PendingShape; index: num
   const pickFilletCorner = useEditorStore((s) => s.pickFilletCorner);
 
   const isExtrudeTarget = extrudeTargetId === shape.id;
+  // Outline/fill show the outline with fillets and chamfers already applied,
+  // exactly what the extrusion will use; the corner markers stay on the
+  // original vertices.
+  const rounded = useMemo(() => applySketchCorners(shape.points, shape.corners), [shape.points, shape.corners]);
   const linePts = useMemo(() => {
-    const pts = shape.points.map((p) => new THREE.Vector3(p[0], p[1], 0.01));
+    const pts = rounded.map((p) => new THREE.Vector3(p[0], p[1], 0.01));
     pts.push(pts[0]);
     return pts;
-  }, [shape.points]);
+  }, [rounded]);
 
-  const shapePts2D = useMemo(() => shape.points.map((p) => new THREE.Vector2(p[0], p[1])), [shape.points]);
+  const shapePts2D = useMemo(() => rounded.map((p) => new THREE.Vector2(p[0], p[1])), [rounded]);
 
   return (
     <group position={origin3D} quaternion={quaternion}>
@@ -67,20 +72,29 @@ function PendingShapeOutline({ shape, index }: { shape: PendingShape; index: num
       <Line points={linePts} color={isExtrudeTarget ? "#22aa55" : "#4f8dfd"} lineWidth={2} />
       {shape.points.map((p, i) => {
         const treated = shape.corners[i];
+        const hasTreatment = !!treated && treated.kind !== "none";
         const isPicked = filletTargetShapeId === shape.id && filletCornerIndex === i;
+        // Markers only while choosing a corner (or on corners already treated),
+        // kept small; the invisible larger sphere is just the click target.
+        if (!filletPickActive && !isPicked && !hasTreatment) return null;
         return (
-          <mesh
-            key={i}
-            position={[p[0], p[1], 0.02]}
-            onPointerDown={(e: ThreeEvent<PointerEvent>) => {
-              if (!filletPickActive) return;
-              e.stopPropagation();
-              pickFilletCorner(shape.id, i);
-            }}
-          >
-            <sphereGeometry args={[isPicked ? 3.5 : filletPickActive ? 3 : 2, 12, 12]} />
-            <meshBasicMaterial color={isPicked ? "#ffffff" : CORNER_COLOR[treated?.kind ?? "none"]} />
-          </mesh>
+          <group key={i} position={[p[0], p[1], 0.02]}>
+            <mesh>
+              <sphereGeometry args={[isPicked ? 1.1 : filletPickActive ? 0.9 : 0.6, 10, 10]} />
+              <meshBasicMaterial color={isPicked ? "#ffffff" : CORNER_COLOR[treated?.kind ?? "none"]} />
+            </mesh>
+            {filletPickActive && (
+              <mesh
+                onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+                  e.stopPropagation();
+                  pickFilletCorner(shape.id, i);
+                }}
+              >
+                <sphereGeometry args={[3, 8, 8]} />
+                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+              </mesh>
+            )}
+          </group>
         );
       })}
       <Html position={[shape.points[0][0], shape.points[0][1], 0.1]} center distanceFactor={40}>

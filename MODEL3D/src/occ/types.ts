@@ -53,7 +53,18 @@ export interface BooleanFeature extends FeatureBase {
   inputB: string;
 }
 
-export type Feature = PrimitiveFeature | SketchExtrudeFeature | BooleanFeature;
+// Fillet/chamfer of one edge of a solid. Like a boolean it consumes its source
+// body; edgeIndex is the index into the worker's uniqueEdges() list.
+export interface EdgeFilletFeature extends FeatureBase {
+  type: "edgeFillet";
+  bodyId: string;
+  sourceId: string;
+  edgeIndex: number;
+  kind: "fillet" | "chamfer";
+  amount: number;
+}
+
+export type Feature = PrimitiveFeature | SketchExtrudeFeature | BooleanFeature | EdgeFilletFeature;
 
 export interface MeshData {
   positions: Float32Array;

@@ -41,6 +41,17 @@ function FeatureParams({ feature }: { feature: Feature }) {
     );
   }
 
+  if (feature.type === "edgeFillet") {
+    return (
+      <div className="feature-params">
+        <label className="hint-text">
+          misura (mm)
+          <input type="number" step="0.5" value={feature.amount} onChange={(e) => updateFeatureParams(feature.id, { amount: parseFloat(e.target.value) || 0.1 })} />
+        </label>
+      </div>
+    );
+  }
+
   return (
     <div className="feature-params">
       <span className="hint-text muted">{feature.op}</span>

@@ -52,7 +52,10 @@ function collectDependents(id: string, features: Feature[]): Set<string> {
     changed = false;
     for (const f of features) {
       if (toDelete.has(f.id)) continue;
-      if (f.type === "boolean" && (toDelete.has(f.inputA) || toDelete.has(f.inputB))) {
+      const dependsOnDeleted =
+        (f.type === "boolean" && (toDelete.has(f.inputA) || toDelete.has(f.inputB))) ||
+        (f.type === "edgeFillet" && toDelete.has(f.sourceId));
+      if (dependsOnDeleted) {
         toDelete.add(f.id);
         changed = true;
       }
@@ -143,6 +146,8 @@ interface EditorState {
   filletCornerIndex: number | null;
   filletKind: "fillet" | "chamfer";
   filletAmount: number;
+  filletTargetEdge: { bodyId: string; edgeIndex: number } | null;
+  pickFilletEdge: (bodyId: string, edgeIndex: number) => void;
   startFilletTool: () => void;
   cancelFilletTool: () => void;
   pickFilletCorner: (shapeId: string, cornerIndex: number) => void;
@@ -401,15 +406,44 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   filletCornerIndex: null,
   filletKind: "fillet",
   filletAmount: 2,
+  filletTargetEdge: null,
 
-  startFilletTool: () => set({ filletPickActive: true, filletTargetShapeId: null, filletCornerIndex: null, extrudePickActive: false, booleanPick: null }),
-  cancelFilletTool: () => set({ filletPickActive: false, filletTargetShapeId: null, filletCornerIndex: null }),
-  pickFilletCorner: (shapeId, cornerIndex) => set({ filletTargetShapeId: shapeId, filletCornerIndex: cornerIndex, filletPickActive: false }),
+  startFilletTool: () =>
+    set({ filletPickActive: true, filletTargetShapeId: null, filletCornerIndex: null, filletTargetEdge: null, extrudePickActive: false, booleanPick: null, selectedBodyId: null, selectedFace: null }),
+  cancelFilletTool: () => set({ filletPickActive: false, filletTargetShapeId: null, filletCornerIndex: null, filletTargetEdge: null }),
+  pickFilletCorner: (shapeId, cornerIndex) =>
+    set({ filletTargetShapeId: shapeId, filletCornerIndex: cornerIndex, filletTargetEdge: null, filletPickActive: false }),
+  pickFilletEdge: (bodyId, edgeIndex) =>
+    set({ filletTargetEdge: { bodyId, edgeIndex }, filletTargetShapeId: null, filletCornerIndex: null, filletPickActive: false }),
   setFilletKind: (kind) => set({ filletKind: kind }),
   setFilletAmount: (amount) => set({ filletAmount: amount }),
 
   applyFillet: () => {
-    const { filletTargetShapeId, filletCornerIndex, filletKind, filletAmount, pendingShapes } = get();
+    const { filletTargetShapeId, filletCornerIndex, filletKind, filletAmount, filletTargetEdge, features } = get();
+    if (filletTargetEdge) {
+      const id = nextFeatureId();
+      const count = features.filter((f) => f.type === "edgeFillet").length + 1;
+      const feature: Feature = {
+        id,
+        active: true,
+        label: `${filletKind === "fillet" ? "raccordo" : "smusso"}_${count}`,
+        type: "edgeFillet",
+        bodyId: id,
+        sourceId: filletTargetEdge.bodyId,
+        edgeIndex: filletTargetEdge.edgeIndex,
+        kind: filletKind,
+        amount: filletAmount
+      };
+      // The result stays where the source body was placed, with the same colour.
+      const src = filletTargetEdge.bodyId;
+      set((s) => ({
+        placements: { ...s.placements, [id]: s.placements[src] ?? IDENTITY_PLACEMENT },
+        colors: { ...s.colors, [id]: s.colors[src] ?? "#4f8dfd" },
+        filletTargetEdge: null
+      }));
+      commit(set, get, [...features, feature]);
+      return;
+    }
     if (!filletTargetShapeId || filletCornerIndex === null) {
       get().log("Nessuno spigolo selezionato.");
       return;

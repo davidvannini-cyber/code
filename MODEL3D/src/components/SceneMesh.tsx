@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { Line } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -31,6 +31,10 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
   const selectedBodyId = useEditorStore((s) => s.selectedBodyId);
   const selectedFace = useEditorStore((s) => s.selectedFace);
   const booleanPick = useEditorStore((s) => s.booleanPick);
+  const filletPickActive = useEditorStore((s) => s.filletPickActive);
+  const filletTargetEdge = useEditorStore((s) => s.filletTargetEdge);
+  const pickFilletEdge = useEditorStore((s) => s.pickFilletEdge);
+  const [hoverEdge, setHoverEdge] = useState<number | null>(null);
   const pendingClickRef = useRef<{ time: number; faceIndex: number } | null>(null);
 
   const geometry = useMemo(() => {
@@ -111,9 +115,22 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
           <meshBasicMaterial color="#22ddaa" transparent opacity={0.55} depthTest={true} polygonOffset polygonOffsetFactor={-2} />
         </mesh>
       )}
-      {edgeLines.map((pts, i) => (
-        <Line key={i} points={pts} color="#111111" lineWidth={1} />
-      ))}
+      {edgeLines.map((pts, i) => {
+        if (pts.length < 2) return null;
+        const chosen = filletTargetEdge?.bodyId === body.bodyId && filletTargetEdge.edgeIndex === i;
+        const hovered = filletPickActive && hoverEdge === i;
+        return (
+          <Line
+            key={i}
+            points={pts}
+            color={chosen ? "#ffcc00" : hovered ? "#22ddaa" : filletPickActive ? "#7aa2ff" : "#111111"}
+            lineWidth={chosen ? 4 : hovered ? 4 : filletPickActive ? 3 : 1}
+            onPointerOver={filletPickActive ? (e: ThreeEvent<PointerEvent>) => (e.stopPropagation(), setHoverEdge(i)) : undefined}
+            onPointerOut={filletPickActive ? () => setHoverEdge((cur) => (cur === i ? null : cur)) : undefined}
+            onPointerDown={filletPickActive ? (e: ThreeEvent<PointerEvent>) => (e.stopPropagation(), pickFilletEdge(body.bodyId, i)) : undefined}
+          />
+        );
+      })}
       {isSelected && overlayAllowed && <SelectionOverlay bodyId={body.bodyId} />}
     </group>
   );

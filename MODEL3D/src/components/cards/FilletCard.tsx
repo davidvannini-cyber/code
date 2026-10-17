@@ -7,6 +7,8 @@ export function FilletCard() {
   const filletPickActive = useEditorStore((s) => s.filletPickActive);
   const filletTargetShapeId = useEditorStore((s) => s.filletTargetShapeId);
   const filletCornerIndex = useEditorStore((s) => s.filletCornerIndex);
+  const filletTargetEdge = useEditorStore((s) => s.filletTargetEdge);
+  const bodies = useEditorStore((s) => s.bodies);
   const filletKind = useEditorStore((s) => s.filletKind);
   const filletAmount = useEditorStore((s) => s.filletAmount);
   const startFilletTool = useEditorStore((s) => s.startFilletTool);
@@ -18,16 +20,16 @@ export function FilletCard() {
 
   return (
     <div className="card">
-      <div className="card-head">Raccordo/Smusso · spigolo schizzo 2D</div>
+      <div className="card-head">Raccordo/Smusso</div>
       <div className="card-body">
         {filletPickActive ? (
           <>
-            <p className="hint-text">Tocca uno spigolo di una forma 2D nella scena.</p>
+            <p className="hint-text">Tocca uno spigolo di un solido (linea) o un vertice di una forma 2D.</p>
             <button className="ghost-btn full" onClick={cancelFilletTool}>
               Annulla
             </button>
           </>
-        ) : filletTargetShapeId && filletCornerIndex !== null ? (
+        ) : (filletTargetShapeId && filletCornerIndex !== null) || filletTargetEdge ? (
           <>
             <div className="segmented">
               <button className={filletKind === "fillet" ? "active" : ""} onClick={() => setFilletKind("fillet")}>
@@ -50,11 +52,11 @@ export function FilletCard() {
           </>
         ) : (
           <>
-            <p className="hint-text">Solo su spigoli di forme 2D non ancora estruse (limite del motore CAD).</p>
-            <button className="primary-btn" disabled={disabled || pendingShapes.length === 0} onClick={startFilletTool}>
-              Raccorda/smussa spigolo
+            <p className="hint-text">Scegli uno spigolo di un solido 3D oppure un vertice di una forma 2D non ancora estrusa.</p>
+            <button className="primary-btn" disabled={disabled || (pendingShapes.length === 0 && bodies.length === 0)} onClick={startFilletTool}>
+              Scegli spigolo
             </button>
-            {pendingShapes.length === 0 && <p className="hint-text muted">Crea prima una forma con lo strumento Schizzo.</p>}
+            {pendingShapes.length === 0 && bodies.length === 0 && <p className="hint-text muted">Crea prima un solido o una forma 2D.</p>}
           </>
         )}
       </div>
