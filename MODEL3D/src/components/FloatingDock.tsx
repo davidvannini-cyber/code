@@ -9,8 +9,9 @@ import { BodiesCard } from "./cards/BodiesCard";
 import { ParamsCard } from "./cards/ParamsCard";
 import { SelectionOverlay } from "./SelectionOverlay";
 
-// All floating menus live here, pinned top-centre just under the top bar, so
-// they never sit on top of the object being edited.
+// Tool cards (chosen from the left rail) open next to the rail; the menus of the
+// selected object (transform fields, parameters) are pinned top-centre just under
+// the top bar, so they never sit on top of the object being edited.
 export function FloatingDock() {
   const activeCard = useEditorStore((s) => s.activeCard);
   const selectedBodyId = useEditorStore((s) => s.selectedBodyId);
@@ -23,16 +24,20 @@ export function FloatingDock() {
   const showSelection = !!selectedBodyId && !drafting && !booleanPick && !extrudePickActive && !filletPickActive && !mateActive;
 
   return (
-    <div className="dock">
-      {activeCard === "primitives" && <PrimitivesCard />}
-      {activeCard === "sketch" && <SketchCard />}
-      {activeCard === "extrude" && <ExtrudeCard />}
-      {activeCard === "fillet" && <FilletCard />}
-      {activeCard === "boolean" && <BooleanCard />}
-      {activeCard === "mate" && <MateCard />}
-      {activeCard === "bodies" && <BodiesCard />}
-      {showSelection && <SelectionOverlay key={selectedBodyId} bodyId={selectedBodyId} />}
-      <ParamsCard />
-    </div>
+    <>
+      <div className="dock-left">
+        {activeCard === "primitives" && <PrimitivesCard />}
+        {activeCard === "sketch" && <SketchCard />}
+        {activeCard === "extrude" && <ExtrudeCard />}
+        {activeCard === "fillet" && <FilletCard />}
+        {activeCard === "boolean" && <BooleanCard />}
+        {activeCard === "mate" && <MateCard />}
+        {activeCard === "bodies" && <BodiesCard />}
+      </div>
+      <div className="dock">
+        {showSelection && <SelectionOverlay key={selectedBodyId} bodyId={selectedBodyId} />}
+        <ParamsCard />
+      </div>
+    </>
   );
 }

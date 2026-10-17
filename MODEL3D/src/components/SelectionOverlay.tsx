@@ -109,7 +109,7 @@ export function SelectionOverlay({ bodyId }: Props) {
                 <NumberInput key={i} step={1} value={Number((r * RAD2DEG).toFixed(1))} onValue={(v) => setRotDeg(i, v)} />
               ))}
             </div>
-            <span className="section-label">Ruota attorno a un punto</span>
+            <span className="section-label">Ruota attorno a punto</span>
             <div className="xyz-row">
               {pivot.map((v, i) => (
                 <NumberInput
