@@ -3,7 +3,7 @@ import { useEditorStore } from "../../store";
 import { IDENTITY_PLACEMENT } from "../../occ/types";
 import { faceInfo } from "../../utils/faceMate";
 
-const fmt = (v: number) => (Math.abs(v) < 0.005 ? "0" : String(Number(v.toFixed(2))));
+const fmt = (v: number) => (Math.abs(v) < 0.005 ? 0 : v).toFixed(2);
 const triple = (v: [number, number, number]) => v.map(fmt).join(" · ");
 
 // Direction the face looks towards, in words when it is axis-aligned.

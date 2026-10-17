@@ -47,7 +47,7 @@ export function FilletCard() {
             </div>
             <label className="sk-field">
               <span>Misura (mm)</span>
-              <NumberInput step={0.5} min={0.1} value={filletAmount} onValue={(v) => setFilletAmount(v)} />
+              <NumberInput step={1} min={0.1} value={filletAmount} onValue={(v) => setFilletAmount(v)} />
             </label>
             <p className="hint-text muted">Si applica mentre cambi tipo e misura.</p>
             <div className="sk-row">

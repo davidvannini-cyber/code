@@ -47,7 +47,7 @@ function FeatureParams({ feature }: { feature: Feature }) {
       <div className="feature-params">
         <label className="hint-text">
           misura (mm)
-          <NumberInput step={0.5} min={0.1} value={feature.amount} onValue={(v) => updateFeatureParams(feature.id, { amount: v })} />
+          <NumberInput step={1} min={0.1} value={feature.amount} onValue={(v) => updateFeatureParams(feature.id, { amount: v })} />
         </label>
       </div>
     );

@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState, type FocusEvent } from "react";
 
 const EMIT_EVERY_MS = 220;
+// Every size is shown and stored with two decimals; the arrows move in whole
+// steps and the decimals are typed on the keyboard.
+const round = (v: number) => Math.round(v * 100) / 100;
+const fmt = (v: number) => round(v).toFixed(2);
 
 interface Props {
   value: number;
@@ -20,7 +24,7 @@ interface Props {
 // and an empty/invalid text goes back to the last good value on blur. Focusing
 // selects the whole value so typing replaces it.
 export function NumberInput({ value, onValue, min, step = 1, className, onCommit, autoFocus }: Props) {
-  const [text, setText] = useState(String(value));
+  const [text, setText] = useState(fmt(value));
   const focused = useRef(false);
   const ref = useRef<HTMLInputElement>(null);
 
@@ -36,7 +40,7 @@ export function NumberInput({ value, onValue, min, step = 1, className, onCommit
   }, [autoFocus]);
 
   useEffect(() => {
-    if (!focused.current) setText(String(value));
+    if (!focused.current) setText(fmt(value));
   }, [value]);
 
   // − / + buttons for the pen: one tap steps by `step`, holding repeats. Latest
@@ -66,11 +70,11 @@ export function NumberInput({ value, onValue, min, step = 1, className, onCommit
   const bump = (dir: 1 | -1) => {
     const { min: lo, stepSize: st } = latest.current;
     const cur = base.current;
-    let next = Number((cur + dir * st).toFixed(6));
+    let next = round(cur + dir * st);
     if (lo !== undefined && next < lo) next = lo;
     if (next === cur) return;
     base.current = next;
-    setText(String(next));
+    setText(fmt(next));
     pending.current = next;
     if (Date.now() - lastEmit.current >= EMIT_EVERY_MS) flush();
   };
@@ -117,7 +121,7 @@ export function NumberInput({ value, onValue, min, step = 1, className, onCommit
   );
 
   const parse = (t: string): number | null => {
-    const v = parseFloat(t.replace(",", "."));
+    const v = round(parseFloat(t.replace(",", ".")));
     if (!Number.isFinite(v) || (min !== undefined && v < min)) return null;
     return v;
   };
@@ -130,19 +134,33 @@ export function NumberInput({ value, onValue, min, step = 1, className, onCommit
         inputMode={min !== undefined && min >= 0 ? "decimal" : "text"}
         className={className}
         value={text}
+        // Numeric keypad when negatives are not needed, full keyboard otherwise
+        enterKeyHint="done"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
         onFocus={(e) => {
           focused.current = true;
-          e.target.select();
+          // Selecting synchronously inside the focus handler can drop the iPad keyboard
+          const el = e.target;
+          const atFocus = el.value;
+          setTimeout(() => {
+            if (el.value === atFocus) el.setSelectionRange(0, el.value.length); // not if typing already began
+          }, 0);
+        }}
+        // The Pencil tap must reach the field as a real focus (it opens the keyboard)
+        onPointerUp={(e) => {
+          if (e.pointerType === "pen" && document.activeElement !== e.currentTarget) e.currentTarget.focus();
         }}
         onChange={(e) => {
           setText(e.target.value);
           const v = parse(e.target.value);
-          if (v !== null && v !== value) onValue(v);
+          if (v !== null && v !== round(value)) onValue(v);
         }}
         onBlur={(e) => {
           focused.current = false;
           const v = parse(e.target.value);
-          setText(String(v ?? value));
+          setText(fmt(v ?? value));
           if (v !== null) onCommit?.(v, e);
         }}
         onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}

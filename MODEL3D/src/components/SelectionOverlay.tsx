@@ -77,7 +77,7 @@ export function SelectionOverlay({ bodyId }: Props) {
             <span className="section-label">Posizione (mm)</span>
             <div className="xyz-row">
               {placement.position.map((v, i) => (
-                <NumberInput key={i} step={1} value={Number(v.toFixed(2))} onValue={(v) => setPos(i, v)} />
+                <NumberInput key={i} step={1} value={v} onValue={(v) => setPos(i, v)} />
               ))}
             </div>
           </div>
@@ -88,7 +88,7 @@ export function SelectionOverlay({ bodyId }: Props) {
             <span className="section-label">Scala (×)</span>
             <div className="xyz-row">
               {placement.scale.map((v, i) => (
-                <NumberInput key={i} step={0.1} min={0.01} value={Number(v.toFixed(3))} onValue={(v) => setScale(i, v)} />
+                <NumberInput key={i} step={0.1} min={0.01} value={v} onValue={(v) => setScale(i, v)} />
               ))}
             </div>
           </div>
@@ -106,7 +106,7 @@ export function SelectionOverlay({ bodyId }: Props) {
             <span className="section-label">Rotazione (°)</span>
             <div className="xyz-row">
               {placement.rotation.map((r, i) => (
-                <NumberInput key={i} step={1} value={Number((r * RAD2DEG).toFixed(1))} onValue={(v) => setRotDeg(i, v)} />
+                <NumberInput key={i} step={1} value={r * RAD2DEG} onValue={(v) => setRotDeg(i, v)} />
               ))}
             </div>
             <span className="section-label">Ruota attorno a punto</span>
