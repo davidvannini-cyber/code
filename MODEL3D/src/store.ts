@@ -65,6 +65,33 @@ function collectDependents(id: string, features: Feature[]): Set<string> {
   return toDelete;
 }
 
+// One undo step: the feature history plus where each body sits and its colour,
+// so moving, rotating and recolouring bodies can be undone like feature edits.
+interface Snapshot {
+  features: Feature[];
+  placements: Record<string, Placement>;
+  colors: Record<string, string>;
+}
+
+const takeSnapshot = (s: { features: Feature[]; placements: Record<string, Placement>; colors: Record<string, string> }): Snapshot => ({
+  features: s.features,
+  placements: s.placements,
+  colors: s.colors
+});
+
+// Rapid edits of the same thing (typing in a position field, dragging a colour
+// picker) collapse into one undo step.
+let lastEditKey = "";
+let lastEditTime = 0;
+function pushHistory(set: any, key: string) {
+  const now = Date.now();
+  const coalesce = key === lastEditKey && now - lastEditTime < 1000;
+  lastEditKey = key;
+  lastEditTime = now;
+  if (coalesce) return;
+  set((s: EditorState) => ({ undoStack: [...s.undoStack, takeSnapshot(s)], redoStack: [] }));
+}
+
 interface EditorState {
   engineReady: boolean;
   busy: boolean;
@@ -79,8 +106,8 @@ interface EditorState {
   placements: Record<string, Placement>;
   colors: Record<string, string>;
 
-  undoStack: Feature[][];
-  redoStack: Feature[][];
+  undoStack: Snapshot[];
+  redoStack: Snapshot[];
 
   selectedBodyId: string | null;
   selectedFace: { bodyId: string; faceIndex: number } | null;
@@ -245,19 +272,23 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   undo: () => {
-    const { undoStack, features, redoStack } = get();
+    const { undoStack, redoStack } = get();
     if (undoStack.length === 0) return;
     const prev = undoStack[undoStack.length - 1];
-    set({ undoStack: undoStack.slice(0, -1), redoStack: [...redoStack, features] });
-    applyFeatures(set, get, prev);
+    const current = takeSnapshot(get());
+    lastEditKey = "";
+    set({ undoStack: undoStack.slice(0, -1), redoStack: [...redoStack, current], placements: prev.placements, colors: prev.colors });
+    if (prev.features !== current.features) applyFeatures(set, get, prev.features);
   },
 
   redo: () => {
-    const { redoStack, features, undoStack } = get();
+    const { redoStack, undoStack } = get();
     if (redoStack.length === 0) return;
     const next = redoStack[redoStack.length - 1];
-    set({ redoStack: redoStack.slice(0, -1), undoStack: [...undoStack, features] });
-    applyFeatures(set, get, next);
+    const current = takeSnapshot(get());
+    lastEditKey = "";
+    set({ redoStack: redoStack.slice(0, -1), undoStack: [...undoStack, current], placements: next.placements, colors: next.colors });
+    if (next.features !== current.features) applyFeatures(set, get, next.features);
   },
 
   selectBody: (id) => set({ selectedBodyId: id, selectedFace: null }),
@@ -273,10 +304,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   setTransformMode: (mode) => set({ transformMode: mode }),
 
-  updatePlacement: (bodyId, patch) =>
-    set((s) => ({ placements: { ...s.placements, [bodyId]: { ...(s.placements[bodyId] ?? IDENTITY_PLACEMENT), ...patch } } })),
+  updatePlacement: (bodyId, patch) => {
+    pushHistory(set, `placement:${bodyId}`);
+    set((s) => ({ placements: { ...s.placements, [bodyId]: { ...(s.placements[bodyId] ?? IDENTITY_PLACEMENT), ...patch } } }));
+  },
 
-  updateColor: (bodyId, color) => set((s) => ({ colors: { ...s.colors, [bodyId]: color } })),
+  updateColor: (bodyId, color) => {
+    pushHistory(set, `color:${bodyId}`);
+    set((s) => ({ colors: { ...s.colors, [bodyId]: color } }));
+  },
 
   rotateAroundPoint: (bodyId, pivot, axis, degrees) => {
     const placement = get().placements[bodyId] ?? IDENTITY_PLACEMENT;
@@ -642,7 +678,8 @@ function ensureDefaults(set: any, get: () => EditorState, id: string, color: str
 }
 
 function commit(set: any, get: () => EditorState, newFeatures: Feature[]) {
-  set((s: EditorState) => ({ undoStack: [...s.undoStack, s.features], redoStack: [] }));
+  lastEditKey = "";
+  set((s: EditorState) => ({ undoStack: [...s.undoStack, takeSnapshot(s)], redoStack: [] }));
   applyFeatures(set, get, newFeatures);
 }
 

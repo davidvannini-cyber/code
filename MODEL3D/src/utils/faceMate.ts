@@ -46,8 +46,13 @@ export function faceFrame(body: LiveBody, faceIndex: number, placement: Placemen
 /**
  * New placement for the moving body so that its face lies flat against the fixed
  * face: rotated until the normals oppose each other, then moved so the contact
- * point of the moving face lands on the fixed face's plane (or on its centre).
+ * point of the moving face lands on the fixed face's plane (or on its centre),
+ * then pushed MATE_OVERLAP into the fixed body.
  */
+// The faces are pushed this far into each other so a later union fuses the two
+// bodies into one solid instead of leaving a hairline gap or a bare touch.
+export const MATE_OVERLAP = 0.01; // mm
+
 export function matePlacement(moving: Placement, fixed: FaceFrame, face: FaceFrame, center: boolean): Placement {
   const q = new Quaternion().setFromUnitVectors(face.normal, fixed.normal.clone().negate());
   const pivot = face.centroid;
@@ -56,7 +61,7 @@ export function matePlacement(moving: Placement, fixed: FaceFrame, face: FaceFra
 
   const toPlane = fixed.normal.dot(new Vector3().subVectors(fixed.centroid, pivot));
   const shift = center ? new Vector3().subVectors(fixed.centroid, pivot) : fixed.normal.clone().multiplyScalar(toPlane);
-  pos.add(shift);
+  pos.add(shift).addScaledVector(fixed.normal, -MATE_OVERLAP);
 
   const e = new Euler().setFromQuaternion(rot);
   return { position: [pos.x, pos.y, pos.z], rotation: [e.x, e.y, e.z], scale: moving.scale };
