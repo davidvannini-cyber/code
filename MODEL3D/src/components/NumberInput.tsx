@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type FocusEvent } from "react";
 
+const EMIT_EVERY_MS = 220;
+
 interface Props {
   value: number;
   onValue: (v: number) => void;
@@ -40,25 +42,46 @@ export function NumberInput({ value, onValue, min, step = 1, className, onCommit
   // − / + buttons for the pen: one tap steps by `step`, holding repeats. Latest
   // value/handler are kept in refs so the repeating timer never acts on stale ones.
   const stepSize = Number(step) || 1;
-  const latest = useRef({ value, onValue, min, stepSize });
-  latest.current = { value, onValue, min, stepSize };
+  const latest = useRef({ onValue, min, stepSize });
+  latest.current = { onValue, min, stepSize };
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Where stepping continues from. It follows the prop, except while a button is
+  // held or a value is still waiting to be sent: then the prop lags behind.
+  const base = useRef(value);
+
+  // While a button is held the number changes at once but the model is only
+  // rebuilt every EMIT_EVERY_MS; the final value is always sent on release.
+  const lastEmit = useRef(0);
+  const pending = useRef<number | null>(null);
+  if (timer.current === null && pending.current === null) base.current = value;
+
+  const flush = () => {
+    if (pending.current === null) return;
+    const v = pending.current;
+    pending.current = null;
+    lastEmit.current = Date.now();
+    latest.current.onValue(v);
+  };
 
   const bump = (dir: 1 | -1) => {
-    const { value: cur, onValue: emit, min: lo, stepSize: st } = latest.current;
+    const { min: lo, stepSize: st } = latest.current;
+    const cur = base.current;
     let next = Number((cur + dir * st).toFixed(6));
     if (lo !== undefined && next < lo) next = lo;
     if (next === cur) return;
-    latest.current.value = next; // the next repeat starts from here, before React re-renders
+    base.current = next;
     setText(String(next));
-    emit(next);
+    pending.current = next;
+    if (Date.now() - lastEmit.current >= EMIT_EVERY_MS) flush();
   };
   const stopRepeat = () => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
+    flush();
   };
   const startRepeat = (dir: 1 | -1) => {
-    stopRepeat();
+    if (timer.current) clearTimeout(timer.current);
+    lastEmit.current = 0; // a single tap applies immediately
     bump(dir);
     const tick = (delay: number) => {
       timer.current = setTimeout(() => {
