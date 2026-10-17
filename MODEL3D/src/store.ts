@@ -696,7 +696,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const coarse = window.matchMedia("(pointer: coarse)").matches;
       if (coarse && navigator.canShare?.({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: "progetto.3mf" });
+          // files only: a title/text would be saved by "Salva su File" as an extra .txt
+          await navigator.share({ files: [file] });
           set({ lastSavedAt: Date.now() });
           get().log("Progetto condiviso/salvato: progetto.3mf");
           return;
