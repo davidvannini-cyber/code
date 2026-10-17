@@ -1048,3 +1048,31 @@ input, select {
   .dock-left > .card, .dock-left > .card.wide, .dock-left > .card.params-card, .dock-left > .card.face-card { width: 230px; }
   .selection-expand { width: 160px; }
 }
+
+/* Salvataggio: ultima copia e ripristino dopo un crash */
+.status-saved {
+  color: var(--text-faint);
+  font-size: 9px;
+}
+
+.restore-banner {
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #16171af7;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  font-size: 10px;
+  color: var(--text);
+}
+
+@media (pointer: coarse) {
+  .restore-banner { font-size: 14px; gap: 10px; padding: 8px 12px; }
+  .restore-banner button { font-size: 14px; padding: 8px 14px; }
+}

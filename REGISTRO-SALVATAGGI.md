@@ -140,3 +140,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `d8dcbe9` | MODEL3D: Affianca non sposta piu l'oggetto in verticale, allinea solo in orizzontale (faceMate.ts, MateCard.tsx), REGISTRO-SALVATAGGI.md | `git checkout d8dcbe9` |
 | 2026-10-18 | `045d094` | MODEL3D: le frecce di spostamento stanno al centro dell'oggetto, anche dopo unione (BodyGizmo.tsx, Viewport.tsx), REGISTRO-SALVATAGGI.md | `git checkout 045d094` |
 | 2026-10-18 | `091b0d3` | MODEL3D: funzione Appoggia sul piano (faceMate.ts, store.ts, FaceCard.tsx), REGISTRO-SALVATAGGI.md | `git checkout 091b0d3` |
+| 2026-10-18 | `779b32e` | MODEL3D: pulsante Salva nella barra, salvataggio con menu di condivisione su tablet, copia automatica nel browser con ripristino dopo un crash (io/autosave.ts, RestoreBanner.tsx, store.ts, TopBar.tsx, App.tsx, index.css), REGISTRO-SALVATAGGI.md | `git checkout 779b32e` |

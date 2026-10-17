@@ -2,11 +2,16 @@ import { useEditorStore } from "../store";
 import { Icon } from "./icons/Icon";
 import { IOCard } from "./cards/IOCard";
 
+const clock = (ms: number) => new Date(ms).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+
 export function TopBar() {
   const engineReady = useEditorStore((s) => s.engineReady);
   const busy = useEditorStore((s) => s.busy);
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
+  const saveProject = useEditorStore((s) => s.saveProject);
+  const lastSavedAt = useEditorStore((s) => s.lastSavedAt);
+  const autosavedAt = useEditorStore((s) => s.autosavedAt);
   const undoStack = useEditorStore((s) => s.undoStack);
   const redoStack = useEditorStore((s) => s.redoStack);
   const sceneBackground = useEditorStore((s) => s.sceneBackground);
@@ -24,6 +29,9 @@ export function TopBar() {
         <button className="icon-btn" disabled={redoStack.length === 0} title="Ripeti" onClick={redo}>
           <Icon name="redo" size={16} />
         </button>
+        <button className="icon-btn" disabled={!engineReady || busy} title="Salva" onClick={saveProject}>
+          <Icon name="save" size={16} />
+        </button>
         <div className="topbar-anchor">
           <button className={`icon-btn ${activeCard === "io" ? "active" : ""}`} title="Progetto" onClick={() => setActiveCard("io")}>
             <Icon name="folder" size={16} />
@@ -38,7 +46,15 @@ export function TopBar() {
           <Icon name={sceneBackground === "dark" ? "moon" : "sun"} size={16} />
         </button>
       </div>
-      <span className="status">{!engineReady ? "Avvio motore CAD…" : busy ? "Elaborazione…" : "Pronto"}</span>
+      <span className="status">
+        {!engineReady ? "Avvio motore CAD…" : busy ? "Elaborazione…" : "Pronto"}
+        {(lastSavedAt || autosavedAt) && (
+          <span className="status-saved">
+            {lastSavedAt ? ` · salvato ${clock(lastSavedAt)}` : ""}
+            {autosavedAt ? ` · auto ${clock(autosavedAt)}` : ""}
+          </span>
+        )}
+      </span>
     </div>
   );
 }

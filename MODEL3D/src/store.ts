@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Euler, Matrix4, Quaternion, Vector3 } from "three";
 import { occClient } from "./occ/occClient";
 import { write3MF, read3MFProject } from "./io/threeMF";
+import { clearAutosave, readAutosave, writeAutosave, type AutosaveEntry } from "./io/autosave";
 import type { BooleanOp, PrimitiveType, PlaneKind, Feature, LiveBody, Placement, ShapeExportRef, CornerTreatment } from "./occ/types";
 import { IDENTITY_PLACEMENT } from "./occ/types";
 import { faceFrame, layFacePlacement, matePlacement } from "./utils/faceMate";
@@ -200,9 +201,21 @@ interface EditorState {
   pickForBoolean: (id: string) => void;
 
   exportModel: (format: "stl" | "step") => Promise<void>;
-  saveProject: () => void;
+  saveProject: () => Promise<void>;
   loadProject: (file: File) => Promise<void>;
+
+  // --- Salvataggio: file (.3mf) e copia automatica nel browser ---
+  lastSavedAt: number | null; // last .3mf saved
+  autosavedAt: number | null; // last automatic copy
+  autosaveOffer: AutosaveEntry | null; // a copy left by a previous session, waiting for the user's choice
+  autosaveReady: boolean; // automatic copies only start once any offer is resolved
+  tickAutosave: () => void;
+  restoreAutosave: () => void;
+  discardAutosave: () => void;
 }
+
+// A copy left by a previous session (e.g. after a crash) is offered, not applied silently.
+const initialAutosaveOffer: AutosaveEntry | null = typeof window !== "undefined" ? readAutosave() : null;
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   engineReady: false,
@@ -665,18 +678,63 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
   },
 
-  saveProject: () => {
+  lastSavedAt: null,
+  autosavedAt: null,
+  autosaveOffer: initialAutosaveOffer,
+  autosaveReady: initialAutosaveOffer === null,
+
+  saveProject: async () => {
     const { features, placements, colors, bodies, pendingShapes } = get();
     if (pendingShapes.length > 0) {
       get().log("Nota: le forme 2D non ancora estruse non vengono salvate nel .3mf — estrudile prima di salvare.");
     }
     try {
       const data = write3MF({ features, placements, colors }, bodies);
+      const file = new File([data as BlobPart], "progetto.3mf", { type: "model/3mf" });
+      // Tablets: the share sheet (it offers "Salva su File"); everything else, or if the
+      // browser refuses a .3mf there, a plain download.
+      const coarse = window.matchMedia("(pointer: coarse)").matches;
+      if (coarse && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: "progetto.3mf" });
+          set({ lastSavedAt: Date.now() });
+          get().log("Progetto condiviso/salvato: progetto.3mf");
+          return;
+        } catch (e: any) {
+          if (e?.name === "AbortError") return; // closed the sheet without choosing
+        }
+      }
       downloadBlob(data, "progetto.3mf", "model/3mf");
+      set({ lastSavedAt: Date.now() });
       get().log("Progetto salvato come progetto.3mf");
     } catch (e: any) {
       get().log(`Errore salvataggio: ${e?.message ?? e}`);
     }
+  },
+
+  // Called (debounced) after every change: keeps a copy of the project in the browser.
+  tickAutosave: () => {
+    const { features, placements, colors, autosaveReady } = get();
+    if (!autosaveReady) return;
+    if (features.length === 0) {
+      clearAutosave();
+      return;
+    }
+    const at = writeAutosave({ features, placements, colors });
+    if (at) set({ autosavedAt: at });
+  },
+
+  restoreAutosave: () => {
+    const offer = get().autosaveOffer;
+    if (!offer) return;
+    set({ autosaveOffer: null, autosaveReady: true, placements: offer.project.placements, colors: offer.project.colors, undoStack: [], redoStack: [], selectedBodyId: null });
+    applyFeatures(set, get, offer.project.features);
+    get().log("Lavoro ripristinato dalla copia automatica.");
+  },
+
+  discardAutosave: () => {
+    clearAutosave();
+    set({ autosaveOffer: null, autosaveReady: true });
   },
 
   loadProject: async (file) => {
@@ -687,7 +745,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         get().log("File .3mf non creato da MODEL3D: importazione non supportata in questa versione.");
         return;
       }
-      set({ placements: project.placements, colors: project.colors, undoStack: [], redoStack: [], selectedBodyId: null });
+      set({ placements: project.placements, colors: project.colors, undoStack: [], redoStack: [], selectedBodyId: null, autosaveOffer: null, autosaveReady: true });
       applyFeatures(set, get, project.features);
       get().log(`Progetto caricato da ${file.name}`);
     } catch (e: any) {
