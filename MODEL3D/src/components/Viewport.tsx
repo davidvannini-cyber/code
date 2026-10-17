@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Grid, OrbitControls, TransformControls } from "@react-three/drei";
+import { Grid, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { useEditorStore } from "../store";
 import { SceneMesh } from "./SceneMesh";
+import { BodyGizmo } from "./BodyGizmo";
 import { PendingShapesRenderer } from "./PendingShapesRenderer";
 import { IDENTITY_PLACEMENT } from "../occ/types";
 
@@ -55,7 +56,6 @@ export function Viewport() {
   const selectFace = useEditorStore((s) => s.selectFace);
   const clearSelection = useEditorStore((s) => s.clearSelection);
   const transformMode = useEditorStore((s) => s.transformMode);
-  const updatePlacement = useEditorStore((s) => s.updatePlacement);
   const drafting = useEditorStore((s) => s.drafting);
   const booleanPick = useEditorStore((s) => s.booleanPick);
   const mateActive = useEditorStore((s) => s.mateActive);
@@ -142,21 +142,13 @@ export function Viewport() {
 
       <PendingShapesRenderer />
 
-      {selectedObj && !drafting && !pickModeActive && (
-        <TransformControls
-          object={selectedObj}
+      {selectedObj && selectedBodyId && !drafting && !pickModeActive && (
+        <BodyGizmo
+          key={selectedBodyId}
+          bodyId={selectedBodyId}
+          group={selectedObj}
           mode={transformMode}
-          onMouseDown={() => setOrbitEnabled(false)}
-          onMouseUp={() => {
-            setOrbitEnabled(true);
-            const o = selectedObj;
-            const euler = new THREE.Euler().setFromQuaternion(o.quaternion);
-            updatePlacement(selectedBodyId as string, {
-              position: [o.position.x, o.position.y, o.position.z],
-              rotation: [euler.x, euler.y, euler.z],
-              scale: [o.scale.x, o.scale.y, o.scale.z]
-            });
-          }}
+          onDragging={(d) => setOrbitEnabled(!d)}
         />
       )}
 
