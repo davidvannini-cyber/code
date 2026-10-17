@@ -124,3 +124,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-17 | `52e616f` | MODEL3D: Undo/Redo anche per posizione e colore (store.ts), Affianca con contatto sicuro per la fusione (utils/faceMate.ts), REGISTRO-SALVATAGGI.md | `git checkout 52e616f` |
 | 2026-10-17 | `821a886` | MODEL3D: menu fluttuanti fissati in alto al centro (components/FloatingDock.tsx, Rail.tsx, SelectionOverlay.tsx, SceneMesh.tsx, Viewport.tsx, App.tsx, index.css), REGISTRO-SALVATAGGI.md | `git checkout 821a886` |
 | 2026-10-17 | `bb47986` | MODEL3D: schede strumenti di nuovo accanto alla barra sinistra, menu dell'oggetto in alto al centro, interfaccia molto piu compatta (index.css, FloatingDock.tsx, SelectionOverlay.tsx), REGISTRO-SALVATAGGI.md | `git checkout bb47986` |
+| 2026-10-17 | `4b64345` | MODEL3D: interfaccia compatta variante C, font e spazi ridotti (index.css, ParamsCard.tsx), REGISTRO-SALVATAGGI.md | `git checkout 4b64345` |
