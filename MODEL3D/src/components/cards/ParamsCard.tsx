@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { NumberInput } from "../NumberInput";
 import { useEditorStore } from "../../store";
 
 const LABELS: Record<string, string> = {
@@ -15,30 +15,10 @@ const LABELS: Record<string, string> = {
 const ALLOW_ZERO = new Set(["radius2"]);
 
 function ParamField({ name, value, onCommit }: { name: string; value: number; onCommit: (v: number) => void }) {
-  const [text, setText] = useState(String(value));
-  useEffect(() => setText(String(value)), [value]);
-
-  const commit = () => {
-    const v = parseFloat(text.replace(",", "."));
-    const valid = Number.isFinite(v) && (ALLOW_ZERO.has(name) ? v >= 0 : v > 0);
-    if (!valid) {
-      setText(String(value));
-      return;
-    }
-    if (v !== value) onCommit(v);
-  };
-
   return (
     <label className="sk-field">
       <span>{LABELS[name] ?? name} (mm)</span>
-      <input
-        type="text"
-        inputMode="decimal"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
-      />
+      <NumberInput step={1} min={ALLOW_ZERO.has(name) ? 0 : 0.1} value={value} onValue={onCommit} />
     </label>
   );
 }
@@ -66,7 +46,7 @@ export function ParamsCard() {
             onCommit={(v) => updateFeatureParams(feature.id, { params: { ...feature.params, [key]: v } })}
           />
         ))}
-        <p className="hint-text muted">Premi Invio o esci dal campo per applicare.</p>
+        <p className="hint-text muted">Le modifiche si applicano mentre scrivi.</p>
       </div>
     </div>
   );

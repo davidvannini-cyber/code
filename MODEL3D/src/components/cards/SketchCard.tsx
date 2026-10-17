@@ -1,3 +1,4 @@
+import { NumberInput } from "../NumberInput";
 import { useEditorStore } from "../../store";
 import type { PlaneKind } from "../../occ/types";
 import type { SketchShapeKind } from "../../utils/sketchShapes";
@@ -63,7 +64,7 @@ export function SketchCard() {
         <div className="sk-row">
           <label className="sk-field small">
             <span>Offset (mm)</span>
-            <input type="number" step="1" value={sketchOffset} onChange={(e) => setSketchOffset(parseFloat(e.target.value) || 0)} />
+            <NumberInput step={1} value={sketchOffset} onValue={(v) => setSketchOffset(v)} />
           </label>
           <label className="sk-field small checkbox">
             <span>
@@ -73,7 +74,7 @@ export function SketchCard() {
           {snapEnabled && (
             <label className="sk-field small">
               <span>Passo (mm)</span>
-              <input type="number" step="1" min="1" value={snapSize} onChange={(e) => setSnap(true, parseFloat(e.target.value) || 1)} />
+              <NumberInput step={1} min={1} value={snapSize} onValue={(v) => setSnap(true, v)} />
             </label>
           )}
         </div>
@@ -109,46 +110,46 @@ export function SketchCard() {
             <div className="sk-row">
               <label className="sk-field small">
                 <span>cx</span>
-                <input type="number" step="1" value={sketchShapeParams.cx} onChange={(e) => setSketchShapeParam({ cx: parseFloat(e.target.value) || 0 })} />
+                <NumberInput step={1} value={sketchShapeParams.cx} onValue={(v) => setSketchShapeParam({ cx: v })} />
               </label>
               <label className="sk-field small">
                 <span>cy</span>
-                <input type="number" step="1" value={sketchShapeParams.cy} onChange={(e) => setSketchShapeParam({ cy: parseFloat(e.target.value) || 0 })} />
+                <NumberInput step={1} value={sketchShapeParams.cy} onValue={(v) => setSketchShapeParam({ cy: v })} />
               </label>
             </div>
             {sketchForme === "square" && (
               <label className="sk-field small">
                 <span>Lato</span>
-                <input type="number" step="1" min="1" value={sketchShapeParams.width} onChange={(e) => setSketchShapeParam({ width: parseFloat(e.target.value) || 1 })} />
+                <NumberInput step={1} min={1} value={sketchShapeParams.width} onValue={(v) => setSketchShapeParam({ width: v })} />
               </label>
             )}
             {(sketchForme === "rectangle" || sketchForme === "triangle") && (
               <div className="sk-row">
                 <label className="sk-field small">
                   <span>Largh.</span>
-                  <input type="number" step="1" min="1" value={sketchShapeParams.width} onChange={(e) => setSketchShapeParam({ width: parseFloat(e.target.value) || 1 })} />
+                  <NumberInput step={1} min={1} value={sketchShapeParams.width} onValue={(v) => setSketchShapeParam({ width: v })} />
                 </label>
                 <label className="sk-field small">
                   <span>Alt.</span>
-                  <input type="number" step="1" min="1" value={sketchShapeParams.height} onChange={(e) => setSketchShapeParam({ height: parseFloat(e.target.value) || 1 })} />
+                  <NumberInput step={1} min={1} value={sketchShapeParams.height} onValue={(v) => setSketchShapeParam({ height: v })} />
                 </label>
               </div>
             )}
             {(sketchForme === "circle" || sketchForme === "polygon") && (
               <label className="sk-field small">
                 <span>Raggio</span>
-                <input type="number" step="1" min="1" value={sketchShapeParams.radius} onChange={(e) => setSketchShapeParam({ radius: parseFloat(e.target.value) || 1 })} />
+                <NumberInput step={1} min={1} value={sketchShapeParams.radius} onValue={(v) => setSketchShapeParam({ radius: v })} />
               </label>
             )}
             {sketchForme === "ellipse" && (
               <div className="sk-row">
                 <label className="sk-field small">
                   <span>Raggio X</span>
-                  <input type="number" step="1" min="1" value={sketchShapeParams.radiusX} onChange={(e) => setSketchShapeParam({ radiusX: parseFloat(e.target.value) || 1 })} />
+                  <NumberInput step={1} min={1} value={sketchShapeParams.radiusX} onValue={(v) => setSketchShapeParam({ radiusX: v })} />
                 </label>
                 <label className="sk-field small">
                   <span>Raggio Y</span>
-                  <input type="number" step="1" min="1" value={sketchShapeParams.radiusY} onChange={(e) => setSketchShapeParam({ radiusY: parseFloat(e.target.value) || 1 })} />
+                  <NumberInput step={1} min={1} value={sketchShapeParams.radiusY} onValue={(v) => setSketchShapeParam({ radiusY: v })} />
                 </label>
               </div>
             )}

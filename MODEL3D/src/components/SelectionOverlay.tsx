@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Html } from "@react-three/drei";
+import { NumberInput } from "./NumberInput";
 import { useEditorStore, type TransformMode } from "../store";
 import { IDENTITY_PLACEMENT } from "../occ/types";
 import { Icon } from "./icons/Icon";
@@ -78,7 +79,7 @@ export function SelectionOverlay({ bodyId }: Props) {
             <span className="section-label">Posizione (mm)</span>
             <div className="xyz-row">
               {placement.position.map((v, i) => (
-                <input key={i} type="number" step="1" value={Number(v.toFixed(2))} onChange={(e) => setPos(i, parseFloat(e.target.value) || 0)} />
+                <NumberInput key={i} step={1} value={Number(v.toFixed(2))} onValue={(v) => setPos(i, v)} />
               ))}
             </div>
           </div>
@@ -89,7 +90,7 @@ export function SelectionOverlay({ bodyId }: Props) {
             <span className="section-label">Scala (×)</span>
             <div className="xyz-row">
               {placement.scale.map((v, i) => (
-                <input key={i} type="number" step="0.1" value={Number(v.toFixed(3))} onChange={(e) => setScale(i, parseFloat(e.target.value) || 0.01)} />
+                <NumberInput key={i} step={0.1} min={0.01} value={Number(v.toFixed(3))} onValue={(v) => setScale(i, v)} />
               ))}
             </div>
           </div>
@@ -107,20 +108,19 @@ export function SelectionOverlay({ bodyId }: Props) {
             <span className="section-label">Rotazione (°)</span>
             <div className="xyz-row">
               {placement.rotation.map((r, i) => (
-                <input key={i} type="number" step="1" value={Number((r * RAD2DEG).toFixed(1))} onChange={(e) => setRotDeg(i, parseFloat(e.target.value) || 0)} />
+                <NumberInput key={i} step={1} value={Number((r * RAD2DEG).toFixed(1))} onValue={(v) => setRotDeg(i, v)} />
               ))}
             </div>
             <span className="section-label">Ruota attorno a un punto</span>
             <div className="xyz-row">
               {pivot.map((v, i) => (
-                <input
+                <NumberInput
                   key={i}
-                  type="number"
-                  step="1"
+                  step={1}
                   value={v}
-                  onChange={(e) => {
+                  onValue={(nv) => {
                     const next = [...pivot] as [number, number, number];
-                    next[i] = parseFloat(e.target.value) || 0;
+                    next[i] = nv;
                     setPivot(next);
                   }}
                 />
@@ -134,7 +134,7 @@ export function SelectionOverlay({ bodyId }: Props) {
               ))}
             </div>
             <div className="pivot-degrees-row">
-              <input type="number" step="1" value={pivotDegrees} onChange={(e) => setPivotDegrees(parseFloat(e.target.value) || 0)} />
+              <NumberInput step={1} value={pivotDegrees} onValue={(v) => setPivotDegrees(v)} />
               <button className="primary-btn small" onClick={() => rotateAroundPoint(bodyId, pivot, pivotAxis, pivotDegrees)}>
                 Ruota
               </button>

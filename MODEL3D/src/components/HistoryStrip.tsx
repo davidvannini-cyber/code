@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { NumberInput } from "./NumberInput";
 import { useEditorStore } from "../store";
 import type { Feature } from "../occ/types";
 import { Icon } from "./icons/Icon";
@@ -12,11 +13,11 @@ function FeatureParams({ feature }: { feature: Feature }) {
         {Object.entries(feature.params).map(([key, value]) => (
           <label key={key} className="hint-text">
             {key} (mm)
-            <input
-              type="number"
-              step="1"
+            <NumberInput
+              step={1}
+              min={key === "radius2" ? 0 : 0.1}
               value={value}
-              onChange={(e) => updateFeatureParams(feature.id, { params: { ...feature.params, [key]: parseFloat(e.target.value) || 0 } })}
+              onValue={(v) => updateFeatureParams(feature.id, { params: { ...feature.params, [key]: v } })}
             />
           </label>
         ))}
@@ -30,11 +31,11 @@ function FeatureParams({ feature }: { feature: Feature }) {
       <div className="feature-params">
         <label className="hint-text">
           altezza (mm)
-          <input type="number" step="1" value={feature.height} onChange={(e) => updateFeatureParams(feature.id, { height: parseFloat(e.target.value) || 0 })} />
+          <NumberInput step={1} value={feature.height} onValue={(v) => updateFeatureParams(feature.id, { height: v })} />
         </label>
         <label className="hint-text">
           offset (mm)
-          <input type="number" step="1" value={feature.offset} onChange={(e) => updateFeatureParams(feature.id, { offset: parseFloat(e.target.value) || 0 })} />
+          <NumberInput step={1} value={feature.offset} onValue={(v) => updateFeatureParams(feature.id, { offset: v })} />
         </label>
         {treated > 0 && <span className="hint-text muted">{treated} spigoli raccordati/smussati</span>}
       </div>
@@ -46,7 +47,7 @@ function FeatureParams({ feature }: { feature: Feature }) {
       <div className="feature-params">
         <label className="hint-text">
           misura (mm)
-          <input type="number" step="0.5" value={feature.amount} onChange={(e) => updateFeatureParams(feature.id, { amount: parseFloat(e.target.value) || 0.1 })} />
+          <NumberInput step={0.5} min={0.1} value={feature.amount} onValue={(v) => updateFeatureParams(feature.id, { amount: v })} />
         </label>
       </div>
     );

@@ -1,3 +1,4 @@
+import { NumberInput } from "../NumberInput";
 import { useEditorStore } from "../../store";
 
 export function FilletCard() {
@@ -41,7 +42,7 @@ export function FilletCard() {
             </div>
             <label className="sk-field">
               <span>Misura (mm)</span>
-              <input type="number" step="0.5" min="0.1" value={filletAmount} onChange={(e) => setFilletAmount(parseFloat(e.target.value) || 0.1)} />
+              <NumberInput step={0.5} min={0.1} value={filletAmount} onValue={(v) => setFilletAmount(v)} />
             </label>
             <button className="primary-btn" onClick={applyFillet}>
               APPLICA RACCORDO/SMUSSO

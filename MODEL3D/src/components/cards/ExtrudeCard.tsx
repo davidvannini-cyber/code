@@ -1,3 +1,4 @@
+import { NumberInput } from "../NumberInput";
 import { useEditorStore } from "../../store";
 
 export function ExtrudeCard() {
@@ -28,7 +29,7 @@ export function ExtrudeCard() {
           <>
             <label className="sk-field">
               <span>Altezza (mm)</span>
-              <input type="number" step="1" value={extrudeHeight} onChange={(e) => setExtrudeHeight(parseFloat(e.target.value) || 0.1)} />
+              <NumberInput step={1} min={0.1} value={extrudeHeight} onValue={(v) => setExtrudeHeight(v)} />
             </label>
             <button className="primary-btn" onClick={applyExtrusion}>
               APPLICA ESTRUSIONE
