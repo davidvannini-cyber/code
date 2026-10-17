@@ -6,6 +6,7 @@ import { ExtrudeCard } from "./cards/ExtrudeCard";
 import { FilletCard } from "./cards/FilletCard";
 import { BooleanCard } from "./cards/BooleanCard";
 import { BodiesCard } from "./cards/BodiesCard";
+import { MateCard } from "./cards/MateCard";
 import { ParamsCard } from "./cards/ParamsCard";
 
 const RAIL_ITEMS = [
@@ -15,6 +16,7 @@ const RAIL_ITEMS = [
   { key: "extrude", icon: "extrude", title: "Estrusione" },
   { key: "fillet", icon: "fillet", title: "Raccordo/Smusso" },
   { key: "boolean", icon: "union", title: "Booleane" },
+  { key: "mate", icon: "mate", title: "Affianca" },
   null,
   { key: "bodies", icon: "layers", title: "Corpi" }
 ] as const;
@@ -49,6 +51,7 @@ export function Rail() {
       {activeCard === "extrude" && <ExtrudeCard />}
       {activeCard === "fillet" && <FilletCard />}
       {activeCard === "boolean" && <BooleanCard />}
+      {activeCard === "mate" && <MateCard />}
       {activeCard === "bodies" && <BodiesCard />}
       <ParamsCard />
     </>

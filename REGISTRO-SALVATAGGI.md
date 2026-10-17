@@ -120,3 +120,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-17 | `37725c9` | MODEL3D/src/components/NumberInput.tsx, MODEL3D/src/components/cards/FilletCard.tsx (raccordo/smusso si applica con Tab/Invio/clic fuori), REGISTRO-SALVATAGGI.md | `git checkout 37725c9` |
 | 2026-10-17 | `bba9da2` | MODEL3D: schizzo libero (store.ts, PendingShapesRenderer.tsx, SketchCard.tsx, Viewport.tsx, App.tsx: doppio clic chiude, Esc ed Esci dallo schizzo), REGISTRO-SALVATAGGI.md | `git checkout bba9da2` |
 | 2026-10-17 | `ab197a2` | MODEL3D/src/components/cards/ExtrudeCard.tsx (estrusione si applica con Tab/Invio/clic fuori), REGISTRO-SALVATAGGI.md | `git checkout ab197a2` |
+| 2026-10-17 | `f6a4398` | MODEL3D: nuovo strumento Affianca (utils/faceMate.ts, cards/MateCard.tsx, store.ts, Rail.tsx, Viewport.tsx, SceneMesh.tsx, IconSprite.tsx), REGISTRO-SALVATAGGI.md | `git checkout f6a4398` |

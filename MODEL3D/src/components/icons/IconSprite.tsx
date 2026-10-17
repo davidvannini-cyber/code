@@ -8,6 +8,7 @@ export function IconSprite() {
       <symbol id="i-union" viewBox="0 0 24 24"><circle cx="9" cy="12" r="7" /><circle cx="15" cy="12" r="7" /></symbol>
       <symbol id="i-subtract" viewBox="0 0 24 24"><circle cx="9" cy="12" r="7" /><path d="M15 5a7 7 0 010 14 7 7 0 01-4-1.3" /></symbol>
       <symbol id="i-intersect" viewBox="0 0 24 24"><circle cx="9" cy="12" r="7" opacity=".35" /><circle cx="15" cy="12" r="7" opacity=".35" /><path d="M12 5.6a7 7 0 010 12.8 7 7 0 010-12.8z" /></symbol>
+      <symbol id="i-mate" viewBox="0 0 24 24"><path d="M3 6h7v12H3zM14 6h7v12h-7z" /><path d="M10 12h4M12 10l2 2-2 2" /></symbol>
       <symbol id="i-move" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M5 9l-3 3 3 3M19 9l3 3-3 3M9 5l3-3 3 3M9 19l3 3 3-3" /></symbol>
       <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 2l9 5-9 5-9-5 9-5z" /><path d="M3 12l9 5 9-5M3 17l9 5 9-5" /></symbol>
       <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 10h11a5 5 0 010 10H9" /><path d="M8 5L3 10l5 5" /></symbol>

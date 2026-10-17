@@ -31,6 +31,8 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
   const selectedBodyId = useEditorStore((s) => s.selectedBodyId);
   const selectedFace = useEditorStore((s) => s.selectedFace);
   const booleanPick = useEditorStore((s) => s.booleanPick);
+  const mateFaceA = useEditorStore((s) => s.mateFaceA);
+  const mateFaceB = useEditorStore((s) => s.mateFaceB);
   const filletPickActive = useEditorStore((s) => s.filletPickActive);
   const filletTargetEdge = useEditorStore((s) => s.filletTargetEdge);
   const pickFilletEdge = useEditorStore((s) => s.pickFilletEdge);
@@ -80,6 +82,22 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
     return geo;
   }, [highlightedFaceIndex, body.faceRanges, body.mesh.positions, body.mesh.indices]);
 
+  // Faces chosen for "Affianca": green = stays, orange = moves.
+  const mateHighlights = useMemo(() => {
+    const out: { geo: THREE.BufferGeometry; color: string }[] = [];
+    for (const [face, color] of [[mateFaceA, "#22cc66"], [mateFaceB, "#ff9922"]] as const) {
+      if (!face || face.bodyId !== body.bodyId) continue;
+      const range = body.faceRanges[face.faceIndex];
+      if (!range) continue;
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(body.mesh.positions, 3));
+      geo.setIndex(new THREE.BufferAttribute(body.mesh.indices.subarray(range[0] * 3, (range[0] + range[1]) * 3), 1));
+      geo.computeVertexNormals();
+      out.push({ geo, color });
+    }
+    return out;
+  }, [mateFaceA, mateFaceB, body.bodyId, body.faceRanges, body.mesh.positions, body.mesh.indices]);
+
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     const faceIndex = findFaceForTriangle(body.faceRanges, e.faceIndex ?? -1);
@@ -115,6 +133,11 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
           <meshBasicMaterial color="#22ddaa" transparent opacity={0.55} depthTest={true} polygonOffset polygonOffsetFactor={-2} />
         </mesh>
       )}
+      {mateHighlights.map((h, i) => (
+        <mesh key={`mate${i}`} geometry={h.geo} renderOrder={2}>
+          <meshBasicMaterial color={h.color} transparent opacity={0.7} polygonOffset polygonOffsetFactor={-3} />
+        </mesh>
+      ))}
       {edgeLines.map((pts, i) => {
         if (pts.length < 2) return null;
         const chosen = filletTargetEdge?.bodyId === body.bodyId && filletTargetEdge.edgeIndex === i;

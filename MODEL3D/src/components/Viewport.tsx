@@ -19,6 +19,8 @@ export function Viewport() {
   const updatePlacement = useEditorStore((s) => s.updatePlacement);
   const drafting = useEditorStore((s) => s.drafting);
   const booleanPick = useEditorStore((s) => s.booleanPick);
+  const mateActive = useEditorStore((s) => s.mateActive);
+  const pickMateFace = useEditorStore((s) => s.pickMateFace);
   const pickForBoolean = useEditorStore((s) => s.pickForBoolean);
   const extrudePickActive = useEditorStore((s) => s.extrudePickActive);
   const filletPickActive = useEditorStore((s) => s.filletPickActive);
@@ -35,7 +37,9 @@ export function Viewport() {
 
   const handleFaceClick = useCallback(
     (bodyId: string, faceIndex: number) => {
-      if (booleanPick) {
+      if (mateActive) {
+        pickMateFace(bodyId, faceIndex);
+      } else if (booleanPick) {
         pickForBoolean(bodyId);
       } else if (!extrudePickActive && !filletPickActive) {
         // A single click selects the whole body (opens the parameters card) and
@@ -44,22 +48,23 @@ export function Viewport() {
         selectFace(bodyId, faceIndex);
       }
     },
-    [booleanPick, pickForBoolean, selectBody, selectFace, extrudePickActive, filletPickActive]
+    [mateActive, pickMateFace, booleanPick, pickForBoolean, selectBody, selectFace, extrudePickActive, filletPickActive]
   );
 
   const handleBodyDoubleClick = useCallback(
     (bodyId: string) => {
+      if (mateActive) return;
       if (booleanPick) {
         pickForBoolean(bodyId);
       } else if (!extrudePickActive && !filletPickActive) {
         selectBody(bodyId);
       }
     },
-    [booleanPick, pickForBoolean, selectBody, extrudePickActive, filletPickActive]
+    [mateActive, booleanPick, pickForBoolean, selectBody, extrudePickActive, filletPickActive]
   );
 
   const selectedObj = selectedBodyId ? objRefs.current.get(selectedBodyId) ?? null : null;
-  const pickModeActive = !!booleanPick || extrudePickActive || filletPickActive;
+  const pickModeActive = !!booleanPick || extrudePickActive || filletPickActive || mateActive;
   const overlayAllowed = !drafting && !pickModeActive;
 
   return (

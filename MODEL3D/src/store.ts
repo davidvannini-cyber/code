@@ -4,11 +4,12 @@ import { occClient } from "./occ/occClient";
 import { write3MF, read3MFProject } from "./io/threeMF";
 import type { BooleanOp, PrimitiveType, PlaneKind, Feature, LiveBody, Placement, ShapeExportRef, CornerTreatment } from "./occ/types";
 import { IDENTITY_PLACEMENT } from "./occ/types";
+import { faceFrame, matePlacement } from "./utils/faceMate";
 import { generateShapePoints, type SketchShapeKind, type SketchShapeParams } from "./utils/sketchShapes";
 
 export type SceneBackground = "dark" | "light";
 export type TransformMode = "translate" | "rotate" | "scale";
-export type RailCard = "primitives" | "sketch" | "extrude" | "fillet" | "boolean" | "bodies" | "io" | null;
+export type RailCard = "primitives" | "sketch" | "extrude" | "fillet" | "boolean" | "mate" | "bodies" | "io" | null;
 export type SketchForme = "libero" | SketchShapeKind;
 
 interface BooleanPick {
@@ -156,6 +157,17 @@ interface EditorState {
   setFilletAmount: (amount: number) => void;
   applyFillet: () => void;
 
+  // --- Affianca: pick a face on the fixed body, then a face on the body to move ---
+  mateActive: boolean;
+  mateFaceA: { bodyId: string; faceIndex: number } | null;
+  mateFaceB: { bodyId: string; faceIndex: number } | null;
+  mateCenter: boolean;
+  startMateTool: () => void;
+  cancelMateTool: () => void;
+  pickMateFace: (bodyId: string, faceIndex: number) => void;
+  setMateCenter: (center: boolean) => void;
+  applyMate: () => void;
+
   booleanPick: BooleanPick | null;
   startBooleanPick: (op: BooleanOp) => void;
   cancelBooleanPick: () => void;
@@ -176,8 +188,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setActiveCard: (card) =>
     set((s) => {
       const next = s.activeCard === card ? null : card;
+      const mateReset = next !== "mate" ? { mateActive: false, mateFaceA: null, mateFaceB: null } : {};
       // Leaving the sketch card ends any free-hand drafting in progress.
-      return next === "sketch" ? { activeCard: next } : { activeCard: next, drafting: false, draftPoints: [], draftPressures: [], draftClosed: false };
+      const draftReset = next !== "sketch" ? { drafting: false, draftPoints: [], draftPressures: [], draftClosed: false } : {};
+      return { activeCard: next, ...mateReset, ...draftReset };
     }),
 
   features: [],
@@ -255,6 +269,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (s.extrudePickActive) get().cancelExtrudeTool();
     if (s.filletPickActive) get().cancelFilletTool();
     if (s.booleanPick) get().cancelBooleanPick();
+    if (s.mateActive) get().cancelMateTool();
   },
   setTransformMode: (mode) => set({ transformMode: mode }),
 
@@ -383,7 +398,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   extrudeTargetId: null,
   extrudeHeight: 20,
 
-  startExtrudeTool: () => set({ extrudePickActive: true, extrudeTargetId: null, filletPickActive: false, booleanPick: null }),
+  startExtrudeTool: () => set({ mateActive: false, mateFaceA: null, mateFaceB: null, extrudePickActive: true, extrudeTargetId: null, filletPickActive: false, booleanPick: null }),
   cancelExtrudeTool: () => set({ extrudePickActive: false, extrudeTargetId: null }),
   pickExtrudeTarget: (pendingId) => set({ extrudeTargetId: pendingId, extrudePickActive: false }),
   setExtrudeHeight: (h) => set({ extrudeHeight: h }),
@@ -423,7 +438,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   filletTargetEdge: null,
 
   startFilletTool: () =>
-    set({ filletPickActive: true, filletTargetShapeId: null, filletCornerIndex: null, filletTargetEdge: null, extrudePickActive: false, booleanPick: null, selectedBodyId: null, selectedFace: null }),
+    set({ mateActive: false, mateFaceA: null, mateFaceB: null, filletPickActive: true, filletTargetShapeId: null, filletCornerIndex: null, filletTargetEdge: null, extrudePickActive: false, booleanPick: null, selectedBodyId: null, selectedFace: null }),
   cancelFilletTool: () => set({ filletPickActive: false, filletTargetShapeId: null, filletCornerIndex: null, filletTargetEdge: null }),
   pickFilletCorner: (shapeId, cornerIndex) =>
     set({ filletTargetShapeId: shapeId, filletCornerIndex: cornerIndex, filletTargetEdge: null, filletPickActive: false }),
@@ -474,9 +489,73 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     get().log(`${filletKind === "fillet" ? "Raccordo" : "Smusso"} applicato allo spigolo.`);
   },
 
+  // ---------------- Affianca ----------------
+  mateActive: false,
+  mateFaceA: null,
+  mateFaceB: null,
+  mateCenter: true,
+
+  startMateTool: () =>
+    set({
+      mateActive: true,
+      mateFaceA: null,
+      mateFaceB: null,
+      extrudePickActive: false,
+      filletPickActive: false,
+      booleanPick: null,
+      selectedBodyId: null,
+      selectedFace: null
+    }),
+  cancelMateTool: () => set({ mateActive: false, mateFaceA: null, mateFaceB: null }),
+  setMateCenter: (center) => set({ mateCenter: center }),
+
+  pickMateFace: (bodyId, faceIndex) => {
+    const { mateFaceA, mateFaceB, bodies, placements } = get();
+    const body = bodies.find((b) => b.bodyId === bodyId);
+    const frame = body && faceFrame(body, faceIndex, placements[bodyId] ?? IDENTITY_PLACEMENT);
+    if (!frame) {
+      get().log("Faccia non valida per l'affiancamento.");
+      return;
+    }
+    if (!frame.planar) {
+      get().log("Scegli una faccia piana (le superfici curve non si possono affiancare).");
+      return;
+    }
+    if (!mateFaceA) {
+      set({ mateFaceA: { bodyId, faceIndex } });
+    } else if (mateFaceA.bodyId === bodyId) {
+      get().log("Scegli la seconda faccia su un altro oggetto.");
+    } else {
+      set({ mateFaceB: { bodyId, faceIndex } });
+    }
+  },
+
+  applyMate: () => {
+    const { mateFaceA, mateFaceB, mateCenter, bodies, placements } = get();
+    if (!mateFaceA || !mateFaceB) return;
+    const bodyA = bodies.find((b) => b.bodyId === mateFaceA.bodyId);
+    const bodyB = bodies.find((b) => b.bodyId === mateFaceB.bodyId);
+    if (!bodyA || !bodyB) {
+      get().log("Corpo non trovato: affiancamento annullato.");
+      get().cancelMateTool();
+      return;
+    }
+    const pA = placements[bodyA.bodyId] ?? IDENTITY_PLACEMENT;
+    const pB = placements[bodyB.bodyId] ?? IDENTITY_PLACEMENT;
+    const fa = faceFrame(bodyA, mateFaceA.faceIndex, pA);
+    const fb = faceFrame(bodyB, mateFaceB.faceIndex, pB);
+    if (!fa || !fb) {
+      get().log("Affiancamento non riuscito: faccia non valida.");
+      return;
+    }
+    get().updatePlacement(bodyB.bodyId, matePlacement(pB, fa, fb, mateCenter));
+    get().log("Oggetti affiancati.");
+    set({ mateActive: false, mateFaceA: null, mateFaceB: null });
+  },
+
   // ---------------- Booleane ----------------
   booleanPick: null,
-  startBooleanPick: (op) => set({ booleanPick: { op, picked: [] }, selectedBodyId: null, extrudePickActive: false, filletPickActive: false }),
+  startBooleanPick: (op) => set({ mateActive: false, mateFaceA: null, mateFaceB: null, booleanPick: { op, picked: [] }, selectedBodyId: null, extrudePickActive: false, filletPickActive: false }),
   cancelBooleanPick: () => set({ booleanPick: null }),
 
   pickForBoolean: (id) => {
