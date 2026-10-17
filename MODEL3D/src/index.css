@@ -796,3 +796,8 @@ svg.icon {
 .card.params-card.busy {
   opacity: .7;
 }
+
+.history-chip.selected {
+  border-color: var(--accent);
+  color: #cfe0ff;
+}

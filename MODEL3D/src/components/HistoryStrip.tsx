@@ -52,6 +52,8 @@ export function HistoryStrip() {
   const features = useEditorStore((s) => s.features);
   const toggleFeatureActive = useEditorStore((s) => s.toggleFeatureActive);
   const deleteFeature = useEditorStore((s) => s.deleteFeature);
+  const selectedBodyId = useEditorStore((s) => s.selectedBodyId);
+  const selectBody = useEditorStore((s) => s.selectBody);
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -60,7 +62,13 @@ export function HistoryStrip() {
         <div className="history-collapsed">
           {features.length === 0 && <span className="hint-text muted">Nessuna feature ancora</span>}
           {features.map((f) => (
-            <div key={f.id} className={`history-chip ${!f.active ? "suppressed" : ""}`}>
+            <div
+              key={f.id}
+              className={`history-chip ${!f.active ? "suppressed" : ""} ${selectedBodyId === f.bodyId ? "selected" : ""}`}
+              style={{ cursor: "pointer" }}
+              title="Seleziona il corpo"
+              onClick={() => f.active && selectBody(f.bodyId)}
+            >
               <span className="dot" />
               {f.label}
             </div>
@@ -82,7 +90,9 @@ export function HistoryStrip() {
               <li key={f.id} className={`history-row ${!f.active ? "suppressed" : ""}`}>
                 <div className="history-head">
                   <input type="checkbox" checked={f.active} onChange={() => toggleFeatureActive(f.id)} />
-                  <span className="history-label">{f.label}</span>
+                  <span className="history-label" style={{ cursor: "pointer" }} onClick={() => f.active && selectBody(f.bodyId)}>
+                    {f.label}
+                  </span>
                   <button className="icon-btn small danger" onClick={() => deleteFeature(f.id)}>
                     <Icon name="close" size={12} />
                   </button>

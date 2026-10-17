@@ -38,10 +38,13 @@ export function Viewport() {
       if (booleanPick) {
         pickForBoolean(bodyId);
       } else if (!extrudePickActive && !filletPickActive) {
+        // A single click selects the whole body (opens the parameters card) and
+        // highlights the clicked face; selectBody clears the face, so it goes first.
+        selectBody(bodyId);
         selectFace(bodyId, faceIndex);
       }
     },
-    [booleanPick, pickForBoolean, selectFace, extrudePickActive, filletPickActive]
+    [booleanPick, pickForBoolean, selectBody, selectFace, extrudePickActive, filletPickActive]
   );
 
   const handleBodyDoubleClick = useCallback(
