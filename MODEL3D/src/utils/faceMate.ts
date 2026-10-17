@@ -141,3 +141,30 @@ export function faceInfo(body: LiveBody, faceIndex: number, placement: Placement
     normal: planar ? [normal.x, normal.y, normal.z] : null
   };
 }
+
+/**
+ * Placement that lays one planar face flat on the ground plane (y = 0): the body
+ * turns by the smallest rotation that points the face down, then drops so its
+ * lowest point touches the plane. faceIsLowest tells whether that point is on the face.
+ */
+export function layFacePlacement(body: LiveBody, faceIndex: number, placement: Placement): { placement: Placement; faceIsLowest: boolean } | null {
+  const frame = faceFrame(body, faceIndex, placement);
+  if (!frame || !frame.planar) return null;
+  const q = new Quaternion().setFromUnitVectors(frame.normal, new Vector3(0, -1, 0));
+  const pivot = frame.centroid;
+  const pos = new Vector3(...placement.position).sub(pivot).applyQuaternion(q).add(pivot);
+  const rot = q.clone().multiply(new Quaternion().setFromEuler(new Euler(...placement.rotation)));
+
+  const m = new Matrix4().compose(pos, rot, new Vector3(...placement.scale));
+  const v = new Vector3();
+  const { positions } = body.mesh;
+  let minY = Infinity;
+  for (let i = 0; i < positions.length; i += 3) minY = Math.min(minY, v.fromArray(positions, i).applyMatrix4(m).y);
+  pos.y -= minY;
+
+  const e = new Euler().setFromQuaternion(rot);
+  return {
+    placement: { position: [pos.x, pos.y, pos.z], rotation: [e.x, e.y, e.z], scale: placement.scale },
+    faceIsLowest: Math.abs(pivot.y - minY) < 0.01
+  };
+}

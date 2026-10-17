@@ -4,7 +4,7 @@ import { occClient } from "./occ/occClient";
 import { write3MF, read3MFProject } from "./io/threeMF";
 import type { BooleanOp, PrimitiveType, PlaneKind, Feature, LiveBody, Placement, ShapeExportRef, CornerTreatment } from "./occ/types";
 import { IDENTITY_PLACEMENT } from "./occ/types";
-import { faceFrame, matePlacement } from "./utils/faceMate";
+import { faceFrame, layFacePlacement, matePlacement } from "./utils/faceMate";
 import { generateShapePoints, type SketchShapeKind, type SketchShapeParams } from "./utils/sketchShapes";
 
 export type SceneBackground = "dark" | "light";
@@ -126,6 +126,7 @@ interface EditorState {
   selectBody: (id: string | null) => void;
   selectFace: (bodyId: string, faceIndex: number) => void;
   clearSelection: () => void;
+  layFaceOnPlane: () => void;
   setTransformMode: (mode: TransformMode) => void;
   updatePlacement: (bodyId: string, patch: Partial<Placement>) => void;
   updateColor: (bodyId: string, color: string) => void;
@@ -305,6 +306,21 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (s.mateActive) get().cancelMateTool();
   },
   setTransformMode: (mode) => set({ transformMode: mode }),
+
+  // Lays the selected face flat on the ground plane (face down, lowest point at y = 0).
+  layFaceOnPlane: () => {
+    const { selectedFace, bodies, placements } = get();
+    if (!selectedFace) return;
+    const body = bodies.find((b) => b.bodyId === selectedFace.bodyId);
+    if (!body) return;
+    const result = layFacePlacement(body, selectedFace.faceIndex, placements[body.bodyId] ?? IDENTITY_PLACEMENT);
+    if (!result) {
+      get().log("Scegli una faccia piana per appoggiarla sul piano.");
+      return;
+    }
+    get().updatePlacement(body.bodyId, result.placement);
+    get().log(result.faceIsLowest ? "Faccia appoggiata sul piano." : "Oggetto appoggiato sul piano: la faccia scelta non è la parte più bassa.");
+  },
 
   updatePlacement: (bodyId, patch) => {
     pushHistory(set, `placement:${bodyId}`);

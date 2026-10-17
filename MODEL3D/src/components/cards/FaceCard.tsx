@@ -22,6 +22,7 @@ export function FaceCard() {
   const bodies = useEditorStore((s) => s.bodies);
   const features = useEditorStore((s) => s.features);
   const placements = useEditorStore((s) => s.placements);
+  const layFaceOnPlane = useEditorStore((s) => s.layFaceOnPlane);
 
   const info = useMemo(() => {
     if (!selectedFace || selectedBodyId) return null;
@@ -57,6 +58,11 @@ export function FaceCard() {
             <span>{value}</span>
           </div>
         ))}
+        {info.planar && (
+          <button className="ghost-btn full" onClick={layFaceOnPlane}>
+            Appoggia sul piano
+          </button>
+        )}
       </div>
     </div>
   );
