@@ -399,6 +399,16 @@ function edgeTreatment(src: any, edgeIndex: number, kind: "fillet" | "chamfer", 
 
 // ---------- rebuild (parametric history replay) ----------
 
+// A failed OCCT operation throws a C++ exception; Safari reports it as an
+// unreadable ReferenceError (e.g. "__cxa_is_pointer_type"), so say what it means.
+function friendlyError(e: any): string {
+  const msg = String(e?.message ?? e);
+  if (/__cxa|Can't find variable|is not a function \(near|abort|exception/i.test(msg)) {
+    return "operazione geometrica non riuscita (misura troppo grande o spigolo non adatto). Elimina questa feature dallo Storico o premi Annulla.";
+  }
+  return msg;
+}
+
 let lastShapesById = new Map<string, any>();
 
 function rebuild(features: Feature[], placements: Record<string, number[]>): { bodies: BodyResult[]; warnings: string[] } {
@@ -435,7 +445,7 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
         consumed.add(f.inputB);
       }
     } catch (e: any) {
-      warnings.push(`Errore in feature "${f.label}": ${e?.message ?? e}`);
+      warnings.push(`Errore in feature "${f.label}": ${friendlyError(e)}`);
     }
   }
 

@@ -14,16 +14,17 @@ const LABELS: Record<string, string> = {
 // Parameters that may legitimately be 0 (a cone with a sharp tip).
 const ALLOW_ZERO = new Set(["radius2"]);
 
-function ParamField({ name, value, onCommit }: { name: string; value: number; onCommit: (v: number) => void }) {
+function ParamField({ label, value, min, onCommit }: { label: string; value: number; min: number; onCommit: (v: number) => void }) {
   return (
     <label className="sk-field">
-      <span>{LABELS[name] ?? name} (mm)</span>
-      <NumberInput step={1} min={ALLOW_ZERO.has(name) ? 0 : 0.1} value={value} onValue={onCommit} />
+      <span>{label} (mm)</span>
+      <NumberInput step={1} min={min} value={value} onValue={onCommit} />
     </label>
   );
 }
 
-// Shown while a primitive body is selected: edits its parameters and rebuilds
+// Shown while a body is selected: edits the parameters of the feature that made
+// it (primitive sizes, extrusion height/offset, fillet/chamfer size) and rebuilds
 // the model through updateFeatureParams.
 export function ParamsCard() {
   const selectedBodyId = useEditorStore((s) => s.selectedBodyId);
@@ -32,19 +33,40 @@ export function ParamsCard() {
   const updateFeatureParams = useEditorStore((s) => s.updateFeatureParams);
 
   const feature = features.find((f) => f.bodyId === selectedBodyId);
-  if (!feature || feature.type !== "primitive") return null;
+  if (!feature || feature.type === "boolean") return null;
+
+  let fields: { key: string; label: string; value: number; min: number; apply: (v: number) => void }[];
+  if (feature.type === "primitive") {
+    fields = Object.entries(feature.params).map(([key, value]) => ({
+      key,
+      label: LABELS[key] ?? key,
+      value,
+      min: ALLOW_ZERO.has(key) ? 0 : 0.1,
+      apply: (v) => updateFeatureParams(feature.id, { params: { ...feature.params, [key]: v } })
+    }));
+  } else if (feature.type === "sketchExtrude") {
+    fields = [
+      { key: "height", label: "Altezza", value: feature.height, min: 0.1, apply: (v) => updateFeatureParams(feature.id, { height: v }) },
+      { key: "offset", label: "Offset", value: feature.offset, min: -1e6, apply: (v) => updateFeatureParams(feature.id, { offset: v }) }
+    ];
+  } else {
+    fields = [
+      {
+        key: "amount",
+        label: feature.kind === "fillet" ? "Raccordo" : "Smusso",
+        value: feature.amount,
+        min: 0.1,
+        apply: (v) => updateFeatureParams(feature.id, { amount: v })
+      }
+    ];
+  }
 
   return (
     <div className={`card params-card ${busy ? "busy" : ""}`}>
       <div className="card-head">Parametri · {feature.label}</div>
       <div className="card-body">
-        {Object.entries(feature.params).map(([key, value]) => (
-          <ParamField
-            key={`${feature.id}:${key}`}
-            name={key}
-            value={value}
-            onCommit={(v) => updateFeatureParams(feature.id, { params: { ...feature.params, [key]: v } })}
-          />
+        {fields.map((f) => (
+          <ParamField key={`${feature.id}:${f.key}`} label={f.label} value={f.value} min={f.min} onCommit={f.apply} />
         ))}
       </div>
     </div>
