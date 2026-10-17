@@ -1,13 +1,5 @@
 import { useEditorStore } from "../store";
 import { Icon } from "./icons/Icon";
-import { PrimitivesCard } from "./cards/PrimitivesCard";
-import { SketchCard } from "./cards/SketchCard";
-import { ExtrudeCard } from "./cards/ExtrudeCard";
-import { FilletCard } from "./cards/FilletCard";
-import { BooleanCard } from "./cards/BooleanCard";
-import { BodiesCard } from "./cards/BodiesCard";
-import { MateCard } from "./cards/MateCard";
-import { ParamsCard } from "./cards/ParamsCard";
 
 const RAIL_ITEMS = [
   { key: "primitives", icon: "shapes", title: "Primitive" },
@@ -46,14 +38,6 @@ export function Rail() {
         )}
       </div>
 
-      {activeCard === "primitives" && <PrimitivesCard />}
-      {activeCard === "sketch" && <SketchCard />}
-      {activeCard === "extrude" && <ExtrudeCard />}
-      {activeCard === "fillet" && <FilletCard />}
-      {activeCard === "boolean" && <BooleanCard />}
-      {activeCard === "mate" && <MateCard />}
-      {activeCard === "bodies" && <BodiesCard />}
-      <ParamsCard />
     </>
   );
 }

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Html } from "@react-three/drei";
 import { NumberInput } from "./NumberInput";
 import { useEditorStore, type TransformMode } from "../store";
 import { IDENTITY_PLACEMENT } from "../occ/types";
@@ -53,8 +52,7 @@ export function SelectionOverlay({ bodyId }: Props) {
   };
 
   return (
-    <Html position={[0, 32, 0]} center distanceFactor={90} zIndexRange={[30, 0]}>
-      <div className="selection-overlay" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="selection-overlay">
         <div className="selection-toolbar">
           <button className={transformMode === "translate" && expanded === "translate" ? "active" : ""} onClick={() => toggle("translate")} title="Sposta">
             <Icon name="move" size={15} />
@@ -142,6 +140,5 @@ export function SelectionOverlay({ bodyId }: Props) {
           </div>
         )}
       </div>
-    </Html>
   );
 }

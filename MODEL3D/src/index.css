@@ -177,9 +177,7 @@ svg.icon {
 /* ---------- Floating cards ---------- */
 
 .card {
-  position: absolute;
-  top: 54px;
-  left: 62px;
+  position: static;
   width: 236px;
   background: #16171af7;
   border: 1px solid var(--border);
@@ -187,7 +185,7 @@ svg.icon {
   z-index: 25;
   backdrop-filter: blur(10px);
   box-shadow: 0 16px 32px rgba(0,0,0,.5);
-  max-height: calc(100vh - 130px);
+  max-height: calc(100vh - 220px);
   overflow-y: auto;
 }
 
@@ -213,6 +211,8 @@ svg.icon {
 }
 
 .io-card {
+  position: absolute;
+  max-height: none;
   top: 40px;
   left: auto;
   right: 0;
@@ -786,11 +786,29 @@ svg.icon {
   .selection-expand { width: 160px; }
 }
 
-/* Scheda parametri della primitiva selezionata: a destra, per non coprire le altre schede */
+/* Tutti i menu fluttuanti: fissati in alto al centro, subito sotto la barra, fuori dalla vista dell'oggetto */
+.dock {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: calc(100vw - 130px);
+  pointer-events: none;
+}
+.dock > * {
+  pointer-events: auto;
+  flex: 0 0 auto;
+}
+@media (max-width: 900px) {
+  .dock { flex-wrap: wrap; }
+}
 .card.params-card {
-  left: auto;
-  right: 12px;
-  top: 54px;
   width: 210px;
 }
 .card.params-card.busy {

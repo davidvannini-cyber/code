@@ -4,7 +4,6 @@ import { Line } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEditorStore } from "../store";
 import type { LiveBody, Placement } from "../occ/types";
-import { SelectionOverlay } from "./SelectionOverlay";
 
 const CLICK_DELAY_MS = 300;
 
@@ -15,7 +14,6 @@ interface Props {
   onFaceClick: (bodyId: string, faceIndex: number) => void;
   onBodyDoubleClick: (bodyId: string) => void;
   registerRef: (id: string, obj: THREE.Group | null) => void;
-  overlayAllowed: boolean;
 }
 
 function findFaceForTriangle(faceRanges: [number, number][], triIndex: number): number {
@@ -26,7 +24,7 @@ function findFaceForTriangle(faceRanges: [number, number][], triIndex: number): 
   return -1;
 }
 
-export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleClick, registerRef, overlayAllowed }: Props) {
+export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleClick, registerRef }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const selectedBodyId = useEditorStore((s) => s.selectedBodyId);
   const selectedFace = useEditorStore((s) => s.selectedFace);
@@ -154,7 +152,6 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
           />
         );
       })}
-      {isSelected && overlayAllowed && <SelectionOverlay bodyId={body.bodyId} />}
     </group>
   );
 }

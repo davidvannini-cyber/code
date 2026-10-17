@@ -65,7 +65,6 @@ export function Viewport() {
 
   const selectedObj = selectedBodyId ? objRefs.current.get(selectedBodyId) ?? null : null;
   const pickModeActive = !!booleanPick || extrudePickActive || filletPickActive || mateActive;
-  const overlayAllowed = !drafting && !pickModeActive;
 
   return (
     <Canvas
@@ -98,7 +97,6 @@ export function Viewport() {
           onFaceClick={handleFaceClick}
           onBodyDoubleClick={handleBodyDoubleClick}
           registerRef={registerRef}
-          overlayAllowed={overlayAllowed}
         />
       ))}
 
