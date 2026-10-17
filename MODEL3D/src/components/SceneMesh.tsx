@@ -101,18 +101,15 @@ export function SceneMesh({ body, placement, color, onFaceClick, onBodyDoubleCli
     const faceIndex = findFaceForTriangle(body.faceRanges, e.faceIndex ?? -1);
     const now = Date.now();
     const last = pendingClickRef.current;
+    // Second click of a double click: the whole body. The first click already
+    // selected the face right away, so single clicks have no delay.
     if (last && now - last.time < CLICK_DELAY_MS) {
       pendingClickRef.current = null;
       onBodyDoubleClick(body.bodyId);
       return;
     }
     pendingClickRef.current = { time: now, faceIndex };
-    setTimeout(() => {
-      if (pendingClickRef.current && pendingClickRef.current.time === now) {
-        onFaceClick(body.bodyId, faceIndex);
-        pendingClickRef.current = null;
-      }
-    }, CLICK_DELAY_MS);
+    onFaceClick(body.bodyId, faceIndex);
   };
 
   return (

@@ -292,7 +292,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   selectBody: (id) => set({ selectedBodyId: id, selectedFace: null }),
-  selectFace: (bodyId, faceIndex) => set({ selectedFace: { bodyId, faceIndex } }),
+  // Picking a face drops the whole-body selection (gizmo, parameters); double click selects the body.
+  selectFace: (bodyId, faceIndex) => set({ selectedBodyId: null, selectedFace: { bodyId, faceIndex } }),
   clearSelection: () => {
     const s = get();
     set({ selectedBodyId: null, selectedFace: null });
