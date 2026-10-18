@@ -146,3 +146,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `21f097f` | MODEL3D: stile a pillole anche sul Mac, con dimensioni normali (index.css), REGISTRO-SALVATAGGI.md | `git checkout 21f097f` |
 | 2026-10-18 | `8954806` | MODEL3D/HANDOFF.md (riscritto con tutto il lavoro fatto), MODEL3D/README.md (aggiornato), REGISTRO-SALVATAGGI.md | `git checkout 8954806` |
 | 2026-10-18 | `c4642ea` | MODEL3D: tre pillole X Y Z con la distanza dell'oggetto dagli assi (PositionPills.tsx, TopBar.tsx), pulsante dedicato Appoggia sul piano nel menu di sinistra (FloorCard.tsx, Rail.tsx, store.ts, Viewport.tsx, FloatingDock.tsx, IconSprite.tsx), REGISTRO-SALVATAGGI.md | `git checkout c4642ea` |
+| 2026-10-18 | `9c2f994` | MODEL3D: le pillole X Y Z sono sempre visibili (trattini senza selezione) (PositionPills.tsx, index.css), REGISTRO-SALVATAGGI.md | `git checkout 9c2f994` |

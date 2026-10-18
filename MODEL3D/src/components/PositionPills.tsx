@@ -7,6 +7,7 @@ const fmt = (v: number) => (Math.abs(v) < 0.005 ? 0 : v).toFixed(2);
 
 // Three pills in the top bar: for the selected object, how far its nearest end
 // is from the origin along X, Y and Z (Y is the height above the ground plane).
+// Dashes while nothing is selected.
 export function PositionPills() {
   const selectedBodyId = useEditorStore((s) => s.selectedBodyId);
   const selectedFace = useEditorStore((s) => s.selectedFace);
@@ -36,12 +37,12 @@ export function PositionPills() {
     return min;
   }, [body, placement]);
 
-  if (!mins) return null;
+  // Always shown, so they can be found; dashes until something is selected
   return (
-    <div className="pos-pills" title="Distanza dell'estremo dell'oggetto dagli assi (mm)">
+    <div className={`pos-pills ${mins ? "" : "empty"}`} title={mins ? "Distanza dell'estremo dell'oggetto dagli assi (mm)" : "Seleziona un oggetto: qui compare la distanza dagli assi"}>
       {(["X", "Y", "Z"] as const).map((axis, i) => (
         <span key={axis} className={`pos-pill ${axis}`}>
-          <b>{axis}</b> {fmt(mins[i])}
+          <b>{axis}</b> {mins ? fmt(mins[i]) : "—"}
         </span>
       ))}
     </div>
