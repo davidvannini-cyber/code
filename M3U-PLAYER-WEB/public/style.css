@@ -54,3 +54,4 @@ main > #msg.error { color: #ff6b6b; }
 .status .ok { color: #3fb950; } .status .warn { color: #d29922; } .status .bad { color: #ff6b6b; }
 details > summary { cursor: pointer; color: var(--muted); margin: 12px 0; }
 li .alts { color: var(--muted); font-size: 12px; }
+#info { position: absolute; top: 64px; left: 16px; max-width: min(640px, calc(100% - 32px)); margin: 0; padding: 10px 12px; border-radius: 8px; background: #000b; color: #fff; font: 12px/1.45 ui-monospace, monospace; white-space: pre-wrap; word-break: break-all; user-select: text; }

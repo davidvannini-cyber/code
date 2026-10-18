@@ -44,6 +44,12 @@ Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` no
 - `public/` – `index.html` + `app.js` (elenco e player), `admin.html` + `admin.js`, `m3u.js` (parser, usato anche dal server), `style.css`
 - Test: `npm test` (parser e server)
 
+## Se un canale va a scatti
+Nel player premi **I** (o il pulsante *i* nella barra): compare un pannello con motore, qualita' scelta, banda stimata, frame persi e secondi di buffer.
+Se i *frame persi* salgono il limite e' il computer (prova l'accelerazione hardware del browser); se il *buffer* scende a 0 e' la rete o la fonte.
+Per i flussi HLS la pagina tiene un buffer piu' ampio e resta qualche secondo indietro rispetto alla diretta, per assorbire gli intoppi.
+Puoi copiare l'indirizzo mostrato e aprirlo in VLC per vedere se anche li' va a scatti: in quel caso il problema e' la fonte.
+
 ## Se un canale non parte
 La pagina lo dice sotto il video, tra parentesi quadre il motore usato, e mostra l'indirizzo del flusso (selezionabile):
 - *il server rifiuta l'accesso (403)*: blocco geografico o protezione del canale;

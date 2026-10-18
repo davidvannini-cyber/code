@@ -146,6 +146,8 @@
   }
 
   function closePlayer() {
+    clearInterval(state.infoTimer);
+    $('info').hidden = true;
     stopPlayback();
     state.cur = null;
     player.hidden = true;
@@ -313,7 +315,9 @@
     // hls.js ovunque tranne Safari (che legge l'HLS da solo): il lettore nativo di Chrome e' piu' recente e meno affidabile.
     if (type === 'hls' && window.Hls && Hls.isSupported() && !isSafari) {
       engine = 'hls.js';
-      const hls = state.hls = new Hls();
+      // Diretta TV: meglio qualche secondo di ritardo in piu' che scatti. Buffer piu' ampio e distanza maggiore dal bordo live.
+      const hls = state.hls = new Hls({ lowLatencyMode: false, liveSyncDurationCount: 5, liveMaxLatencyDurationCount: 12,
+        maxBufferLength: 40, maxMaxBufferLength: 90, backBufferLength: 30 });
       hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) fail(); });
       hls.loadSource(url);
       hls.attachMedia(video);
@@ -349,6 +353,49 @@
     if (video.error && video.getAttribute('src') && state.failFn) state.failFn();
   });
 
+  /* ---------- Pannello di diagnosi (tasto I) ---------- */
+  function infoText() {
+    const lines = [];
+    const cur = state.cur;
+    const c = state.channels[state.current];
+    if (!c) return 'Nessun canale in riproduzione.';
+    lines.push('Canale: ' + DTT.cleanName(c) + (cur ? '  (fonte ' + (cur.i + 1) + '/' + cur.g.alts.length + ')' : ''));
+    lines.push('Motore: ' + (state.engine || '?') + '   tipo: ' + (state.type || '?'));
+    lines.push('Indirizzo: ' + (state.playUrl || c.url));
+    if (video.videoWidth) lines.push('Video: ' + video.videoWidth + '\u00D7' + video.videoHeight);
+    try {
+      const q = video.getVideoPlaybackQuality();
+      const pct = q.totalVideoFrames ? (100 * q.droppedVideoFrames / q.totalVideoFrames).toFixed(1) : '0.0';
+      lines.push('Frame persi: ' + q.droppedVideoFrames + ' su ' + q.totalVideoFrames + ' (' + pct + '%)');
+    } catch (_) { /* non disponibile */ }
+    try {
+      const b = video.buffered;
+      if (b.length) lines.push('Buffer in avanti: ' + Math.max(0, b.end(b.length - 1) - video.currentTime).toFixed(1) + ' s');
+    } catch (_) { /* non disponibile */ }
+    try {
+      if (state.hls) {
+        const lv = state.hls.levels[state.hls.currentLevel];
+        if (lv) lines.push('Qualita\' scelta: ' + (lv.height ? lv.height + 'p ' : '') + Math.round(lv.bitrate / 1000) + ' kbit/s');
+        if (state.hls.bandwidthEstimate) lines.push('Banda stimata: ' + Math.round(state.hls.bandwidthEstimate / 1000) + ' kbit/s');
+      } else if (state.dash) {
+        lines.push('Banda stimata: ' + Math.round(state.dash.getAverageThroughput('video')) + ' kbit/s');
+      }
+    } catch (_) { /* non disponibile */ }
+    lines.push('Il valore piu\' utile: se i frame persi salgono, il limite e\' il computer; se il buffer scende a 0, e\' la rete o la fonte.');
+    return lines.join('\n');
+  }
+
+  function toggleInfo() {
+    const box = $('info');
+    box.hidden = !box.hidden;
+    clearInterval(state.infoTimer);
+    if (!box.hidden) {
+      const tick = () => { box.textContent = infoText(); };
+      tick();
+      state.infoTimer = setInterval(tick, 1000);
+    }
+  }
+
   /* ---------- Eventi ---------- */
   $('itOnly').addEventListener('change', () => {
     state.it = $('itOnly').checked;
@@ -364,6 +411,7 @@
   $('prev').addEventListener('click', () => step(-1));
   $('next').addEventListener('click', () => step(1));
   $('alt').addEventListener('click', cycleSource);
+  $('infoBtn').addEventListener('click', () => { toggleInfo(); showBar(); });
   ['mousemove', 'touchstart'].forEach(ev => player.addEventListener(ev, showBar, { passive: true }));
   // Tasti nel player. In fase di cattura e con stopImmediatePropagation, cosi' le frecce non spostano il cursore del video
   // (su un flusso in diretta non serve) e il player non le intercetta prima di noi.
@@ -372,6 +420,7 @@
     const swallow = () => { e.preventDefault(); e.stopImmediatePropagation(); };
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { swallow(); step(1); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { swallow(); step(-1); }
+    else if (e.key === 'i' || e.key === 'I') { swallow(); toggleInfo(); showBar(); }
     else if (e.key === 'Escape' && !state.fs) closePlayer();
     else showBar();
   }, true);
