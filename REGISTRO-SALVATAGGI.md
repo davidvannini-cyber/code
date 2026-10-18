@@ -185,3 +185,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `0747023` | M3U-PLAYER-WEB/firetv: messaggi di avanzamento e di errore nel caricamento della lista, versione 1.1 (MainActivity.java, Dtt.java, build.gradle), REGISTRO-SALVATAGGI.md | `git checkout 0747023` |
 | 2026-10-18 | `029cf23` | M3U-PLAYER-WEB: extra.m3u con Rai 3 Toscana (n. 3) e 50 Canale (n. 18), README.md, REGISTRO-SALVATAGGI.md | `git checkout 029cf23` |
 | 2026-10-18 | `5e31754` | M3U-PLAYER-WEB: mac/crea-icona-tv.sh (icona sul Desktop che apre il sito con Safari), README.md, REGISTRO-SALVATAGGI.md | `git checkout 5e31754` |
+| 2026-10-18 | `64b8a08` | M3U-PLAYER-WEB: mac/crea-icona-tv.sh senza il tentativo di nascondere la barra (non possibile su Monterey), README.md, REGISTRO-SALVATAGGI.md | `git checkout 64b8a08` |

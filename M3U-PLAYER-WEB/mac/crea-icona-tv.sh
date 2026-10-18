@@ -1,6 +1,6 @@
 #!/bin/bash
 # Crea sul Desktop del Mac l'app "TV Vannini": apre tv.vannini.online con Safari (non con il browser predefinito).
-# Prova anche a nascondere la barra degli strumenti di Safari; se il Mac non lo permette, il sito si apre comunque.
+# Safari su macOS 12 (Monterey) non permette di nascondere la barra degli strumenti: il sito si apre con la barra visibile.
 set -e
 
 URL="https://tv.vannini.online"
@@ -14,18 +14,6 @@ tell application "Safari"
 	activate
 	make new document with properties {URL:"https://tv.vannini.online"}
 end tell
-delay 1
--- Nasconde la barra degli strumenti (indirizzo e pulsanti). Serve il permesso di controllo; se manca si salta.
-try
-	tell application "System Events"
-		tell process "Safari"
-			set vista to menu 1 of menu bar item "Vista" of menu bar 1
-			if exists menu item "Nascondi barra degli strumenti" of vista then
-				click menu item "Nascondi barra degli strumenti" of vista
-			end if
-		end tell
-	end tell
-end try
 APPLESCRIPT
 
 rm -rf "$APP"
@@ -45,4 +33,4 @@ if curl -fsSL --max-time 20 "$URL/icon-512.png" -o "$TMP/icon.png"; then
   iconutil -c icns "$SET" -o "$APP/Contents/Resources/applet.icns" && touch "$APP"
 fi
 
-echo "Fatto: sul Desktop c'e' \"$NAME\". La prima volta il Mac chiede il permesso di controllare Safari: premi OK."
+echo "Fatto: sul Desktop c'e' \"$NAME\". La prima volta il Mac chiede il permesso di controllare Safari: premi OK (nessun altro permesso serve)."

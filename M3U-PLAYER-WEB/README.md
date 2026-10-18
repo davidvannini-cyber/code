@@ -79,5 +79,5 @@ Il numero si decide con `tvg-chno` (non serve toccare il codice). Per aggiungere
 
 ## Icona sul Desktop del Mac che apre Safari (`mac/crea-icona-tv.sh`)
 Per chi ha un altro browser predefinito: `bash M3U-PLAYER-WEB/mac/crea-icona-tv.sh` crea sul Desktop l'app "TV Vannini",
-che apre `tv.vannini.online` con Safari e prova a nascondere la barra degli strumenti. Su macOS 14 (Sonoma) o piu' recente
+che apre `tv.vannini.online` con Safari (barra degli strumenti visibile: su macOS 12 Safari non permette di nasconderla). Su macOS 14 (Sonoma) o piu' recente
 e' meglio Safari → File → Aggiungi al Dock, che apre il sito in una finestra senza barra.
