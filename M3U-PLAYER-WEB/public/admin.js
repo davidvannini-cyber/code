@@ -15,7 +15,7 @@
   }
 
   function showInfo(i) {
-    $('info').textContent = i.channels + ' canali, ' + i.groups + ' gruppi, ' + Math.round(i.bytes / 1024) +
+    $('info').textContent = i.channels + ' canali, ' + (i.groups != null ? i.groups + ' gruppi, ' : '') + Math.round(i.bytes / 1024) +
       ' KB. Ultima modifica: ' + new Date(i.updatedAt).toLocaleString('it-IT');
   }
 

@@ -52,10 +52,13 @@
     const channels = [];
     let pending = null;
     let pendingGroup = null;
+    let currentSrc = 0;                      // fonte corrente, dichiarata da righe "#X-SOURCE:n" nelle playlist unite
 
     for (const line of lines.slice(1)) {
       if (line.startsWith('#EXTINF:')) {
         pending = parseExtInf(line.slice('#EXTINF:'.length));
+      } else if (line.startsWith('#X-SOURCE:')) {
+        currentSrc = Number(line.slice('#X-SOURCE:'.length)) || 0;
       } else if (line.startsWith('#EXTGRP:')) {
         pendingGroup = line.slice('#EXTGRP:'.length).trim();
       } else if (line.startsWith('#')) {
@@ -73,7 +76,7 @@
           group: a['group-title'] || pendingGroup || null,
           tvgId: a['tvg-id'] || null,
           chno: /^\d{1,4}$/.test(a['tvg-chno'] || '') ? Number(a['tvg-chno']) : null,   // numero di canale scelto dalla lista
-          src: Number(a['x-src']) || 0,                                                   // fonte (lista) di provenienza, se la playlist e' unita
+          src: Number(a['x-src']) || currentSrc,                                                   // fonte (lista) di provenienza, se la playlist e' unita
         });
         pending = null;
         pendingGroup = null;

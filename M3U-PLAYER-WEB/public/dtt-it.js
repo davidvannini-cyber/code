@@ -130,7 +130,8 @@
     });
     const groups = [];
     for (const [id, items] of map) {
-      const alts = rankAlts(items).map(x => x.c);
+      const seenUrls = new Set();
+      const alts = rankAlts(items).map(x => x.c).filter(c => !seenUrls.has(c.url) && seenUrls.add(c.url));   // stesso indirizzo in piu' liste: una volta sola
       const nums = alts.map(lcnOf).filter(n => n !== undefined);
       groups.push({
         id, alts, head: alts[0],

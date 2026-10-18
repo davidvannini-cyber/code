@@ -38,7 +38,8 @@ Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` no
 - Il server parla solo HTTP: la password viaggia in chiaro. Per usarlo fuori dal tuo computer serve HTTPS: vedi `DEPLOY.md`.
 
 ## File
-- `DEPLOY.md` – come pubblicarlo online · `Dockerfile` per i servizi che usano container
+- `DEPLOY-CLOUDFLARE.md` – pubblicarlo su Cloudflare Workers (cartella `cloudflare/`)
+- `DEPLOY.md` – su Render o altri servizi con Docker · `Dockerfile` per i servizi che usano container
 - `public/dtt-it.js` – elenco dei canali italiani e numerazione DTT (scritta a mano dalla memoria: da controllare e correggere se serve)
 - `server.js` – server (pagina, playlist, login, aggiornamento)
 - `public/` – `index.html` + `app.js` (elenco e player), `admin.html` + `admin.js`, `m3u.js` (parser, usato anche dal server), `style.css`
