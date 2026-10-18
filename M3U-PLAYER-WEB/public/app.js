@@ -433,6 +433,13 @@
   $('prev').addEventListener('click', () => step(-1));
   $('next').addEventListener('click', () => step(1));
   $('alt').addEventListener('click', cycleSource);
+  // iPhone (Safari): il browser non concede lo schermo intero a una pagina, solo al video. Il pulsante apre il lettore
+  // nativo a tutto schermo; dalla schermata Home (app installata) non serve, e' gia' tutto schermo.
+  const canElementFullscreen = !!(player.requestFullscreen || player.webkitRequestFullscreen);
+  if (!canElementFullscreen && video.webkitEnterFullscreen && !navigator.standalone) {
+    $('fsBtn').hidden = false;
+    $('fsBtn').addEventListener('click', () => { try { video.webkitEnterFullscreen(); } catch (_) { /* non disponibile */ } });
+  }
   $('infoBtn').addEventListener('click', () => { toggleInfo(); showBar(); });
   ['mousemove', 'touchstart'].forEach(ev => player.addEventListener(ev, showBar, { passive: true }));
   // Tasti nel player. In fase di cattura e con stopImmediatePropagation, cosi' le frecce non spostano il cursore del video

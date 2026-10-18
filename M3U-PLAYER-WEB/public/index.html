@@ -2,8 +2,17 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Canali TV</title>
+  <!-- Installabile sulla schermata Home: si apre come un'app, senza barre del browser -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Canali TV">
+  <meta name="theme-color" content="#090a1c">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="themes.css">
   <script src="theme.js"></script>
@@ -37,6 +46,7 @@
       <span id="title"></span>
       <button id="alt" class="btn" hidden aria-label="Prova un'altra fonte" title="Altra fonte">&#8635;</button>
       <button id="next" class="btn" aria-label="Canale successivo (freccia destra)" title="Canale successivo (→)">&#9654;</button>
+      <button id="fsBtn" class="btn" hidden aria-label="Schermo intero" title="Schermo intero">&#9974;</button>
       <button id="infoBtn" class="btn" aria-label="Diagnosi (tasto I)" title="Diagnosi (I)">i</button>
       <button id="close" class="btn" aria-label="Chiudi">&#10005;</button>
     </div>

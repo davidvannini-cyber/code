@@ -45,6 +45,10 @@ Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` no
 - `public/` – `index.html` + `app.js` (elenco e player), `admin.html` + `admin.js`, `m3u.js` (parser, usato anche dal server), `style.css`
 - Test: `npm test` (parser e server)
 
+## Sul telefono: schermo intero
+- **Android (Chrome):** il canale parte a tutto schermo da solo.
+- **iPhone (Safari):** Safari non concede lo schermo intero alle pagine web. Due strade: il pulsante ⛶ nella barra del player apre il lettore nativo a tutto schermo (si perdono i pulsanti ◀ ▶ finche' non esci); oppure **installa la pagina sulla schermata Home** (Condividi → *Aggiungi alla schermata Home*): si apre come un'app, senza barre del browser, con tutti i comandi.
+
 ## Se un canale va a scatti
 Nel player premi **I** (o il pulsante *i* nella barra): compare un pannello con motore, qualita' scelta, banda stimata, frame persi e secondi di buffer.
 Se i *frame persi* salgono il limite e' il computer (prova l'accelerazione hardware del browser); se il *buffer* scende a 0 e' la rete o la fonte.

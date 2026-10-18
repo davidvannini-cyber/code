@@ -9,7 +9,10 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const JSON_H = { 'Content-Type': 'application/json' };
 
 async function withServer(env, fn, sharedDir) {
-  const port = 38000 + Math.floor(Math.random() * 1000);
+  const port = await new Promise(res => {                       // porta libera scelta dal sistema
+    const probe = require('net').createServer();
+    probe.listen(0, '127.0.0.1', () => { const p = probe.address().port; probe.close(() => res(p)); });
+  });
   const base = 'http://127.0.0.1:' + port;
   const dataDir = sharedDir || fs.mkdtempSync(path.join(os.tmpdir(), 'm3u-test-'));
   const child = spawn(process.execPath, ['server.js'], {
