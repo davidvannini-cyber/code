@@ -23,6 +23,11 @@ Non ho potuto provare queste schermate: i nomi dei campi possono essere diversi.
 
 Ogni `git push` su `main` ripubblica da solo (se lasci attiva la distribuzione automatica).
 
+## Entrare senza digitare la password
+Su ogni dispositivo nuovo apri una volta `https://tuo-indirizzo/#k=LA-TUA-PASSWORD-SPETTATORE`: entra da solo e ricorda il dispositivo.
+Per questo conviene che `VIEWER_PASSWORD` sia diversa da `ADMIN_PASSWORD` (altrimenti il link aprirebbe anche l'area admin) e senza caratteri speciali.
+Salva il link in un posto privato (gestore di password, note personali), non in chat condivise.
+
 ## Provare subito dal Mac (gratis, temporaneo)
 Con Cloudflare Tunnel la pagina e' online finche' il Mac e' acceso e il comando e' in esecuzione:
 ```

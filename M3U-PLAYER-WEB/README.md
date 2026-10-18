@@ -28,6 +28,7 @@ Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` no
 ## Sicurezza
 - **Accesso una volta sola per dispositivo:** dopo aver inserito la password il browser resta autenticato per 400 giorni dall'ultimo uso (si rinnova a ogni apertura della pagina), anche se il server viene riavviato (il cookie e' firmato, non dipende dalla memoria del server).
 - **Una sola password:** se `ADMIN_PASSWORD` e `VIEWER_PASSWORD` hanno lo stesso valore, un solo accesso apre sia i canali sia l'area admin.
+- **Link con password:** apri `https://tuo-indirizzo/#k=LA-TUA-PASSWORD-SPETTATORE` e il dispositivo entra da solo (poi il link non serve piu'). Quello che segue il `#` non viene mai inviato al server, quindi non compare nei log, e la pagina lo toglie subito dalla barra degli indirizzi. Usa nel link solo `VIEWER_PASSWORD` (con lettere, numeri, `-` e `_`) e non la password admin; chi ha il link ha l'accesso, quindi non condividerlo e non lasciarlo in chat pubbliche.
 - Cambiare una password disconnette tutti i dispositivi. "Esci" cancella l'accesso solo su quel browser; se perdi un dispositivo, cambia la password.
 - Cookie `HttpOnly` + `SameSite=Strict` (e `Secure` dietro HTTPS), blocco di un minuto dopo 5 tentativi sbagliati.
 - La nuova playlist viene controllata prima di sostituire quella attuale (massimo 10 MB, deve avere almeno un canale http/https); la precedente resta come backup.
