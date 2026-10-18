@@ -121,12 +121,14 @@ async function scenarioSessionsSurviveRestart() {
       const r = await login(base, '/api/login', 'segreta-di-test');
       assert.strictEqual(r.status, 200);
       const maxAge = Number(/Max-Age=(\d+)/.exec(r.headers.get('set-cookie'))[1]);
-      assert.ok(maxAge >= 150 * 24 * 3600, 'accesso di lunga durata');
+      assert.ok(maxAge >= 390 * 24 * 3600, 'accesso di lunga durata');
       auth = { Cookie: cookieOf(r) };
       assert.strictEqual((await fetch(base + '/api/status', { headers: auth })).status, 200);
     }, dir);
     await withServer({}, async base => {          // stesso disco, server riavviato
       assert.strictEqual((await fetch(base + '/api/status', { headers: auth })).status, 200, 'accesso valido dopo riavvio');
+      const renewed = await fetch(base + '/playlist.m3u', { headers: auth });
+      assert.ok(renewed.headers.getSetCookie().some(c => c.startsWith('sid=')), 'la scadenza viene rinnovata a ogni apertura');
       const tampered = { Cookie: auth.Cookie.slice(0, -1) + (auth.Cookie.endsWith('0') ? '1' : '0') };
       assert.strictEqual((await fetch(base + '/api/status', { headers: tampered })).status, 401, 'cookie manomesso');
     }, dir);

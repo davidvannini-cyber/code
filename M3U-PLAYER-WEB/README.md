@@ -26,7 +26,7 @@ Se non imposti `ADMIN_PASSWORD`, il server ne genera una temporanea e la scrive 
 Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` non finisce nel repository.
 
 ## Sicurezza
-- **Accesso una volta sola per dispositivo:** dopo aver inserito la password il browser resta autenticato per 180 giorni, anche se il server viene riavviato (il cookie e' firmato, non dipende dalla memoria del server).
+- **Accesso una volta sola per dispositivo:** dopo aver inserito la password il browser resta autenticato per 400 giorni dall'ultimo uso (si rinnova a ogni apertura della pagina), anche se il server viene riavviato (il cookie e' firmato, non dipende dalla memoria del server).
 - **Una sola password:** se `ADMIN_PASSWORD` e `VIEWER_PASSWORD` hanno lo stesso valore, un solo accesso apre sia i canali sia l'area admin.
 - Cambiare una password disconnette tutti i dispositivi. "Esci" cancella l'accesso solo su quel browser; se perdi un dispositivo, cambia la password.
 - Cookie `HttpOnly` + `SameSite=Strict` (e `Secure` dietro HTTPS), blocco di un minuto dopo 5 tentativi sbagliati.

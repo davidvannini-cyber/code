@@ -5,7 +5,7 @@ e un disco permanente (altrimenti la playlist torna a quella di prova a ogni ria
 
 ## Prima di pubblicare
 - Scegli **una** password lunga e usala per entrambe: `ADMIN_PASSWORD` (area admin) e `VIEWER_PASSWORD` (vedere i canali).
-  La digiti una volta sola su ogni dispositivo: l'accesso dura 180 giorni e resiste ai riavvii del server.
+  La digiti una volta sola su ogni dispositivo: l'accesso si rinnova a ogni uso (fino a 400 giorni senza aprire la pagina) e resiste ai riavvii del server.
   Senza `VIEWER_PASSWORD` chiunque conosca l'indirizzo vede l'elenco, e gli URL dei flussi spesso contengono utente e password del fornitore.
 - Non scrivere le password nei file del repository: vanno nelle variabili d'ambiente del servizio.
 - Una pagina in https non puo' riprodurre flussi `http://` (il browser li blocca). Servono flussi `https://`.

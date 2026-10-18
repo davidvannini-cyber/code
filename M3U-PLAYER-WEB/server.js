@@ -16,7 +16,7 @@ const DATA = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data'));
 const PLAYLIST = path.join(DATA, 'playlist.m3u');
 const BACKUP = path.join(DATA, 'playlist.prev.m3u');
 const MAX_PLAYLIST = 10 * 1024 * 1024;
-const SESSION_MS = 180 * 24 * 60 * 60 * 1000;     // l'accesso dura 180 giorni su ogni dispositivo
+const SESSION_MS = 400 * 24 * 60 * 60 * 1000;     // massimo che i browser accettano; si rinnova a ogni apertura della pagina
 
 const sha = s => crypto.createHash('sha256').update(s).digest();
 let generatedPassword = null;
@@ -192,7 +192,9 @@ async function route(req, res) {
     throw httpError(401, 'Accesso richiesto.');
   }
   if (pathname === '/playlist.m3u') {
-    return send(res, 200, fs.readFileSync(PLAYLIST), { 'Content-Type': MIME['.m3u'] });
+    // Accesso scorrevole: ogni caricamento dell'elenco riporta la scadenza a 400 giorni da adesso.
+    const renewed = [viewerSessions, adminSessions].filter(x => x.check(req)).map(x => x.create(req));
+    return send(res, 200, fs.readFileSync(PLAYLIST), { 'Content-Type': MIME['.m3u'], ...(renewed.length ? { 'Set-Cookie': renewed } : {}) });
   }
   if (pathname === '/login.html' && !viewerHash) return send(res, 302, '', { Location: '/' });
   if (pathname === '/admin') pathname = '/admin.html';
