@@ -161,6 +161,7 @@
   }
 
   function closePlayer() {
+    if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {});
     clearInterval(state.infoTimer);
     $('info').hidden = true;
     stopPlayback();
@@ -173,13 +174,50 @@
     }
   }
 
-  function onFullscreenChange() {
-    const on = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (on) state.fs = true;
-    else if (state.fs) closePlayer();      // l'utente e' uscito dal fullscreen (Esc): torna all'elenco
+  // Icone dei pulsanti (SVG disegnate, senza immagini esterne).
+  const svg = d => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  const ICON_ENTER = svg('<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>');
+  const ICON_EXIT = svg('<path d="M9 4v5H4M15 4v5h5M20 15h-5v5M4 15h5v5"/>');
+  const ICON_PIP = svg('<rect x="3" y="5" width="18" height="14" rx="2.5"/><rect x="12" y="12" width="6.5" height="4.5" rx="1" fill="currentColor" stroke="none"/>');
+
+  const fullscreenOn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+
+  function updateFsButton() {
+    const on = fullscreenOn();
+    state.fs = on;
+    $('fsToggle').innerHTML = on ? ICON_EXIT : ICON_ENTER;
+    $('fsToggle').title = (on ? 'Esci dallo schermo intero' : 'Schermo intero') + ' (F)';
+    $('fsToggle').setAttribute('aria-label', on ? 'Esci dallo schermo intero' : 'Schermo intero');
   }
-  document.addEventListener('fullscreenchange', onFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+  // Uscire dallo schermo intero (pulsante o Esc) lascia il video acceso: riempie la finestra del browser.
+  // Per tornare all'elenco si usa la X.
+  document.addEventListener('fullscreenchange', updateFsButton);
+  document.addEventListener('webkitfullscreenchange', updateFsButton);
+
+  function toggleFullscreen() {
+    if (fullscreenOn()) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else {
+      const req = player.requestFullscreen || player.webkitRequestFullscreen;
+      if (req) { try { const p = req.call(player); if (p && p.catch) p.catch(() => {}); } catch (_) { /* non disponibile */ } }
+    }
+  }
+
+  /* Finestra flottante (Picture-in-Picture): il video resta in primo piano sopra le altre app. */
+  const pipSupported = !!(document.pictureInPictureEnabled && video.requestPictureInPicture) ||
+    !!(video.webkitSupportsPresentationMode && video.webkitSupportsPresentationMode('picture-in-picture'));
+
+  async function togglePip() {
+    try {
+      if (document.pictureInPictureElement) await document.exitPictureInPicture();
+      else if (video.webkitPresentationMode === 'picture-in-picture') video.webkitSetPresentationMode('inline');
+      else if (video.requestPictureInPicture) await video.requestPictureInPicture();
+      else if (video.webkitSetPresentationMode) video.webkitSetPresentationMode('picture-in-picture');
+    } catch (_) {
+      setMsg('La finestra flottante parte solo quando il video e\' in riproduzione: aspetta un attimo e riprova.', true);
+    }
+  }
 
   function step(delta) {
     const list = state.filtered;
@@ -444,6 +482,17 @@
   $('prev').addEventListener('click', () => step(-1));
   $('next').addEventListener('click', () => step(1));
   $('alt').addEventListener('click', cycleSource);
+  // Il pulsante schermo intero/finestra serve dove il browser lo permette alle pagine (computer, Android).
+  if (player.requestFullscreen || player.webkitRequestFullscreen) {
+    $('fsToggle').hidden = false;
+    $('fsToggle').addEventListener('click', () => { toggleFullscreen(); showBar(); });
+    updateFsButton();
+  }
+  if (pipSupported) {
+    $('pipBtn').hidden = false;
+    $('pipBtn').innerHTML = ICON_PIP;
+    $('pipBtn').addEventListener('click', () => { togglePip(); showBar(); });
+  }
   // iPhone (Safari): il browser non concede lo schermo intero a una pagina, solo al video. Il pulsante apre il lettore
   // nativo a tutto schermo; dalla schermata Home (app installata) non serve, e' gia' tutto schermo.
   const canElementFullscreen = !!(player.requestFullscreen || player.webkitRequestFullscreen);
@@ -461,7 +510,8 @@
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { swallow(); step(1); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { swallow(); step(-1); }
     else if (e.key === 'i' || e.key === 'I') { swallow(); toggleInfo(); showBar(); }
-    else if (e.key === 'Escape' && !state.fs) closePlayer();
+    else if ((e.key === 'f' || e.key === 'F') && !$('fsToggle').hidden) { swallow(); toggleFullscreen(); showBar(); }
+    else if ((e.key === 'p' || e.key === 'P') && pipSupported) { swallow(); togglePip(); showBar(); }
     else showBar();
   }, true);
 

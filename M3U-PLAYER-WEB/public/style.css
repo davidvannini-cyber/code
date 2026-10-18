@@ -71,3 +71,5 @@ body:has(.dock) main { padding-top: 16px; }
 body:has(.dock) main { padding-top: calc(16px + env(safe-area-inset-top)); padding-left: calc(16px + env(safe-area-inset-left)); padding-right: calc(16px + env(safe-area-inset-right)); }
 .dock { padding-left: calc(16px + env(safe-area-inset-left)); padding-right: calc(16px + env(safe-area-inset-right)); }
 #player { height: 100dvh; }
+#bar .btn svg { display: block; }
+#bar .btn { min-width: 38px; }
