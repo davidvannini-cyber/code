@@ -365,13 +365,16 @@
   $('next').addEventListener('click', () => step(1));
   $('alt').addEventListener('click', cycleSource);
   ['mousemove', 'touchstart'].forEach(ev => player.addEventListener(ev, showBar, { passive: true }));
+  // Tasti nel player. In fase di cattura e con stopImmediatePropagation, cosi' le frecce non spostano il cursore del video
+  // (su un flusso in diretta non serve) e il player non le intercetta prima di noi.
   document.addEventListener('keydown', e => {
-    if (player.hidden) return;
-    if (e.key === 'PageUp') { e.preventDefault(); step(-1); }
-    else if (e.key === 'PageDown') { e.preventDefault(); step(1); }
+    if (player.hidden || e.altKey || e.ctrlKey || e.metaKey) return;
+    const swallow = () => { e.preventDefault(); e.stopImmediatePropagation(); };
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { swallow(); step(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { swallow(); step(-1); }
     else if (e.key === 'Escape' && !state.fs) closePlayer();
     else showBar();
-  });
+  }, true);
 
   loadPlaylist();
 })();

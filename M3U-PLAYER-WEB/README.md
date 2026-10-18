@@ -2,7 +2,7 @@
 
 Tre cose:
 1. **Pagina pubblica** (`/`): elenco dei canali della playlist M3U, una riga per canale, con ricerca e filtro per gruppo. La casella **Italiani (ordine DTT)** mostra solo i canali italiani, numerati e ordinati come sul digitale terrestre (Rai 1, Rai 2, Rai 3, Rete 4, Canale 5, Italia 1, La7…); la scelta viene ricordata. Se lo stesso canale compare in piu' versioni, quelle segnate `[Geo-blocked]` (di solito indirizzi spenti) si nascondono quando ce n'e' una senza; un canale che esiste solo con `[Geo-blocked]` resta in elenco. A parita' di canale le versioni ad alta risoluzione vengono prima.
-2. **Schermo intero**: un clic su una riga avvia il canale a tutto schermo. I pulsanti ◀ ▶ (o PagSu/PagGiu) cambiano canale, Esc o ✕ tornano all'elenco.
+2. **Schermo intero**: un clic su una riga avvia il canale a tutto schermo. I pulsanti ◀ ▶ o i tasti **freccia sinistra / destra** (anche PagSu/PagGiu) cambiano canale, Esc o ✕ tornano all'elenco.
 3. **Area admin** (`/admin`): con password.
    - **Liste (fonti):** scrivi gli indirizzi di piu' playlist (fino a 20, uno per riga). Il server le scarica, le unisce e le riaggiorna da solo ogni 6 ore. Se una lista non risponde usa l'ultima copia salvata. Lo stesso canale in liste diverse compare **una volta sola**: la pagina prova la fonte piu' in alto e, se non parte (errore o nessuna risposta entro 20 secondi), passa **da sola** alla successiva. Ricorda l'ultima fonte che ha funzionato. Il pulsante ↻ nel player prova l'altra fonte a mano.
    - **Una sola playlist:** in alternativa si sostituisce tutto con un indirizzo, un file o il testo incollato (questo disattiva le fonti). L'elenco pubblico mostra subito la nuova lista.
