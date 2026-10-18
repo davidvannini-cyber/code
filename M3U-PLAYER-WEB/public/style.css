@@ -63,3 +63,5 @@ li .alts { color: var(--muted); font-size: 12px; }
 body:has(.dock) main { padding-bottom: 110px; }
 li .mono { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; color: #fff; font-size: 13px; font-weight: 700;
   background: hsl(var(--h, 210) 50% 38%); }
+#count:empty { display: none; }
+body:has(.dock) main { padding-top: 16px; }

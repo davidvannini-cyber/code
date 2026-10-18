@@ -62,9 +62,8 @@
     });
     state.shown += slice.length;
     $('more').hidden = state.shown >= state.filtered.length;
-    $('count').textContent = !state.groups.length ? 'Nessun canale nella playlist.'
-      : state.it ? state.filtered.length + ' canali italiani (ordine DTT) su ' + state.groups.length
-      : state.filtered.length + ' di ' + state.groups.length + ' canali';
+    // Il conteggio non si mostra piu': resta solo un avviso quando non c'e' niente da vedere.
+    $('count').textContent = state.filtered.length ? '' : (state.groups.length ? 'Nessun canale trovato.' : 'Nessun canale nella playlist.');
   }
 
   function span(cls, text) {
@@ -420,10 +419,10 @@
     applyFilter();
   });
   try { state.it = localStorage.getItem('m3u-player:it') === '1'; $('itOnly').checked = state.it; } catch (_) { /* storage non disponibile */ }
-  $('theme').value = document.documentElement.getAttribute('data-theme') || 'notte';
+  $('theme').value = document.documentElement.getAttribute('data-theme') || 'aurora';
   $('theme').addEventListener('change', () => {
     document.documentElement.setAttribute('data-theme', $('theme').value);
-    try { localStorage.setItem('m3u-player:theme', $('theme').value); } catch (_) { /* storage non disponibile */ }
+    try { localStorage.setItem('m3u-player:theme-v2', $('theme').value); } catch (_) { /* storage non disponibile */ }
   });
   $('search').addEventListener('input', applyFilter);
   $('group').addEventListener('change', applyFilter);
