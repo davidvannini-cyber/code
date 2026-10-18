@@ -10,7 +10,7 @@ import { generateShapePoints, type SketchShapeKind, type SketchShapeParams } fro
 
 export type SceneBackground = "dark" | "light";
 export type TransformMode = "translate" | "rotate" | "scale";
-export type RailCard = "primitives" | "sketch" | "extrude" | "fillet" | "boolean" | "mate" | "bodies" | "io" | null;
+export type RailCard = "primitives" | "sketch" | "extrude" | "fillet" | "boolean" | "mate" | "floor" | "bodies" | "io" | null;
 export type SketchForme = "libero" | SketchShapeKind;
 
 interface BooleanPick {
@@ -127,7 +127,11 @@ interface EditorState {
   selectBody: (id: string | null) => void;
   selectFace: (bodyId: string, faceIndex: number) => void;
   clearSelection: () => void;
-  layFaceOnPlane: () => void;
+  // --- Appoggia: touching a flat face lays the body on that face on the ground plane ---
+  floorPickActive: boolean;
+  startFloorTool: () => void;
+  cancelFloorTool: () => void;
+  layFaceOnPlane: (bodyId?: string, faceIndex?: number) => void;
   setTransformMode: (mode: TransformMode) => void;
   updatePlacement: (bodyId: string, patch: Partial<Placement>) => void;
   updateColor: (bodyId: string, color: string) => void;
@@ -230,7 +234,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const mateReset = next !== "mate" ? { mateActive: false, mateFaceA: null, mateFaceB: null } : {};
       // Leaving the sketch card ends any free-hand drafting in progress.
       const draftReset = next !== "sketch" ? { drafting: false, draftPoints: [], draftPressures: [], draftClosed: false } : {};
-      return { activeCard: next, ...mateReset, ...draftReset };
+      // The floor tool starts as soon as its card opens and ends when another card does.
+      return { activeCard: next, floorPickActive: next === "floor", ...(next === "floor" ? { selectedBodyId: null } : {}), ...mateReset, ...draftReset };
     }),
 
   features: [],
@@ -317,16 +322,22 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (s.filletPickActive || s.filletEditId || s.filletTargetShapeId) get().cancelFilletTool();
     if (s.booleanPick) get().cancelBooleanPick();
     if (s.mateActive) get().cancelMateTool();
+    if (s.floorPickActive) get().cancelFloorTool();
   },
   setTransformMode: (mode) => set({ transformMode: mode }),
 
-  // Lays the selected face flat on the ground plane (face down, lowest point at y = 0).
-  layFaceOnPlane: () => {
+  floorPickActive: false,
+  startFloorTool: () => set({ floorPickActive: true, selectedBodyId: null }),
+  cancelFloorTool: () => set({ floorPickActive: false }),
+
+  // Lays a face (the given one, or the selected one) flat on the ground plane: face down, lowest point at y = 0.
+  layFaceOnPlane: (bodyId, faceIndex) => {
     const { selectedFace, bodies, placements } = get();
-    if (!selectedFace) return;
-    const body = bodies.find((b) => b.bodyId === selectedFace.bodyId);
+    const target = bodyId !== undefined && faceIndex !== undefined ? { bodyId, faceIndex } : selectedFace;
+    if (!target) return;
+    const body = bodies.find((b) => b.bodyId === target.bodyId);
     if (!body) return;
-    const result = layFacePlacement(body, selectedFace.faceIndex, placements[body.bodyId] ?? IDENTITY_PLACEMENT);
+    const result = layFacePlacement(body, target.faceIndex, placements[body.bodyId] ?? IDENTITY_PLACEMENT);
     if (!result) {
       get().log("Scegli una faccia piana per appoggiarla sul piano.");
       return;

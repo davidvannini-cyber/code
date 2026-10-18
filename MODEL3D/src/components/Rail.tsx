@@ -9,6 +9,7 @@ const RAIL_ITEMS = [
   { key: "fillet", icon: "fillet", title: "Raccordo/Smusso" },
   { key: "boolean", icon: "union", title: "Booleane" },
   { key: "mate", icon: "mate", title: "Affianca" },
+  { key: "floor", icon: "floor", title: "Appoggia sul piano" },
   null,
   { key: "bodies", icon: "layers", title: "Corpi" }
 ] as const;

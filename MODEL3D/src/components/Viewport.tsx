@@ -59,6 +59,8 @@ export function Viewport() {
   const drafting = useEditorStore((s) => s.drafting);
   const booleanPick = useEditorStore((s) => s.booleanPick);
   const mateActive = useEditorStore((s) => s.mateActive);
+  const floorPickActive = useEditorStore((s) => s.floorPickActive);
+  const layFaceOnPlane = useEditorStore((s) => s.layFaceOnPlane);
   const pickMateFace = useEditorStore((s) => s.pickMateFace);
   const pickForBoolean = useEditorStore((s) => s.pickForBoolean);
   const extrudePickActive = useEditorStore((s) => s.extrudePickActive);
@@ -76,7 +78,10 @@ export function Viewport() {
 
   const handleFaceClick = useCallback(
     (bodyId: string, faceIndex: number) => {
-      if (mateActive) {
+      if (floorPickActive) {
+        selectFace(bodyId, faceIndex);
+        layFaceOnPlane(bodyId, faceIndex);
+      } else if (mateActive) {
         pickMateFace(bodyId, faceIndex);
       } else if (booleanPick) {
         pickForBoolean(bodyId);
@@ -85,23 +90,23 @@ export function Viewport() {
         selectFace(bodyId, faceIndex);
       }
     },
-    [mateActive, pickMateFace, booleanPick, pickForBoolean, selectFace, extrudePickActive, filletPickActive]
+    [floorPickActive, layFaceOnPlane, mateActive, pickMateFace, booleanPick, pickForBoolean, selectFace, extrudePickActive, filletPickActive]
   );
 
   const handleBodyDoubleClick = useCallback(
     (bodyId: string) => {
-      if (mateActive) return;
+      if (mateActive || floorPickActive) return;
       if (booleanPick) {
         pickForBoolean(bodyId);
       } else if (!extrudePickActive && !filletPickActive) {
         selectBody(bodyId);
       }
     },
-    [mateActive, booleanPick, pickForBoolean, selectBody, extrudePickActive, filletPickActive]
+    [floorPickActive, mateActive, booleanPick, pickForBoolean, selectBody, extrudePickActive, filletPickActive]
   );
 
   const selectedObj = selectedBodyId ? objRefs.current.get(selectedBodyId) ?? null : null;
-  const pickModeActive = !!booleanPick || extrudePickActive || filletPickActive || mateActive;
+  const pickModeActive = !!booleanPick || extrudePickActive || filletPickActive || mateActive || floorPickActive;
 
   return (
     <Canvas

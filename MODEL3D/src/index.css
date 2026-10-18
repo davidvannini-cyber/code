@@ -1271,3 +1271,34 @@ input, select {
   .restore-banner { top: 56px; border-radius: 999px; }
   .log-toast { font-size: 13px; border-radius: 20px; }
 }
+
+/* Distanza dell'oggetto dagli assi, accanto a "Pronto" */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pos-pills {
+  display: flex;
+  gap: 4px;
+}
+
+.pos-pill {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .09);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.pos-pill b { margin-right: 3px; font-weight: 700; }
+.pos-pill.X b { color: #ff6b6b; }
+.pos-pill.Y b { color: #5fe07a; }
+.pos-pill.Z b { color: #6aa0ff; }
+
+@media (pointer: coarse) {
+  .pos-pill { font-size: 14px; padding: 5px 14px; }
+}

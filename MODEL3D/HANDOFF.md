@@ -27,12 +27,13 @@ MODEL3D è un CAD 3D nel browser per preparare modelli da stampare in 3D: React 
 - **Raccordo/Smusso:** su uno **spigolo di un solido 3D** (le linee diventano selezionabili) o su un **vertice di una forma 2D**. Si applica subito; tipo (Raccordo/Smusso) e misura si cambiano dal vivo. Un solo spigolo alla volta ("Altro spigolo" per il successivo).
 - **Booleane:** unione, sottrazione, intersezione tra due corpi (si scelgono in sequenza).
 - **Affianca:** si sceglie la faccia piana dell'oggetto fermo (verde) e quella dell'oggetto che si sposta (arancione). L'oggetto 2 ruota finché le facce si oppongono (anche inclinate), poi **scorre in orizzontale** fino a toccare, **senza mai alzarsi o abbassarsi** (regola voluta da David), con "Allinea in orizzontale" opzionale. Sovrapposizione di **0,01 mm** (`MATE_OVERLAP`) perché una successiva unione fonda davvero i due solidi.
+- **Appoggia sul piano** (pulsante dedicato nella barra di sinistra): si apre e parte subito; si tocca una faccia piana e l'oggetto si appoggia sul piano con quella faccia in basso. Il pulsante "Appoggia sul piano" nella scheda Faccia resta come scorciatoia.
 - **Corpi:** elenco degli oggetti.
-- **Barra in alto:** Annulla, Ripeti, **Salva**, cartella (Progetto: salva/apri .3mf, esporta STL/STEP), sfondo chiaro/scuro. A destra "Pronto · salvato hh:mm · auto hh:mm".
+- **Barra in alto:** Annulla, Ripeti, **Salva**, cartella (Progetto: salva/apri .3mf, esporta STL/STEP), sfondo chiaro/scuro. A destra, per l'oggetto selezionato, **tre pillole X · Y · Z** con la distanza dell'estremo più vicino dell'oggetto dagli assi (Y = altezza dal piano), poi "Pronto · salvato hh:mm · auto hh:mm".
 
 **Selezione (regola concordata):** **1 clic = una faccia** (scheda "Faccia" con tipo, area, dimensioni X·Y·Z, centro, verso; se è la faccia creata da un raccordo/smusso mostra anche la misura; pulsante **Appoggia sul piano**). **Doppio clic/doppio tocco = tutto l'oggetto** (gizmo, barra spostamento/rotazione/scala/colore/elimina, scheda misure).
 
-**Appoggia sul piano:** con una faccia piana selezionata, ruota l'oggetto con quella faccia in basso e lo porta a quota 0 (utile per la stampa). L'allineamento all'asse X NON è stato fatto: David lo ruota a mano.
+**Appoggia sul piano:** con una faccia piana (selezionata o toccata nello strumento dedicato), ruota l'oggetto con quella faccia in basso e lo porta a quota 0 (utile per la stampa). L'allineamento all'asse X NON è stato fatto: David lo ruota a mano.
 
 **Misure:** ogni campo numerico ha **2 decimali** sempre (arrotonda a 2), frecce **+ sopra / − sotto** a passi di **1 mm** (scala: 0,1; i decimali si scrivono con la tastiera). Tenendo premuto la cifra cambia subito e il modello si ricostruisce ogni 220 ms, con il valore finale al rilascio. I campi si cancellano con backspace (nessun "0,1" forzato). Le modifiche si applicano dal vivo; non ci sono pulsanti "Applica".
 

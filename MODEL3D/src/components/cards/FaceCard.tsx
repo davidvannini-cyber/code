@@ -59,7 +59,7 @@ export function FaceCard() {
           </div>
         ))}
         {info.planar && (
-          <button className="ghost-btn full" onClick={layFaceOnPlane}>
+          <button className="ghost-btn full" onClick={() => layFaceOnPlane()}>
             Appoggia sul piano
           </button>
         )}

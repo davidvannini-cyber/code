@@ -5,6 +5,7 @@ import { ExtrudeCard } from "./cards/ExtrudeCard";
 import { FilletCard } from "./cards/FilletCard";
 import { BooleanCard } from "./cards/BooleanCard";
 import { MateCard } from "./cards/MateCard";
+import { FloorCard } from "./cards/FloorCard";
 import { BodiesCard } from "./cards/BodiesCard";
 import { ParamsCard } from "./cards/ParamsCard";
 import { FaceCard } from "./cards/FaceCard";
@@ -21,8 +22,9 @@ export function FloatingDock() {
   const extrudePickActive = useEditorStore((s) => s.extrudePickActive);
   const filletPickActive = useEditorStore((s) => s.filletPickActive);
   const mateActive = useEditorStore((s) => s.mateActive);
+  const floorPickActive = useEditorStore((s) => s.floorPickActive);
 
-  const showSelection = !!selectedBodyId && !drafting && !booleanPick && !extrudePickActive && !filletPickActive && !mateActive;
+  const showSelection = !!selectedBodyId && !drafting && !booleanPick && !extrudePickActive && !filletPickActive && !mateActive && !floorPickActive;
 
   return (
     <>
@@ -33,6 +35,7 @@ export function FloatingDock() {
         {activeCard === "fillet" && <FilletCard />}
         {activeCard === "boolean" && <BooleanCard />}
         {activeCard === "mate" && <MateCard />}
+        {activeCard === "floor" && <FloorCard />}
         {activeCard === "bodies" && <BodiesCard />}
         <ParamsCard />
         <FaceCard />

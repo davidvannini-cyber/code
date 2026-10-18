@@ -1,6 +1,7 @@
 import { useEditorStore } from "../store";
 import { Icon } from "./icons/Icon";
 import { IOCard } from "./cards/IOCard";
+import { PositionPills } from "./PositionPills";
 
 const clock = (ms: number) => new Date(ms).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
 
@@ -46,6 +47,8 @@ export function TopBar() {
           <Icon name={sceneBackground === "dark" ? "moon" : "sun"} size={16} />
         </button>
       </div>
+      <div className="topbar-right">
+      <PositionPills />
       <span className="status">
         {!engineReady ? "Avvio motore CAD…" : busy ? "Elaborazione…" : "Pronto"}
         {(lastSavedAt || autosavedAt) && (
@@ -55,6 +58,7 @@ export function TopBar() {
           </span>
         )}
       </span>
+      </div>
     </div>
   );
 }
