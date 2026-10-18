@@ -43,4 +43,5 @@ Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` no
 ## Riproduzione
 HLS nativo su Safari/iOS, `hls.js` sugli altri browser, `mpegts.js` per i flussi MPEG-TS grezzi (librerie da jsDelivr, serve internet).
 Limiti del browser: niente RTMP/UDP e niente DRM; se la pagina e' in https, i flussi `http://` sono bloccati (contenuto misto).
+**CORS dei flussi:** su Chrome/Firefox/Edge i video HLS passano da `hls.js`, che scarica i segmenti con richieste del browser: se il server del canale non manda le intestazioni CORS, il canale non parte (e non dipende dalla pagina). Safari riproduce l'HLS in modo nativo e di solito ne apre di piu'. Nelle liste pubbliche molti canali sono anche spenti o bloccati per paese.
 I contenuti sono quelli delle liste che carichi, sotto la tua responsabilita'.
