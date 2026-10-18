@@ -418,7 +418,9 @@
     fillGroups();
     applyFilter();
   });
-  try { state.it = localStorage.getItem('m3u-player:it') === '1'; $('itOnly').checked = state.it; } catch (_) { /* storage non disponibile */ }
+  // "Italiani (DTT)" e' attivo di default; se lo togli, la scelta resta ricordata.
+  try { const saved = localStorage.getItem('m3u-player:it'); state.it = saved === null ? true : saved === '1'; } catch (_) { state.it = true; }
+  $('itOnly').checked = state.it;
   $('theme').value = document.documentElement.getAttribute('data-theme') || 'aurora';
   $('theme').addEventListener('change', () => {
     document.documentElement.setAttribute('data-theme', $('theme').value);
