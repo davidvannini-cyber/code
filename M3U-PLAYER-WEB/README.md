@@ -47,11 +47,12 @@ La pagina lo dice sotto il video, tra parentesi quadre il motore usato, e mostra
 - *il server rifiuta l'accesso (403)*: blocco geografico o protezione del canale;
 - *protetto da DRM*: non riproducibile in un browser (succede ai canali Mediaset);
 - *il server non permette a una pagina web di leggere il flusso (CORS)*: prova in Safari o con un lettore come VLC (apri l'indirizzo mostrato);
+- *il link di questo canale e' scaduto*: l'indirizzo contiene una scadenza passata (es. Sky/TV8 nelle liste vecchie), la lista va aggiornata;
 - *il flusso non esiste piu'* o *non risponde*: canale spento.
 Le liste pubbliche contengono molti canali spenti o con restrizioni: e' normale che una parte non parta.
 
 ## Riproduzione
-HLS nativo su Safari/iOS, `hls.js` sugli altri browser, `mpegts.js` per i flussi MPEG-TS grezzi (librerie da jsDelivr, serve internet).
+HLS nativo su Safari/iOS, `hls.js` sugli altri browser, `dash.js` per il DASH (`.mpd`), `mpegts.js` per i flussi MPEG-TS grezzi (librerie da jsDelivr, serve internet). Se l'indirizzo non ha un'estensione riconoscibile (per esempio il "relinker" della Rai) la pagina guarda cosa risponde il server e sceglie il motore. Un link con scadenza (`exp=`) gia' scaduto viene segnalato come tale.
 Limiti del browser: niente RTMP/UDP e niente DRM; se la pagina e' in https, i flussi `http://` sono bloccati (contenuto misto).
 **CORS dei flussi:** su Chrome/Firefox/Edge i video HLS passano da `hls.js`, che scarica i segmenti con richieste del browser: se il server del canale non manda le intestazioni CORS, il canale non parte (e non dipende dalla pagina). Safari riproduce l'HLS in modo nativo e di solito ne apre di piu'. Nelle liste pubbliche molti canali sono anche spenti o bloccati per paese.
 I contenuti sono quelli delle liste che carichi, sotto la tua responsabilita'.

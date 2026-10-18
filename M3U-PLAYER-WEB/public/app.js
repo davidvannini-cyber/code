@@ -141,6 +141,7 @@
   function stopPlayback() {
     if (state.hls) { state.hls.destroy(); state.hls = null; }
     if (state.ts) { state.ts.destroy(); state.ts = null; }
+    if (state.dash) { state.dash.reset(); state.dash = null; }
     video.pause();
     video.removeAttribute('src');
     video.load();
@@ -148,21 +149,59 @@
 
   const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
 
-  // Dopo un errore interroga il server del canale per capire il motivo, e lo spiega in italiano.
-  async function diagnose(c, isHls, engine) {
-    const token = state.current;
-    const say = text => { if (state.current === token && !player.hidden) setMsg(text + ' [' + engine + ']', true, c.url); };
+  // Tipo di flusso dall'estensione dell'indirizzo; null se non si capisce (es. "relinker" della Rai).
+  function typeFromUrl(url) {
+    if (/\.m3u8(\?|#|$)/i.test(url)) return 'hls';
+    if (/\.mpd(\?|#|$)/i.test(url)) return 'dash';
+    if (/\.(ts|aac|mp3)(\?|#|$)/i.test(url)) return 'ts';
+    return null;
+  }
+
+  // Indirizzo senza estensione: guarda cosa risponde il server (segue i reindirizzamenti) e ne deduce il tipo.
+  async function probe(url) {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), 8000);
     try {
-      const res = await fetch(c.url, { cache: 'no-store', signal: ctl.signal });
+      const res = await fetch(url, { cache: 'no-store', signal: ctl.signal });
+      if (!res.ok) return null;
+      const ct = (res.headers.get('content-type') || '').toLowerCase();
+      const { value } = await res.body.getReader().read();
+      const head = new TextDecoder().decode(value ? value.slice(0, 300) : new Uint8Array());
+      ctl.abort();
+      const final = res.url || url;
+      if (head.startsWith('#EXTM3U') || ct.includes('mpegurl')) return { type: 'hls', url: final };
+      if (/<MPD/i.test(head) || ct.includes('dash+xml')) return { type: 'dash', url: final };
+      return { type: 'ts', url: final };
+    } catch (_) {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // Dopo un errore interroga il server del canale per capire il motivo, e lo spiega in italiano.
+  async function diagnose(c, url, type, engine) {
+    const token = state.current;
+    const say = text => { if (state.current === token && !player.hidden) setMsg(text + ' [' + engine + ']', true, url); };
+    const exp = /[~?&]exp=(\d{10})\b/.exec(url);
+    if (exp && Number(exp[1]) * 1000 < Date.now()) {
+      return say('Il link di questo canale e\' scaduto il ' + new Date(Number(exp[1]) * 1000).toLocaleDateString('it-IT') + ': la lista va aggiornata.');
+    }
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 8000);
+    try {
+      const res = await fetch(url, { cache: 'no-store', signal: ctl.signal });
       if ([401, 403, 451].includes(res.status)) return say('Il server del canale rifiuta l\'accesso (errore ' + res.status + '): di solito blocco geografico o protezione contro i lettori web.');
       if (res.status === 404 || res.status === 410) return say('Il flusso non esiste piu\' (errore ' + res.status + ').');
       if (!res.ok) return say('Il server del canale risponde con errore ' + res.status + '.');
-      if (!isHls) return say('Il server risponde, ma il browser non riesce a decodificare il flusso.');
-      const text = (await res.text()).slice(0, 4000);
-      if (!text.startsWith('#EXTM3U')) return say('Il server non restituisce un flusso HLS (probabilmente una pagina di errore).');
-      if (/#EXT-X-(SESSION-)?KEY:[^\n]*(SAMPLE-AES|skd:|widevine|playready)/i.test(text)) return say('Il canale e\' protetto da DRM: un browser web non puo\' riprodurlo.');
+      if (type === 'ts' || !type) return say('Il server risponde, ma il browser non riesce a decodificare il flusso.');
+      const text = (await res.text()).slice(0, 6000);
+      if (type === 'hls') {
+        if (!text.startsWith('#EXTM3U')) return say('Il server non restituisce un flusso HLS (probabilmente una pagina di errore).');
+        if (/#EXT-X-(SESSION-)?KEY:[^\n]*(SAMPLE-AES|skd:|widevine|playready)/i.test(text)) return say('Il canale e\' protetto da DRM: un browser web non puo\' riprodurlo.');
+      } else if (/<ContentProtection[^>]*(edef8ba9|9a04f079|widevine|playready)/i.test(text)) {
+        return say('Il canale e\' protetto da DRM: un browser web non puo\' riprodurlo.');
+      }
       say('La lista del flusso si legge, ma il video non parte: i segmenti sono bloccati o in un formato non supportato dal browser.');
     } catch (e) {
       say(e.name === 'AbortError'
@@ -173,18 +212,24 @@
     }
   }
 
-  function start(c) {
+  async function start(c) {
     stopPlayback();
     state.current = c.id;
     $('title').textContent = DTT.cleanName(c);
-    const url = c.url;
-    if (location.protocol === 'https:' && url.startsWith('http:')) {
-      return setMsg('La pagina e\' in https e il flusso e\' http: il browser lo blocca (contenuto misto).', true, url);
-    }
+    let url = c.url;
+    // Una pagina https non puo' aprire flussi http: provo la versione https (molti server la offrono).
+    if (location.protocol === 'https:' && url.startsWith('http:')) url = 'https:' + url.slice(5);
     setMsg('Caricamento…');
-    const isHls = /\.m3u8(\?|#|$)/i.test(url);
+
+    let type = typeFromUrl(url);
+    if (!type) {
+      const found = await probe(url);
+      if (state.current !== c.id) return;                    // nel frattempo ha scelto un altro canale
+      if (found) { type = found.type; url = found.url; }
+    }
     let engine;
     let triedNative = false;
+    state.type = type; state.playUrl = url;
     const fail = () => {
       // hls.js ha bisogno del permesso CORS del server; il lettore nativo di alcuni browser no: prima di arrendersi lo provo.
       if (engine === 'hls.js' && !triedNative && video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -195,20 +240,25 @@
         video.play().catch(() => { /* l'utente puo' premere play */ });
         return;
       }
-      diagnose(c, isHls, engine);
+      diagnose(c, url, type, engine);
     };
 
     // hls.js ovunque tranne Safari (che legge l'HLS da solo): il lettore nativo di Chrome e' piu' recente e meno affidabile.
-    if (isHls && window.Hls && Hls.isSupported() && !isSafari) {
+    if (type === 'hls' && window.Hls && Hls.isSupported() && !isSafari) {
       engine = 'hls.js';
       const hls = state.hls = new Hls();
       hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) fail(); });
       hls.loadSource(url);
       hls.attachMedia(video);
-    } else if (isHls && video.canPlayType('application/vnd.apple.mpegurl')) {
+    } else if (type === 'hls' && video.canPlayType('application/vnd.apple.mpegurl')) {
       engine = 'nativo';
       video.src = url;
-    } else if (!isHls && window.mpegts && mpegts.getFeatureList().mseLivePlayback) {
+    } else if (type === 'dash' && window.dashjs) {
+      engine = 'dash.js';
+      const dash = state.dash = dashjs.MediaPlayer().create();
+      dash.on(dashjs.MediaPlayer.events.ERROR, fail);
+      dash.initialize(video, url, true);
+    } else if (type === 'ts' && window.mpegts && mpegts.getFeatureList().mseLivePlayback) {
       engine = 'mpegts.js';
       const ts = state.ts = mpegts.createPlayer({ type: 'mpegts', isLive: true, url });
       ts.on(mpegts.Events.ERROR, fail);
@@ -226,7 +276,7 @@
   video.addEventListener('waiting', () => setMsg('Buffering…'));
   video.addEventListener('error', () => {
     const c = state.channels[state.current];
-    if (video.error && video.getAttribute('src') && c) diagnose(c, /\.m3u8(\?|#|$)/i.test(c.url), state.engine || 'browser');
+    if (video.error && video.getAttribute('src') && c) diagnose(c, state.playUrl || c.url, state.type, state.engine || 'browser');
   });
 
   /* ---------- Eventi ---------- */
