@@ -66,8 +66,10 @@ Mancano: archivio locale, EPG, preferiti, Xtream, piu' sorgenti, player per raw 
   - [ ] Come cambia l'interfaccia tra iPhone e Apple TV
   - [ ] Quale motore di riproduzione usa per RTMP/TS grezzo (non dichiarato)
 
-**Nota sul repository pubblico:** il README rimanda a un repository GitHub (Kimentanm/aptv). Prima di leggerne il codice come riferimento
-va controllata la licenza (non verificata qui); anche se permessa, il codice dell'app propria si scrive da zero.
+**Nota sul repository pubblico (Kimentanm/aptv, controllato):** nessuna licenza dichiarata (campo `license` vuoto, nessun file LICENSE)
+e nessun linguaggio di programmazione rilevato da GitHub: sembra contenere solo README e immagini, non il codice dell'app.
+Senza licenza i diritti restano riservati all'autore: il codice, se ci fosse, non si puo' riusare. Utile solo come fonte di
+informazioni (README, segnalazioni degli utenti, discussioni); il codice dell'app propria si scrive da zero.
 
 ## 9. Cosa NON e' in questa guida
 Il codice, le risorse grafiche o i testi di APTV. Si descrivono funzioni e flussi, e tutto il codice dell'app propria si scrive da zero.

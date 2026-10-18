@@ -153,3 +153,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `2b98f95` | REA installata in locale dentro /code (REA/package.json, REA/package-lock.json, REA/.gitignore, REA/README.md), rimossa installazione globale dal container, REGISTRO-SALVATAGGI.md | `git checkout 2b98f95` |
 | 2026-10-18 | `3a77246` | APTV/GUIDA-FUNZIONAMENTO.md (guida su come funzionano le app TV con playlist, checklist da osservare), REGISTRO-SALVATAGGI.md | `git checkout 3a77246` |
 | 2026-10-18 | `abf558b` | APTV/GUIDA-FUNZIONAMENTO.md (sezione 8: cosa dichiara APTV da App Store e README), REGISTRO-SALVATAGGI.md | `git checkout abf558b` |
+| 2026-10-18 | `45f6607` | APTV/GUIDA-FUNZIONAMENTO.md (verifica licenza repository di riferimento), REGISTRO-SALVATAGGI.md | `git checkout 45f6607` |
