@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Amministrazione</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Amministrazione</h1>
+    <a href="./" class="muted">Torna ai canali</a>
+  </header>
+  <main>
+    <form id="login" hidden>
+      <p>Inserisci la password di amministrazione.</p>
+      <p><input id="password" type="password" autocomplete="current-password" aria-label="Password" required>
+         <button class="btn" type="submit">Accedi</button></p>
+    </form>
+
+    <section id="panel" hidden>
+      <h2>Playlist attuale</h2>
+      <p id="info" class="muted"></p>
+
+      <h2>Sostituisci la playlist</h2>
+      <p><label class="btn">Scegli un file .m3u / .m3u8<input id="file" type="file" accept=".m3u,.m3u8,.txt" hidden></label>
+         <span id="fileName" class="muted"></span></p>
+      <p class="muted">oppure incolla il testo:</p>
+      <p><textarea id="text" rows="8" placeholder="#EXTM3U&#10;#EXTINF:-1,Nome canale&#10;https://…/stream.m3u8"></textarea></p>
+      <p><button id="save" class="btn" type="button">Salva e sostituisci</button>
+         <button id="logout" class="btn" type="button">Esci</button></p>
+    </section>
+    <p id="msg" role="status"></p>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>

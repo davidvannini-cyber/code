@@ -1,6 +1,6 @@
 // Esegui con:  node test-m3u.js
 const assert = require('assert');
-const { parseM3U } = require('./m3u.js');
+const { parseM3U } = require('./public/m3u.js');
 
 {
   const r = parseM3U(`#EXTM3U url-tvg="https://e.it/epg.xml.gz"

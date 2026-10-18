@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canali TV</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Canali</h1>
+    <input id="search" type="search" placeholder="Cerca canale…" aria-label="Cerca canale">
+    <select id="group" aria-label="Gruppo"><option value="">Tutti i gruppi</option></select>
+  </header>
+
+  <main>
+    <p id="count" class="muted" role="status">Caricamento…</p>
+    <ol id="channels"></ol>
+    <button id="more" class="btn" hidden>Mostra altri</button>
+  </main>
+
+  <footer><a href="admin">Amministrazione</a></footer>
+
+  <div id="player" hidden>
+    <video id="video" controls autoplay playsinline></video>
+    <div id="bar">
+      <button id="prev" class="btn" aria-label="Canale precedente">&#9664;</button>
+      <span id="title"></span>
+      <button id="next" class="btn" aria-label="Canale successivo">&#9654;</button>
+      <button id="close" class="btn" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <p id="msg" role="status"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js"></script>
+  <script src="m3u.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

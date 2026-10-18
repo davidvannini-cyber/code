@@ -1,20 +1,39 @@
 # Player M3U (web)
 
-Pagina web che legge una playlist M3U/M3U8 e riproduce i canali nel browser. Nessun server e nessuna installazione.
+Tre cose:
+1. **Pagina pubblica** (`/`): elenco dei canali della playlist M3U, una riga per canale, con ricerca e filtro per gruppo.
+2. **Schermo intero**: un clic su una riga avvia il canale a tutto schermo. I pulsanti ◀ ▶ (o PagSu/PagGiu) cambiano canale, Esc o ✕ tornano all'elenco.
+3. **Area admin** (`/admin`): con password, si sostituisce il file M3U (carica un file o incolla il testo). L'elenco pubblico mostra subito la nuova lista.
 
-## Uso
-1. Apri `index.html` nel browser (doppio clic) oppure servila: `python3 -m http.server 8000` e vai su http://localhost:8000
-2. Carica una playlist: **Apri file**, **Carica URL** o **Incolla il testo**. Il pulsante **Esempio** carica `sample.m3u` (flussi HLS di prova).
-3. Cerca o filtra per gruppo, poi clicca un canale. L'ultima playlist viene ricordata dal browser.
+## Avvio
+Serve Node 18 o successivo. Nessuna installazione di pacchetti.
+```
+cd M3U-PLAYER-WEB
+ADMIN_PASSWORD="scegli-una-password-lunga" npm start
+```
+Poi apri http://127.0.0.1:3000 (canali) e http://127.0.0.1:3000/admin (amministrazione).
+Se non imposti `ADMIN_PASSWORD`, il server ne genera una temporanea e la scrive nel terminale.
 
-## Come funziona
-- `m3u.js` – parser della playlist (`#EXTM3U`, `#EXTINF`, `tvg-id`, `tvg-logo`, `group-title`, `#EXTGRP`). Test: `node test-m3u.js`
-- `app.js` – elenco, ricerca, gruppi e player
-- Player: HLS nativo su Safari/iOS, `hls.js` sugli altri browser, `mpegts.js` per i flussi MPEG-TS grezzi. Le librerie arrivano da jsDelivr (serve internet).
+| Variabile | Predefinito | Significato |
+|-----------|-------------|-------------|
+| `PORT` | `3000` | Porta |
+| `HOST` | `127.0.0.1` | Indirizzo. `0.0.0.0` apre il server alla rete locale |
+| `ADMIN_PASSWORD` | casuale | Password dell'area admin |
+| `DATA_DIR` | `./data` | Dove vive la playlist attuale (`playlist.m3u`) e la precedente (`playlist.prev.m3u`) |
 
-## Limiti del browser (non della pagina)
-- **CORS**: molti server non permettono di scaricare la playlist da un'altra pagina. Con "Carica URL" puo' fallire: scarica il file e usa "Apri file".
-- **Contenuto misto**: se la pagina e' in https, i flussi `http://` sono bloccati.
-- **RTMP e UDP** non esistono nei browser.
-- **DRM** (`#KODIPROP`) non e' supportato; gli header come `User-Agent` delle playlist non si possono impostare dal browser.
-- La pagina e' solo un lettore: i contenuti sono quelli delle liste che carichi tu, sotto la tua responsabilita'.
+Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` non finisce nel repository.
+
+## Sicurezza
+- Password confrontata in modo sicuro, cookie di sessione `HttpOnly` + `SameSite=Strict` (12 ore), blocco di un minuto dopo 5 tentativi sbagliati.
+- La nuova playlist viene controllata prima di sostituire quella attuale (massimo 10 MB, deve avere almeno un canale http/https); la precedente resta come backup.
+- Il server usa solo HTTP: la password viaggia in chiaro. Per usarlo fuori dal tuo computer metti davanti un proxy HTTPS (Caddy, nginx, Cloudflare Tunnel) e tieni `HOST=127.0.0.1`.
+
+## File
+- `server.js` – server (pagina, playlist, login, aggiornamento)
+- `public/` – `index.html` + `app.js` (elenco e player), `admin.html` + `admin.js`, `m3u.js` (parser, usato anche dal server), `style.css`
+- Test: `npm test` (parser e server)
+
+## Riproduzione
+HLS nativo su Safari/iOS, `hls.js` sugli altri browser, `mpegts.js` per i flussi MPEG-TS grezzi (librerie da jsDelivr, serve internet).
+Limiti del browser: niente RTMP/UDP e niente DRM; se la pagina e' in https, i flussi `http://` sono bloccati (contenuto misto).
+I contenuti sono quelli delle liste che carichi, sotto la tua responsabilita'.
