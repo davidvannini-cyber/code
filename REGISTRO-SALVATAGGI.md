@@ -156,3 +156,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `45f6607` | APTV/GUIDA-FUNZIONAMENTO.md (verifica licenza repository di riferimento), REGISTRO-SALVATAGGI.md | `git checkout 45f6607` |
 | 2026-10-18 | `b801d6c` | M3U-PLAYER-WEB: pagina web player M3U (index.html, app.js, m3u.js, style.css, sample.m3u, test-m3u.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout b801d6c` |
 | 2026-10-18 | `2643813` | M3U-PLAYER-WEB: elenco canali a righe, avvio a schermo intero, area admin con password per sostituire la playlist (server.js, public/, test-server.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout 2643813` |
+| 2026-10-18 | `94502fe` | M3U-PLAYER-WEB: preparazione per la pubblicazione online (password spettatore, cookie Secure dietro proxy, /healthz, Dockerfile, DEPLOY.md, test), REGISTRO-SALVATAGGI.md | `git checkout 94502fe` |

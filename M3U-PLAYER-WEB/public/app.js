@@ -10,6 +10,7 @@
   async function loadPlaylist() {
     try {
       const res = await fetch('playlist.m3u', { cache: 'no-store' });
+      if (res.status === 401) { location.href = 'login.html'; return; }
       if (!res.ok) throw new Error('risposta ' + res.status);
       state.channels = M3U.parseM3U(await res.text()).channels;
       fillGroups();

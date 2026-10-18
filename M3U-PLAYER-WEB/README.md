@@ -19,6 +19,8 @@ Se non imposti `ADMIN_PASSWORD`, il server ne genera una temporanea e la scrive 
 | `PORT` | `3000` | Porta |
 | `HOST` | `127.0.0.1` | Indirizzo. `0.0.0.0` apre il server alla rete locale |
 | `ADMIN_PASSWORD` | casuale | Password dell'area admin |
+| `VIEWER_PASSWORD` | spenta | Se impostata, anche vedere i canali richiede questa password |
+| `TRUST_PROXY` | spento | `1` dietro a un proxy HTTPS: cookie `Secure` e IP corretto per il blocco tentativi |
 | `DATA_DIR` | `./data` | Dove vive la playlist attuale (`playlist.m3u`) e la precedente (`playlist.prev.m3u`) |
 
 Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` non finisce nel repository.
@@ -26,9 +28,10 @@ Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` no
 ## Sicurezza
 - Password confrontata in modo sicuro, cookie di sessione `HttpOnly` + `SameSite=Strict` (12 ore), blocco di un minuto dopo 5 tentativi sbagliati.
 - La nuova playlist viene controllata prima di sostituire quella attuale (massimo 10 MB, deve avere almeno un canale http/https); la precedente resta come backup.
-- Il server usa solo HTTP: la password viaggia in chiaro. Per usarlo fuori dal tuo computer metti davanti un proxy HTTPS (Caddy, nginx, Cloudflare Tunnel) e tieni `HOST=127.0.0.1`.
+- Il server parla solo HTTP: la password viaggia in chiaro. Per usarlo fuori dal tuo computer serve HTTPS: vedi `DEPLOY.md`.
 
 ## File
+- `DEPLOY.md` – come pubblicarlo online · `Dockerfile` per i servizi che usano container
 - `server.js` – server (pagina, playlist, login, aggiornamento)
 - `public/` – `index.html` + `app.js` (elenco e player), `admin.html` + `admin.js`, `m3u.js` (parser, usato anche dal server), `style.css`
 - Test: `npm test` (parser e server)
