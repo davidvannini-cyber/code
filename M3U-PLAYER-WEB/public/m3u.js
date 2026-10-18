@@ -72,6 +72,7 @@
           logo: a['tvg-logo'] || null,
           group: a['group-title'] || pendingGroup || null,
           tvgId: a['tvg-id'] || null,
+          chno: /^\d{1,4}$/.test(a['tvg-chno'] || '') ? Number(a['tvg-chno']) : null,   // numero di canale scelto dalla lista
         });
         pending = null;
         pendingGroup = null;

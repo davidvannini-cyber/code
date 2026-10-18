@@ -77,7 +77,7 @@
     } else {
       b.appendChild(span('ph'));
     }
-    b.appendChild(span('name', c.name));
+    b.appendChild(span('name', DTT.cleanName(c)));
     if (c.group) b.appendChild(span('grp', c.group));
     b.addEventListener('click', () => openPlayer(c));
     li.appendChild(b);
@@ -176,7 +176,7 @@
   function start(c) {
     stopPlayback();
     state.current = c.id;
-    $('title').textContent = c.name;
+    $('title').textContent = DTT.cleanName(c);
     const url = c.url;
     if (location.protocol === 'https:' && url.startsWith('http:')) {
       return setMsg('La pagina e\' in https e il flusso e\' http: il browser lo blocca (contenuto misto).', true, url);

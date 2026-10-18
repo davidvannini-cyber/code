@@ -27,12 +27,26 @@
   const byKey = new Map();
   for (const [lcn, names] of Object.entries(LCN)) for (const n of names) byKey.set(n, Number(lcn));
 
-  function lcnOf(channel) {
+  // Numero DTT dal solo nome o dall'id (tabella qui sopra).
+  function tableLcn(channel) {
     const byName = byKey.get(key(channel.name));
     if (byName !== undefined) return byName;
     // id di iptv-org, es. "Rai1.it@SD" o "Rai1HD.it"
     const id = String(channel.tvgId || '').split('@')[0].replace(/\.it$/i, '');
     return id ? byKey.get(key(id)) : undefined;
+  }
+
+  // Numero del canale. In ordine di fiducia: tvg-chno della lista, prefisso "[12]" nel nome, tabella.
+  function lcnOf(channel) {
+    if (Number.isFinite(channel.chno) && channel.chno > 0) return channel.chno;
+    const prefix = /^\s*\[(\d{1,4})\]/.exec(channel.name || '');
+    if (prefix) return Number(prefix[1]);
+    return tableLcn(channel);
+  }
+
+  // Nome da mostrare: senza il prefisso numerico "[12] " che alcune liste mettono davanti.
+  function cleanName(channel) {
+    return String(channel.name || '').replace(/^\s*\[\d{1,4}\]\s*/, '') || channel.name;
   }
 
   // Paese indicato dall'id della lista (iptv-org: "Rai1.it@SD", "TV8.tr@SD"), se presente.
@@ -52,8 +66,9 @@
     const cc = countryOf(channel);
     if (cc) return cc === 'it';
     if (foreignTag(channel.name)) return false;
+    if (/^\s*\[\d{1,4}\]/.test(channel.name || '')) return true;      // liste italiane numerate "[1] Rai 1"
     if (/\bital(y|ia|ian[oi]?)\b/i.test(channel.group || '')) return true;
-    return lcnOf(channel) !== undefined;                                 // e' un canale noto del DTT
+    return tableLcn(channel) !== undefined;                              // e' un canale noto del DTT
   }
 
   const isGeo = c => /\[geo-blocked\]/i.test(c.name || '');
@@ -84,7 +99,7 @@
       .map(x => x.c);
   }
 
-  const api = { key, lcnOf, isItalian, preferWorking, sortDtt };
+  const api = { key, lcnOf, cleanName, isItalian, preferWorking, sortDtt };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DTT = api;
 })(typeof window !== 'undefined' ? window : globalThis);

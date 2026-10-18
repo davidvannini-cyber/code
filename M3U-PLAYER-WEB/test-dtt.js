@@ -107,4 +107,30 @@ https://h/y-geo.m3u8`);
     'Tele X', 'Tele Y [Geo-blocked]',                  // senza numero: per nome; Tele Y resta perche' e' l'unica
   ]);
 }
+
+{
+  // Liste italiane gia' numerate: tvg-chno (iptvitaplus) e prefisso "[N]" (iptvita).
+  const { channels: n } = parseM3U(`#EXTM3U
+#EXTINF:-1 tvg-id="RaiSport+HD.it" tvg-chno="58" group-title="Rai",Rai Sport + HD
+http://h/1
+#EXTINF:-1,[57] Rai Scuola
+http://h/2
+#EXTINF:-1,[64] Supertennis
+http://h/3
+#EXTINF:-1 tvg-id="rds" tvg-chno="265",RDS Social TV
+http://h/4
+#EXTINF:-1 tvg-chno="abc",Senza numero valido
+http://h/5`);
+  assert.strictEqual(n[0].chno, 58);
+  assert.strictEqual(n[4].chno, null);
+  assert.strictEqual(DTT.lcnOf(n[0]), 58, 'tvg-chno');
+  assert.strictEqual(DTT.lcnOf(n[1]), 57, 'prefisso [N] vince sulla tabella (Rai Scuola 146)');
+  assert.strictEqual(DTT.cleanName(n[1]), 'Rai Scuola');
+  assert.strictEqual(DTT.cleanName(n[2]), 'Supertennis');
+  assert.ok(DTT.isItalian(n[1]) && DTT.isItalian(n[2]), 'lista numerata = italiana');
+  assert.ok(DTT.isItalian(n[0]), 'id .it');
+  assert.ok(!DTT.isItalian(n[3]), 'il solo numero di canale non rende italiano un canale');
+  assert.deepStrictEqual(DTT.sortDtt(n.filter(DTT.isItalian)).map(c => DTT.cleanName(c)), ['Rai Scuola', 'Rai Sport + HD', 'Supertennis']);
+  assert.deepStrictEqual(DTT.sortDtt(n).map(c => DTT.lcnOf(c)), [57, 58, 64, 265, undefined], 'ordinamento per numero, senza numero in fondo');
+}
 console.log('Tutti i test del DTT sono passati.');
