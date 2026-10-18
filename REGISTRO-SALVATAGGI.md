@@ -164,3 +164,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `4d02025` | M3U-PLAYER-WEB: test del parser su formato reale e lista da 10.000 canali, nota sul CORS dei flussi nel README, REGISTRO-SALVATAGGI.md | `git checkout 4d02025` |
 | 2026-10-18 | `7c3c49c` | M3U-PLAYER-WEB: l'area admin scarica la playlist da un indirizzo (server.js, public/admin.*, test, README), REGISTRO-SALVATAGGI.md | `git checkout 7c3c49c` |
 | 2026-10-18 | `4c73784` | M3U-PLAYER-WEB: filtro Italiani con ordine DTT (public/dtt-it.js, index.html, app.js, style.css, test-dtt.js, README), REGISTRO-SALVATAGGI.md | `git checkout 4c73784` |
+| 2026-10-18 | `eb534e0` | M3U-PLAYER-WEB: il filtro Italiani esclude i canali esteri con lo stesso nome (es. TV8 di altri paesi): conta il paese dell'id o il nome tra parentesi (public/dtt-it.js, test-dtt.js), REGISTRO-SALVATAGGI.md | `git checkout eb534e0` |

@@ -54,4 +54,27 @@ assert.deepStrictEqual(order, [
   'Antenna Locale', 'Tele Lombardia',   // senza numero: per nome
 ]);
 assert.strictEqual(DTT.lcnOf({ name: 'x', tvgId: 'Rai2.it@SD' }), 2, 'numero dall id');
+
+{
+  // Stesso nome in paesi diversi: conta il paese, non il nome.
+  const { channels: tv8 } = parseM3U(`#EXTM3U
+#EXTINF:-1 tvg-id="TV8.it@SD" group-title="General",TV8
+https://h/1.m3u8
+#EXTINF:-1 tvg-id="TV8.tr@SD" group-title="General",TV8 (Turkiye) (1080p)
+https://h/2.m3u8
+#EXTINF:-1 tvg-id="TV8.lt" group-title="Undefined",TV8 (Lithuania) (576p)
+https://h/3.m3u8
+#EXTINF:-1 group-title="Undefined",TV8 (Slovakia) (576p)
+https://h/4.m3u8
+#EXTINF:-1 group-title="Documentary;News",TV8 (Moldova) [Not 24/7]
+https://h/5.m3u8
+#EXTINF:-1 group-title="General",TV8 [Geo-blocked]
+https://h/6.m3u8
+#EXTINF:-1 group-title="General",TV8 (Italy) (1080p)
+https://h/7.m3u8
+#EXTINF:-1 tvg-id="20Mediaset.it@SD" group-title="Entertainment",20 [Geo-blocked]
+https://h/8.m3u8`);
+  assert.deepStrictEqual(tv8.filter(DTT.isItalian).map(c => c.url.slice(-8)), ['h/1.m3u8', 'h/6.m3u8', 'h/7.m3u8', 'h/8.m3u8']);
+  assert.strictEqual(DTT.lcnOf(tv8[7]), 20, '20 con [Geo-blocked]');
+}
 console.log('Tutti i test del DTT sono passati.');

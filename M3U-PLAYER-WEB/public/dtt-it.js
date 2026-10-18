@@ -35,8 +35,23 @@
     return id ? byKey.get(key(id)) : undefined;
   }
 
+  // Paese indicato dall'id della lista (iptv-org: "Rai1.it@SD", "TV8.tr@SD"), se presente.
+  function countryOf(channel) {
+    const m = /\.([a-z]{2})(?:@|$)/i.exec(channel.tvgId || '');
+    return m ? m[1].toLowerCase() : null;
+  }
+
+  // Testo tra parentesi tonde che non e' una qualita' (1080p, HD...) ne' "Italy": di solito e' il paese, es. "TV8 (Moldova)".
+  function foreignTag(name) {
+    const tags = [...String(name || '').matchAll(/\(([^)]*)\)/g)].map(m => m[1].trim());
+    return tags.some(t => t && !/^(\d{3,4}[pi]|hd|fhd|uhd|sd|4k)$/i.test(t) && !/ital/i.test(t));
+  }
+
+  // Se la lista dichiara il paese, vale quello. Altrimenti si guarda il nome e il gruppo.
   function isItalian(channel) {
-    if (/\.it(@|$)/i.test(channel.tvgId || '')) return true;            // id con suffisso paese (iptv-org)
+    const cc = countryOf(channel);
+    if (cc) return cc === 'it';
+    if (foreignTag(channel.name)) return false;
     if (/\bital(y|ia|ian[oi]?)\b/i.test(channel.group || '')) return true;
     return lcnOf(channel) !== undefined;                                 // e' un canale noto del DTT
   }
