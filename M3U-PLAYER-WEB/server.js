@@ -16,7 +16,7 @@ const DATA = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data'));
 const PLAYLIST = path.join(DATA, 'playlist.m3u');
 const BACKUP = path.join(DATA, 'playlist.prev.m3u');
 const MAX_PLAYLIST = 10 * 1024 * 1024;
-const SESSION_MS = 12 * 60 * 60 * 1000;
+const SESSION_MS = 180 * 24 * 60 * 60 * 1000;     // l'accesso dura 180 giorni su ogni dispositivo
 
 const sha = s => crypto.createHash('sha256').update(s).digest();
 let generatedPassword = null;
@@ -45,31 +45,31 @@ function sameOrigin(req) {
   try { return new URL(o).host === req.headers.host; } catch (_) { return false; }
 }
 
-/* ---------- Sessioni (un cookie per ruolo) ---------- */
+/* ---------- Sessioni (un cookie per ruolo) ----------
+   Il cookie contiene scadenza + firma (HMAC): nessun dato in memoria, quindi l'accesso sopravvive ai riavvii.
+   La chiave unisce un segreto salvato in DATA_DIR/session.key e le password: cambiare una password disconnette tutti. */
+const keyFile = path.join(DATA, 'session.key');
+if (!fs.existsSync(keyFile)) fs.writeFileSync(keyFile, crypto.randomBytes(32), { mode: 0o600 });
+const SESSION_KEY = crypto.createHmac('sha256', fs.readFileSync(keyFile))
+  .update(Buffer.concat([adminHash, viewerHash || Buffer.alloc(0)])).digest();
+
 function makeSessions(cookie) {
-  const store = new Map();                                // token -> scadenza
-  const re = new RegExp(`(?:^|;\\s*)${cookie}=([0-9a-f]{64})`);
-  const token = req => { const m = re.exec(req.headers.cookie || ''); return m ? m[1] : null; };
+  const sign = exp => crypto.createHmac('sha256', SESSION_KEY).update(cookie + '.' + exp).digest('hex');
+  const re = new RegExp(`(?:^|;\\s*)${cookie}=(\\d{10,15})\\.([0-9a-f]{64})`);
   const attrs = req => `HttpOnly; SameSite=Strict; Path=/${isHttps(req) ? '; Secure' : ''}`;
-  setInterval(() => { for (const [t, exp] of store) if (exp < Date.now()) store.delete(t); }, 60 * 60 * 1000).unref();
   return {
     check(req) {
-      const t = token(req);
-      const exp = t && store.get(t);
-      if (!exp) return false;
-      if (exp < Date.now()) { store.delete(t); return false; }
-      return true;
+      const m = re.exec(req.headers.cookie || '');
+      if (!m || Number(m[1]) < Date.now()) return false;
+      const good = Buffer.from(sign(m[1]), 'hex');
+      const given = Buffer.from(m[2], 'hex');
+      return given.length === good.length && crypto.timingSafeEqual(given, good);
     },
     create(req) {
-      const t = crypto.randomBytes(32).toString('hex');
-      store.set(t, Date.now() + SESSION_MS);
-      return `${cookie}=${t}; ${attrs(req)}; Max-Age=${SESSION_MS / 1000}`;
+      const exp = Date.now() + SESSION_MS;
+      return `${cookie}=${exp}.${sign(exp)}; ${attrs(req)}; Max-Age=${SESSION_MS / 1000}`;
     },
-    destroy(req) {
-      const t = token(req);
-      if (t) store.delete(t);
-      return `${cookie}=; ${attrs(req)}; Max-Age=0`;
-    },
+    destroy(req) { return `${cookie}=; ${attrs(req)}; Max-Age=0`; },
   };
 }
 const adminSessions = makeSessions('sid');
@@ -113,7 +113,7 @@ function readBody(req, limit) {
 }
 
 /* ---------- Login (admin e spettatore) ---------- */
-async function handleLogin(req, res, expectedHash, sessions) {
+async function handleLogin(req, res, expectedHash, sessions, alsoAdmin = false) {
   const ip = clientIp(req);
   const a = attempts.get(ip) || { count: 0, until: 0 };
   if (a.until > Date.now()) throw httpError(429, 'Troppi tentativi. Riprova tra un minuto.');
@@ -127,7 +127,10 @@ async function handleLogin(req, res, expectedHash, sessions) {
     throw httpError(401, 'Password errata.');
   }
   attempts.delete(ip);
-  send(res, 200, { ok: true }, { 'Set-Cookie': sessions.create(req) });
+  const cookies = [sessions.create(req)];
+  // Con la stessa password per spettatore e admin, un solo accesso apre entrambe le aree.
+  if (alsoAdmin && crypto.timingSafeEqual(sha(password), adminHash)) cookies.push(adminSessions.create(req));
+  send(res, 200, { ok: true }, { 'Set-Cookie': cookies });
 }
 
 function requireAdmin(req) { if (!adminSessions.check(req)) throw httpError(401, 'Accesso richiesto.'); }
@@ -159,7 +162,7 @@ async function route(req, res) {
   if (pathname === '/api/login' && req.method === 'POST') return handleLogin(req, res, adminHash, adminSessions);
   if (pathname === '/api/viewer-login' && req.method === 'POST') {
     if (!viewerHash) throw httpError(404, 'Non trovato.');
-    return handleLogin(req, res, viewerHash, viewerSessions);
+    return handleLogin(req, res, viewerHash, viewerSessions, true);
   }
   if (pathname === '/api/logout' && req.method === 'POST') {
     return send(res, 200, { ok: true }, { 'Set-Cookie': adminSessions.destroy(req) });

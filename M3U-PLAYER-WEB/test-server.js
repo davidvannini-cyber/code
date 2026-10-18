@@ -8,10 +8,10 @@ const path = require('path');
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const JSON_H = { 'Content-Type': 'application/json' };
 
-async function withServer(env, fn) {
+async function withServer(env, fn, sharedDir) {
   const port = 38000 + Math.floor(Math.random() * 1000);
   const base = 'http://127.0.0.1:' + port;
-  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'm3u-test-'));
+  const dataDir = sharedDir || fs.mkdtempSync(path.join(os.tmpdir(), 'm3u-test-'));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: __dirname,
     env: { ...process.env, PORT: String(port), DATA_DIR: dataDir, ADMIN_PASSWORD: 'segreta-di-test', ...env },
@@ -24,7 +24,7 @@ async function withServer(env, fn) {
     await fn(base, dataDir);
   } finally {
     child.kill();
-    fs.rmSync(dataDir, { recursive: true, force: true });
+    if (!sharedDir) fs.rmSync(dataDir, { recursive: true, force: true });
   }
 }
 const post = (base, p, body, headers = {}) => fetch(base + p, { method: 'POST', body, headers, redirect: 'manual' });
@@ -70,8 +70,8 @@ async function scenarioBase() {
     r = await post(base, '/api/playlist', '#EXTM3U\n#EXTINF:-1,X\nhttps://h/x.m3u8', { ...auth, Origin: 'http://altro-sito.example' });
     assert.strictEqual(r.status, 403, 'origine diversa');
 
-    await post(base, '/api/logout', '', auth);
-    assert.strictEqual((await fetch(base + '/api/status', { headers: auth })).status, 401, 'dopo logout');
+    const out = await post(base, '/api/logout', '', auth);
+    assert.match(out.headers.get('set-cookie'), /Max-Age=0/, 'il logout cancella il cookie del browser');
 
     for (let i = 0; i < 5; i++) await login(base, '/api/login', 'x');
     assert.strictEqual((await login(base, '/api/login', 'segreta-di-test')).status, 429, 'blocco dopo troppi tentativi');
@@ -113,11 +113,48 @@ async function scenarioProxy() {
   });
 }
 
+async function scenarioSessionsSurviveRestart() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'm3u-test-'));
+  let auth;
+  try {
+    await withServer({}, async base => {
+      const r = await login(base, '/api/login', 'segreta-di-test');
+      assert.strictEqual(r.status, 200);
+      const maxAge = Number(/Max-Age=(\d+)/.exec(r.headers.get('set-cookie'))[1]);
+      assert.ok(maxAge >= 150 * 24 * 3600, 'accesso di lunga durata');
+      auth = { Cookie: cookieOf(r) };
+      assert.strictEqual((await fetch(base + '/api/status', { headers: auth })).status, 200);
+    }, dir);
+    await withServer({}, async base => {          // stesso disco, server riavviato
+      assert.strictEqual((await fetch(base + '/api/status', { headers: auth })).status, 200, 'accesso valido dopo riavvio');
+      const tampered = { Cookie: auth.Cookie.slice(0, -1) + (auth.Cookie.endsWith('0') ? '1' : '0') };
+      assert.strictEqual((await fetch(base + '/api/status', { headers: tampered })).status, 401, 'cookie manomesso');
+    }, dir);
+    await withServer({ ADMIN_PASSWORD: 'nuova-password' }, async base => {
+      assert.strictEqual((await fetch(base + '/api/status', { headers: auth })).status, 401, 'cambio password disconnette');
+    }, dir);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+async function scenarioSinglePassword() {
+  await withServer({ VIEWER_PASSWORD: 'segreta-di-test' }, async base => {
+    const r = await login(base, '/api/viewer-login', 'segreta-di-test');
+    assert.strictEqual(r.status, 200);
+    const cookies = r.headers.getSetCookie().map(c => c.split(';')[0]).join('; ');
+    assert.strictEqual((await fetch(base + '/playlist.m3u', { headers: { Cookie: cookies } })).status, 200, 'canali con un solo accesso');
+    assert.strictEqual((await fetch(base + '/api/status', { headers: { Cookie: cookies } })).status, 200, 'admin con lo stesso accesso');
+  });
+}
+
 (async () => {
   try {
     await scenarioBase();
     await scenarioViewerPassword();
     await scenarioProxy();
+    await scenarioSessionsSurviveRestart();
+    await scenarioSinglePassword();
     console.log('Tutti i test del server sono passati.');
   } catch (e) {
     console.error('TEST FALLITO:', e.message);

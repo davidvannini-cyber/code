@@ -4,7 +4,8 @@ Il server e' un solo processo Node con un file di dati (`playlist.m3u`). Per ten
 e un disco permanente (altrimenti la playlist torna a quella di prova a ogni riavvio).
 
 ## Prima di pubblicare
-- Scegli due password lunghe: `ADMIN_PASSWORD` (area admin) e `VIEWER_PASSWORD` (per vedere i canali).
+- Scegli **una** password lunga e usala per entrambe: `ADMIN_PASSWORD` (area admin) e `VIEWER_PASSWORD` (vedere i canali).
+  La digiti una volta sola su ogni dispositivo: l'accesso dura 180 giorni e resiste ai riavvii del server.
   Senza `VIEWER_PASSWORD` chiunque conosca l'indirizzo vede l'elenco, e gli URL dei flussi spesso contengono utente e password del fornitore.
 - Non scrivere le password nei file del repository: vanno nelle variabili d'ambiente del servizio.
 - Una pagina in https non puo' riprodurre flussi `http://` (il browser li blocca). Servono flussi `https://`.
@@ -15,7 +16,7 @@ Non ho potuto provare queste schermate: i nomi dei campi possono essere diversi.
 2. **New +** → **Web Service** → scegli il repository `davidvannini-cyber/code`.
 3. **Root Directory**: `M3U-PLAYER-WEB` · **Language/Runtime**: Docker (usa il `Dockerfile`) · branch `main`.
 4. Piano **a pagamento** (serve per il disco permanente).
-5. **Environment**: aggiungi `ADMIN_PASSWORD` e `VIEWER_PASSWORD`. Le altre variabili (`HOST`, `DATA_DIR`, `TRUST_PROXY`) sono gia' nel Dockerfile.
+5. **Environment**: aggiungi `ADMIN_PASSWORD` e `VIEWER_PASSWORD` (stesso valore in entrambe). Le altre variabili (`HOST`, `DATA_DIR`, `TRUST_PROXY`) sono gia' nel Dockerfile.
 6. **Disks** → Add Disk: *Mount Path* `/data`, 1 GB.
 7. **Health Check Path**: `/healthz`.
 8. Crea il servizio. Quando e' pronto apri l'indirizzo `https://…onrender.com`: ti chiede la password spettatore; `/admin` e' l'area di amministrazione.
@@ -36,5 +37,6 @@ con lo stesso `Dockerfile`. Dietro un proxy HTTPS tieni `TRUST_PROXY=1`; senza p
 
 ## Dopo la pubblicazione
 - Cambia la playlist da `/admin`; la precedente resta in `playlist.prev.m3u` nel disco.
-- Se perdi la password, cambia la variabile d'ambiente e riavvia: non e' salvata su disco.
+- Se perdi la password o un dispositivo, cambia la variabile d'ambiente e riavvia: non e' salvata su disco e tutti i dispositivi vengono disconnessi.
+- Il disco `/data` contiene anche `session.key`, il segreto che firma gli accessi: se il disco viene azzerato, dovrai rientrare una volta.
 - Se il server e' esposto a internet, tienilo aggiornato (Node 22 LTS) e controlla gli accessi del servizio.
