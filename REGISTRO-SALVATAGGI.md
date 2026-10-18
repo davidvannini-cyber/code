@@ -144,3 +144,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `f1fdd14` | MODEL3D/src/store.ts (la condivisione del .3mf non aggiunge piu il file .txt), REGISTRO-SALVATAGGI.md | `git checkout f1fdd14` |
 | 2026-10-18 | `5b78cdc` | MODEL3D: grafica per tablet in stile pillole flottanti con icone e menu piu grandi, casella Snap visibile (index.css), REGISTRO-SALVATAGGI.md | `git checkout 5b78cdc` |
 | 2026-10-18 | `21f097f` | MODEL3D: stile a pillole anche sul Mac, con dimensioni normali (index.css), REGISTRO-SALVATAGGI.md | `git checkout 21f097f` |
+| 2026-10-18 | `8954806` | MODEL3D/HANDOFF.md (riscritto con tutto il lavoro fatto), MODEL3D/README.md (aggiornato), REGISTRO-SALVATAGGI.md | `git checkout 8954806` |

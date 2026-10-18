@@ -1,5 +1,8 @@
 # MODEL3D
 
+> **Stato aggiornato, istruzioni e decisioni di progetto: leggi `HANDOFF.md`.**
+> Sito online: https://davidvannini-cyber.github.io/code/MODEL3D/ (si aggiorna da solo a ogni modifica su `main`).
+
 A web-based 3D CAD modeling application with real-time visualization and parametric design capabilities.
 
 ## Overview
@@ -86,14 +89,13 @@ src/
 
 ## Key Features
 
-- 📐 Sketch-based modeling
-- ⬆️ Extrude operations
-- 🔧 Boolean operations (Union, Difference, Intersection)
-- 🎯 Fillet and chamfer tools
-- 💾 3MF format import/export
-- 🎨 Real-time 3D visualization
-- ⏱️ Operation history and timeline
-- 🎮 Interactive viewport controls
+- Schizzo (anche a mano libera con la Pencil) ed estrusione
+- Primitive, booleane (unione, sottrazione, intersezione)
+- Raccordo/smusso su spigoli 3D e su vertici 2D, con misura modificabile dal vivo
+- Affianca facce e Appoggia sul piano
+- Undo/redo di feature, posizioni e colori
+- Salvataggio .3mf con copia automatica nel browser e ripristino dopo un crash; esportazione STL/STEP
+- Interfaccia pensata anche per iPad con Apple Pencil (dita per muovere la vista)
 
 ## Development Workflow
 
@@ -104,10 +106,10 @@ src/
 
 ## Notes
 
-- The app uses Web Workers for heavy OpenCascade.js computations (see `src/occ/occWorker.ts`)
-- State is managed with Zustand (see `src/store.ts`)
-- 3D rendering uses Three.js via react-three-fiber
-- The viewport supports standard CAD navigation (pan, zoom, rotate)
+- Il sito è pubblicato da `.github/workflows/deploy-model3d.yml` (alla radice del repository); in Settings → Pages la sorgente deve essere "GitHub Actions".
+- In sviluppo l'app gira su `http://localhost:5173/`; la build usa il percorso `/code/MODEL3D/`.
+- Il kernel CAD gira in un Web Worker (`src/occ/occWorker.ts`); lo stato è in Zustand (`src/store.ts`).
+- Tutti i dettagli, i limiti noti e le idee in sospeso sono in `HANDOFF.md`.
 
 ## License
 
