@@ -76,3 +76,8 @@ Si usa come una fonte qualsiasi: in `/admin`, nel riquadro "Liste (fonti)", va m
 `https://raw.githubusercontent.com/davidvannini-cyber/code/main/M3U-PLAYER-WEB/extra.m3u`
 Rai 3 Toscana ha lo stesso `tvg-id` di Rai 3: finisce nello stesso canale come prima fonte, e Rai 3 normale resta come alternativa.
 Il numero si decide con `tvg-chno` (non serve toccare il codice). Per aggiungere un canale basta una riga `#EXTINF` e l'indirizzo.
+
+## Icona sul Desktop del Mac che apre Safari (`mac/crea-icona-tv.sh`)
+Per chi ha un altro browser predefinito: `bash M3U-PLAYER-WEB/mac/crea-icona-tv.sh` crea sul Desktop l'app "TV Vannini",
+che apre `tv.vannini.online` con Safari e prova a nascondere la barra degli strumenti. Su macOS 14 (Sonoma) o piu' recente
+e' meglio Safari → File → Aggiungi al Dock, che apre il sito in una finestra senza barra.
