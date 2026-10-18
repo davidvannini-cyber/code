@@ -4,9 +4,10 @@ Il server e' un solo processo Node con un file di dati (`playlist.m3u`). Per ten
 e un disco permanente (altrimenti la playlist torna a quella di prova a ogni riavvio).
 
 ## Prima di pubblicare
-- Scegli **una** password lunga e usala per entrambe: `ADMIN_PASSWORD` (area admin) e `VIEWER_PASSWORD` (vedere i canali).
-  La digiti una volta sola su ogni dispositivo: l'accesso si rinnova a ogni uso (fino a 400 giorni senza aprire la pagina) e resiste ai riavvii del server.
-  Senza `VIEWER_PASSWORD` chiunque conosca l'indirizzo vede l'elenco, e gli URL dei flussi spesso contengono utente e password del fornitore.
+- **Canali senza password (scelta attuale):** non impostare `VIEWER_PASSWORD`. Chiunque conosca l'indirizzo vede l'elenco, quindi non pubblicarlo.
+  Attenzione: se gli URL dei flussi contengono utente e password del fornitore (es. `/live/utente/password/123.m3u8`), chi apre la pagina li vede.
+  In quel caso conviene aggiungere `VIEWER_PASSWORD` (vedi sotto, "Entrare senza digitare la password").
+- Scegli una password lunga per `ADMIN_PASSWORD` (area `/admin`, dove si cambia la playlist). La digiti una volta sola per dispositivo: l'accesso si rinnova a ogni uso (fino a 400 giorni senza aprire la pagina) e resiste ai riavvii del server.
 - Non scrivere le password nei file del repository: vanno nelle variabili d'ambiente del servizio.
 - Una pagina in https non puo' riprodurre flussi `http://` (il browser li blocca). Servono flussi `https://`.
 
@@ -16,7 +17,7 @@ Non ho potuto provare queste schermate: i nomi dei campi possono essere diversi.
 2. **New +** → **Web Service** → scegli il repository `davidvannini-cyber/code`.
 3. **Root Directory**: `M3U-PLAYER-WEB` · **Language/Runtime**: Docker (usa il `Dockerfile`) · branch `main`.
 4. Piano **a pagamento** (serve per il disco permanente).
-5. **Environment**: aggiungi `ADMIN_PASSWORD` e `VIEWER_PASSWORD` (stesso valore in entrambe). Le altre variabili (`HOST`, `DATA_DIR`, `TRUST_PROXY`) sono gia' nel Dockerfile.
+5. **Environment**: aggiungi `ADMIN_PASSWORD` (e `VIEWER_PASSWORD` solo se vuoi proteggere anche i canali). Le altre variabili (`HOST`, `DATA_DIR`, `TRUST_PROXY`) sono gia' nel Dockerfile.
 6. **Disks** → Add Disk: *Mount Path* `/data`, 1 GB.
 7. **Health Check Path**: `/healthz`.
 8. Crea il servizio. Quando e' pronto apri l'indirizzo `https://…onrender.com`: ti chiede la password spettatore; `/admin` e' l'area di amministrazione.

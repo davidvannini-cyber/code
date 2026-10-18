@@ -160,3 +160,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `eda25a4` | M3U-PLAYER-WEB: accesso con password una sola volta per dispositivo (180 giorni, resiste ai riavvii), password unica per canali e admin, test, README e DEPLOY.md, REGISTRO-SALVATAGGI.md | `git checkout eda25a4` |
 | 2026-10-18 | `e6f45dc` | M3U-PLAYER-WEB: accesso scorrevole (si rinnova a ogni apertura, fino a 400 giorni), test e documentazione, REGISTRO-SALVATAGGI.md | `git checkout e6f45dc` |
 | 2026-10-18 | `8ef4cfd` | M3U-PLAYER-WEB: accesso con link che contiene la password (dopo il #, non inviata al server), README e DEPLOY.md, REGISTRO-SALVATAGGI.md | `git checkout 8ef4cfd` |
+| 2026-10-18 | `11815a1` | M3U-PLAYER-WEB: DEPLOY.md aggiornato, canali senza password e solo admin protetto, REGISTRO-SALVATAGGI.md | `git checkout 11815a1` |
