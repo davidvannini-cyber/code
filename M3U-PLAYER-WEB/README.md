@@ -1,7 +1,7 @@
 # Player M3U (web)
 
 Tre cose:
-1. **Pagina pubblica** (`/`): elenco dei canali della playlist M3U, una riga per canale, con ricerca e filtro per gruppo.
+1. **Pagina pubblica** (`/`): elenco dei canali della playlist M3U, una riga per canale, con ricerca e filtro per gruppo. La casella **Italiani (ordine DTT)** mostra solo i canali italiani, numerati e ordinati come sul digitale terrestre (Rai 1, Rai 2, Rai 3, Rete 4, Canale 5, Italia 1, La7…); la scelta viene ricordata.
 2. **Schermo intero**: un clic su una riga avvia il canale a tutto schermo. I pulsanti ◀ ▶ (o PagSu/PagGiu) cambiano canale, Esc o ✕ tornano all'elenco.
 3. **Area admin** (`/admin`): con password, si sostituisce la playlist scrivendo il suo **indirizzo** (il server la scarica da solo), caricando un file o incollando il testo. L'elenco pubblico mostra subito la nuova lista.
 
@@ -37,6 +37,7 @@ Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` no
 
 ## File
 - `DEPLOY.md` – come pubblicarlo online · `Dockerfile` per i servizi che usano container
+- `public/dtt-it.js` – elenco dei canali italiani e numerazione DTT (scritta a mano dalla memoria: da controllare e correggere se serve)
 - `server.js` – server (pagina, playlist, login, aggiornamento)
 - `public/` – `index.html` + `app.js` (elenco e player), `admin.html` + `admin.js`, `m3u.js` (parser, usato anche dal server), `style.css`
 - Test: `npm test` (parser e server)

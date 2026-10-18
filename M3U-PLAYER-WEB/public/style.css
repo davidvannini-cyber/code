@@ -45,3 +45,6 @@ footer a { color: var(--muted); }
 textarea { width: 100%; font-family: ui-monospace, monospace; }
 main > #msg { position: static; color: inherit; text-shadow: none; margin-top: 12px; }
 main > #msg.error { color: #ff6b6b; }
+
+.chk { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; white-space: nowrap; }
+.chk input { margin: 0; }

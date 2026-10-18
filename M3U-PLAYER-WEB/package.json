@@ -5,7 +5,7 @@
   "description": "Player web alimentato da una playlist M3U, con area admin per cambiarla",
   "scripts": {
     "start": "node server.js",
-    "test": "node test-m3u.js && node test-server.js"
+    "test": "node test-m3u.js && node test-dtt.js && node test-server.js"
   },
   "engines": { "node": ">=18" }
 }

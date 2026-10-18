@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   const video = $('video');
   const player = $('player');
-  const state = { channels: [], filtered: [], shown: 0, current: -1, hls: null, ts: null, fs: false, idleTimer: 0 };
+  const state = { it: false, channels: [], filtered: [], shown: 0, current: -1, hls: null, ts: null, fs: false, idleTimer: 0 };
 
   /* ---------- Elenco ---------- */
   async function loadPlaylist() {
@@ -20,16 +20,24 @@
     }
   }
 
+  // Con "Italiani" attivo: solo i canali italiani, nell'ordine standard del digitale terrestre.
+  function baseChannels() {
+    if (!state.it) return state.channels;
+    return DTT.sortDtt(state.channels.filter(DTT.isItalian));
+  }
+
   function fillGroups() {
-    const groups = [...new Set(state.channels.map(c => c.group).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const keep = $('group').value;
+    const groups = [...new Set(baseChannels().map(c => c.group).filter(Boolean))].sort((a, b) => a.localeCompare(b));
     $('group').replaceChildren(new Option('Tutti i gruppi', ''), ...groups.map(g => new Option(g, g)));
+    if (groups.includes(keep)) $('group').value = keep;
     $('group').hidden = groups.length === 0;
   }
 
   function applyFilter() {
     const q = $('search').value.trim().toLowerCase();
     const g = $('group').value;
-    state.filtered = state.channels.filter(c => (!g || c.group === g) && (!q || c.name.toLowerCase().includes(q)));
+    state.filtered = baseChannels().filter(c => (!g || c.group === g) && (!q || c.name.toLowerCase().includes(q)));
     state.shown = 0;
     $('channels').replaceChildren();
     renderMore();
@@ -38,11 +46,15 @@
   function renderMore() {
     const list = $('channels');
     const slice = state.filtered.slice(state.shown, state.shown + PAGE);
-    slice.forEach((c, i) => list.appendChild(row(c, state.shown + i + 1)));
+    slice.forEach((c, i) => {
+      const lcn = state.it ? DTT.lcnOf(c) : undefined;
+      list.appendChild(row(c, state.it ? (lcn !== undefined ? String(lcn) : '') : String(state.shown + i + 1)));
+    });
     state.shown += slice.length;
     $('more').hidden = state.shown >= state.filtered.length;
-    $('count').textContent = state.channels.length
-      ? state.filtered.length + ' di ' + state.channels.length + ' canali' : 'Nessun canale nella playlist.';
+    $('count').textContent = !state.channels.length ? 'Nessun canale nella playlist.'
+      : state.it ? state.filtered.length + ' canali italiani (ordine DTT) su ' + state.channels.length
+      : state.filtered.length + ' di ' + state.channels.length + ' canali';
   }
 
   function span(cls, text) {
@@ -56,7 +68,7 @@
     const li = document.createElement('li');
     const b = document.createElement('button');
     b.type = 'button';
-    b.appendChild(span('num', String(n)));
+    b.appendChild(span('num', n));
     if (c.logo) {
       const img = document.createElement('img');
       img.src = c.logo; img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
@@ -168,6 +180,13 @@
   });
 
   /* ---------- Eventi ---------- */
+  $('itOnly').addEventListener('change', () => {
+    state.it = $('itOnly').checked;
+    try { localStorage.setItem('m3u-player:it', state.it ? '1' : '0'); } catch (_) { /* storage non disponibile */ }
+    fillGroups();
+    applyFilter();
+  });
+  try { state.it = localStorage.getItem('m3u-player:it') === '1'; $('itOnly').checked = state.it; } catch (_) { /* storage non disponibile */ }
   $('search').addEventListener('input', applyFilter);
   $('group').addEventListener('change', applyFilter);
   $('more').addEventListener('click', renderMore);
