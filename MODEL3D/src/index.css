@@ -296,6 +296,11 @@ svg.icon {
   min-width: 0;
 }
 
+.sk-field.checkbox input[type="checkbox"] {
+  width: auto;
+  vertical-align: middle;
+}
+
 .sk-field.checkbox {
   justify-content: flex-end;
 }
@@ -1075,4 +1080,105 @@ input, select {
 @media (pointer: coarse) {
   .restore-banner { font-size: 14px; gap: 10px; padding: 8px 12px; }
   .restore-banner button { font-size: 14px; padding: 8px 14px; }
+}
+
+/* ---------- Tablet: icone e menu grandi, stile "pillole flottanti" ----------
+   Solo per puntatori touch/Pencil; sul Mac restano le dimensioni compatte.
+   Le schede delle misure (campi con frecce) mantengono la loro dimensione. */
+@media (pointer: coarse) {
+  svg.icon { width: 26px !important; height: 26px !important; }
+
+  .topbar { height: 46px; padding: 0 12px; background: transparent; border: none; backdrop-filter: none; }
+  .topbar .title { font-size: 14px; }
+  .status { font-size: 14px; }
+  .status-saved { font-size: 11px; }
+  .icon-btn { width: 40px; height: 40px; }
+  .icon-btn svg.icon { width: 22px !important; height: 22px !important; }
+
+  /* Barra laterale a capsula */
+  .rail {
+    top: 56px;
+    left: 12px;
+    width: 68px;
+    padding: 10px 8px;
+    gap: 6px;
+    background: rgba(22, 24, 29, .78);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: none;
+    border-radius: 40px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .4);
+  }
+  .rail-btn { width: 52px; height: 52px; border-radius: 50%; border: none; }
+  .rail-btn.active { background: #2f7cf6; color: #fff; box-shadow: 0 0 22px rgba(47, 124, 246, .65); }
+  .rail-sep { margin: 4px 8px; }
+
+  /* Schede, barra dell'oggetto, storico: senza cornici, con ombre morbide */
+  .card,
+  .selection-toolbar,
+  .selection-expand,
+  .history-strip,
+  .log-toast,
+  .restore-banner {
+    background: rgba(22, 24, 29, .78);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: none;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .4);
+  }
+  .card { border-radius: 30px; }
+  .selection-expand { border-radius: 26px; }
+  .history-strip { border-radius: 999px; }
+
+  .dock-left { top: 56px; left: 92px; gap: 8px; }
+  .dock { top: 56px; }
+  .dock-left > .card,
+  .dock-left > .card.wide { width: 270px; }
+  .dock-left > .card.params-card { width: 232px; }
+  .dock-left > .card.face-card { width: 240px; }
+  .params-card .sk-field { font-size: 11px; }
+
+  .card .card-body { padding: 12px 14px; }
+  .params-card .card-body { padding: 8px; }
+
+  /* Voci dei menu */
+  .tile-list { gap: 6px; }
+  .tile-btn {
+    min-height: 54px;
+    padding: 14px 22px;
+    font-size: 18px;
+    background: rgba(255, 255, 255, .07);
+    border: none;
+    border-radius: 999px;
+  }
+  .primary-btn { padding: 13px; font-size: 16px; border: none; border-radius: 999px; }
+  .primary-btn.small { padding: 10px 20px; font-size: 15px; }
+  .ghost-btn { padding: 12px 16px; font-size: 16px; border: none; background: rgba(255, 255, 255, .09); border-radius: 999px; }
+  .segmented { border: none; border-radius: 999px; background: rgba(255, 255, 255, .07); }
+  .segmented button { padding: 12px; font-size: 16px; background: transparent; border: none; }
+  .segmented button.active { background: #2f7cf6; color: #fff; }
+  .menu-item { padding: 14px 12px; font-size: 17px; border-radius: 16px; }
+  .object-row { min-height: 48px; font-size: 17px; border-radius: 14px; }
+  .hint-text { font-size: 14px; line-height: 1.35; }
+  .section-label { font-size: 12px; }
+  .card:not(.params-card) .sk-field { font-size: 14px; margin-bottom: 8px; }
+  .card:not(.params-card) .sk-field select { width: 120px; }
+  .pending-row { font-size: 15px; }
+  .info-row { font-size: 14px; line-height: 1.7; }
+
+  /* Barra dell'oggetto */
+  .selection-toolbar { border-radius: 999px; padding: 3px; }
+  .selection-toolbar button { width: 52px; height: 52px; border-radius: 50%; border: none; }
+  .selection-toolbar button svg.icon { width: 28px !important; height: 28px !important; }
+  .selection-toolbar button.active { background: #2f7cf6; color: #fff; box-shadow: 0 0 22px rgba(47, 124, 246, .65); }
+  .selection-expand { width: 190px; padding: 10px; }
+
+  /* Storico e tasti tondi */
+  .history-strip { left: 12px; bottom: 12px; }
+  .history-collapsed { height: 52px; padding: 0 10px; }
+  .history-chip { font-size: 15px; padding: 8px 14px 8px 10px; border: none; background: rgba(255, 255, 255, .09); border-radius: 999px; }
+  .history-expand-btn { font-size: 14px; }
+  .quick-buttons button { width: 56px; height: 56px; border: none; background: rgba(22, 24, 29, .78); }
+  .restore-banner { top: 56px; border-radius: 999px; }
+  .log-toast { font-size: 13px; border-radius: 20px; }
 }

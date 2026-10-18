@@ -142,3 +142,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `091b0d3` | MODEL3D: funzione Appoggia sul piano (faceMate.ts, store.ts, FaceCard.tsx), REGISTRO-SALVATAGGI.md | `git checkout 091b0d3` |
 | 2026-10-18 | `779b32e` | MODEL3D: pulsante Salva nella barra, salvataggio con menu di condivisione su tablet, copia automatica nel browser con ripristino dopo un crash (io/autosave.ts, RestoreBanner.tsx, store.ts, TopBar.tsx, App.tsx, index.css), REGISTRO-SALVATAGGI.md | `git checkout 779b32e` |
 | 2026-10-18 | `f1fdd14` | MODEL3D/src/store.ts (la condivisione del .3mf non aggiunge piu il file .txt), REGISTRO-SALVATAGGI.md | `git checkout f1fdd14` |
+| 2026-10-18 | `5b78cdc` | MODEL3D: grafica per tablet in stile pillole flottanti con icone e menu piu grandi, casella Snap visibile (index.css), REGISTRO-SALVATAGGI.md | `git checkout 5b78cdc` |
