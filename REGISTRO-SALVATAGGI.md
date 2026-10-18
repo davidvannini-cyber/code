@@ -149,3 +149,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `9c2f994` | MODEL3D: le pillole X Y Z sono sempre visibili (trattini senza selezione) (PositionPills.tsx, index.css), REGISTRO-SALVATAGGI.md | `git checkout 9c2f994` |
 | 2026-10-18 | `ea3293c` | MODEL3D: icone della barra in alto sempre centrate rispetto alla pagina (index.css), REGISTRO-SALVATAGGI.md | `git checkout ea3293c` |
 | 2026-10-18 | `81908cd` | APTV: creata cartella progetto (APTV/.gitkeep), REGISTRO-SALVATAGGI.md | `git checkout 81908cd` |
+| 2026-10-18 | `1df92d2` | APTV: scaffold app iOS SwiftUI (Package.swift, project.yml, Sources/APTVCore, Tests, App/, REQUISITI.md, ARCHITETTURA.md), REGISTRO-SALVATAGGI.md | `git checkout 1df92d2` |
