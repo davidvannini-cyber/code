@@ -16,20 +16,19 @@ Il codice e' in `M3U-PLAYER-WEB/cloudflare/`; la pagina (`public/`) e' la stessa
    ```
    npx wrangler login
    ```
-3. Crea l'archivio dei dati e copia l'**id** che stampa:
+3. Crea l'archivio dei dati e scrivi l'**id** che stampa in `wrangler.toml` (sezione `[[kv_namespaces]]`). Se chiede di aggiungerlo da solo alla configurazione, rispondi **no**:
    ```
    npx wrangler kv namespace create DATA
    ```
-   Apri `wrangler.toml` e sostituisci `INSERISCI_QUI_L_ID_DEL_KV` con quell'id (tra virgolette).
-4. Imposta la password admin (te la chiede, non resta scritta in nessun file):
-   ```
-   npx wrangler secret put ADMIN_PASSWORD
-   ```
-5. Pubblica:
+4. Pubblica:
    ```
    npx wrangler deploy
    ```
-   Collega da solo `tv.vannini.online` (il dominio e' gia' nel tuo account Cloudflare) e crea il certificato HTTPS.
+   Collega da solo `tv.vannini.online` (il dominio e' gia' nel tuo account Cloudflare) e crea il certificato HTTPS. Finche' non imposti la password, l'area admin risponde "non disponibile".
+5. Imposta la password admin (te la chiede, non resta scritta in nessun file):
+   ```
+   npx wrangler secret put ADMIN_PASSWORD
+   ```
 6. Apri `https://tv.vannini.online/admin`, accedi e nel riquadro "Liste (fonti)" incolla:
    ```
    https://github.com/Tundrak/IPTV-Italia/raw/main/iptvitaplus.m3u

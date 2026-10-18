@@ -176,3 +176,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `c26b032` | M3U-PLAYER-WEB: tolto il conteggio dei canali dall'elenco, Aurora come aspetto predefinito (public/app.js, theme.js, style.css), REGISTRO-SALVATAGGI.md | `git checkout c26b032` |
 | 2026-10-18 | `8d410be` | M3U-PLAYER-WEB: DEPLOY.md con i passi per tv.vannini.online (Cloudflare + Render), REGISTRO-SALVATAGGI.md | `git checkout 8d410be` |
 | 2026-10-18 | `3455858` | M3U-PLAYER-WEB: versione per Cloudflare Workers (cloudflare/: worker.js, wrangler.toml, test) con KV, cron ogni 6 ore e guida DEPLOY-CLOUDFLARE.md per tv.vannini.online; la pagina capisce le liste unite dal Worker (#X-SOURCE), REGISTRO-SALVATAGGI.md | `git checkout 3455858` |
+| 2026-10-18 | `fec9e30` | M3U-PLAYER-WEB: wrangler.toml corretto (routes prima delle sezioni, id del KV), ordine dei passi in DEPLOY-CLOUDFLARE.md, REGISTRO-SALVATAGGI.md | `git checkout fec9e30` |
