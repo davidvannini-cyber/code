@@ -51,15 +51,23 @@ https://esempio/rai1/index.m3u8
 Gia' fatto: parser M3U, modello canali, lista con gruppi e ricerca, player AVPlayer per HLS (vedi `ARCHITETTURA.md`).
 Mancano: archivio locale, EPG, preferiti, Xtream, piu' sorgenti, player per raw TS.
 
-## 8. Checklist da compilare osservando APTV (vuota finche' non la osserviamo)
-- [ ] Come si aggiunge una lista (URL, file, Xtream, altro)?
-- [ ] Schermate principali e navigazione
-- [ ] Quali formati/estensioni M3U accetta
-- [ ] EPG: da dove la prende, come la mostra
-- [ ] Preferiti, ricerca, ultimi guardati, controllo genitori
-- [ ] Come si comporta il player con errori e flussi lenti
-- [ ] Cosa cambia tra iPhone e Apple TV
-- [ ] Cosa e' a pagamento e cosa gratis
+## 8. Cosa dichiara APTV (fonti pubbliche: scheda App Store IT e README del suo repository GitHub; non verificato in uso)
+- **Piattaforme:** iOS (anche CarPlay), iPadOS, tvOS, macOS, watchOS, visionOS. Richiede iOS/tvOS 15, macOS 12, watchOS 9.
+- **Prezzo:** gratis, con acquisto in-app "APTV Pro" (5,99 EUR). Sviluppatore: Suzhou Xiying Guangnian Technology Co., Ltd. Dati non raccolti (dichiarato).
+- **Riproduzione dichiarata:** protocolli HLS, HTTP, RTMP; decodifica hardware H.264/H.265; 4K/HDR/HLG; Picture-in-Picture; AirPlay e DLNA (DLNA indicato anche tra i piani futuri nel README).
+- **Funzioni IPTV dichiarate:** liste M3U, EPG (guida programmi), gestione canali (categorie, preferiti, cronologia), piu' sorgenti, riascolto/catch-up "se la sorgente lo supporta", anteprima in tempo reale del canale.
+- **Dati:** archivio locale persistente e sincronizzazione iCloud.
+- **Dal README:** si aggiunge un file M3U remoto (URL); riproduce M3U8; catch-up; EPG; CarPlay; versioni Apple TV, Mac, watchOS, visionOS (beta). Piani: DLNA, configurazioni aggregate, ricerca.
+- **Cose da capire in uso (checklist):**
+  - [ ] Come si aggiunge/aggiorna una sorgente e come ne gestisce piu' di una
+  - [ ] Da dove prende l'EPG e come la associa ai canali (tvg-id?)
+  - [ ] Come funziona il catch-up (parametri `catchup*` della lista?)
+  - [ ] Cosa e' gratis e cosa richiede Pro
+  - [ ] Come cambia l'interfaccia tra iPhone e Apple TV
+  - [ ] Quale motore di riproduzione usa per RTMP/TS grezzo (non dichiarato)
+
+**Nota sul repository pubblico:** il README rimanda a un repository GitHub (Kimentanm/aptv). Prima di leggerne il codice come riferimento
+va controllata la licenza (non verificata qui); anche se permessa, il codice dell'app propria si scrive da zero.
 
 ## 9. Cosa NON e' in questa guida
 Il codice, le risorse grafiche o i testi di APTV. Si descrivono funzioni e flussi, e tutto il codice dell'app propria si scrive da zero.
