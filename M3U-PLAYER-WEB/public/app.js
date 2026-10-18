@@ -1,10 +1,18 @@
 (function () {
   'use strict';
   const PAGE = 300;                       // canali mostrati per volta
+  const STARTUP_MS = 20000;               // se un canale non parte entro questo tempo si passa alla fonte successiva
+  const ALT_KEY = 'm3u-player:alt';       // ultima fonte che ha funzionato per ogni canale
   const $ = id => document.getElementById(id);
   const video = $('video');
   const player = $('player');
-  const state = { it: false, channels: [], filtered: [], shown: 0, current: -1, hls: null, ts: null, fs: false, idleTimer: 0 };
+  const state = {
+    it: false, channels: [], groups: [], filtered: [], shown: 0,
+    cur: null,                            // { g: gruppo, i: indice della fonte in prova }
+    current: -1,                          // id del canale (fonte) in riproduzione
+    hls: null, ts: null, dash: null, failFn: null, startTimer: 0,
+    type: null, playUrl: null, engine: null, fs: false, idleTimer: 0,
+  };
 
   /* ---------- Elenco ---------- */
   async function loadPlaylist() {
@@ -13,6 +21,7 @@
       if (res.status === 401) { location.href = 'login.html'; return; }
       if (!res.ok) throw new Error('risposta ' + res.status);
       state.channels = M3U.parseM3U(await res.text()).channels;
+      state.groups = DTT.groupChannels(state.channels);       // un elemento per canale, con le sue fonti
       fillGroups();
       applyFilter();
     } catch (e) {
@@ -21,23 +30,24 @@
   }
 
   // Con "Italiani" attivo: solo i canali italiani, nell'ordine standard del digitale terrestre.
-  function baseChannels() {
-    if (!state.it) return state.channels;
-    return DTT.sortDtt(DTT.preferWorking(state.channels.filter(DTT.isItalian)));
+  function baseGroups() {
+    if (!state.it) return state.groups;
+    return DTT.sortGroups(state.groups.filter(g => g.alts.some(DTT.isItalian)));
   }
 
   function fillGroups() {
     const keep = $('group').value;
-    const groups = [...new Set(baseChannels().map(c => c.group).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-    $('group').replaceChildren(new Option('Tutti i gruppi', ''), ...groups.map(g => new Option(g, g)));
-    if (groups.includes(keep)) $('group').value = keep;
-    $('group').hidden = groups.length === 0;
+    const labels = [...new Set(baseGroups().flatMap(g => g.labels))].sort((a, b) => a.localeCompare(b));
+    $('group').replaceChildren(new Option('Tutti i gruppi', ''), ...labels.map(l => new Option(l, l)));
+    if (labels.includes(keep)) $('group').value = keep;
+    $('group').hidden = labels.length === 0;
   }
 
   function applyFilter() {
     const q = $('search').value.trim().toLowerCase();
-    const g = $('group').value;
-    state.filtered = baseChannels().filter(c => (!g || c.group === g) && (!q || c.name.toLowerCase().includes(q)));
+    const label = $('group').value;
+    state.filtered = baseGroups().filter(g =>
+      (!label || g.labels.includes(label)) && (!q || g.alts.some(c => DTT.cleanName(c).toLowerCase().includes(q))));
     state.shown = 0;
     $('channels').replaceChildren();
     renderMore();
@@ -46,15 +56,15 @@
   function renderMore() {
     const list = $('channels');
     const slice = state.filtered.slice(state.shown, state.shown + PAGE);
-    slice.forEach((c, i) => {
-      const lcn = state.it ? DTT.lcnOf(c) : undefined;
-      list.appendChild(row(c, state.it ? (lcn !== undefined ? String(lcn) : '') : String(state.shown + i + 1)));
+    slice.forEach((g, i) => {
+      const n = state.it ? (g.lcn !== undefined ? String(g.lcn) : '') : String(state.shown + i + 1);
+      list.appendChild(row(g, n));
     });
     state.shown += slice.length;
     $('more').hidden = state.shown >= state.filtered.length;
-    $('count').textContent = !state.channels.length ? 'Nessun canale nella playlist.'
-      : state.it ? state.filtered.length + ' canali italiani (ordine DTT) su ' + state.channels.length
-      : state.filtered.length + ' di ' + state.channels.length + ' canali';
+    $('count').textContent = !state.groups.length ? 'Nessun canale nella playlist.'
+      : state.it ? state.filtered.length + ' canali italiani (ordine DTT) su ' + state.groups.length
+      : state.filtered.length + ' di ' + state.groups.length + ' canali';
   }
 
   function span(cls, text) {
@@ -64,41 +74,80 @@
     return s;
   }
 
-  function row(c, n) {
+  function row(g, n) {
     const li = document.createElement('li');
     const b = document.createElement('button');
     b.type = 'button';
     b.appendChild(span('num', n));
-    if (c.logo) {
+    if (g.logo) {
       const img = document.createElement('img');
-      img.src = c.logo; img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
+      img.src = g.logo; img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
       img.onerror = () => img.replaceWith(span('ph'));
       b.appendChild(img);
     } else {
       b.appendChild(span('ph'));
     }
-    b.appendChild(span('name', DTT.cleanName(c)));
-    if (c.group) b.appendChild(span('grp', c.group));
-    b.addEventListener('click', () => openPlayer(c));
+    b.appendChild(span('name', DTT.cleanName(g.head)));
+    if (g.alts.length > 1) b.appendChild(span('alts', '×' + g.alts.length));
+    if (g.head.group) b.appendChild(span('grp', g.head.group));
+    b.addEventListener('click', () => openPlayer(g));
     li.appendChild(b);
     return li;
   }
 
+  /* ---------- Fonti alternative dello stesso canale ---------- */
+  function rememberedUrls() {
+    try { return JSON.parse(localStorage.getItem(ALT_KEY)) || {}; } catch (_) { return {}; }
+  }
+  function remember(g, url) {
+    try {
+      const all = rememberedUrls();
+      all[g.id] = url;
+      localStorage.setItem(ALT_KEY, JSON.stringify(all));
+    } catch (_) { /* storage non disponibile */ }
+  }
+
+  // Parte dalla fonte che ha funzionato l'ultima volta, se c'e'.
+  function playGroup(g) {
+    const last = rememberedUrls()[g.id];
+    const i = last ? g.alts.findIndex(c => c.url === last) : -1;
+    state.cur = { g, i: i >= 0 ? i : 0 };
+    start(g.alts[state.cur.i]);
+  }
+
+  // Passa alla fonte successiva dello stesso canale; false se non ce ne sono altre da provare.
+  function failover() {
+    const cur = state.cur;
+    if (!cur || cur.i + 1 >= cur.g.alts.length) return false;
+    cur.i += 1;
+    start(cur.g.alts[cur.i]);
+    return true;
+  }
+
+  function cycleSource() {
+    const cur = state.cur;
+    if (!cur || cur.g.alts.length < 2) return;
+    cur.i = (cur.i + 1) % cur.g.alts.length;
+    start(cur.g.alts[cur.i]);
+    showBar();
+  }
+
   /* ---------- Schermo intero ---------- */
   // Va chiamato dentro il gestore del click: il browser concede il fullscreen solo a un gesto dell'utente.
-  function openPlayer(c) {
+  function openPlayer(g) {
     player.hidden = false;
     document.body.classList.add('noscroll');
     const req = player.requestFullscreen || player.webkitRequestFullscreen;
     if (req) {
       try { const p = req.call(player); if (p && p.catch) p.catch(() => {}); } catch (_) { /* resta il pannello a tutto schermo */ }
     }
-    start(c);
+    playGroup(g);
     showBar();
   }
 
   function closePlayer() {
     stopPlayback();
+    state.cur = null;
     player.hidden = true;
     document.body.classList.remove('noscroll');
     state.fs = false;
@@ -118,8 +167,8 @@
   function step(delta) {
     const list = state.filtered;
     if (!list.length) return;
-    const i = list.findIndex(c => c.id === state.current);
-    start(list[(i + delta + list.length) % list.length]);
+    const i = state.cur ? list.indexOf(state.cur.g) : -1;
+    playGroup(list[(i + delta + list.length) % list.length]);
     showBar();
   }
 
@@ -139,6 +188,8 @@
   }
 
   function stopPlayback() {
+    clearTimeout(state.startTimer);
+    state.failFn = null;
     if (state.hls) { state.hls.destroy(); state.hls = null; }
     if (state.ts) { state.ts.destroy(); state.ts = null; }
     if (state.dash) { state.dash.reset(); state.dash = null; }
@@ -182,7 +233,11 @@
   // Dopo un errore interroga il server del canale per capire il motivo, e lo spiega in italiano.
   async function diagnose(c, url, type, engine) {
     const token = state.current;
-    const say = text => { if (state.current === token && !player.hidden) setMsg(text + ' [' + engine + ']', true, url); };
+    const n = state.cur ? state.cur.g.alts.length : 1;
+    const say = text => {
+      if (state.current !== token || player.hidden) return;
+      setMsg((n > 1 ? 'Nessuna delle ' + n + ' fonti parte. Ultima: ' : '') + text + ' [' + engine + ']', true, url);
+    };
     const exp = /[~?&]exp=(\d{10})\b/.exec(url);
     if (exp && Number(exp[1]) * 1000 < Date.now()) {
       return say('Il link di questo canale e\' scaduto il ' + new Date(Number(exp[1]) * 1000).toLocaleDateString('it-IT') + ': la lista va aggiornata.');
@@ -215,11 +270,15 @@
   async function start(c) {
     stopPlayback();
     state.current = c.id;
-    $('title').textContent = DTT.cleanName(c);
+    const cur = state.cur;
+    const nAlts = cur ? cur.g.alts.length : 1;
+    const label = DTT.cleanName(c);
+    $('title').textContent = nAlts > 1 ? label + '  ·  fonte ' + (cur.i + 1) + '/' + nAlts : label;
+    $('alt').hidden = nAlts < 2;
     let url = c.url;
     // Una pagina https non puo' aprire flussi http: provo la versione https (molti server la offrono).
     if (location.protocol === 'https:' && url.startsWith('http:')) url = 'https:' + url.slice(5);
-    setMsg('Caricamento…');
+    setMsg(cur && cur.i > 0 ? 'Provo la fonte ' + (cur.i + 1) + ' di ' + nAlts + '…' : 'Caricamento…');
 
     let type = typeFromUrl(url);
     if (!type) {
@@ -229,8 +288,10 @@
     }
     let engine;
     let triedNative = false;
+    let failed = false;
     state.type = type; state.playUrl = url;
     const fail = () => {
+      if (state.current !== c.id) return;
       // hls.js ha bisogno del permesso CORS del server; il lettore nativo di alcuni browser no: prima di arrendersi lo provo.
       if (engine === 'hls.js' && !triedNative && video.canPlayType('application/vnd.apple.mpegurl')) {
         triedNative = true;
@@ -240,8 +301,14 @@
         video.play().catch(() => { /* l'utente puo' premere play */ });
         return;
       }
+      if (failed) return;
+      failed = true;
+      clearTimeout(state.startTimer);
+      if (failover()) return;                                // c'e' un'altra fonte per questo canale
       diagnose(c, url, type, engine);
     };
+    state.failFn = fail;
+    state.startTimer = setTimeout(fail, STARTUP_MS);         // un server che non risponde mai non deve bloccare
 
     // hls.js ovunque tranne Safari (che legge l'HLS da solo): il lettore nativo di Chrome e' piu' recente e meno affidabile.
     if (type === 'hls' && window.Hls && Hls.isSupported() && !isSafari) {
@@ -266,17 +333,20 @@
       ts.load();
     } else {
       engine = 'browser';
-      video.src = url;                                   // ultima possibilita': il browser ci prova da solo
+      video.src = url;                                       // ultima possibilita': il browser ci prova da solo
     }
     state.engine = engine;
     video.play().catch(() => { /* l'utente puo' premere play */ });
   }
 
-  video.addEventListener('playing', () => setMsg(''));
-  video.addEventListener('waiting', () => setMsg('Buffering…'));
+  video.addEventListener('playing', () => {
+    clearTimeout(state.startTimer);
+    setMsg('');
+    if (state.cur) remember(state.cur.g, state.channels[state.current].url);
+  });
+  video.addEventListener('waiting', () => { if (!$('msg').classList.contains('error')) setMsg('Buffering…'); });
   video.addEventListener('error', () => {
-    const c = state.channels[state.current];
-    if (video.error && video.getAttribute('src') && c) diagnose(c, state.playUrl || c.url, state.type, state.engine || 'browser');
+    if (video.error && video.getAttribute('src') && state.failFn) state.failFn();
   });
 
   /* ---------- Eventi ---------- */
@@ -293,6 +363,7 @@
   $('close').addEventListener('click', closePlayer);
   $('prev').addEventListener('click', () => step(-1));
   $('next').addEventListener('click', () => step(1));
+  $('alt').addEventListener('click', cycleSource);
   ['mousemove', 'touchstart'].forEach(ev => player.addEventListener(ev, showBar, { passive: true }));
   document.addEventListener('keydown', e => {
     if (player.hidden) return;

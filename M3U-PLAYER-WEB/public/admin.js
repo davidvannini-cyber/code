@@ -19,13 +19,54 @@
       ' KB. Ultima modifica: ' + new Date(i.updatedAt).toLocaleString('it-IT');
   }
 
+  function showSources(cfg) {
+    $('maxSources').textContent = cfg.max || 20;
+    if (document.activeElement !== $('sources')) $('sources').value = (cfg.urls || []).join('\n');
+    const list = $('srcStatus');
+    list.replaceChildren();
+    (cfg.status || []).forEach((st, i) => {
+      const li = document.createElement('li');
+      const when = st.at ? ' · ' + new Date(st.at).toLocaleString('it-IT') : '';
+      let text;
+      if (st.ok) text = '\u2713 ' + st.channels + ' canali';
+      else if (st.fromCache) text = '\u26A0 non raggiungibile (' + st.error + '): uso la copia salvata, ' + st.channels + ' canali';
+      else text = '\u2717 ' + (st.error || 'errore');
+      li.className = st.ok ? 'ok' : (st.fromCache ? 'warn' : 'bad');
+      li.textContent = (i + 1) + '. ' + st.url.slice(0, 90) + ' \u2014 ' + text + when;
+      list.appendChild(li);
+    });
+  }
+
   async function refresh() {
     const r = await api('/api/status');
     const logged = r.ok;
     $('login').hidden = logged;
     $('panel').hidden = !logged;
-    if (logged) showInfo(r.data);
+    if (logged) {
+      showInfo(r.data);
+      const src = await api('/api/sources');
+      if (src.ok) showSources(src.data);
+    }
   }
+
+  async function saveSources(path, body) {
+    say('Scarico le liste…');
+    $('srcSave').disabled = $('srcRefresh').disabled = true;
+    const r = await api(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+    $('srcSave').disabled = $('srcRefresh').disabled = false;
+    if (r.status === 401) { say('Sessione scaduta: accedi di nuovo.', true); return refresh(); }
+    if (!r.ok) { say((r.data && r.data.error) || 'Aggiornamento non riuscito.', true); return refresh(); }
+    showInfo(r.data);
+    showSources(r.data);
+    say('Liste aggiornate: ' + r.data.channels + ' canali in totale.');
+  }
+
+  $('srcSave').addEventListener('click', () => {
+    const urls = $('sources').value.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    if (!urls.length) return say('Scrivi almeno un indirizzo.', true);
+    saveSources('/api/sources', JSON.stringify({ urls }));
+  });
+  $('srcRefresh').addEventListener('click', () => saveSources('/api/sources/refresh', ''));
 
   $('login').addEventListener('submit', async e => {
     e.preventDefault();

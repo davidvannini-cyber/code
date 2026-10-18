@@ -99,7 +99,59 @@
       .map(x => x.c);
   }
 
-  const api = { key, lcnOf, cleanName, isItalian, preferWorking, sortDtt };
+  const QUALITY = /^(\d{3,4}[pi]|hd|fhd|uhd|sd|4k)$/i;
+
+  // Identita' di un canale per riconoscere lo stesso canale in liste diverse. Canali con paese diverso (id ".tr") o con un
+  // paese tra parentesi ("TV8 (Moldova)") non si fondono con quello italiano.
+  function identity(channel) {
+    const cc = countryOf(channel);
+    const tags = [...String(channel.name || '').matchAll(/\(([^)]*)\)/g)].map(m => m[1].trim().toLowerCase())
+      .filter(t => t && !QUALITY.test(t) && !/ital/.test(t)).join(',');
+    const n = tableLcn(channel);
+    return (cc && cc !== 'it' ? cc : '') + '|' + tags + '|' + (n !== undefined ? 'n' + n : key(cleanName(channel)));
+  }
+
+  // Alternative dello stesso canale, dalla migliore: senza [Geo-blocked], fonte piu' in alto, senza [Not 24/7],
+  // risoluzione piu' alta, ordine originale.
+  function rankAlts(items) {
+    return items.sort((a, b) =>
+      isGeo(a.c) - isGeo(b.c) || (a.c.src || 0) - (b.c.src || 0) || isNot247(a.c) - isNot247(b.c)
+      || resolution(b.c) - resolution(a.c) || a.i - b.i);
+  }
+
+  // Un elemento per canale: { id, alts: [versioni in ordine di prova], head, lcn, logo, labels, firstIndex }.
+  function groupChannels(channels) {
+    const map = new Map();
+    channels.forEach((c, i) => {
+      const id = identity(c);
+      let list = map.get(id);
+      if (!list) map.set(id, list = []);
+      list.push({ c, i });
+    });
+    const groups = [];
+    for (const [id, items] of map) {
+      const alts = rankAlts(items).map(x => x.c);
+      const nums = alts.map(lcnOf).filter(n => n !== undefined);
+      groups.push({
+        id, alts, head: alts[0],
+        firstIndex: Math.min(...items.map(x => x.i)),
+        lcn: nums.length ? nums[0] : undefined,
+        logo: (alts.find(a => a.logo) || {}).logo || null,
+        labels: [...new Set(alts.map(a => a.group).filter(Boolean))],
+      });
+    }
+    return groups.sort((a, b) => a.firstIndex - b.firstIndex);
+  }
+
+  // Ordine DTT dei gruppi: prima quelli con numero, poi gli altri per nome.
+  function sortGroups(groups) {
+    return [...groups].sort((a, b) =>
+      (a.lcn ?? Infinity) - (b.lcn ?? Infinity)
+      || (a.lcn === undefined ? cleanName(a.head).localeCompare(cleanName(b.head), 'it') : 0)
+      || a.firstIndex - b.firstIndex);
+  }
+
+  const api = { key, lcnOf, cleanName, isItalian, preferWorking, sortDtt, identity, groupChannels, sortGroups };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DTT = api;
 })(typeof window !== 'undefined' ? window : globalThis);

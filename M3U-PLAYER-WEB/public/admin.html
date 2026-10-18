@@ -23,7 +23,16 @@
       <h2>Playlist attuale</h2>
       <p id="info" class="muted"></p>
 
-      <h2>Sostituisci la playlist</h2>
+      <h2>Liste (fonti)</h2>
+      <p class="muted">Un indirizzo per riga, fino a <span id="maxSources">20</span>. Il server le scarica, le unisce e le aggiorna da solo ogni 6 ore.
+         L'ordine conta: per ogni canale la pagina prova prima la fonte piu' in alto e passa alle altre se non parte.</p>
+      <p><textarea id="sources" rows="6" placeholder="https://…/prima-lista.m3u&#10;https://…/seconda-lista.m3u" aria-label="Indirizzi delle liste"></textarea></p>
+      <p><button id="srcSave" class="btn" type="button">Salva e aggiorna</button>
+         <button id="srcRefresh" class="btn" type="button">Aggiorna ora</button></p>
+      <ul id="srcStatus" class="status"></ul>
+
+      <details>
+      <summary>Sostituisci con una sola playlist (disattiva le fonti sopra)</summary>
       <p class="muted">Scrivi l'indirizzo della playlist (il server la scarica da solo):</p>
       <p><input id="urlInput" type="url" placeholder="https://…/lista.m3u" aria-label="Indirizzo della playlist"></p>
       <p><button id="urlBtn" class="btn" type="button">Scarica e sostituisci</button></p>
@@ -32,8 +41,9 @@
          <span id="fileName" class="muted"></span></p>
       <p class="muted">oppure incolla il testo:</p>
       <p><textarea id="text" rows="8" placeholder="#EXTM3U&#10;#EXTINF:-1,Nome canale&#10;https://…/stream.m3u8"></textarea></p>
-      <p><button id="save" class="btn" type="button">Salva e sostituisci</button>
-         <button id="logout" class="btn" type="button">Esci</button></p>
+      <p><button id="save" class="btn" type="button">Salva e sostituisci</button></p>
+      </details>
+      <p><button id="logout" class="btn" type="button">Esci</button></p>
     </section>
     <p id="msg" role="status"></p>
   </main>

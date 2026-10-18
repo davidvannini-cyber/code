@@ -73,6 +73,7 @@
           group: a['group-title'] || pendingGroup || null,
           tvgId: a['tvg-id'] || null,
           chno: /^\d{1,4}$/.test(a['tvg-chno'] || '') ? Number(a['tvg-chno']) : null,   // numero di canale scelto dalla lista
+          src: Number(a['x-src']) || 0,                                                   // fonte (lista) di provenienza, se la playlist e' unita
         });
         pending = null;
         pendingGroup = null;

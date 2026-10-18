@@ -133,4 +133,48 @@ http://h/5`);
   assert.deepStrictEqual(DTT.sortDtt(n.filter(DTT.isItalian)).map(c => DTT.cleanName(c)), ['Rai Scuola', 'Rai Sport + HD', 'Supertennis']);
   assert.deepStrictEqual(DTT.sortDtt(n).map(c => DTT.lcnOf(c)), [57, 58, 64, 265, undefined], 'ordinamento per numero, senza numero in fondo');
 }
+
+{
+  // Piu' liste unite: le versioni dello stesso canale si raggruppano e si provano in ordine.
+  const { channels: m } = parseM3U(`#EXTM3U
+#EXTINF:-1 tvg-id="LA7.it" tvg-chno="7" group-title="Altro" x-src="1",LA7
+https://a/la7.m3u8
+#EXTINF:-1 tvg-id="TV8.it" x-src="1",TV8
+https://a/tv8.m3u8
+#EXTINF:-1 x-src="2" group-title="General",LA7 (1080p)
+https://b/la7.m3u8
+#EXTINF:-1 x-src="2" group-title="General",LA7 [Geo-blocked]
+https://b/la7-geo.m3u8
+#EXTINF:-1 tvg-id="TV8.tr@SD" x-src="2",TV8 (Turkiye) (1080p)
+https://b/tv8tr.m3u8
+#EXTINF:-1 x-src="2",TV8 (Moldova) [Not 24/7]
+https://b/tv8md.m3u8
+#EXTINF:-1 x-src="2",TV8
+https://b/tv8.m3u8
+#EXTINF:-1 x-src="1",20 Mediaset
+https://a/20.mpd
+#EXTINF:-1 x-src="2",20 [Geo-blocked]
+https://b/20.m3u8
+#EXTINF:-1,[57] Rai Scuola
+https://c/rs
+#EXTINF:-1 tvg-chno="57" tvg-id="RaiScuola.it",Rai Scuola
+https://d/rs`);
+  assert.strictEqual(m[0].src, 1);
+  const g = DTT.groupChannels(m);
+  const byName = n => g.find(x => DTT.cleanName(x.head) === n || x.head.name === n);
+  const la7 = g.find(x => DTT.key(x.head.name) === 'la7');
+  assert.deepStrictEqual(la7.alts.map(c => c.url), ['https://a/la7.m3u8', 'https://b/la7.m3u8', 'https://b/la7-geo.m3u8'], 'fonte 1, poi fonte 2, [Geo-blocked] per ultima');
+  assert.strictEqual(la7.lcn, 7);
+  assert.strictEqual(la7.logo, null);
+  assert.deepStrictEqual(la7.labels.sort(), ['Altro', 'General']);
+  const tv8 = g.filter(x => DTT.key(x.head.name) === 'tv8');
+  assert.strictEqual(tv8.length, 3, 'TV8 italiano, turco e moldavo restano separati');
+  assert.deepStrictEqual(tv8.find(x => x.head.url === 'https://a/tv8.m3u8').alts.map(c => c.url), ['https://a/tv8.m3u8', 'https://b/tv8.m3u8']);
+  assert.strictEqual(g.find(x => x.alts.some(c => c.url === 'https://a/20.mpd')).alts.length, 2, '20 Mediaset e 20 [Geo-blocked] sono lo stesso canale');
+  const rs = g.find(x => x.alts.some(c => c.url === 'https://c/rs'));
+  assert.strictEqual(rs.alts.length, 2, 'Rai Scuola con e senza numero');
+  assert.strictEqual(rs.lcn, 57, 'il numero scritto nella lista vince');
+  const sorted = DTT.sortGroups(g.filter(x => x.alts.some(DTT.isItalian)));
+  assert.deepStrictEqual(sorted.slice(0, 3).map(x => x.lcn), [7, 8, 20], 'ordine per numero');
+}
 console.log('Tutti i test del DTT sono passati.');

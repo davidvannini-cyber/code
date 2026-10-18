@@ -3,7 +3,9 @@
 Tre cose:
 1. **Pagina pubblica** (`/`): elenco dei canali della playlist M3U, una riga per canale, con ricerca e filtro per gruppo. La casella **Italiani (ordine DTT)** mostra solo i canali italiani, numerati e ordinati come sul digitale terrestre (Rai 1, Rai 2, Rai 3, Rete 4, Canale 5, Italia 1, La7…); la scelta viene ricordata. Se lo stesso canale compare in piu' versioni, quelle segnate `[Geo-blocked]` (di solito indirizzi spenti) si nascondono quando ce n'e' una senza; un canale che esiste solo con `[Geo-blocked]` resta in elenco. A parita' di canale le versioni ad alta risoluzione vengono prima.
 2. **Schermo intero**: un clic su una riga avvia il canale a tutto schermo. I pulsanti ◀ ▶ (o PagSu/PagGiu) cambiano canale, Esc o ✕ tornano all'elenco.
-3. **Area admin** (`/admin`): con password, si sostituisce la playlist scrivendo il suo **indirizzo** (il server la scarica da solo), caricando un file o incollando il testo. L'elenco pubblico mostra subito la nuova lista.
+3. **Area admin** (`/admin`): con password.
+   - **Liste (fonti):** scrivi gli indirizzi di piu' playlist (fino a 20, uno per riga). Il server le scarica, le unisce e le riaggiorna da solo ogni 6 ore. Se una lista non risponde usa l'ultima copia salvata. Lo stesso canale in liste diverse compare **una volta sola**: la pagina prova la fonte piu' in alto e, se non parte (errore o nessuna risposta entro 20 secondi), passa **da sola** alla successiva. Ricorda l'ultima fonte che ha funzionato. Il pulsante ↻ nel player prova l'altra fonte a mano.
+   - **Una sola playlist:** in alternativa si sostituisce tutto con un indirizzo, un file o il testo incollato (questo disattiva le fonti). L'elenco pubblico mostra subito la nuova lista.
 
 ## Avvio
 Serve Node 18 o successivo. Nessuna installazione di pacchetti.
@@ -22,7 +24,7 @@ Se non imposti `ADMIN_PASSWORD`, il server ne genera una temporanea e la scrive 
 | `VIEWER_PASSWORD` | spenta | Se impostata, anche vedere i canali richiede questa password |
 | `TRUST_PROXY` | spento | `1` dietro a un proxy HTTPS: cookie `Secure` e IP corretto per il blocco tentativi |
 | `ALLOW_PRIVATE_URLS` | spento | `1` permette di scaricare playlist da indirizzi di rete locale (NAS, altro computer di casa); di default sono vietati |
-| `DATA_DIR` | `./data` | Dove vive la playlist attuale (`playlist.m3u`) e la precedente (`playlist.prev.m3u`) |
+| `DATA_DIR` | `./data` | Dove vivono la playlist attuale (`playlist.m3u`), la precedente (`playlist.prev.m3u`), l'elenco delle fonti (`sources.json`) e le loro copie (`src-cache/`) |
 
 Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` non finisce nel repository.
 

@@ -20,6 +20,11 @@ const DATA = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data'));
 const PLAYLIST = path.join(DATA, 'playlist.m3u');
 const BACKUP = path.join(DATA, 'playlist.prev.m3u');
 const MAX_PLAYLIST = 10 * 1024 * 1024;
+const MAX_MERGED = 40 * 1024 * 1024;
+const MAX_SOURCES = 20;
+const SOURCES = path.join(DATA, 'sources.json');
+const CACHE_DIR = path.join(DATA, 'src-cache');
+const REFRESH_MS = 6 * 60 * 60 * 1000;           // aggiornamento automatico delle fonti
 const SESSION_MS = 400 * 24 * 60 * 60 * 1000;     // massimo che i browser accettano; si rinnova a ogni apertura della pagina
 
 const sha = s => crypto.createHash('sha256').update(s).digest();
@@ -216,6 +221,99 @@ function fetchText(urlStr, hops = 0) {
   });
 }
 
+/* ---------- Fonti multiple: piu' liste unite in una ---------- */
+function readSources() {
+  try { return JSON.parse(fs.readFileSync(SOURCES, 'utf8')); } catch (_) { return { urls: [], status: [], updatedAt: null }; }
+}
+function writeSources(o) {
+  const tmp = SOURCES + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(o));
+  fs.renameSync(tmp, SOURCES);
+}
+const clearSources = () => { if (readSources().urls.length) writeSources({ urls: [], status: [], updatedAt: null }); };
+const cacheFile = url => path.join(CACHE_DIR, crypto.createHash('sha1').update(url).digest('hex') + '.m3u');
+
+// Una fonte puo' essere anche l'indirizzo di un singolo flusso HLS: diventa un canale.
+function parseSource(text, url) {
+  try { return parseM3U(text); } catch (e) {
+    if (e.code !== 'hls-manifest') throw e;
+    let name = url;
+    try { name = decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).pop() || url); } catch (_) { /* resta l'indirizzo */ }
+    return { channels: [{ name, url, group: null, logo: null, tvgId: null, chno: null }] };
+  }
+}
+
+function serializeChannel(c, src) {
+  const q = v => String(v).replace(/"/g, "'").replace(/[\r\n]+/g, ' ');
+  const attrs = [];
+  if (c.tvgId) attrs.push(`tvg-id="${q(c.tvgId)}"`);
+  if (c.chno) attrs.push(`tvg-chno="${c.chno}"`);
+  if (c.logo) attrs.push(`tvg-logo="${q(c.logo)}"`);
+  if (c.group) attrs.push(`group-title="${q(c.group)}"`);
+  attrs.push(`x-src="${src}"`);
+  return `#EXTINF:-1 ${attrs.join(' ')},${q(c.name)}\n${c.url}\n`;
+}
+
+let refreshing = null;
+function refreshSources() {
+  if (!refreshing) refreshing = doRefresh().finally(() => { refreshing = null; });
+  return refreshing;
+}
+
+async function doRefresh() {
+  const cfg = readSources();
+  if (!cfg.urls.length) throw httpError(400, 'Nessuna fonte configurata.');
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
+  const at = new Date().toISOString();
+
+  const results = await Promise.all(cfg.urls.map(async url => {
+    const r = { url, ok: false, fromCache: false, channels: 0, error: null, at, parsed: null };
+    try {
+      const text = await fetchText(url);
+      const parsed = parseSource(text, url);
+      if (!parsed.channels.length) throw new Error('La lista non contiene canali http/https.');
+      fs.writeFileSync(cacheFile(url), text);
+      r.ok = true; r.parsed = parsed;
+    } catch (e) {
+      r.error = e.message || 'Errore';
+      try {                                              // fonte non raggiungibile: uso l'ultima copia buona
+        const parsed = parseSource(fs.readFileSync(cacheFile(url), 'utf8'), url);
+        r.fromCache = true; r.parsed = parsed;
+      } catch (_) { /* nessuna copia disponibile */ }
+    }
+    r.channels = r.parsed ? r.parsed.channels.length : 0;
+    return r;
+  }));
+
+  const seen = new Set();
+  let out = '#EXTM3U\n';
+  let total = 0;
+  results.forEach((r, i) => {
+    if (!r.parsed) return;
+    for (const c of r.parsed.channels) {
+      if (seen.has(c.url)) continue;                     // stesso indirizzo in piu' liste: tengo il primo
+      seen.add(c.url);
+      out += serializeChannel(c, i + 1);
+      total += 1;
+    }
+  });
+  const status = results.map(({ parsed, ...rest }) => rest);
+  if (!total) {
+    writeSources({ ...cfg, status, updatedAt: at });
+    throw httpError(502, 'Nessuna fonte raggiungibile e nessuna copia salvata: la playlist non e\' stata modificata.');
+  }
+  if (Buffer.byteLength(out) > MAX_MERGED) throw httpError(413, 'Le liste unite superano 40 MB.');
+
+  fs.copyFileSync(PLAYLIST, BACKUP);
+  const tmp = PLAYLIST + '.tmp';
+  fs.writeFileSync(tmp, out);
+  fs.renameSync(tmp, PLAYLIST);
+  writeSources({ ...cfg, status, updatedAt: at });
+  return { ok: true, ...readSources(), ...playlistInfo() };
+}
+
+setInterval(() => { if (readSources().urls.length) refreshSources().catch(e => console.error('Aggiornamento fonti:', e.message)); }, REFRESH_MS).unref();
+
 // Percorsi raggiungibili senza password di spettatore (nessun dato della playlist).
 const OPEN_PATHS = new Set(['/healthz', '/login.html', '/login.js', '/style.css', '/admin', '/admin.html', '/admin.js']);
 
@@ -244,14 +342,43 @@ async function route(req, res) {
   if (pathname === '/api/playlist' && req.method === 'POST') {
     requireAdmin(req);
     const text = (await readBody(req, MAX_PLAYLIST)).toString('utf8');
-    return send(res, 200, { ok: true, ...savePlaylist(text) });
+    const info = savePlaylist(text);
+    clearSources();
+    return send(res, 200, { ok: true, ...info });
+  }
+  if (pathname === '/api/sources' && req.method === 'GET') {
+    requireAdmin(req);
+    return send(res, 200, { ...readSources(), max: MAX_SOURCES });
+  }
+  if (pathname === '/api/sources' && req.method === 'POST') {
+    requireAdmin(req);
+    let urls;
+    try { urls = JSON.parse((await readBody(req, 64 * 1024)).toString('utf8')).urls; }
+    catch (e) { if (e.status) throw e; throw httpError(400, 'Richiesta non valida.'); }
+    if (!Array.isArray(urls)) throw httpError(400, 'Richiesta non valida.');
+    urls = [...new Set(urls.map(u => String(u).trim()).filter(Boolean))];
+    if (!urls.length) throw httpError(400, 'Scrivi almeno un indirizzo.');
+    if (urls.length > MAX_SOURCES) throw httpError(400, 'Al massimo ' + MAX_SOURCES + ' liste.');
+    for (const u of urls) {
+      let ok = false;
+      try { ok = ['http:', 'https:'].includes(new URL(u).protocol) && u.length <= 2000; } catch (_) { /* non e' un indirizzo */ }
+      if (!ok) throw httpError(400, 'Indirizzo non valido: ' + u.slice(0, 80));
+    }
+    writeSources({ urls, status: [], updatedAt: null });
+    return send(res, 200, await refreshSources());
+  }
+  if (pathname === '/api/sources/refresh' && req.method === 'POST') {
+    requireAdmin(req);
+    return send(res, 200, await refreshSources());
   }
   if (pathname === '/api/playlist-url' && req.method === 'POST') {
     requireAdmin(req);
     let target = '';
     try { target = String(JSON.parse((await readBody(req, 4096)).toString('utf8')).url || '').trim(); }
     catch (e) { if (e.status) throw e; throw httpError(400, 'Richiesta non valida.'); }
-    return send(res, 200, { ok: true, ...savePlaylist(await fetchText(target)) });
+    const info = savePlaylist(await fetchText(target));
+    clearSources();
+    return send(res, 200, { ok: true, ...info });
   }
 
   /* Pagina pubblica: con VIEWER_PASSWORD serve l'accesso (o la sessione admin). */

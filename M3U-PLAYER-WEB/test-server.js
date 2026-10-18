@@ -189,6 +189,70 @@ async function scenarioPlaylistFromUrl() {
   }
 }
 
+async function scenarioMultiSource() {
+  const http = require('http');
+  let fail2 = false;
+  const origin = http.createServer((req, res) => {
+    if (req.url === '/a.m3u') return res.end('#EXTM3U\n#EXTINF:-1 tvg-id="LA7.it" group-title="Altro" tvg-chno="7",LA7\nhttps://a.example/la7.m3u8\n#EXTINF:-1,Solo A\nhttps://a.example/solo.m3u8\n#EXTINF:-1,Doppio\nhttps://shared.example/x.m3u8');
+    if (req.url === '/b.m3u' && !fail2) return res.end('#EXTM3U\n#EXTINF:-1,LA7\nhttps://b.example/la7.m3u8\n#EXTINF:-1,Doppio\nhttps://shared.example/x.m3u8\n#EXTINF:-1,Da "B"\nhttps://b.example/q.m3u8');
+    if (req.url === '/single.m3u8') return res.end('#EXTM3U\n#EXT-X-TARGETDURATION:4\n#EXTINF:4,\nseg.ts');
+    res.writeHead(500); res.end();
+  });
+  await new Promise(r => origin.listen(0, '127.0.0.1', r));
+  const o = 'http://127.0.0.1:' + origin.address().port;
+  try {
+    await withServer({ ALLOW_PRIVATE_URLS: '1' }, async base => {
+      const r = await login(base, '/api/login', 'segreta-di-test');
+      const auth = { Cookie: cookieOf(r) };
+      const sources = (urls, headers = auth) => post(base, '/api/sources', JSON.stringify({ urls }), { ...JSON_H, ...headers });
+
+      assert.strictEqual((await sources([o + '/a.m3u'], {})).status, 401, 'fonti: serve il login');
+      assert.strictEqual((await fetch(base + '/api/sources')).status, 401);
+      assert.strictEqual((await sources([])).status, 400, 'nessun indirizzo');
+      assert.strictEqual((await sources(['non-un-indirizzo'])).status, 400, 'indirizzo non valido');
+      assert.strictEqual((await sources(['ftp://x/y'])).status, 400, 'schema non ammesso');
+      assert.strictEqual((await sources(Array.from({ length: 21 }, (_, i) => o + '/a.m3u?' + i))).status, 400, 'oltre il limite');
+
+      let resp = await sources([o + '/a.m3u', o + '/b.m3u', o + '/single.m3u8']);
+      assert.strictEqual(resp.status, 200, 'salvataggio e aggiornamento');
+      const info = await resp.json();
+      assert.strictEqual(info.status.length, 3);
+      assert.ok(info.status.every(x => x.ok), 'tutte le fonti ok');
+      const merged = await (await fetch(base + '/playlist.m3u')).text();
+      assert.strictEqual((merged.match(/^#EXTINF/gm) || []).length, 6, 'LA7 x2, Solo A, Doppio (uno solo), Da B, flusso singolo');
+      assert.match(merged, /tvg-chno="7"[^\n]*x-src="1",LA7/, 'attributi conservati e fonte 1');
+      assert.match(merged, /x-src="2",LA7/, 'LA7 anche dalla fonte 2');
+      assert.match(merged, /x-src="2",Da 'B'/, 'virgolette nei nomi neutralizzate');
+      assert.match(merged, /x-src="3",single\.m3u8/, 'flusso singolo come canale');
+      assert.strictEqual((merged.match(/shared\.example/g) || []).length, 1, 'stesso indirizzo in due liste: una volta sola');
+
+      assert.strictEqual((await fetch(base + '/api/sources', { headers: auth })).status, 200);
+      fail2 = true;                                                       // la fonte B smette di rispondere
+      resp = await post(base, '/api/sources/refresh', '', auth);
+      assert.strictEqual(resp.status, 200);
+      const again = await resp.json();
+      assert.strictEqual(again.status[1].ok, false);
+      assert.strictEqual(again.status[1].fromCache, true, 'copia salvata usata');
+      assert.ok((await (await fetch(base + '/playlist.m3u')).text()).includes('Da \'B\''), 'i canali della fonte caduta restano');
+
+      // legacy: sostituire con una sola playlist azzera le fonti
+      const one = await post(base, '/api/playlist', '#EXTM3U\n#EXTINF:-1,Uno\nhttps://h/1.m3u8', auth);
+      assert.strictEqual(one.status, 200);
+      assert.deepStrictEqual((await (await fetch(base + '/api/sources', { headers: auth })).json()).urls, [], 'fonti azzerate');
+    });
+    await withServer({ ALLOW_PRIVATE_URLS: '1' }, async base => {       // nessuna fonte raggiungibile: la playlist non cambia
+      const r = await login(base, '/api/login', 'segreta-di-test');
+      const auth = { Cookie: cookieOf(r) };
+      const before = await (await fetch(base + '/playlist.m3u')).text();
+      const resp = await post(base, '/api/sources', JSON.stringify({ urls: [o + '/morta.m3u'] }), { ...JSON_H, ...auth });
+      assert.strictEqual(resp.status, 502);
+      assert.strictEqual(await (await fetch(base + '/playlist.m3u')).text(), before, 'playlist invariata');
+    });
+  } finally {
+    origin.close();
+  }
+}
+
 (async () => {
   try {
     await scenarioBase();
@@ -197,6 +261,7 @@ async function scenarioPlaylistFromUrl() {
     await scenarioSessionsSurviveRestart();
     await scenarioSinglePassword();
     await scenarioPlaylistFromUrl();
+    await scenarioMultiSource();
     console.log('Tutti i test del server sono passati.');
   } catch (e) {
     console.error('TEST FALLITO:', e.message);
