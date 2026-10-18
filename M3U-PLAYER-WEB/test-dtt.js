@@ -48,7 +48,7 @@ assert.deepStrictEqual(it.map(c => c.name).includes('Canale 5'), true, 'canale n
 
 const order = DTT.sortDtt(it).map(c => c.name);
 assert.deepStrictEqual(order, [
-  'Rai 1 [Not 24/7]', 'Rai 1',        // stesso numero: ordine originale
+  'Rai 1', 'Rai 1 [Not 24/7]',        // stesso numero: prima quella senza [Not 24/7]
   'Rai 2', 'Rai 3 HD', 'Canale 5', 'Italia 1', 'La7',
   'Rai4', 'Cielo (576p)', 'RTL 102.5',
   'Antenna Locale', 'Tele Lombardia',   // senza numero: per nome
@@ -76,5 +76,35 @@ https://h/7.m3u8
 https://h/8.m3u8`);
   assert.deepStrictEqual(tv8.filter(DTT.isItalian).map(c => c.url.slice(-8)), ['h/1.m3u8', 'h/6.m3u8', 'h/7.m3u8', 'h/8.m3u8']);
   assert.strictEqual(DTT.lcnOf(tv8[7]), 20, '20 con [Geo-blocked]');
+}
+
+{
+  // Versioni doppie: la [Geo-blocked] si nasconde solo se ne esiste una senza.
+  const { channels: dup } = parseM3U(`#EXTM3U
+#EXTINF:-1 tvg-id="Canale5.it@SD",Canale 5 [Geo-blocked]
+https://h/c5-geo.m3u8
+#EXTINF:-1 tvg-id="Canale5.it@HD",Canale 5 (576p)
+https://h/c5.m3u8
+#EXTINF:-1 tvg-id="Italia1.it@SD",Italia 1 [Geo-blocked]
+https://h/i1-geo.m3u8
+#EXTINF:-1 tvg-id="Rete4.it@SD",Rete 4 [Geo-blocked]
+https://h/r4-geo.m3u8
+#EXTINF:-1 tvg-id="Rete4.it@HD",Rete 4 HD (1080p)
+https://h/r4-hd.m3u8
+#EXTINF:-1 tvg-id="Rete4.it@SD",Rete 4 (576p)
+https://h/r4-sd.m3u8
+#EXTINF:-1 tvg-id="TeleX.it",Tele X [Geo-blocked]
+https://h/x-geo.m3u8
+#EXTINF:-1 tvg-id="TeleX.it",Tele X
+https://h/x.m3u8
+#EXTINF:-1 tvg-id="TeleY.it",Tele Y [Geo-blocked]
+https://h/y-geo.m3u8`);
+  const shown = DTT.sortDtt(DTT.preferWorking(dup.filter(DTT.isItalian))).map(c => c.name);
+  assert.deepStrictEqual(shown, [
+    'Rete 4 HD (1080p)', 'Rete 4 (576p)',            // la [Geo-blocked] sparisce, la risoluzione piu' alta viene prima
+    'Canale 5 (576p)',
+    'Italia 1 [Geo-blocked]',                          // unica versione: resta
+    'Tele X', 'Tele Y [Geo-blocked]',                  // senza numero: per nome; Tele Y resta perche' e' l'unica
+  ]);
 }
 console.log('Tutti i test del DTT sono passati.');

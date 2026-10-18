@@ -1,7 +1,7 @@
 # Player M3U (web)
 
 Tre cose:
-1. **Pagina pubblica** (`/`): elenco dei canali della playlist M3U, una riga per canale, con ricerca e filtro per gruppo. La casella **Italiani (ordine DTT)** mostra solo i canali italiani, numerati e ordinati come sul digitale terrestre (Rai 1, Rai 2, Rai 3, Rete 4, Canale 5, Italia 1, La7…); la scelta viene ricordata.
+1. **Pagina pubblica** (`/`): elenco dei canali della playlist M3U, una riga per canale, con ricerca e filtro per gruppo. La casella **Italiani (ordine DTT)** mostra solo i canali italiani, numerati e ordinati come sul digitale terrestre (Rai 1, Rai 2, Rai 3, Rete 4, Canale 5, Italia 1, La7…); la scelta viene ricordata. Se lo stesso canale compare in piu' versioni, quelle segnate `[Geo-blocked]` (di solito indirizzi spenti) si nascondono quando ce n'e' una senza; un canale che esiste solo con `[Geo-blocked]` resta in elenco. A parita' di canale le versioni ad alta risoluzione vengono prima.
 2. **Schermo intero**: un clic su una riga avvia il canale a tutto schermo. I pulsanti ◀ ▶ (o PagSu/PagGiu) cambiano canale, Esc o ✕ tornano all'elenco.
 3. **Area admin** (`/admin`): con password, si sostituisce la playlist scrivendo il suo **indirizzo** (il server la scarica da solo), caricando un file o incollando il testo. L'elenco pubblico mostra subito la nuova lista.
 

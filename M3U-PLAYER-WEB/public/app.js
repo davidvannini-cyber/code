@@ -23,7 +23,7 @@
   // Con "Italiani" attivo: solo i canali italiani, nell'ordine standard del digitale terrestre.
   function baseChannels() {
     if (!state.it) return state.channels;
-    return DTT.sortDtt(state.channels.filter(DTT.isItalian));
+    return DTT.sortDtt(DTT.preferWorking(state.channels.filter(DTT.isItalian)));
   }
 
   function fillGroups() {

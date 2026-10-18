@@ -56,15 +56,35 @@
     return lcnOf(channel) !== undefined;                                 // e' un canale noto del DTT
   }
 
-  // Ordine DTT: prima i canali con numero (stesso numero = ordine originale), poi gli altri per nome.
+  const isGeo = c => /\[geo-blocked\]/i.test(c.name || '');
+  const isNot247 = c => /\[not 24\/7\]/i.test(c.name || '');
+  const resolution = c => Number((/(\d{3,4})p\b/.exec(c.name || '') || [])[1]) || 0;
+
+  // Stesso canale in piu' versioni: se esiste una versione senza [Geo-blocked], le versioni [Geo-blocked] (di solito
+  // indirizzi spenti) si nascondono. Un canale che esiste solo con [Geo-blocked] resta in elenco.
+  function preferWorking(channels) {
+    const groupOf = c => { const n = lcnOf(c); return n !== undefined ? 'n' + n : 'k' + key(c.name); };
+    const hasWorking = new Set();
+    for (const c of channels) if (!isGeo(c)) hasWorking.add(groupOf(c));
+    return channels.filter(c => !isGeo(c) || !hasWorking.has(groupOf(c)));
+  }
+
+  // Ordine DTT: prima i canali con numero, poi gli altri per nome. A parita' di numero: senza [Geo-blocked],
+  // senza [Not 24/7], risoluzione piu' alta, poi ordine originale della lista.
   function sortDtt(channels) {
     return channels
       .map((c, i) => ({ c, i, n: lcnOf(c) }))
-      .sort((a, b) => (a.n ?? Infinity) - (b.n ?? Infinity) || (a.n === undefined ? a.c.name.localeCompare(b.c.name, 'it') : 0) || a.i - b.i)
+      .sort((a, b) =>
+        (a.n ?? Infinity) - (b.n ?? Infinity)
+        || (a.n === undefined ? a.c.name.localeCompare(b.c.name, 'it') : 0)
+        || isGeo(a.c) - isGeo(b.c)
+        || isNot247(a.c) - isNot247(b.c)
+        || resolution(b.c) - resolution(a.c)
+        || a.i - b.i)
       .map(x => x.c);
   }
 
-  const api = { key, lcnOf, isItalian, sortDtt };
+  const api = { key, lcnOf, isItalian, preferWorking, sortDtt };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DTT = api;
 })(typeof window !== 'undefined' ? window : globalThis);
