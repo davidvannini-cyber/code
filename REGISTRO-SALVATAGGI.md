@@ -150,3 +150,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `ea3293c` | MODEL3D: icone della barra in alto sempre centrate rispetto alla pagina (index.css), REGISTRO-SALVATAGGI.md | `git checkout ea3293c` |
 | 2026-10-18 | `81908cd` | APTV: creata cartella progetto (APTV/.gitkeep), REGISTRO-SALVATAGGI.md | `git checkout 81908cd` |
 | 2026-10-18 | `1df92d2` | APTV: scaffold app iOS SwiftUI (Package.swift, project.yml, Sources/APTVCore, Tests, App/, REQUISITI.md, ARCHITETTURA.md), REGISTRO-SALVATAGGI.md | `git checkout 1df92d2` |
+| 2026-10-18 | `2b98f95` | REA installata in locale dentro /code (REA/package.json, REA/package-lock.json, REA/.gitignore, REA/README.md), rimossa installazione globale dal container, REGISTRO-SALVATAGGI.md | `git checkout 2b98f95` |
