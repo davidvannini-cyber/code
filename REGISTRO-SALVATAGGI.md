@@ -154,3 +154,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `3a77246` | APTV/GUIDA-FUNZIONAMENTO.md (guida su come funzionano le app TV con playlist, checklist da osservare), REGISTRO-SALVATAGGI.md | `git checkout 3a77246` |
 | 2026-10-18 | `abf558b` | APTV/GUIDA-FUNZIONAMENTO.md (sezione 8: cosa dichiara APTV da App Store e README), REGISTRO-SALVATAGGI.md | `git checkout abf558b` |
 | 2026-10-18 | `45f6607` | APTV/GUIDA-FUNZIONAMENTO.md (verifica licenza repository di riferimento), REGISTRO-SALVATAGGI.md | `git checkout 45f6607` |
+| 2026-10-18 | `b801d6c` | M3U-PLAYER-WEB: pagina web player M3U (index.html, app.js, m3u.js, style.css, sample.m3u, test-m3u.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout b801d6c` |
