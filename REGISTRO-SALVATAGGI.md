@@ -179,3 +179,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `fec9e30` | M3U-PLAYER-WEB: wrangler.toml corretto (routes prima delle sezioni, id del KV), ordine dei passi in DEPLOY-CLOUDFLARE.md, REGISTRO-SALVATAGGI.md | `git checkout fec9e30` |
 | 2026-10-18 | `567b978` | M3U-PLAYER-WEB: filtro Italiani (DTT) attivo di default (public/app.js), REGISTRO-SALVATAGGI.md | `git checkout 567b978` |
 | 2026-10-18 | `9d21024` | M3U-PLAYER-WEB: app installabile da schermata Home (manifest, icone, aree sicure iPhone) e pulsante di schermo intero nativo su Safari iPhone (public/*, server.js, test-server.js), REGISTRO-SALVATAGGI.md | `git checkout 9d21024` |
+| 2026-10-18 | `92f295f` | M3U-PLAYER-WEB: dash.js con ritardo dalla diretta di 25 s e piu' buffer per evitare le fermate sui canali Mediaset, diagnosi con buffer e ritardo per il DASH (public/app.js), REGISTRO-SALVATAGGI.md | `git checkout 92f295f` |

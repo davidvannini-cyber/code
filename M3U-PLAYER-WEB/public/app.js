@@ -342,6 +342,16 @@
     } else if (type === 'dash' && window.dashjs) {
       engine = 'dash.js';
       const dash = state.dash = dashjs.MediaPlayer().create();
+      // Diretta TV: stare qualche secondo dietro il bordo della diretta, con piu' buffer, evita le fermate; niente "rincorsa" della diretta.
+      try {
+        dash.updateSettings({ streaming: {
+          delay: { liveDelay: 25 },
+          liveCatchup: { enabled: false },
+          buffer: { fastSwitchEnabled: false, bufferTimeDefault: 25, bufferTimeAtTopQuality: 40, bufferTimeAtTopQualityLongForm: 40, bufferToKeep: 20 },
+          gaps: { jumpGaps: true, jumpLargeGaps: true },
+          retryAttempts: { MPD: 3, MediaSegment: 4 },
+        } });
+      } catch (_) { /* impostazioni non supportate da questa versione: si usano quelle predefinite */ }
       dash.on(dashjs.MediaPlayer.events.ERROR, fail);
       dash.initialize(video, url, true);
     } else if (type === 'ts' && window.mpegts && mpegts.getFeatureList().mseLivePlayback) {
@@ -394,6 +404,7 @@
         if (state.hls.bandwidthEstimate) lines.push('Banda stimata: ' + Math.round(state.hls.bandwidthEstimate / 1000) + ' kbit/s');
       } else if (state.dash) {
         lines.push('Banda stimata: ' + Math.round(state.dash.getAverageThroughput('video')) + ' kbit/s');
+        lines.push('Buffer (dash): ' + state.dash.getBufferLength('video').toFixed(1) + ' s   ritardo dalla diretta: ' + state.dash.getCurrentLiveLatency().toFixed(1) + ' s');
       }
     } catch (_) { /* non disponibile */ }
     lines.push('Il valore piu\' utile: se i frame persi salgono, il limite e\' il computer; se il buffer scende a 0, e\' la rete o la fonte.');
