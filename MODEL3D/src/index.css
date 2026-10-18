@@ -1082,6 +1082,95 @@ input, select {
   .restore-banner button { font-size: 14px; padding: 8px 14px; }
 }
 
+/* ---------- Stile "pillole flottanti" (tutti i dispositivi) ----------
+   Solo l'aspetto: niente cornici, pannelli sfumati, forme tonde.
+   Le dimensioni grandi per il touch sono nel blocco Tablet qui sotto. */
+.topbar {
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+}
+
+.rail {
+  background: rgba(22, 24, 29, .78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: none;
+  border-radius: 24px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .4);
+}
+
+.rail-btn,
+.selection-toolbar button {
+  border-radius: 50%;
+  border: none;
+}
+
+.rail-btn.active,
+.selection-toolbar button.active {
+  background: #2f7cf6;
+  color: #fff;
+  box-shadow: 0 0 14px rgba(47, 124, 246, .6);
+}
+
+.card,
+.selection-toolbar,
+.selection-expand,
+.history-strip,
+.log-toast,
+.restore-banner {
+  background: rgba(22, 24, 29, .78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: none;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .4);
+}
+
+.card { border-radius: 18px; }
+.selection-expand { border-radius: 16px; }
+.selection-toolbar,
+.history-strip,
+.restore-banner { border-radius: 999px; }
+
+.tile-btn {
+  background: rgba(255, 255, 255, .07);
+  border: none;
+  border-radius: 999px;
+  padding-left: 14px;
+}
+
+.primary-btn { border: none; border-radius: 999px; }
+
+.ghost-btn {
+  border: none;
+  background: rgba(255, 255, 255, .09);
+  border-radius: 999px;
+}
+
+.segmented {
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .07);
+}
+
+.segmented button { background: transparent; border: none; }
+.segmented button.active { background: #2f7cf6; color: #fff; }
+
+.history-chip {
+  border: none;
+  background: rgba(255, 255, 255, .09);
+  border-radius: 999px;
+}
+
+.num-field input,
+.num-step {
+  border: none;
+  background: rgba(0, 0, 0, .35);
+  border-radius: 8px;
+}
+
+.object-row { border-radius: 10px; }
+
 /* ---------- Tablet: icone e menu grandi, stile "pillole flottanti" ----------
    Solo per puntatori touch/Pencil; sul Mac restano le dimensioni compatte.
    Le schede delle misure (campi con frecce) mantengono la loro dimensione. */
