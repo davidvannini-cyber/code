@@ -45,6 +45,7 @@ final class Dtt {
         for (Object[] row : LCN) for (int i = 1; i < row.length; i++) BY_KEY.put((String) row[i], (Integer) row[0]);
     }
 
+    private static final Pattern MARKS = Pattern.compile("\\p{M}");
     private static final Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]|\\([^)]*\\)");
     private static final Pattern NON_ALNUM = Pattern.compile("[^a-z0-9]+");
     private static final Pattern TRAILING_QUALITY = Pattern.compile("\\s+(hd|fhd|uhd|sd|4k|hevc|h265)$");
@@ -59,7 +60,7 @@ final class Dtt {
 
     // Chiave di confronto: minuscolo, senza accenti, senza testo tra () o [], senza qualita' finale, senza spazi.
     static String key(String name) {
-        String s = Normalizer.normalize(name == null ? "" : name.toLowerCase(Locale.ROOT), Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+        String s = MARKS.matcher(Normalizer.normalize(name == null ? "" : name.toLowerCase(Locale.ROOT), Normalizer.Form.NFD)).replaceAll("");
         s = BRACKETS.matcher(s).replaceAll(" ");
         s = s.replace("+", " plus ");
         s = NON_ALNUM.matcher(s).replaceAll(" ").trim();

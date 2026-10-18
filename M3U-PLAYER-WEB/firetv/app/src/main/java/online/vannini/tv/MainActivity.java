@@ -256,25 +256,31 @@ public class MainActivity extends Activity {
     /* ---------- Lista dei canali ---------- */
     private File cacheFile() { return new File(getFilesDir(), "playlist.m3u"); }
 
-    // Mostra subito l'ultima lista salvata, poi scarica quella aggiornata dal sito.
+    // Mostra subito l'ultima lista salvata, poi scarica quella aggiornata dal sito. I messaggi dicono a che punto e'.
     private void refresh() {
         status = "Carico la lista…";
         updateHeader();
         new Thread(new Runnable() {
             @Override public void run() {
-                List<Channel> cached = readCache();
-                if (!cached.isEmpty()) postApply(cached);
+                List<Channel> cached = Collections.emptyList();
                 try {
+                    cached = readCache();
+                    if (!cached.isEmpty()) postApply(cached);
+                    postStatus("Scarico la lista da tv.vannini.online…");
                     String text = download();
+                    postStatus("Scaricati " + (text.length() / 1024) + " KB, leggo i canali…");
                     List<Channel> fresh = M3u.parse(text);
                     if (!fresh.isEmpty()) {
                         writeCache(text);
                         postApply(fresh);
                     } else if (cached.isEmpty()) {
-                        postStatus("La lista è vuota. Aggiungi le liste dall'area /admin del sito.");
+                        String start = text.length() > 80 ? text.substring(0, 80) : text;
+                        postStatus("La lista scaricata non è valida (" + text.length() + " caratteri, inizia con: " + start.replace('\n', ' ') + "). MENU: riprova.");
                     }
                 } catch (IOException e) {
-                    if (cached.isEmpty()) postStatus("Impossibile caricare la lista (" + e.getMessage() + "). MENU: riprova.");
+                    if (cached.isEmpty()) postStatus("Impossibile caricare la lista (" + e + "). MENU: riprova.");
+                } catch (RuntimeException e) {
+                    postStatus("Errore nella lista (" + e + "). MENU: riprova.");
                 }
             }
         }).start();
@@ -354,6 +360,7 @@ public class MainActivity extends Activity {
         List<Dtt.Group> out = new ArrayList<>();
         for (Dtt.Group g : base()) if (label == null || g.labels.contains(label)) out.add(g);
         shown = out;
+        if (out.isEmpty() && !all.isEmpty()) status = "Letti " + all.size() + " canali, nessuno con questo filtro. MENU: scegli «Tutti i canali».";
         adapter.notifyDataSetChanged();
         updateHeader();
         int idx = indexOf(keepId);
