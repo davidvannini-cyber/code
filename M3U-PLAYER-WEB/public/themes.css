@@ -1,0 +1,106 @@
+/* Cinque aspetti della pagina dei canali. Si cambiano dal menu in basso; la scelta resta nel browser. */
+
+/* ============ 1. NOTTE: cinema, scuro, righe come schede ============ */
+html[data-theme="notte"] {
+  --bg: #0a0d14; --panel: #131925; --line: #212a3b; --text: #eaeff8; --muted: #8592a8; --accent: #5aa9ff; color-scheme: dark;
+}
+html[data-theme="notte"] body { background: radial-gradient(900px 500px at 50% -10%, #16233d, transparent 70%), var(--bg); background-attachment: fixed; }
+html[data-theme="notte"] ol { background: none; border: 0; border-radius: 0; overflow: visible; display: flex; flex-direction: column; gap: 8px; }
+html[data-theme="notte"] li button { min-height: 62px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); transition: transform .12s, border-color .12s; }
+html[data-theme="notte"] li button:hover, html[data-theme="notte"] li button:focus-visible { background: #18202f; border-color: var(--accent); transform: translateX(4px); }
+html[data-theme="notte"] li .num { width: 2.6em; font-weight: 700; font-size: 18px; color: var(--accent); }
+html[data-theme="notte"] li .mono, html[data-theme="notte"] li img, html[data-theme="notte"] li .ph { width: 42px; height: 42px; }
+html[data-theme="notte"] li .name { font-weight: 600; font-size: 17px; }
+html[data-theme="notte"] .dock { background: #0d121c; border-top-color: #263046; box-shadow: 0 -8px 30px #0008; }
+
+/* ============ 2. TELEVIDEO: pagina 100, nero, colori a blocchi ============ */
+html[data-theme="televideo"] {
+  --bg: #000; --panel: #000; --line: #000; --text: #fff; --muted: #9a9a9a; --accent: #ff0; color-scheme: dark;
+}
+html[data-theme="televideo"] body { font: 18px/1.55 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .02em; }
+html[data-theme="televideo"] main { max-width: 760px; }
+html[data-theme="televideo"] main::before { content: "100  TELEVIDEO   CANALI TV"; display: block; margin: 12px 0 10px; padding: 4px 12px; background: #00f; color: #ff0; font-weight: 700; }
+html[data-theme="televideo"] #count { color: #0f0; text-transform: uppercase; margin: 0 0 8px; }
+html[data-theme="televideo"] ol { border: 0; border-radius: 0; background: #000; overflow: visible; }
+html[data-theme="televideo"] li button { min-height: 0; padding: 1px 6px; border: 0; gap: 14px; text-transform: uppercase; font: inherit; }
+html[data-theme="televideo"] li button:hover, html[data-theme="televideo"] li button:focus-visible { background: #fff; color: #000; }
+html[data-theme="televideo"] li button:hover .name, html[data-theme="televideo"] li button:focus-visible .name { color: #000; }
+html[data-theme="televideo"] li .mono, html[data-theme="televideo"] li img, html[data-theme="televideo"] li .ph { display: none; }
+html[data-theme="televideo"] li .num { width: 3.4em; margin: 0; padding: 0 .4em; background: #00f; color: #ff0; text-align: center; font-weight: 700; }
+html[data-theme="televideo"] li .name { font-weight: 700; }
+html[data-theme="televideo"] li:nth-child(4n+1) .name { color: #0ff; }
+html[data-theme="televideo"] li:nth-child(4n+2) .name { color: #ff0; }
+html[data-theme="televideo"] li:nth-child(4n+3) .name { color: #0f0; }
+html[data-theme="televideo"] li:nth-child(4n+4) .name { color: #f0f; }
+html[data-theme="televideo"] li .grp, html[data-theme="televideo"] li .alts { color: #fff; font-size: 13px; }
+html[data-theme="televideo"] .btn, html[data-theme="televideo"] input, html[data-theme="televideo"] select, html[data-theme="televideo"] .chk {
+  background: #000; color: #fff; border: 2px solid #fff; border-radius: 0; font: inherit; font-size: 15px; text-transform: uppercase; }
+html[data-theme="televideo"] .dock { background: #000; border-top: 8px solid; border-image: linear-gradient(90deg, #f00 0 25%, #0f0 25% 50%, #ff0 50% 75%, #0ff 75%) 1; }
+html[data-theme="televideo"] footer a { color: #0ff; }
+
+/* ============ 3. VETRINA: schede con logo grande, come le app di streaming ============ */
+html[data-theme="vetrina"] {
+  --bg: #0e1015; --panel: #181c25; --line: #272c39; --text: #f1f3f8; --muted: #8b93a6; --accent: #ff5d73; color-scheme: dark;
+}
+html[data-theme="vetrina"] main { max-width: 1240px; }
+html[data-theme="vetrina"] ol { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; background: none; border: 0; border-radius: 0; overflow: visible; }
+html[data-theme="vetrina"] li button { position: relative; flex-direction: column; justify-content: center; align-items: center; gap: 10px; min-height: 168px; padding: 20px 10px 14px;
+  border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(180deg, #1d2230, var(--panel)); text-align: center; transition: transform .15s, box-shadow .15s; }
+html[data-theme="vetrina"] li button:hover, html[data-theme="vetrina"] li button:focus-visible { transform: translateY(-4px) scale(1.03); box-shadow: 0 14px 30px #0009, 0 0 0 2px var(--accent); background: linear-gradient(180deg, #232938, #1b2030); }
+html[data-theme="vetrina"] li .num { position: absolute; top: 9px; left: 12px; width: auto; font-size: 13px; font-weight: 700; color: var(--accent); text-align: left; }
+html[data-theme="vetrina"] li .mono, html[data-theme="vetrina"] li img, html[data-theme="vetrina"] li .ph { width: 72px; height: 72px; border-radius: 20px; font-size: 24px; }
+html[data-theme="vetrina"] li img { object-fit: contain; background: #fff1; padding: 6px; }
+html[data-theme="vetrina"] li .name { flex: 0 1 auto; max-width: 100%; white-space: normal; font-weight: 700; font-size: 16px; }
+html[data-theme="vetrina"] li .grp { font-size: 12px; }
+html[data-theme="vetrina"] li .alts { position: absolute; top: 9px; right: 12px; }
+html[data-theme="vetrina"] .dock { background: #12151cf0; border-top-color: #272c39; }
+
+/* ============ 4. CARTA: chiaro, editoriale, numeri grandi ============ */
+html[data-theme="carta"] {
+  --bg: #f6f1e7; --panel: transparent; --line: #d9d0bd; --text: #1c1915; --muted: #7b705c; --accent: #b3361d; color-scheme: light;
+}
+html[data-theme="carta"] body { font: 17px/1.45 Georgia, "Times New Roman", serif; }
+html[data-theme="carta"] main { max-width: 820px; }
+html[data-theme="carta"] #count { font-style: italic; margin: 18px 0 6px; }
+html[data-theme="carta"] ol { border: 0; border-top: 3px double var(--text); border-radius: 0; background: none; overflow: visible; }
+html[data-theme="carta"] li button { min-height: 68px; padding: 8px 4px; border-bottom: 1px solid var(--line); transition: padding .15s, color .15s; }
+html[data-theme="carta"] li button:hover, html[data-theme="carta"] li button:focus-visible { background: none; padding-left: 14px; color: var(--accent); }
+html[data-theme="carta"] li .num { width: 2.1em; font-size: 34px; font-style: italic; line-height: 1; color: var(--accent); }
+html[data-theme="carta"] li .mono, html[data-theme="carta"] li img, html[data-theme="carta"] li .ph { width: 32px; height: 32px; }
+html[data-theme="carta"] li .mono { background: none; border: 1.5px solid var(--text); color: var(--text); font-family: system-ui, sans-serif; font-size: 11px; }
+html[data-theme="carta"] li img { filter: grayscale(1); mix-blend-mode: multiply; }
+html[data-theme="carta"] li .name { font-size: 22px; }
+html[data-theme="carta"] li .grp, html[data-theme="carta"] li .alts { font-style: italic; }
+html[data-theme="carta"] input, html[data-theme="carta"] select, html[data-theme="carta"] .chk, html[data-theme="carta"] .btn { background: transparent; border: 0; border-bottom: 1.5px solid var(--text); border-radius: 0; font-family: inherit; }
+html[data-theme="carta"] .dock { background: var(--bg); border-top: 3px double var(--text); }
+html[data-theme="carta"] footer a { color: var(--muted); }
+
+/* ============ 5. AURORA: vetro smerigliato su sfondo sfumato ============ */
+html[data-theme="aurora"] {
+  --bg: #090a1c; --panel: #ffffff14; --line: #ffffff2b; --text: #f4f5ff; --muted: #b3b8dc; --accent: #9fdcff; color-scheme: dark;
+}
+html[data-theme="aurora"] body {
+  background: radial-gradient(1100px 650px at 8% -8%, #6a45ffb0, transparent 62%), radial-gradient(900px 600px at 100% 6%, #00c6ffaa, transparent 58%),
+    radial-gradient(1000px 700px at 55% 112%, #ff3d9ab0, transparent 62%), var(--bg);
+  background-attachment: fixed;
+}
+html[data-theme="aurora"] ol { display: flex; flex-direction: column; gap: 9px; background: none; border: 0; border-radius: 0; overflow: visible; }
+html[data-theme="aurora"] li button { min-height: 60px; border: 1px solid var(--line); border-radius: 18px; background: #ffffff12; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 4px 18px #0003; transition: background .15s, transform .15s; }
+html[data-theme="aurora"] li button:hover, html[data-theme="aurora"] li button:focus-visible { background: #ffffff26; transform: scale(1.015); }
+html[data-theme="aurora"] li .num { width: 2.4em; font-weight: 700; color: #fff; }
+html[data-theme="aurora"] li .mono, html[data-theme="aurora"] li img, html[data-theme="aurora"] li .ph { width: 40px; height: 40px; border-radius: 14px; }
+html[data-theme="aurora"] li .mono { background: linear-gradient(135deg, hsl(var(--h) 80% 60%), hsl(calc(var(--h) + 50) 80% 50%)); }
+html[data-theme="aurora"] li .name { font-weight: 600; }
+html[data-theme="aurora"] .dock { left: 12px; right: 12px; bottom: 12px; border: 1px solid var(--line); border-radius: 22px; background: #14153acc;
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: 0 10px 40px #0007; }
+html[data-theme="aurora"] .btn, html[data-theme="aurora"] input, html[data-theme="aurora"] select, html[data-theme="aurora"] .chk { background: #ffffff18; border-color: var(--line); border-radius: 14px; }
+html[data-theme="aurora"] footer a { color: var(--muted); }
+
+/* Telefono: il menu in fondo va a capo senza coprire l'elenco */
+@media (max-width: 560px) {
+  .dock { gap: 6px; padding-left: 10px; padding-right: 10px; }
+  .dock input[type=search] { flex-basis: 100%; }
+  body:has(.dock) main { padding-bottom: 190px; }
+  html[data-theme="vetrina"] ol { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+}

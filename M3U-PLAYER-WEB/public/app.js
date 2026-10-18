@@ -74,18 +74,34 @@
     return s;
   }
 
+  // Segnaposto al posto di un logo mancante: iniziali su un colore che dipende dal nome.
+  function monogram(name) {
+    const words = String(name).replace(/[^\p{L}\p{N} ]+/gu, '').split(/\s+/).filter(Boolean);
+    const first = words[0] || '?';
+    let text;
+    if (/^\d+$/.test(first)) text = first.slice(0, 3);                                   // "20 Mediaset" -> 20
+    else if (words.length > 1) text = (first[0] + words[1][0]).toUpperCase();              // "Rai 1" -> R1
+    else text = (first.match(/^\D{1,2}\d{0,1}/) || [first.slice(0, 2)])[0].toUpperCase();   // "TV8" -> TV8, "LA7d" -> LA7
+    let h = 0;
+    for (const ch of String(name)) h = (h * 31 + ch.codePointAt(0)) % 360;
+    const m = span('mono', text);
+    m.style.setProperty('--h', h);
+    return m;
+  }
+
   function row(g, n) {
     const li = document.createElement('li');
     const b = document.createElement('button');
     b.type = 'button';
     b.appendChild(span('num', n));
+    const label = DTT.cleanName(g.head);
     if (g.logo) {
       const img = document.createElement('img');
       img.src = g.logo; img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
-      img.onerror = () => img.replaceWith(span('ph'));
+      img.onerror = () => img.replaceWith(monogram(label));
       b.appendChild(img);
     } else {
-      b.appendChild(span('ph'));
+      b.appendChild(monogram(label));
     }
     b.appendChild(span('name', DTT.cleanName(g.head)));
     if (g.alts.length > 1) b.appendChild(span('alts', '×' + g.alts.length));
@@ -404,6 +420,11 @@
     applyFilter();
   });
   try { state.it = localStorage.getItem('m3u-player:it') === '1'; $('itOnly').checked = state.it; } catch (_) { /* storage non disponibile */ }
+  $('theme').value = document.documentElement.getAttribute('data-theme') || 'notte';
+  $('theme').addEventListener('change', () => {
+    document.documentElement.setAttribute('data-theme', $('theme').value);
+    try { localStorage.setItem('m3u-player:theme', $('theme').value); } catch (_) { /* storage non disponibile */ }
+  });
   $('search').addEventListener('input', applyFilter);
   $('group').addEventListener('change', applyFilter);
   $('more').addEventListener('click', renderMore);

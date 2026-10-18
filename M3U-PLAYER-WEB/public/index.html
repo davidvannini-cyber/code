@@ -5,14 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Canali TV</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="themes.css">
+  <script src="theme.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Canali</h1>
+  <nav class="dock" aria-label="Filtri">
     <input id="search" type="search" placeholder="Cerca canale…" aria-label="Cerca canale">
     <select id="group" aria-label="Gruppo"><option value="">Tutti i gruppi</option></select>
-    <label class="chk"><input id="itOnly" type="checkbox"> Italiani (ordine DTT)</label>
-  </header>
+    <label class="chk"><input id="itOnly" type="checkbox"> Italiani (DTT)</label>
+    <select id="theme" aria-label="Aspetto" title="Aspetto">
+      <option value="notte">Notte</option>
+      <option value="televideo">Televideo</option>
+      <option value="vetrina">Vetrina</option>
+      <option value="carta">Carta</option>
+      <option value="aurora">Aurora</option>
+    </select>
+  </nav>
 
   <main>
     <p id="count" class="muted" role="status">Caricamento…</p>
