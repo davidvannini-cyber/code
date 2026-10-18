@@ -1,0 +1,5 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="Rai3.it" tvg-chno="3" group-title="Rai",Rai 3 Toscana
+https://mediapolis.rai.it/relinker/relinkerServlet.htm?cont=35264&output=16
+#EXTINF:-1 tvg-id="50Canale.it" tvg-chno="18" group-title="Italia",50 Canale
+https://load-balancer.azotosolutions.com/cdnedge37/canale50/playlist.m3u8

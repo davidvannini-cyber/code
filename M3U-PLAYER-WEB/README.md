@@ -69,3 +69,10 @@ HLS nativo su Safari/iOS, `hls.js` sugli altri browser, `dash.js` per il DASH (`
 Limiti del browser: niente RTMP/UDP e niente DRM; se la pagina e' in https, i flussi `http://` sono bloccati (contenuto misto).
 **CORS dei flussi:** su Chrome/Firefox/Edge i video HLS passano da `hls.js`, che scarica i segmenti con richieste del browser: se il server del canale non manda le intestazioni CORS, il canale non parte (e non dipende dalla pagina). Safari riproduce l'HLS in modo nativo e di solito ne apre di piu'. Nelle liste pubbliche molti canali sono anche spenti o bloccati per paese.
 I contenuti sono quelli delle liste che carichi, sotto la tua responsabilita'.
+
+## Lista dei canali aggiunti a mano (`extra.m3u`)
+`M3U-PLAYER-WEB/extra.m3u` contiene canali che le altre liste non hanno (Rai 3 Toscana al numero 3, 50 Canale al 18).
+Si usa come una fonte qualsiasi: in `/admin`, nel riquadro "Liste (fonti)", va messa **per prima**:
+`https://raw.githubusercontent.com/davidvannini-cyber/code/main/M3U-PLAYER-WEB/extra.m3u`
+Rai 3 Toscana ha lo stesso `tvg-id` di Rai 3: finisce nello stesso canale come prima fonte, e Rai 3 normale resta come alternativa.
+Il numero si decide con `tvg-chno` (non serve toccare il codice). Per aggiungere un canale basta una riga `#EXTINF` e l'indirizzo.
