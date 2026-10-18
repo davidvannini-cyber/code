@@ -3,6 +3,9 @@
    Variabili: PORT (3000), HOST (127.0.0.1), ADMIN_PASSWORD, VIEWER_PASSWORD (facoltativa), DATA_DIR (./data),
    TRUST_PROXY=1 (dietro a un proxy HTTPS: usa X-Forwarded-Proto / X-Forwarded-For) */
 const http = require('node:http');
+const https = require('node:https');
+const dns = require('node:dns');
+const net = require('node:net');
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -11,6 +14,7 @@ const { parseM3U } = require('./public/m3u.js');
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '127.0.0.1';
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
+const ALLOW_PRIVATE_URLS = process.env.ALLOW_PRIVATE_URLS === '1';   // consente di scaricare playlist da indirizzi di rete locale
 const PUBLIC = path.join(__dirname, 'public');
 const DATA = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data'));
 const PLAYLIST = path.join(DATA, 'playlist.m3u');
@@ -146,6 +150,72 @@ function playlistInfo() {
   };
 }
 
+function savePlaylist(text) {
+  let parsed;
+  try { parsed = parseM3U(text); } catch (e) { throw httpError(400, e.message); }
+  if (!parsed.channels.length) throw httpError(400, 'La playlist non contiene canali http/https.');
+  fs.copyFileSync(PLAYLIST, BACKUP);
+  const tmp = PLAYLIST + '.tmp';
+  fs.writeFileSync(tmp, text);
+  fs.renameSync(tmp, PLAYLIST);
+  return playlistInfo();
+}
+
+/* ---------- Scarica una playlist da un indirizzo (solo admin) ----------
+   Rifiuta indirizzi di rete locale/riservati (anche dopo i reindirizzamenti e la risoluzione DNS), salvo ALLOW_PRIVATE_URLS=1. */
+function isPrivateIp(ip) {
+  if (net.isIPv4(ip)) {
+    const [a, b] = ip.split('.').map(Number);
+    return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224;
+  }
+  const v = ip.toLowerCase();
+  if (v.startsWith('::ffff:')) return v.includes('.') ? isPrivateIp(v.slice(7)) : true;
+  return v === '::' || v === '::1' || /^f[cd]/.test(v) || /^fe[89ab]/.test(v);
+}
+function safeLookup(hostname, options, cb) {
+  dns.lookup(hostname, { ...options, all: true }, (err, addrs) => {
+    if (err) return cb(err);
+    if (!ALLOW_PRIVATE_URLS && addrs.some(a => isPrivateIp(a.address))) return cb(new Error('indirizzo non consentito'));
+    if (options && options.all) return cb(null, addrs);
+    cb(null, addrs[0].address, addrs[0].family);
+  });
+}
+function fetchText(urlStr, hops = 0) {
+  return new Promise((resolve, reject) => {
+    let u;
+    try { u = new URL(urlStr); } catch (_) { return reject(httpError(400, 'Indirizzo non valido.')); }
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return reject(httpError(400, 'Sono ammessi solo indirizzi http o https.'));
+    const host = u.hostname.replace(/^\[|\]$/g, '');
+    if (!ALLOW_PRIVATE_URLS && net.isIP(host) && isPrivateIp(host)) return reject(httpError(400, 'Indirizzo non consentito.'));
+    const req = (u.protocol === 'https:' ? https : http).get(u, {
+      lookup: safeLookup, timeout: 20000, headers: { 'User-Agent': 'm3u-player-web', Accept: '*/*' },
+    }, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        res.resume();
+        if (hops >= 3) return reject(httpError(400, 'Troppi reindirizzamenti.'));
+        return resolve(fetchText(new URL(res.headers.location, u).href, hops + 1));
+      }
+      if (res.statusCode !== 200) { res.resume(); return reject(httpError(400, 'Il server ha risposto ' + res.statusCode + '.')); }
+      const chunks = []; let size = 0;
+      res.on('data', c => {
+        size += c.length;
+        if (size > MAX_PLAYLIST) { req.destroy(); reject(httpError(413, 'File troppo grande (massimo 10 MB).')); } else chunks.push(c);
+      });
+      res.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+      res.on('error', () => reject(httpError(502, 'Download interrotto.')));
+    });
+    const total = setTimeout(() => { req.destroy(); reject(httpError(504, 'Il download ha impiegato troppo tempo.')); }, 60000);
+    req.on('close', () => clearTimeout(total));
+    req.on('timeout', () => { req.destroy(); reject(httpError(504, 'Il server non risponde.')); });
+    req.on('error', e => {
+      if (e.status) return reject(e);
+      if (e.message === 'indirizzo non consentito') return reject(httpError(400, 'Indirizzo non consentito.'));
+      reject(httpError(502, 'Impossibile scaricare la playlist (' + (e.code || e.message) + ').'));
+    });
+  });
+}
+
 // Percorsi raggiungibili senza password di spettatore (nessun dato della playlist).
 const OPEN_PATHS = new Set(['/healthz', '/login.html', '/login.js', '/style.css', '/admin', '/admin.html', '/admin.js']);
 
@@ -174,14 +244,14 @@ async function route(req, res) {
   if (pathname === '/api/playlist' && req.method === 'POST') {
     requireAdmin(req);
     const text = (await readBody(req, MAX_PLAYLIST)).toString('utf8');
-    let parsed;
-    try { parsed = parseM3U(text); } catch (e) { throw httpError(400, e.message); }
-    if (!parsed.channels.length) throw httpError(400, 'La playlist non contiene canali http/https.');
-    fs.copyFileSync(PLAYLIST, BACKUP);
-    const tmp = PLAYLIST + '.tmp';
-    fs.writeFileSync(tmp, text);
-    fs.renameSync(tmp, PLAYLIST);
-    return send(res, 200, { ok: true, ...playlistInfo() });
+    return send(res, 200, { ok: true, ...savePlaylist(text) });
+  }
+  if (pathname === '/api/playlist-url' && req.method === 'POST') {
+    requireAdmin(req);
+    let target = '';
+    try { target = String(JSON.parse((await readBody(req, 4096)).toString('utf8')).url || '').trim(); }
+    catch (e) { if (e.status) throw e; throw httpError(400, 'Richiesta non valida.'); }
+    return send(res, 200, { ok: true, ...savePlaylist(await fetchText(target)) });
   }
 
   /* Pagina pubblica: con VIEWER_PASSWORD serve l'accesso (o la sessione admin). */

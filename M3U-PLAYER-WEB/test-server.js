@@ -150,6 +150,45 @@ async function scenarioSinglePassword() {
   });
 }
 
+async function scenarioPlaylistFromUrl() {
+  const http = require('http');
+  const origin = http.createServer((req, res) => {
+    if (req.url === '/lista.m3u') { res.end('#EXTM3U\n#EXTINF:-1,Da URL Uno\nhttps://h/1.m3u8\n#EXTINF:-1,Da URL Due\nhttps://h/2.m3u8'); }
+    else if (req.url === '/redir') { res.writeHead(302, { Location: '/lista.m3u' }); res.end(); }
+    else if (req.url === '/nonlista') { res.end('non e una playlist'); }
+    else { res.writeHead(404); res.end(); }
+  });
+  await new Promise(r => origin.listen(0, '127.0.0.1', r));
+  const o = 'http://127.0.0.1:' + origin.address().port;
+  try {
+    const run = (env, fn) => withServer({ ...env }, async base => {
+      const r = await login(base, '/api/login', 'segreta-di-test');
+      await fn(base, { Cookie: cookieOf(r) });
+    });
+    const byUrl = (base, auth, url) => post(base, '/api/playlist-url', JSON.stringify({ url }), { ...JSON_H, ...auth });
+
+    await run({ ALLOW_PRIVATE_URLS: '1' }, async (base, auth) => {
+      assert.strictEqual((await post(base, '/api/playlist-url', JSON.stringify({ url: o + '/lista.m3u' }), JSON_H)).status, 401, 'senza login');
+      let r = await byUrl(base, auth, o + '/lista.m3u');
+      assert.strictEqual(r.status, 200, 'download da URL');
+      assert.strictEqual((await r.json()).channels, 2);
+      assert.ok((await (await fetch(base + '/playlist.m3u')).text()).includes('Da URL Due'), 'la pubblica mostra la lista scaricata');
+      assert.strictEqual((await byUrl(base, auth, o + '/redir')).status, 200, 'segue un reindirizzamento');
+      assert.strictEqual((await byUrl(base, auth, o + '/nonlista')).status, 400, 'contenuto non valido');
+      assert.strictEqual((await byUrl(base, auth, o + '/assente')).status, 400, 'errore 404 del server remoto');
+      assert.strictEqual((await byUrl(base, auth, 'file:///etc/passwd')).status, 400, 'schema non ammesso');
+      assert.strictEqual((await byUrl(base, auth, 'non-un-indirizzo')).status, 400, 'indirizzo non valido');
+    });
+    await run({}, async (base, auth) => {              // senza ALLOW_PRIVATE_URLS la rete locale e' vietata
+      for (const u of [o + '/lista.m3u', 'http://localhost:1/x', 'http://[::1]:1/x', 'http://169.254.169.254/latest/meta-data', 'http://10.0.0.1/x']) {
+        assert.strictEqual((await byUrl(base, auth, u)).status, 400, 'bloccato ' + u);
+      }
+    });
+  } finally {
+    origin.close();
+  }
+}
+
 (async () => {
   try {
     await scenarioBase();
@@ -157,6 +196,7 @@ async function scenarioSinglePassword() {
     await scenarioProxy();
     await scenarioSessionsSurviveRestart();
     await scenarioSinglePassword();
+    await scenarioPlaylistFromUrl();
     console.log('Tutti i test del server sono passati.');
   } catch (e) {
     console.error('TEST FALLITO:', e.message);

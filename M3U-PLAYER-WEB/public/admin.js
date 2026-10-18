@@ -47,9 +47,29 @@
     e.target.value = '';
   });
 
+  async function replaceFromUrl(url) {
+    say('Scarico la playlist…');
+    $('urlBtn').disabled = true;
+    const r = await api('/api/playlist-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+    $('urlBtn').disabled = false;
+    if (r.status === 401) { say('Sessione scaduta: accedi di nuovo.', true); return refresh(); }
+    if (!r.ok) return say((r.data && r.data.error) || 'Download non riuscito.', true);
+    showInfo(r.data);
+    $('urlInput').value = '';
+    say('Playlist scaricata e sostituita. La pagina dei canali mostra gia\' la nuova lista.');
+  }
+
+  $('urlBtn').addEventListener('click', () => {
+    const url = $('urlInput').value.trim();
+    if (!url) return say('Scrivi l\'indirizzo della playlist.', true);
+    replaceFromUrl(url);
+  });
+  $('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('urlBtn').click(); });
+
   $('save').addEventListener('click', async () => {
     const text = $('text').value;
     if (!text.trim()) return say('Scegli un file o incolla il testo della playlist.', true);
+    if (/^https?:\/\/\S+$/i.test(text.trim())) { $('text').value = ''; return replaceFromUrl(text.trim()); }   // incollato un indirizzo invece del testo
     const r = await api('/api/playlist', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text });
     if (r.status === 401) { say('Sessione scaduta: accedi di nuovo.', true); return refresh(); }
     if (!r.ok) return say((r.data && r.data.error) || 'Salvataggio non riuscito.', true);

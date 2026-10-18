@@ -3,7 +3,7 @@
 Tre cose:
 1. **Pagina pubblica** (`/`): elenco dei canali della playlist M3U, una riga per canale, con ricerca e filtro per gruppo.
 2. **Schermo intero**: un clic su una riga avvia il canale a tutto schermo. I pulsanti ◀ ▶ (o PagSu/PagGiu) cambiano canale, Esc o ✕ tornano all'elenco.
-3. **Area admin** (`/admin`): con password, si sostituisce il file M3U (carica un file o incolla il testo). L'elenco pubblico mostra subito la nuova lista.
+3. **Area admin** (`/admin`): con password, si sostituisce la playlist scrivendo il suo **indirizzo** (il server la scarica da solo), caricando un file o incollando il testo. L'elenco pubblico mostra subito la nuova lista.
 
 ## Avvio
 Serve Node 18 o successivo. Nessuna installazione di pacchetti.
@@ -21,6 +21,7 @@ Se non imposti `ADMIN_PASSWORD`, il server ne genera una temporanea e la scrive 
 | `ADMIN_PASSWORD` | casuale | Password dell'area admin |
 | `VIEWER_PASSWORD` | spenta | Se impostata, anche vedere i canali richiede questa password |
 | `TRUST_PROXY` | spento | `1` dietro a un proxy HTTPS: cookie `Secure` e IP corretto per il blocco tentativi |
+| `ALLOW_PRIVATE_URLS` | spento | `1` permette di scaricare playlist da indirizzi di rete locale (NAS, altro computer di casa); di default sono vietati |
 | `DATA_DIR` | `./data` | Dove vive la playlist attuale (`playlist.m3u`) e la precedente (`playlist.prev.m3u`) |
 
 Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` non finisce nel repository.
