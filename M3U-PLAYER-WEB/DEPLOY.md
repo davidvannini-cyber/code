@@ -24,6 +24,24 @@ Non ho potuto provare queste schermate: i nomi dei campi possono essere diversi.
 
 Ogni `git push` su `main` ripubblica da solo (se lasci attiva la distribuzione automatica).
 
+## Dominio tv.vannini.online (Cloudflare + Render)
+1. **Render**: crea il servizio come sopra (Docker, Root Directory `M3U-PLAYER-WEB`, disco `/data`, variabile `ADMIN_PASSWORD`, Health Check `/healthz`). Aspetta che compaia "Live" e che `https://NOME.onrender.com` si apra.
+2. **Render → Settings → Custom Domains → Add Custom Domain**: scrivi `tv.vannini.online`. Render mostra il valore del record CNAME da creare (di solito `NOME.onrender.com`).
+3. **Cloudflare → vannini.online → DNS → Add record**: Tipo `CNAME`, Nome `tv`, Destinazione `NOME.onrender.com`, **Proxy status: "Solo DNS" (nuvola grigia)** per ora.
+4. Torna su Render e premi **Verify**. Quando il dominio risulta verificato e il certificato HTTPS e' emesso (pochi minuti), apri `https://tv.vannini.online`.
+5. Facoltativo, dopo che funziona: in Cloudflare puoi accendere il proxy (nuvola arancione) e impostare **SSL/TLS → Full (strict)**. Se qualcosa si rompe, torna a "Solo DNS".
+6. Apri `https://tv.vannini.online/admin`, accedi con la password e nel riquadro "Liste (fonti)" incolla, uno per riga:
+   ```
+   https://github.com/Tundrak/IPTV-Italia/raw/main/iptvitaplus.m3u
+   https://iptv-org.github.io/iptv/countries/it.m3u
+   ```
+   Premi "Salva e aggiorna". Le liste si riaggiornano da sole ogni 6 ore.
+
+Le pagine di Render e Cloudflare cambiano nel tempo: se un nome di campo non coincide, segui il senso del passo. Prezzi e piano (serve uno a pagamento per il disco) vanno controllati sui rispettivi siti.
+
+Ogni modifica pubblicata su `main` in `M3U-PLAYER-WEB/` riparte da sola su Render (se la distribuzione automatica e' attiva).
+Per spostarsi altrove basta cambiare il record DNS e rimettere le liste dall'area admin.
+
 ## Entrare senza digitare la password
 Su ogni dispositivo nuovo apri una volta `https://tuo-indirizzo/#k=LA-TUA-PASSWORD-SPETTATORE`: entra da solo e ricorda il dispositivo.
 Per questo conviene che `VIEWER_PASSWORD` sia diversa da `ADMIN_PASSWORD` (altrimenti il link aprirebbe anche l'area admin) e senza caratteri speciali.
