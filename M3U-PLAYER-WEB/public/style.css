@@ -48,3 +48,4 @@ main > #msg.error { color: #ff6b6b; }
 
 .chk { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; white-space: nowrap; }
 .chk input { margin: 0; }
+#streamUrl { position: absolute; bottom: 52px; left: 16px; right: 16px; margin: 0; text-align: center; color: #ffffffb0; font: 12px/1.3 ui-monospace, monospace; word-break: break-all; user-select: text; }

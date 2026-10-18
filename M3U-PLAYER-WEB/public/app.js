@@ -130,9 +130,12 @@
   }
 
   /* ---------- Riproduzione ---------- */
-  function setMsg(text, isError) {
+  function setMsg(text, isError, url) {
     $('msg').textContent = text;
     $('msg').classList.toggle('error', !!isError);
+    const u = $('streamUrl');
+    u.hidden = !url;
+    u.textContent = url || '';
   }
 
   function stopPlayback() {
@@ -143,40 +146,87 @@
     video.load();
   }
 
+  const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
+
+  // Dopo un errore interroga il server del canale per capire il motivo, e lo spiega in italiano.
+  async function diagnose(c, isHls, engine) {
+    const token = state.current;
+    const say = text => { if (state.current === token && !player.hidden) setMsg(text + ' [' + engine + ']', true, c.url); };
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 8000);
+    try {
+      const res = await fetch(c.url, { cache: 'no-store', signal: ctl.signal });
+      if ([401, 403, 451].includes(res.status)) return say('Il server del canale rifiuta l\'accesso (errore ' + res.status + '): di solito blocco geografico o protezione contro i lettori web.');
+      if (res.status === 404 || res.status === 410) return say('Il flusso non esiste piu\' (errore ' + res.status + ').');
+      if (!res.ok) return say('Il server del canale risponde con errore ' + res.status + '.');
+      if (!isHls) return say('Il server risponde, ma il browser non riesce a decodificare il flusso.');
+      const text = (await res.text()).slice(0, 4000);
+      if (!text.startsWith('#EXTM3U')) return say('Il server non restituisce un flusso HLS (probabilmente una pagina di errore).');
+      if (/#EXT-X-(SESSION-)?KEY:[^\n]*(SAMPLE-AES|skd:|widevine|playready)/i.test(text)) return say('Il canale e\' protetto da DRM: un browser web non puo\' riprodurlo.');
+      say('La lista del flusso si legge, ma il video non parte: i segmenti sono bloccati o in un formato non supportato dal browser.');
+    } catch (e) {
+      say(e.name === 'AbortError'
+        ? 'Il server del canale non risponde.'
+        : 'Il server non permette a una pagina web di leggere il flusso (CORS) oppure non e\' raggiungibile da qui.');
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   function start(c) {
     stopPlayback();
     state.current = c.id;
     $('title').textContent = c.name;
     const url = c.url;
     if (location.protocol === 'https:' && url.startsWith('http:')) {
-      return setMsg('La pagina e\' in https e il flusso e\' http: il browser lo blocca (contenuto misto).', true);
+      return setMsg('La pagina e\' in https e il flusso e\' http: il browser lo blocca (contenuto misto).', true, url);
     }
     setMsg('Caricamento…');
     const isHls = /\.m3u8(\?|#|$)/i.test(url);
-    const fatal = msg => setMsg('Errore: ' + msg, true);
+    let engine;
+    let triedNative = false;
+    const fail = () => {
+      // hls.js ha bisogno del permesso CORS del server; il lettore nativo di alcuni browser no: prima di arrendersi lo provo.
+      if (engine === 'hls.js' && !triedNative && video.canPlayType('application/vnd.apple.mpegurl')) {
+        triedNative = true;
+        engine = state.engine = 'nativo';
+        if (state.hls) { state.hls.destroy(); state.hls = null; }
+        video.src = url;
+        video.play().catch(() => { /* l'utente puo' premere play */ });
+        return;
+      }
+      diagnose(c, isHls, engine);
+    };
 
-    if (isHls && video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = url;                                   // Safari / iOS: HLS nativo
-    } else if (isHls && window.Hls && Hls.isSupported()) {
+    // hls.js ovunque tranne Safari (che legge l'HLS da solo): il lettore nativo di Chrome e' piu' recente e meno affidabile.
+    if (isHls && window.Hls && Hls.isSupported() && !isSafari) {
+      engine = 'hls.js';
       const hls = state.hls = new Hls();
-      hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) fatal(d.details); });
+      hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) fail(); });
       hls.loadSource(url);
       hls.attachMedia(video);
+    } else if (isHls && video.canPlayType('application/vnd.apple.mpegurl')) {
+      engine = 'nativo';
+      video.src = url;
     } else if (!isHls && window.mpegts && mpegts.getFeatureList().mseLivePlayback) {
+      engine = 'mpegts.js';
       const ts = state.ts = mpegts.createPlayer({ type: 'mpegts', isLive: true, url });
-      ts.on(mpegts.Events.ERROR, (type, detail) => fatal(type + ' ' + detail));
+      ts.on(mpegts.Events.ERROR, fail);
       ts.attachMediaElement(video);
       ts.load();
     } else {
+      engine = 'browser';
       video.src = url;                                   // ultima possibilita': il browser ci prova da solo
     }
+    state.engine = engine;
     video.play().catch(() => { /* l'utente puo' premere play */ });
   }
 
   video.addEventListener('playing', () => setMsg(''));
   video.addEventListener('waiting', () => setMsg('Buffering…'));
   video.addEventListener('error', () => {
-    if (video.error && video.getAttribute('src')) setMsg('Il browser non riesce a riprodurre questo flusso.', true);
+    const c = state.channels[state.current];
+    if (video.error && video.getAttribute('src') && c) diagnose(c, /\.m3u8(\?|#|$)/i.test(c.url), state.engine || 'browser');
   });
 
   /* ---------- Eventi ---------- */

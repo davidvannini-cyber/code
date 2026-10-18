@@ -42,6 +42,14 @@ Al primo avvio la playlist e' `sample.m3u` (due flussi HLS di prova). `data/` no
 - `public/` – `index.html` + `app.js` (elenco e player), `admin.html` + `admin.js`, `m3u.js` (parser, usato anche dal server), `style.css`
 - Test: `npm test` (parser e server)
 
+## Se un canale non parte
+La pagina lo dice sotto il video, tra parentesi quadre il motore usato, e mostra l'indirizzo del flusso (selezionabile):
+- *il server rifiuta l'accesso (403)*: blocco geografico o protezione del canale;
+- *protetto da DRM*: non riproducibile in un browser (succede ai canali Mediaset);
+- *il server non permette a una pagina web di leggere il flusso (CORS)*: prova in Safari o con un lettore come VLC (apri l'indirizzo mostrato);
+- *il flusso non esiste piu'* o *non risponde*: canale spento.
+Le liste pubbliche contengono molti canali spenti o con restrizioni: e' normale che una parte non parta.
+
 ## Riproduzione
 HLS nativo su Safari/iOS, `hls.js` sugli altri browser, `mpegts.js` per i flussi MPEG-TS grezzi (librerie da jsDelivr, serve internet).
 Limiti del browser: niente RTMP/UDP e niente DRM; se la pagina e' in https, i flussi `http://` sono bloccati (contenuto misto).
