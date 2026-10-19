@@ -46,8 +46,91 @@
       showInfo(r.data);
       const src = await api('/api/sources');
       if (src.ok) showSources(src.data);
+      loadChannels();
     }
   }
+
+  /* ---------- Canali visibili: elenco con una spunta per ciascuno ---------- */
+  const SHOW_MAX = 400;                                            // righe disegnate insieme: con la ricerca si trova il resto
+  const vis = { groups: [], hidden: new Set(), italian: new Set(), dirty: false };
+
+  async function loadChannels() {
+    const [pl, hid] = await Promise.all([fetch('/playlist.m3u', { cache: 'no-store', credentials: 'same-origin' }), api('/api/hidden')]);
+    if (!pl.ok) return;
+    let channels;
+    try { channels = M3U.parseM3U(await pl.text()).channels; } catch (_) { return; }
+    const groups = DTT.groupChannels(channels);
+    vis.italian = new Set(groups.filter(g => g.alts.some(DTT.isItalian)).map(g => g.id));
+    // Prima gli italiani nell'ordine del digitale terrestre, poi gli altri per nome.
+    vis.groups = [...DTT.sortGroups(groups.filter(g => vis.italian.has(g.id))), ...DTT.sortGroups(groups.filter(g => !vis.italian.has(g.id)))];
+    vis.hidden = new Set(hid.ok && hid.data && Array.isArray(hid.data.ids) ? hid.data.ids : []);
+    vis.dirty = false;
+    renderVis();
+  }
+
+  function visFiltered() {
+    const q = $('visSearch').value.trim().toLowerCase();
+    const f = $('visFilter').value;
+    return vis.groups.filter(g =>
+      (!q || g.alts.some(c => DTT.cleanName(c).toLowerCase().includes(q))) &&
+      (f === 'all' || (f === 'it' && vis.italian.has(g.id)) || (f === 'foreign' && !vis.italian.has(g.id)) ||
+        (f === 'visible' && !vis.hidden.has(g.id)) || (f === 'hidden' && vis.hidden.has(g.id))));
+  }
+
+  function renderVis() {
+    const list = $('visList');
+    const items = visFiltered();
+    list.replaceChildren();
+    for (const g of items.slice(0, SHOW_MAX)) {
+      const li = document.createElement('li');
+      const label = document.createElement('label');
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = !vis.hidden.has(g.id);
+      box.addEventListener('change', () => {
+        if (box.checked) vis.hidden.delete(g.id); else vis.hidden.add(g.id);
+        vis.dirty = true;
+        updateVisInfo(items.length);
+      });
+      const num = document.createElement('span');
+      num.className = 'num';
+      num.textContent = g.lcn !== undefined ? g.lcn : '';
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = DTT.cleanName(g.head);
+      const extra = document.createElement('span');
+      extra.className = 'grp';
+      extra.textContent = (g.alts.length > 1 ? '\u00D7' + g.alts.length + '  ' : '') + (g.head.group || '');
+      label.append(box, num, name, extra);
+      li.appendChild(label);
+      list.appendChild(li);
+    }
+    updateVisInfo(items.length);
+  }
+
+  function updateVisInfo(shown) {
+    const hiddenNow = vis.groups.filter(g => vis.hidden.has(g.id)).length;
+    $('visInfo').textContent = vis.groups.length + ' canali, ' + hiddenNow + ' nascosti. In elenco: ' + shown +
+      (shown > SHOW_MAX ? ' (ne mostro ' + SHOW_MAX + ': usa la ricerca)' : '') + (vis.dirty ? '  \u2014  modifiche non salvate' : '');
+  }
+
+  function setAllInList(hide) {
+    for (const g of visFiltered()) { if (hide) vis.hidden.add(g.id); else vis.hidden.delete(g.id); }
+    vis.dirty = true;
+    renderVis();
+  }
+  $('visSearch').addEventListener('input', renderVis);
+  $('visFilter').addEventListener('change', renderVis);
+  $('visShowAll').addEventListener('click', () => setAllInList(false));
+  $('visHideAll').addEventListener('click', () => setAllInList(true));
+  $('visSave').addEventListener('click', async () => {
+    const r = await api('/api/hidden', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: [...vis.hidden] }) });
+    if (r.status === 401) { say('Sessione scaduta: accedi di nuovo.', true); return refresh(); }
+    if (!r.ok) return say((r.data && r.data.error) || 'Salvataggio non riuscito.', true);
+    vis.dirty = false;
+    updateVisInfo(visFiltered().length);
+    say('Salvato: ' + r.data.hidden + ' canali nascosti. Pagina e app li tolgono al prossimo caricamento.');
+  });
 
   async function saveSources(path, body) {
     say('Scarico le liste…');
@@ -59,6 +142,7 @@
     showInfo(r.data);
     showSources(r.data);
     say('Liste aggiornate: ' + r.data.channels + ' canali in totale.');
+    loadChannels();
   }
 
   $('srcSave').addEventListener('click', () => {

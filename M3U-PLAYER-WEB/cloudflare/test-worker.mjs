@@ -172,6 +172,16 @@ try {
   assert.equal((await call(mkEnv({ EPG_URL: O + '/epg-rotto.json' }), '/api/epg')).status, 502, 'epg non valida');
   assert.equal((await call(mkEnv({ EPG_URL: O + '/non-esiste' }), '/api/epg')).status, 502, 'epg assente');
 
+  // --- canali nascosti dall'admin: lettura pubblica, modifica solo con il login
+  r = await call(env, '/api/hidden');
+  assert.deepEqual(await r.json(), { ids: [] }, 'nessun canale nascosto all\'inizio');
+  assert.equal((await post(env, '/api/hidden', { ids: ['x'] }, J)).status, 401, 'nascondere senza login');
+  assert.equal((await post(env, '/api/hidden', { ids: 'x' }, { ...J, ...auth })).status, 400, 'formato errato');
+  assert.equal((await post(env, '/api/hidden', { ids: [1] }, { ...J, ...auth })).status, 400, 'id non testo');
+  r = await post(env, '/api/hidden', { ids: ['||n3', '|tv|prova', '||n3'] }, { ...J, ...auth });
+  assert.equal(r.status, 200); assert.equal((await r.json()).hidden, 2, 'doppioni tolti');
+  assert.deepEqual((await (await call(env, '/api/hidden')).json()).ids, ['||n3', '|tv|prova']);
+
   // --- lista grande: quanto lavoro serve per unirla (in Node; nel Worker il tempo di calcolo e' simile o minore)
   const t0 = performance.now();
   r = await sources([O + '/big.m3u']);

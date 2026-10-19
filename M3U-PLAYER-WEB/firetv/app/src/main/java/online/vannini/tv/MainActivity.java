@@ -48,7 +48,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -59,6 +61,7 @@ import java.util.TreeSet;
 public class MainActivity extends Activity {
     private static final String PLAYLIST_URL = "https://tv.vannini.online/playlist.m3u";
     private static final String EPG_URL = "https://tv.vannini.online/api/epg";
+    private static final String HIDDEN_URL = "https://tv.vannini.online/api/hidden";
     private static final int EPG_RELOAD_MS = 10 * 60 * 1000;
     private static final String USER_AGENT = "Mozilla/5.0 (Linux; Android 9; AFTMM) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.104 Safari/537.36";
     private static final int STARTUP_MS = 20000;           // se un canale non parte entro questo tempo si passa alla fonte successiva
@@ -79,6 +82,7 @@ public class MainActivity extends Activity {
     private boolean italianOnly = true;
     private String label;                                   // gruppo scelto, null = tutti
     private String status = "Carico la lista…";
+    private volatile Set<String> hidden = Collections.emptySet();   // canali nascosti dall'amministratore (admin del sito)
     private volatile Epg epg;                                // guida programmi, null finche' non e' scaricata
 
     // Lista
@@ -292,8 +296,11 @@ public class MainActivity extends Activity {
             @Override public void run() {
                 List<Channel> cached = Collections.emptyList();
                 try {
+                    Set<String> savedHidden = readHiddenCache();
+                    if (savedHidden != null) hidden = savedHidden;
                     cached = readCache();
                     if (!cached.isEmpty()) postApply(cached);
+                    fetchHidden();
                     postStatus("Scarico la lista da tv.vannini.online…");
                     String text = download(PLAYLIST_URL);
                     postStatus("Scaricati " + (text.length() / 1024) + " KB, leggo i canali…");
@@ -359,6 +366,44 @@ public class MainActivity extends Activity {
         return new String(out.toByteArray(), StandardCharsets.UTF_8);
     }
 
+    private File hiddenFile() { return new File(getFilesDir(), "hidden.json"); }
+
+    private static Set<String> parseHidden(String json) throws org.json.JSONException {
+        org.json.JSONArray arr = new org.json.JSONObject(json).getJSONArray("ids");
+        Set<String> out = new HashSet<>();
+        for (int i = 0; i < arr.length(); i++) out.add(arr.getString(i));
+        return out;
+    }
+
+    private Set<String> readHiddenCache() {
+        File f = hiddenFile();
+        if (!f.exists()) return null;
+        try {
+            java.io.FileInputStream in = new java.io.FileInputStream(f);
+            try { return parseHidden(readAll(in)); } finally { in.close(); }
+        } catch (IOException | org.json.JSONException e) {
+            return null;
+        }
+    }
+
+    // Elenco dei canali nascosti dall'admin; se non si scarica resta l'ultimo salvato.
+    // Restituisce true se l'elenco e' cambiato.
+    private boolean fetchHidden() {
+        try {
+            String json = download(HIDDEN_URL);
+            Set<String> fresh = parseHidden(json);
+            try {
+                FileOutputStream out = new FileOutputStream(hiddenFile());
+                try { out.write(json.getBytes(StandardCharsets.UTF_8)); } finally { out.close(); }
+            } catch (IOException ignored) { /* senza copia salvata si riscarica */ }
+            boolean changed = !fresh.equals(hidden);
+            hidden = fresh;
+            return changed;
+        } catch (IOException | org.json.JSONException e) {
+            return false;
+        }
+    }
+
     private String guideText(Dtt.Group g) {
         Epg e = epg;
         return e == null || !italianOf(g) ? "" : e.text(g);
@@ -373,16 +418,20 @@ public class MainActivity extends Activity {
     private void loadEpg() {
         new Thread(new Runnable() {
             @Override public void run() {
+                final boolean hiddenChanged = fetchHidden();
                 try {
                     final Epg fresh = Epg.parse(download(EPG_URL));
                     ui.post(new Runnable() {
                         @Override public void run() {
                             epg = fresh;
+                            if (hiddenChanged && !inPlayer) applyFilter();
                             adapter.notifyDataSetChanged();
                             if (inPlayer && cur != null) showBanner();
                         }
                     });
-                } catch (IOException | org.json.JSONException ignored) { /* senza guida */ }
+                } catch (IOException | org.json.JSONException ignored) {
+                    if (hiddenChanged) ui.post(new Runnable() { @Override public void run() { if (!inPlayer) applyFilter(); } });
+                }
             }
         }).start();
     }
@@ -401,9 +450,15 @@ public class MainActivity extends Activity {
     }
 
     private List<Dtt.Group> base() {
-        if (!italianOnly) return all;
+        Set<String> off = hidden;
+        List<Dtt.Group> visible = all;
+        if (!off.isEmpty()) {
+            visible = new ArrayList<>();
+            for (Dtt.Group g : all) if (!off.contains(g.id)) visible.add(g);
+        }
+        if (!italianOnly) return visible;
         List<Dtt.Group> it = new ArrayList<>();
-        for (Dtt.Group g : all) {
+        for (Dtt.Group g : visible) {
             for (Channel c : g.alts) {
                 if (Dtt.isItalian(c)) { it.add(g); break; }
             }

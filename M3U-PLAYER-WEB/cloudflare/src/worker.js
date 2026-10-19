@@ -25,6 +25,8 @@ const EPG_URL = 'https://github.com/davidvannini-cyber/code/releases/download/ep
 const EPG_MAX = 1024 * 1024;
 const EPG_TTL_S = 20 * 60;
 
+const MAX_HIDDEN = 20000;                    // canali nascosti dall'amministratore (identificativi dei canali)
+
 class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
@@ -259,6 +261,19 @@ async function route(request, env) {
   }
 
   if (path === '/api/epg' && request.method === 'GET') return handleEpg(env);
+
+  // Canali nascosti dall'amministratore: elenco pubblico (lo leggono pagina e app), modifica solo da admin.
+  if (path === '/api/hidden' && request.method === 'GET') {
+    return respond(200, (await env.DATA.get('hidden')) || '{"ids":[]}', { 'Content-Type': 'application/json; charset=utf-8' });
+  }
+  if (path === '/api/hidden' && request.method === 'POST') {
+    await requireAdmin(request, env);
+    const ids = (await readJson(request, 1024 * 1024)).ids;
+    if (!Array.isArray(ids) || ids.length > MAX_HIDDEN || ids.some(x => typeof x !== 'string' || x.length > 300)) throw new HttpError(400, 'Richiesta non valida.');
+    const clean = [...new Set(ids)];
+    await env.DATA.put('hidden', JSON.stringify({ ids: clean, updatedAt: new Date().toISOString() }));
+    return respond(200, { hidden: clean.length });
+  }
 
   if (path === '/api/login' && request.method === 'POST') return handleLogin(request, env);
   if (path === '/api/logout' && request.method === 'POST') {

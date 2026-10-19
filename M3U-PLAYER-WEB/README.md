@@ -91,3 +91,14 @@ Sotto il nome di ogni canale italiano compare "adesso in onda" e "poi": nella pa
 - **Collegamento canali-programmi:** per chiave del nome e del `tvg-id` (`DTT.key` / `DTT.idKey` in `dtt-it.js`, `Dtt.java` per l'app).
   Un canale senza guida (es. 50 Canale) resta senza riga. Per cambiare le fonti: elenco `SOURCES` in `epg/build-epg.mjs`.
 - Prova: `node test-epg.mjs`. Aggiornamento a mano: scheda "Actions" di GitHub → "Guida programmi (EPG)" → Run workflow.
+
+## Nascondere canali dall'admin
+Nella pagina `/admin`, sezione "Canali visibili": elenco di tutti i canali (italiani prima, nell'ordine del digitale terrestre) con una
+spunta per ciascuno. Togliendo la spunta il canale sparisce dalla pagina e dall'app Fire TV (l'app lo applica all'avvio e ogni 10 minuti).
+La scelta e' per canale (identificativo `DTT.identity`), quindi vale anche se il canale arriva da piu' liste. Si salva in `/api/hidden`
+(KV `hidden` sul Worker, `hidden.json` in `DATA_DIR` sul server Node). Lettura pubblica, modifica solo da admin.
+
+## Piu' liste insieme: sempre come indirizzi
+Le fonti ("Liste (fonti)") sono indirizzi: ogni lista si unisce alle altre. Il caricamento di un file (o l'incolla del testo) sostituisce
+tutto e disattiva le fonti. Per usare un file insieme agli indirizzi basta metterlo nel repository e usare il suo indirizzo `raw.githubusercontent.com`
+(come `extra.m3u`). Esempio: Free-TV Italia, `https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_italy.m3u8`.

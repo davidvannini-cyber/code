@@ -31,6 +31,27 @@
          <button id="srcRefresh" class="btn" type="button">Aggiorna ora</button></p>
       <ul id="srcStatus" class="status"></ul>
 
+      <h2>Canali visibili</h2>
+      <p class="muted">Togli la spunta ai canali che non vuoi vedere: spariscono dalla pagina e dall'app. Le spunte valgono per il canale,
+         anche se arriva da piu' liste. Ricorda di premere <b>Salva</b>.</p>
+      <p class="visbar">
+        <input id="visSearch" type="search" placeholder="Cerca canale…" aria-label="Cerca canale">
+        <select id="visFilter" aria-label="Quali canali mostrare">
+          <option value="all">Tutti</option>
+          <option value="it">Italiani</option>
+          <option value="foreign">Non italiani</option>
+          <option value="visible">Visibili</option>
+          <option value="hidden">Nascosti</option>
+        </select>
+      </p>
+      <p>
+        <button id="visShowAll" class="btn" type="button">Mostra quelli in elenco</button>
+        <button id="visHideAll" class="btn" type="button">Nascondi quelli in elenco</button>
+        <button id="visSave" class="btn" type="button">Salva</button>
+      </p>
+      <p id="visInfo" class="muted"></p>
+      <ol id="visList" class="vis"></ol>
+
       <details>
       <summary>Sostituisci con una sola playlist (disattiva le fonti sopra)</summary>
       <p class="muted">Scrivi l'indirizzo della playlist (il server la scarica da solo):</p>
@@ -47,6 +68,8 @@
     </section>
     <p id="msg" role="status"></p>
   </main>
+  <script src="m3u.js"></script>
+  <script src="dtt-it.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

@@ -52,6 +52,7 @@ final class Dtt {
     private static final Pattern QUALITY = Pattern.compile("^(\\d{3,4}[pi]|hd|fhd|uhd|sd|4k)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern NUM_PREFIX = Pattern.compile("^\\s*\\[(\\d{1,4})\\]");
     private static final Pattern NUM_PREFIX_CLEAN = Pattern.compile("^\\s*\\[\\d{1,4}\\]\\s*");
+    private static final Pattern CIRCLED_MARK = Pattern.compile("\\s*[\\u24B6-\\u24E9]+\\s*$");     // segni tipo "Ⓖ" (Free-TV)
     private static final Pattern COUNTRY = Pattern.compile("\\.([a-z]{2})(?:@|$)", Pattern.CASE_INSENSITIVE);
     private static final Pattern PARENS = Pattern.compile("\\(([^)]*)\\)");
     private static final Pattern ITALY_GROUP = Pattern.compile("\\bital(y|ia|ian[oi]?)\\b", Pattern.CASE_INSENSITIVE);
@@ -108,6 +109,7 @@ final class Dtt {
 
     static String cleanName(Channel c) {
         String s = NUM_PREFIX_CLEAN.matcher(c.name == null ? "" : c.name).replaceFirst("");
+        s = CIRCLED_MARK.matcher(s).replaceFirst("");
         return s.isEmpty() ? c.name : s;
     }
 

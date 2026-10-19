@@ -18,6 +18,7 @@ const ALLOW_PRIVATE_URLS = process.env.ALLOW_PRIVATE_URLS === '1';   // consente
 const PUBLIC = path.join(__dirname, 'public');
 const DATA = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data'));
 const PLAYLIST = path.join(DATA, 'playlist.m3u');
+const HIDDEN = path.join(DATA, 'hidden.json');          // canali nascosti dall'amministratore
 const BACKUP = path.join(DATA, 'playlist.prev.m3u');
 const MAX_PLAYLIST = 10 * 1024 * 1024;
 const MAX_MERGED = 40 * 1024 * 1024;
@@ -351,6 +352,17 @@ async function route(req, res) {
     requireAdmin(req);
     return send(res, 200, playlistInfo());
   }
+  if (pathname === '/api/hidden' && req.method === 'POST') {
+    requireAdmin(req);
+    let ids;
+    try { ids = JSON.parse((await readBody(req, 1024 * 1024)).toString('utf8')).ids; } catch (_) { throw httpError(400, 'Richiesta non valida.'); }
+    if (!Array.isArray(ids) || ids.length > 20000 || ids.some(x => typeof x !== 'string' || x.length > 300)) throw httpError(400, 'Richiesta non valida.');
+    const clean = [...new Set(ids)];
+    const tmp = HIDDEN + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify({ ids: clean, updatedAt: new Date().toISOString() }));
+    fs.renameSync(tmp, HIDDEN);
+    return send(res, 200, { hidden: clean.length });
+  }
   if (pathname === '/api/playlist' && req.method === 'POST') {
     requireAdmin(req);
     const text = (await readBody(req, MAX_PLAYLIST)).toString('utf8');
@@ -399,6 +411,11 @@ async function route(req, res) {
   if (viewerHash && !OPEN_PATHS.has(pathname) && !viewerSessions.check(req) && !adminSessions.check(req)) {
     if (pathname === '/index.html') return send(res, 302, '', { Location: '/login.html' });
     throw httpError(401, 'Accesso richiesto.');
+  }
+  if (pathname === '/api/hidden') {
+    let body = '{"ids":[]}';
+    try { body = fs.readFileSync(HIDDEN, 'utf8'); } catch (_) { /* nessun canale nascosto */ }
+    return send(res, 200, body, { 'Content-Type': 'application/json; charset=utf-8' });
   }
   if (pathname === '/api/epg') {
     return send(res, 200, await getEpg(), { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' });

@@ -59,7 +59,7 @@
 
   // Nome da mostrare: senza il prefisso numerico "[12] " che alcune liste mettono davanti.
   function cleanName(channel) {
-    return String(channel.name || '').replace(/^\s*\[\d{1,4}\]\s*/, '') || channel.name;
+    return String(channel.name || '').replace(/^\s*\[\d{1,4}\]\s*/, '').replace(/\s*[\u24B6-\u24E9]+\s*$/, '') || channel.name;   // niente prefisso numerico ne' segni tipo "Ⓖ" (Free-TV)
   }
 
   // Paese indicato dall'id della lista (iptv-org: "Rai1.it@SD", "TV8.tr@SD"), se presente.

@@ -271,6 +271,15 @@ async function scenarioEpg() {
       assert.strictEqual(r.status, 200, 'epg');
       assert.strictEqual((await r.json()).channels.rai1[0][2], 'TG1');
     });
+    await withServer({}, async base => {                          // canali nascosti dall'admin
+      assert.deepStrictEqual(await (await fetch(base + '/api/hidden')).json(), { ids: [] });
+      assert.strictEqual((await post(base, '/api/hidden', JSON.stringify({ ids: ['x'] }), JSON_H)).status, 401, 'nascondere senza login');
+      const auth = { Cookie: cookieOf(await login(base, '/api/login', 'segreta-di-test')) };
+      assert.strictEqual((await post(base, '/api/hidden', JSON.stringify({ ids: 'x' }), { ...JSON_H, ...auth })).status, 400);
+      const r = await post(base, '/api/hidden', JSON.stringify({ ids: ['||n3', '||n3', '|a|b'] }), { ...JSON_H, ...auth });
+      assert.strictEqual((await r.json()).hidden, 2);
+      assert.deepStrictEqual((await (await fetch(base + '/api/hidden')).json()).ids, ['||n3', '|a|b']);
+    });
     await withServer({ EPG_URL: url + '/manca', ALLOW_PRIVATE_URLS: '1' }, async base => {
       assert.strictEqual((await fetch(base + '/api/epg')).status, 502, 'epg assente');
     });

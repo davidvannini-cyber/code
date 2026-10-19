@@ -58,7 +58,7 @@ main > #msg.error { color: #ff6b6b; }
 .status .ok { color: #3fb950; } .status .warn { color: #d29922; } .status .bad { color: #ff6b6b; }
 details > summary { cursor: pointer; color: var(--muted); margin: 12px 0; }
 li .alts { color: var(--muted); font-size: 12px; }
-#info { position: absolute; top: 64px; left: 16px; max-width: min(640px, calc(100% - 32px)); margin: 0; padding: 10px 12px; border-radius: 8px; background: #000b; color: #fff; font: 12px/1.45 ui-monospace, monospace; white-space: pre-wrap; word-break: break-all; user-select: text; }
+#player #info { position: absolute; top: 64px; left: 16px; max-width: min(640px, calc(100% - 32px)); margin: 0; padding: 10px 12px; border-radius: 8px; background: #000b; color: #fff; font: 12px/1.45 ui-monospace, monospace; white-space: pre-wrap; word-break: break-all; user-select: text; }
 
 /* Menu in fondo alla pagina (dock) */
 .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
@@ -77,3 +77,13 @@ body:has(.dock) main { padding-top: calc(16px + env(safe-area-inset-top)); paddi
 #player { height: 100dvh; }
 #bar .btn svg { display: block; }
 #bar .btn { min-width: 38px; }
+
+/* Admin: canali visibili */
+.visbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.visbar input { flex: 1; min-width: 160px; }
+ol.vis li label { display: flex; align-items: center; gap: 12px; padding: 6px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+ol.vis li:last-child label { border-bottom: 0; }
+ol.vis li label:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+ol.vis .num { width: 2.5em; text-align: right; color: var(--muted); flex: none; font-variant-numeric: tabular-nums; }
+ol.vis .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ol.vis .grp { color: var(--muted); font-size: 13px; white-space: nowrap; }

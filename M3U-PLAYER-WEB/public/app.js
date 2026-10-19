@@ -7,7 +7,7 @@
   const video = $('video');
   const player = $('player');
   const state = {
-    it: false, channels: [], groups: [], filtered: [], shown: 0,
+    it: false, channels: [], groups: [], filtered: [], shown: 0, hidden: new Set(), epg: null,
     cur: null,                            // { g: gruppo, i: indice della fonte in prova }
     current: -1,                          // id del canale (fonte) in riproduzione
     hls: null, ts: null, dash: null, failFn: null, startTimer: 0,
@@ -17,9 +17,13 @@
   /* ---------- Elenco ---------- */
   async function loadPlaylist() {
     try {
-      const res = await fetch('playlist.m3u', { cache: 'no-store' });
+      const [res, hid] = await Promise.all([
+        fetch('playlist.m3u', { cache: 'no-store' }),
+        fetch('api/hidden', { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null),   // senza l'elenco si vede tutto
+      ]);
       if (res.status === 401) { location.href = 'login.html'; return; }
       if (!res.ok) throw new Error('risposta ' + res.status);
+      state.hidden = new Set(hid && Array.isArray(hid.ids) ? hid.ids : []);
       state.channels = M3U.parseM3U(await res.text()).channels;
       state.groups = DTT.groupChannels(state.channels);       // un elemento per canale, con le sue fonti
       fillGroups();
@@ -31,8 +35,9 @@
 
   // Con "Italiani" attivo: solo i canali italiani, nell'ordine standard del digitale terrestre.
   function baseGroups() {
-    if (!state.it) return state.groups;
-    return DTT.sortGroups(state.groups.filter(g => g.alts.some(DTT.isItalian)));
+    const visible = state.hidden && state.hidden.size ? state.groups.filter(g => !state.hidden.has(g.id)) : state.groups;   // niente canali nascosti dall'admin
+    if (!state.it) return visible;
+    return DTT.sortGroups(visible.filter(g => g.alts.some(DTT.isItalian)));
   }
 
   function fillGroups() {
