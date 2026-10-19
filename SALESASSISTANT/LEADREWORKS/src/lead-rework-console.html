@@ -796,12 +796,18 @@ function icon(name, opts){
    permessi a macOS. In una scheda normale o aperta dall'estensione resizeTo/moveTo non fanno nulla. */
 function placeLauncherWindow(){
   if (!/(^|[#&])finestra=1(&|$)/.test(location.hash)) return;
-  try {
-    const sc = window.screen || {};
-    const aw = sc.availWidth || window.innerWidth, ah = sc.availHeight || window.innerHeight;
-    window.resizeTo(Math.round(aw * 0.35), Math.round(ah * 0.60));
-    window.moveTo(sc.availLeft || 0, sc.availTop || 0);
-  } catch(e){ console.warn("posizionamento finestra non riuscito", e); }
+  const applica = () => {
+    try {
+      const sc = window.screen || {};
+      const aw = sc.availWidth || window.innerWidth, ah = sc.availHeight || window.innerHeight;
+      window.resizeTo(Math.round(aw * 0.35), Math.round(ah * 0.60));
+      window.moveTo(sc.availLeft || 0, sc.availTop || 0);
+    } catch(e){ console.warn("posizionamento finestra non riuscito", e); }
+  };
+  // Chrome può rimettere la dimensione ricordata subito dopo l'apertura: si ripete un paio di volte nei primi istanti.
+  applica();
+  setTimeout(applica, 300);
+  setTimeout(applica, 1000);
 }
 
 async function init(){
