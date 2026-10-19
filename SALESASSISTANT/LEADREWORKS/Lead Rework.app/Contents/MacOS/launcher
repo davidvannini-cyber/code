@@ -14,7 +14,8 @@ for c in "$QUI" "$HOME/Documents/progetti/code/SALESASSISTANT/LEADREWORKS" "$HOM
 done
 [ -z "$FILE" ] && { avviso "lead-rework-console.html non trovato."; exit 1; }
 # Uno spazio "crudo" in un indirizzo file:// manda in confusione Chrome: va convertito in %20.
-URL="file://${FILE// /%20}"
+# "#finestra=1": segnale per la console, che si ridimensiona e si posiziona da sola (non richiede permessi a macOS).
+URL="file://${FILE// /%20}#finestra=1"
 
 # 2) Area di lavoro dello schermo principale (esclude barra dei menu e Dock, come workArea dell'estensione).
 GEO="$(osascript -l JavaScript -e 'ObjC.import("AppKit"); var s=$.NSScreen.screens.objectAtIndex(0); var f=s.frame, v=s.visibleFrame; [v.origin.x, f.size.height-(v.origin.y+v.size.height), v.size.width, v.size.height].map(Math.round).join(" ")' 2>/dev/null)"
@@ -34,6 +35,8 @@ open -na "Google Chrome" --args --app="$URL" --window-position=$X,$Y --window-si
 # 4) Chrome si ricorda la dimensione dell'ultima finestra "app" e ignora quella richiesta all'avvio:
 #    appena la finestra compare, posizione e dimensione si impongono direttamente (come fa l'estensione).
 #    La prima volta macOS chiede di consentire il controllo di Chrome: va accettato.
+#    Secondo metodo (oltre a quello della console stessa): AppleScript, che richiede il permesso
+#    "Automazione" → Google Chrome; se manca, un avviso spiega dove concederlo.
 R=$(( X + W )); B=$(( Y + H ))
 for i in $(seq 1 20); do
   sleep 0.5
@@ -46,6 +49,9 @@ for i in $(seq 1 20); do
       end if
     end repeat
     return n
-  end tell" 2>/dev/null)
+  end tell" 2>/tmp/lead-rework-launcher.err)
   [ "${OK:-0}" -gt 0 ] 2>/dev/null && break
 done
+if ! [ "${OK:-0}" -gt 0 ] 2>/dev/null && grep -q "1743\|non è autorizzat\|not authorized" /tmp/lead-rework-launcher.err 2>/dev/null; then
+  avviso "Per la posizione della finestra: Impostazioni di Sistema > Privacy e sicurezza > Automazione > consenti Lead Rework a controllare Google Chrome."
+fi

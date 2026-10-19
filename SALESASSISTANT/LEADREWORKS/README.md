@@ -22,6 +22,7 @@ ma **senza trasportare dati**: i campi partono vuoti. Usa il profilo Chrome norm
 Per averla sulla scrivania: eseguire una volta `Crea icona scrivania.command` (doppio clic; la prima volta, se macOS lo blocca: tasto destro → Apri). L'icona sulla
 scrivania richiama l'app in questa cartella: dopo un Sync non va rifatta; se sposti la cartella, rieseguire quel file.
 Se la console è già aperta, un nuovo clic apre un'altra finestra (l'estensione invece riusa quella esistente).
+La posizione/dimensione è imposta in **due modi**: (1) la console stessa, quando l'indirizzo ha `#finestra=1` (lo aggiunge il programma di avvio), chiama `resizeTo/moveTo` (`placeLauncherWindow` in `lead-rework-console.html`): non richiede permessi; (2) AppleScript nel programma di avvio, che richiede il permesso macOS «Automazione → Google Chrome» (se manca compare un avviso). `Crea icona scrivania.command` lancia l'avvio in primo piano (senza `&`) così macOS può chiedere quel permesso all'app. Chrome ricorda la dimensione dell'ultima finestra `--app` e ignora `--window-size`: per questo servono questi due metodi.
 
 ## Import diretto dal CRM (estensione browser, prototipo)
 Alternativa all'upload manuale di screenshot: un'estensione browser legge i dati

@@ -790,7 +790,22 @@ function icon(name, opts){
    INIT
    ========================================================= */
 
+/* Quando la apre l'icona sulla scrivania (indirizzo con #finestra=1) la console si mette da sola in alto a sinistra,
+   35% della larghezza e 60% dell'altezza dell'area di lavoro, come la finestra dell'estensione. Chrome ricorda la
+   dimensione dell'ultima finestra e ignora quella chiesta all'avvio; da dentro la pagina invece funziona e non richiede
+   permessi a macOS. In una scheda normale o aperta dall'estensione resizeTo/moveTo non fanno nulla. */
+function placeLauncherWindow(){
+  if (!/(^|[#&])finestra=1(&|$)/.test(location.hash)) return;
+  try {
+    const sc = window.screen || {};
+    const aw = sc.availWidth || window.innerWidth, ah = sc.availHeight || window.innerHeight;
+    window.resizeTo(Math.round(aw * 0.35), Math.round(ah * 0.60));
+    window.moveTo(sc.availLeft || 0, sc.availTop || 0);
+  } catch(e){ console.warn("posizionamento finestra non riuscito", e); }
+}
+
 async function init(){
+  placeLauncherWindow();
   state.profile = await dbGet("company/profile", null);
   if (!state.profile){
     state.profile = JSON.parse(JSON.stringify(COMPANY_PROFILE_DEFAULT));
