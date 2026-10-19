@@ -93,7 +93,7 @@ Nella sezione «1. Import dati lead» il tasto **Importa da Lead Collector** chi
 2. analisi AI (stessa funzione dell'import dal CRM, `runAiAnalysis`);
 3. **solo se «Analisi e strategia» è stata compilata**, genera gli script di **primo contatto** (stato sempre 1): con il telefono → script telefono + WhatsApp, con l'email → script email, il canale senza contatto non viene generato;
 4. salva nello Storico (campo `lead_collector_id` in `dati_lead_input`, per non duplicare) e segna il lead come esportato in Lead Collector.
-Se l'analisi o la generazione falliscono (o manca l'AI), il lead viene comunque salvato nello Storico **senza script** e finisce nel riepilogo finale. La bozza che stavi compilando viene rimessa a posto alla fine. Il segno «esportato» resta anche se poi cancelli il lead dallo Storico. L'import dal CRM non cambia (parte solo l'analisi, non gli script).
+Se l'analisi o la generazione falliscono (o manca l'AI), il lead viene comunque salvato nello Storico **senza script** e finisce nel riepilogo finale. La bozza che stavi compilando viene rimessa a posto alla fine. Il segno «esportato» resta anche se poi cancelli il lead dallo Storico. **Import dal CRM (estensione o «Incolla dati dal CRM»)**: dopo l'analisi AI, se «Analisi e strategia» è compilata, parte da sola anche «Genera script», con lo stato lead e i canali suggeriti dall'AI (non forzati a «primo contatto»). Non parte se l'analisi è vuota o fallita, se non c'è nessun canale attivo, se nel frattempo hai cambiato lead o c'è già una generazione.
 Non provato dal vivo: serve Lead Collector acceso e un'AI (Artifact o API key) sul Mac; provato con jsdom e AI/server simulati.
 
 ## Storico: colonne Lav. · F.U. · Chiuso

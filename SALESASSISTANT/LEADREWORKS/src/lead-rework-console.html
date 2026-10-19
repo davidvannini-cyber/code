@@ -1634,7 +1634,16 @@ function applyCrmImport(data){
   // senza dover premere a mano il pulsante in sezione 3 (richiede comunque una
   // API key Anthropic configurata: se manca, runAiAnalysis mostra l'avviso al
   // posto del risultato, stesso comportamento del pulsante manuale).
-  runAiAnalysis();
+  // Quando "Analisi e strategia" risulta compilata parte da sola anche "Genera script",
+  // con lo stato lead e i canali suggeriti dall'AI.
+  const leadId = state.draft.crm_lead_id;
+  runAiAnalysis().then(() => {
+    const d = state.draft;
+    // solo se la bozza è ancora quella appena importata (nel frattempo potresti averla cambiata) e non c'è già una generazione
+    if (d.crm_lead_id !== leadId || state.generating || state.generatedOutput) return;
+    if (!String(d.analisi_strategia||"").trim() || !activeSlots().length) return;
+    generateScripts();
+  }).catch(e => console.warn("generazione automatica dopo import CRM non riuscita", e));
 }
 /* --- Import automatico da Lead Collector (server locale LEAD-COLLECTOR, /api/ext/*) ---
    Per ogni lead non ancora esportato: bozza → analisi AI → script di primo contatto → Storico → segno "esportato".
