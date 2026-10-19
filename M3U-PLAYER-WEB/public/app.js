@@ -124,6 +124,7 @@
 
   // Parte dalla fonte che ha funzionato l'ultima volta, se c'e'.
   function playGroup(g) {
+    updateMediaSession(g);
     const last = rememberedUrls()[g.id];
     const i = last ? g.alts.findIndex(c => c.url === last) : -1;
     state.cur = { g, i: i >= 0 ? i : 0 };
@@ -216,6 +217,20 @@
       else if (video.webkitSetPresentationMode) video.webkitSetPresentationMode('picture-in-picture');
     } catch (_) {
       setMsg('La finestra flottante parte solo quando il video e\' in riproduzione: aspetta un attimo e riprova.', true);
+    }
+  }
+
+  /* Canale precedente/successivo dai pulsanti della finestra flottante e dai tasti multimediali della tastiera. */
+  function updateMediaSession(g) {
+    if (!('mediaSession' in navigator) || !window.MediaMetadata) return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({ title: DTT.cleanName(g.head), artist: 'TV Vannini' });
+    } catch (_) { /* metadati non supportati */ }
+  }
+
+  if ('mediaSession' in navigator) {
+    for (const [action, delta] of [['previoustrack', -1], ['nexttrack', 1]]) {
+      try { navigator.mediaSession.setActionHandler(action, () => step(delta)); } catch (_) { /* azione non supportata dal browser */ }
     }
   }
 

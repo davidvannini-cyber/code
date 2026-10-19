@@ -186,3 +186,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-18 | `029cf23` | M3U-PLAYER-WEB: extra.m3u con Rai 3 Toscana (n. 3) e 50 Canale (n. 18), README.md, REGISTRO-SALVATAGGI.md | `git checkout 029cf23` |
 | 2026-10-18 | `5e31754` | M3U-PLAYER-WEB: mac/crea-icona-tv.sh (icona sul Desktop che apre il sito con Safari), README.md, REGISTRO-SALVATAGGI.md | `git checkout 5e31754` |
 | 2026-10-18 | `64b8a08` | M3U-PLAYER-WEB: mac/crea-icona-tv.sh senza il tentativo di nascondere la barra (non possibile su Monterey), README.md, REGISTRO-SALVATAGGI.md | `git checkout 64b8a08` |
+| 2026-10-19 | `9d775b7` | M3U-PLAYER-WEB: canale precedente/successivo dalla finestra flottante e dai tasti multimediali (public/app.js), REGISTRO-SALVATAGGI.md | `git checkout 9d775b7` |
