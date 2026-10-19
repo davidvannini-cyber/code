@@ -51,6 +51,8 @@ const origin = http.createServer((q, r) => {
   if (u === '/single.m3u8') return r.end('#EXTM3U\n#EXT-X-TARGETDURATION:4\n#EXTINF:4,\nseg.ts');
   if (u === '/big.m3u') return r.end(big);
   if (u === '/notm3u') return r.end('<html>ciao</html>');
+  if (u === '/epg.json') return r.end('{"updated":"2026-10-19T18:00:00.000Z","channels":{"rai1":[[1,2,"TG1"]]}}');
+  if (u === '/epg-rotto.json') return r.end('<html>ciao</html>');
   r.writeHead(500); r.end();
 });
 await new Promise(r => origin.listen(0, '127.0.0.1', r));
@@ -161,6 +163,14 @@ try {
   for (const u of ['http://localhost/x', 'http://127.0.0.1/x', 'http://10.0.0.5/x', 'http://169.254.169.254/x', 'http://[::1]/x']) {
     assert.equal((await post(strict, '/api/playlist-url', { url: u }, { ...J, Cookie: cookieOf(l) })).status, 400, 'bloccato ' + u);
   }
+
+  // --- guida programmi (EPG): passa il file cosi' com'e', e se manca risponde 502
+  r = await call(mkEnv({ EPG_URL: O + '/epg.json' }), '/api/epg');
+  assert.equal(r.status, 200, 'epg');
+  assert.equal((await r.json()).channels.rai1[0][2], 'TG1');
+  assert.match(r.headers.get('content-type'), /application\/json/);
+  assert.equal((await call(mkEnv({ EPG_URL: O + '/epg-rotto.json' }), '/api/epg')).status, 502, 'epg non valida');
+  assert.equal((await call(mkEnv({ EPG_URL: O + '/non-esiste' }), '/api/epg')).status, 502, 'epg assente');
 
   // --- lista grande: quanto lavoro serve per unirla (in Node; nel Worker il tempo di calcolo e' simile o minore)
   const t0 = performance.now();

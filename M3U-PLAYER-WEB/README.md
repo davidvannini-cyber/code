@@ -81,3 +81,13 @@ Il numero si decide con `tvg-chno` (non serve toccare il codice). Per aggiungere
 Per chi ha un altro browser predefinito: `bash M3U-PLAYER-WEB/mac/crea-icona-tv.sh` crea sul Desktop l'app "TV Vannini",
 che apre `tv.vannini.online` con Safari (barra degli strumenti visibile: su macOS 12 Safari non permette di nasconderla). Su macOS 14 (Sonoma) o piu' recente
 e' meglio Safari → File → Aggiungi al Dock, che apre il sito in una finestra senza barra.
+
+## Guida programmi leggera (EPG)
+Sotto il nome di ogni canale italiano compare "adesso in onda" e "poi": nella pagina, nel titolo del lettore e nell'app Fire TV.
+- **Come funziona:** ogni due ore un lavoro su GitHub (`.github/workflows/epg.yml`, script `epg/build-epg.mjs`) scarica guide XMLTV
+  pubbliche (epgshare01 IT1, poi open-epg italy3 per i buchi), tiene solo il programma in corso e i successivi 8 ore, e pubblica un file
+  da poche decine di KB (`epg.json`) nella release `epg-latest`. Il Worker (`/api/epg`) lo passa com'e' e lo tiene 20 minuti in copia.
+- **Pesantezza:** pagina e app scaricano solo quel file (non la guida intera), una volta ogni 10 minuti. Nessun calcolo pesante.
+- **Collegamento canali-programmi:** per chiave del nome e del `tvg-id` (`DTT.key` / `DTT.idKey` in `dtt-it.js`, `Dtt.java` per l'app).
+  Un canale senza guida (es. 50 Canale) resta senza riga. Per cambiare le fonti: elenco `SOURCES` in `epg/build-epg.mjs`.
+- Prova: `node test-epg.mjs`. Aggiornamento a mano: scheda "Actions" di GitHub → "Guida programmi (EPG)" → Run workflow.

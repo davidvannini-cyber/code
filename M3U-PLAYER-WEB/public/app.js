@@ -102,12 +102,71 @@
     } else {
       b.appendChild(monogram(label));
     }
-    b.appendChild(span('name', DTT.cleanName(g.head)));
+    const nm = span('nm');
+    nm.appendChild(span('name', label));
+    const epg = span('epg', epgText(g));
+    epg._g = g;
+    nm.appendChild(epg);
+    b.appendChild(nm);
     if (g.alts.length > 1) b.appendChild(span('alts', '×' + g.alts.length));
     if (g.head.group) b.appendChild(span('grp', g.head.group));
     b.addEventListener('click', () => openPlayer(g));
     li.appendChild(b);
     return li;
+  }
+
+  /* ---------- Guida programmi (EPG) leggera: "adesso in onda" e "dopo" ---------- */
+  const EPG_RELOAD_MS = 10 * 60 * 1000;
+  const hhmm = secs => new Date(secs * 1000).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+
+  async function loadEpg() {
+    try {
+      const res = await fetch('api/epg', { cache: 'no-store' });
+      if (!res.ok) throw new Error('risposta ' + res.status);
+      const data = await res.json();
+      if (data && data.channels) state.epg = data.channels;
+    } catch (_) { /* senza guida i canali restano senza programma */ }
+    paintEpg();
+  }
+
+  // Programma in corso e successivo del canale. Si provano le chiavi dei suoi indirizzi (nome e tvg-id) e il numero DTT.
+  function epgNow(g) {
+    if (!state.epg || !g.alts.some(DTT.isItalian)) return null;
+    if (!g.epgKeys) {
+      const keys = new Set();
+      for (const a of g.alts) { keys.add(DTT.key(DTT.cleanName(a))); keys.add(DTT.idKey(a.tvgId)); }
+      if (g.lcn !== undefined) keys.add(DTT.canonicalKey(g.lcn));
+      g.epgKeys = [...keys].filter(Boolean);
+    }
+    const now = Date.now() / 1000;
+    for (const k of g.epgKeys) {
+      const list = state.epg[k];
+      const i = list ? list.findIndex(p => p[0] <= now && now < p[1]) : -1;
+      if (i >= 0) return { now: list[i], next: list[i + 1] || null };
+    }
+    return null;
+  }
+
+  function epgText(g) {
+    const e = epgNow(g);
+    return e ? e.now[2] + (e.next ? '  \u00B7  poi ' + hhmm(e.next[0]) + ' ' + e.next[2] : '') : '';
+  }
+
+  function paintEpg() {
+    document.querySelectorAll('#channels .epg').forEach(el => { el.textContent = epgText(el._g); });
+    setTitle();
+    if (state.cur) updateMediaSession(state.cur.g);
+  }
+
+  // Titolo del lettore: canale, fonte e programma in corso.
+  function setTitle() {
+    const cur = state.cur;
+    const c = state.channels[state.current];
+    if (!cur || !c) return;
+    const nAlts = cur.g.alts.length;
+    const label = DTT.cleanName(c);
+    const guide = epgNow(cur.g);
+    $('title').textContent = (nAlts > 1 ? label + '  \u00B7  fonte ' + (cur.i + 1) + '/' + nAlts : label) + (guide ? '  \u00B7  ' + guide.now[2] : '');
   }
 
   /* ---------- Fonti alternative dello stesso canale ---------- */
@@ -224,7 +283,8 @@
   function updateMediaSession(g) {
     if (!('mediaSession' in navigator) || !window.MediaMetadata) return;
     try {
-      navigator.mediaSession.metadata = new MediaMetadata({ title: DTT.cleanName(g.head), artist: 'TV Vannini' });
+      const guide = epgNow(g);
+      navigator.mediaSession.metadata = new MediaMetadata({ title: DTT.cleanName(g.head), artist: guide ? guide.now[2] : 'TV Vannini' });
     } catch (_) { /* metadati non supportati */ }
   }
 
@@ -342,8 +402,7 @@
     state.current = c.id;
     const cur = state.cur;
     const nAlts = cur ? cur.g.alts.length : 1;
-    const label = DTT.cleanName(c);
-    $('title').textContent = nAlts > 1 ? label + '  ·  fonte ' + (cur.i + 1) + '/' + nAlts : label;
+    setTitle();
     $('alt').hidden = nAlts < 2;
     let url = c.url;
     // Una pagina https non puo' aprire flussi http: provo la versione https (molti server la offrono).
@@ -531,4 +590,7 @@
   }, true);
 
   loadPlaylist();
+  loadEpg();
+  setInterval(loadEpg, EPG_RELOAD_MS);
+  setInterval(paintEpg, 60 * 1000);                          // il programma in corso cambia anche senza ricaricare la guida
 })();

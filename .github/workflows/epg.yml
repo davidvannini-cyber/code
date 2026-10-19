@@ -1,0 +1,46 @@
+name: Guida programmi (EPG)
+
+# Ogni due ore scarica le guide XMLTV pubbliche, ne ricava "adesso in onda" e "dopo" per i canali italiani
+# (M3U-PLAYER-WEB/epg/build-epg.mjs) e pubblica il file leggero epg.json nella release "epg-latest".
+on:
+  schedule:
+    - cron: '23 */2 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'M3U-PLAYER-WEB/epg/**'
+      - 'M3U-PLAYER-WEB/public/dtt-it.js'
+      - '.github/workflows/epg.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: epg
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Prova i test
+        run: node M3U-PLAYER-WEB/test-epg.mjs
+
+      - name: Costruisci epg.json
+        run: node M3U-PLAYER-WEB/epg/build-epg.mjs epg.json
+
+      - name: Pubblica epg.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view epg-latest > /dev/null 2>&1 || gh release create epg-latest \
+            --title "Guida programmi (EPG)" --latest=false \
+            --notes "File aggiornato in automatico ogni due ore. Non modificare a mano."
+          gh release upload epg-latest epg.json --clobber

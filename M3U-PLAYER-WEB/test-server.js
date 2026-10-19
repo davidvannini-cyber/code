@@ -256,9 +256,33 @@ async function scenarioMultiSource() {
   }
 }
 
+async function scenarioEpg() {
+  const o = await new Promise(res => {
+    const srv = require('http').createServer((q, r) => {
+      if (q.url === '/epg.json') return r.end('{"updated":"x","channels":{"rai1":[[1,2,"TG1"]]}}');
+      r.writeHead(404); r.end();
+    });
+    srv.listen(0, '127.0.0.1', () => res(srv));
+  });
+  const url = 'http://127.0.0.1:' + o.address().port;
+  try {
+    await withServer({ EPG_URL: url + '/epg.json', ALLOW_PRIVATE_URLS: '1' }, async base => {
+      const r = await fetch(base + '/api/epg');
+      assert.strictEqual(r.status, 200, 'epg');
+      assert.strictEqual((await r.json()).channels.rai1[0][2], 'TG1');
+    });
+    await withServer({ EPG_URL: url + '/manca', ALLOW_PRIVATE_URLS: '1' }, async base => {
+      assert.strictEqual((await fetch(base + '/api/epg')).status, 502, 'epg assente');
+    });
+  } finally {
+    o.close();
+  }
+}
+
 (async () => {
   try {
     await scenarioBase();
+    await scenarioEpg();
     await scenarioViewerPassword();
     await scenarioProxy();
     await scenarioSessionsSurviveRestart();

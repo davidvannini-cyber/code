@@ -31,7 +31,7 @@ final class Dtt {
     }
 
     private static final Object[][] LCN = {
-        {1, "rai1"}, {2, "rai2"}, {3, "rai3"}, {4, "rete4"}, {5, "canale5"}, {6, "italia1"}, {7, "la7"}, {8, "tv8"}, {9, "nove"},
+        {1, "rai1"}, {2, "rai2"}, {3, "rai3"}, {4, "rete4"}, {5, "canale5"}, {6, "italia1", "italiauno"}, {7, "la7"}, {8, "tv8"}, {9, "nove"},
         {20, "20", "20mediaset"}, {21, "rai4"}, {22, "iris"}, {23, "rai5"}, {24, "raimovie"}, {25, "raipremium"}, {26, "cielo"},
         {27, "27twentyseven", "twentyseven"}, {28, "tv2000"}, {29, "la7d"}, {30, "la5"}, {31, "realtime"}, {32, "qvc"},
         {33, "foodnetwork"}, {34, "cine34"}, {35, "focus"}, {36, "rtl1025", "rtl1025tv"}, {37, "warnertv"}, {38, "giallo"},
@@ -67,6 +67,27 @@ final class Dtt {
         String prev;
         do { prev = s; s = TRAILING_QUALITY.matcher(s).replaceFirst(""); } while (!s.equals(prev));
         return s.replace(" ", "");
+    }
+
+    private static final Pattern ID_COUNTRY = Pattern.compile("\\.[a-z]{2}$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ID_QUALITY = Pattern.compile("^(hd|sd|fhd|uhd|4k)$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ID_POSITION = Pattern.compile("^\\d{3,}$");
+
+    // Chiave di un id di canale (tvg-id o id XMLTV): "Rai1.it@SD", "Rai.1.HD..101.it" e "Rai 1.it" danno tutti "rai1".
+    static String idKey(String id) {
+        String s = id == null ? "" : id.split("@", -1)[0];
+        s = ID_COUNTRY.matcher(s).replaceFirst("");
+        List<String> parts = new ArrayList<>();
+        for (String p : s.split("\\.", -1)) if (!p.isEmpty() && !ID_QUALITY.matcher(p).matches()) parts.add(p);
+        if (parts.size() > 1 && ID_POSITION.matcher(parts.get(parts.size() - 1)).matches()) parts.remove(parts.size() - 1);
+        return key(android.text.TextUtils.join(" ", parts));
+    }
+
+    // Nome "compattato" principale del canale con questo numero DTT, se c'e'.
+    static String canonicalKey(Integer lcn) {
+        if (lcn == null) return null;
+        for (Object[] row : LCN) if (row[0].equals(lcn)) return (String) row[1];
+        return null;
     }
 
     private static Integer tableLcn(Channel c) {

@@ -20,6 +20,11 @@ const SAMPLE = '#EXTM3U\n#EXTINF:-1 tvg-id="apple.bipbop" group-title="Test",App
   'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8\n' +
   '#EXTINF:-1 tvg-id="mux.test" group-title="Test",Mux Test Stream (HLS di prova)\nhttps://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8\n';
 
+// Guida programmi leggera (epg.json), pubblicata ogni due ore dal lavoro su GitHub (.github/workflows/epg.yml).
+const EPG_URL = 'https://github.com/davidvannini-cyber/code/releases/download/epg-latest/epg.json';
+const EPG_MAX = 1024 * 1024;
+const EPG_TTL_S = 20 * 60;
+
 class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
@@ -219,6 +224,28 @@ async function refreshSources(env) {
 }
 
 /* ---------- Instradamento ---------- */
+// Passa la guida programmi com'e', con una copia di 20 minuti: nessun calcolo, solo un trasferimento.
+async function handleEpg(env) {
+  const cache = typeof caches !== 'undefined' ? caches.default : null;
+  const cacheKey = new Request('https://epg.cache.invalid/epg.json');
+  const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' };
+  if (cache) {
+    const hit = await cache.match(cacheKey);
+    if (hit) return respond(200, await hit.text(), headers);
+  }
+  let text;
+  try {
+    const res = await fetch(env.EPG_URL || EPG_URL, { signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'tv-vannini', Accept: 'application/json' } });
+    if (!res.ok) throw new Error('risposta ' + res.status);
+    text = await res.text();
+  } catch (_) {
+    throw new HttpError(502, 'Guida programmi non disponibile.');
+  }
+  if (text.length > EPG_MAX || !text.startsWith('{')) throw new HttpError(502, 'Guida programmi non valida.');
+  if (cache) await cache.put(cacheKey, new Response(text, { headers: { 'Cache-Control': 'max-age=' + EPG_TTL_S } }));
+  return respond(200, text, headers);
+}
+
 async function route(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -230,6 +257,8 @@ async function route(request, env) {
     const body = await env.DATA.get('playlist', 'stream');                   // in streaming: nessun calcolo
     return respond(200, body || SAMPLE, { 'Content-Type': 'text/plain; charset=utf-8' });
   }
+
+  if (path === '/api/epg' && request.method === 'GET') return handleEpg(env);
 
   if (path === '/api/login' && request.method === 'POST') return handleLogin(request, env);
   if (path === '/api/logout' && request.method === 'POST') {

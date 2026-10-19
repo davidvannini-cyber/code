@@ -27,7 +27,11 @@ li button:hover, li button:focus-visible { background: color-mix(in srgb, var(--
 li .num { width: 2.5em; color: var(--muted); text-align: right; flex: none; font-variant-numeric: tabular-nums; }
 li img, li .ph { width: 36px; height: 36px; flex: none; }
 li img { object-fit: contain; border-radius: 4px; }
+li .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+li .nm .name { flex: none; }
 li .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+li .epg { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+li .epg:empty { display: none; }
 li .grp { color: var(--muted); font-size: 13px; }
 #more { width: 100%; margin-top: 10px; }
 footer { text-align: center; padding: 16px; font-size: 13px; }

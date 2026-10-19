@@ -4,7 +4,7 @@
 (function (root) {
   // numero DTT -> nomi possibili del canale (anche senza spazi: "Rai 1" == "Rai1")
   const LCN = {
-    1: ['rai1'], 2: ['rai2'], 3: ['rai3'], 4: ['rete4'], 5: ['canale5'], 6: ['italia1'], 7: ['la7'], 8: ['tv8'], 9: ['nove'],
+    1: ['rai1'], 2: ['rai2'], 3: ['rai3'], 4: ['rete4'], 5: ['canale5'], 6: ['italia1', 'italiauno'], 7: ['la7'], 8: ['tv8'], 9: ['nove'],
     20: ['20', '20mediaset'], 21: ['rai4'], 22: ['iris'], 23: ['rai5'], 24: ['raimovie'], 25: ['raipremium'], 26: ['cielo'],
     27: ['27twentyseven', 'twentyseven'], 28: ['tv2000'], 29: ['la7d'], 30: ['la5'], 31: ['realtime'], 32: ['qvc'],
     33: ['foodnetwork'], 34: ['cine34'], 35: ['focus'], 36: ['rtl1025', 'rtl1025tv'], 37: ['warnertv'], 38: ['giallo'],
@@ -22,6 +22,19 @@
     let prev;
     do { prev = s; s = s.replace(/\s+(hd|fhd|uhd|sd|4k|hevc|h265)$/, ''); } while (s !== prev);
     return s.replace(/ /g, '');
+  }
+
+  // Chiave di un id di canale (tvg-id o id XMLTV): "Rai1.it@SD", "Rai.1.HD..101.it" e "Rai 1.it" danno tutti "rai1".
+  function idKey(id) {
+    const s = String(id || '').split('@')[0].replace(/\.[a-z]{2}$/i, '');
+    const parts = s.split('.').filter(p => p && !/^(hd|sd|fhd|uhd|4k)$/i.test(p));
+    if (parts.length > 1 && /^\d{3,}$/.test(parts[parts.length - 1])) parts.pop();       // numero finale di posizione, es. "..101"
+    return key(parts.join(' '));
+  }
+
+  // Nome "compattato" principale del canale con questo numero DTT (tabella qui sopra), se c'e'.
+  function canonicalKey(lcn) {
+    return LCN[lcn] ? LCN[lcn][0] : undefined;
   }
 
   const byKey = new Map();
@@ -152,7 +165,7 @@
       || a.firstIndex - b.firstIndex);
   }
 
-  const api = { key, lcnOf, cleanName, isItalian, preferWorking, sortDtt, identity, groupChannels, sortGroups };
+  const api = { key, idKey, canonicalKey, lcnOf, cleanName, isItalian, preferWorking, sortDtt, identity, groupChannels, sortGroups };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DTT = api;
 })(typeof window !== 'undefined' ? window : globalThis);

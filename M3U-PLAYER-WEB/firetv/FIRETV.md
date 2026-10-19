@@ -16,6 +16,8 @@ Usa il lettore del televisore (ExoPlayer) senza passare dal browser: leggera e s
 | Video | Play/Pausa | pausa |
 | Video | Indietro | torna alla lista |
 
+Sotto il nome di ogni canale italiano compare il programma in onda e quello dopo (guida EPG, vedi `epg/`), se la guida lo conosce.
+
 Se una fonte non parte entro 20 secondi o da' errore, passa da sola alla successiva dello stesso canale e si
 ricorda quella che ha funzionato.
 

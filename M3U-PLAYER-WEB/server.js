@@ -221,6 +221,18 @@ function fetchText(urlStr, hops = 0) {
   });
 }
 
+/* ---------- Guida programmi leggera (epg.json), pubblicata ogni due ore da .github/workflows/epg.yml ---------- */
+const EPG_URL = process.env.EPG_URL || 'https://github.com/davidvannini-cyber/code/releases/download/epg-latest/epg.json';
+let epgCache = { at: 0, text: null };
+async function getEpg() {
+  if (epgCache.text && Date.now() - epgCache.at < 20 * 60 * 1000) return epgCache.text;
+  let text;
+  try { text = await fetchText(EPG_URL); } catch (_) { throw httpError(502, 'Guida programmi non disponibile.'); }
+  if (text.length > 1024 * 1024 || !text.startsWith('{')) throw httpError(502, 'Guida programmi non valida.');
+  epgCache = { at: Date.now(), text };
+  return text;
+}
+
 /* ---------- Fonti multiple: piu' liste unite in una ---------- */
 function readSources() {
   try { return JSON.parse(fs.readFileSync(SOURCES, 'utf8')); } catch (_) { return { urls: [], status: [], updatedAt: null }; }
@@ -387,6 +399,9 @@ async function route(req, res) {
   if (viewerHash && !OPEN_PATHS.has(pathname) && !viewerSessions.check(req) && !adminSessions.check(req)) {
     if (pathname === '/index.html') return send(res, 302, '', { Location: '/login.html' });
     throw httpError(401, 'Accesso richiesto.');
+  }
+  if (pathname === '/api/epg') {
+    return send(res, 200, await getEpg(), { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
   }
   if (pathname === '/playlist.m3u') {
     // Accesso scorrevole: ogni caricamento dell'elenco riporta la scadenza a 400 giorni da adesso.

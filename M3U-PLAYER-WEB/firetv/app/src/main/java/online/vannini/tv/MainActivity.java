@@ -58,6 +58,8 @@ import java.util.TreeSet;
 @OptIn(markerClass = UnstableApi.class)
 public class MainActivity extends Activity {
     private static final String PLAYLIST_URL = "https://tv.vannini.online/playlist.m3u";
+    private static final String EPG_URL = "https://tv.vannini.online/api/epg";
+    private static final int EPG_RELOAD_MS = 10 * 60 * 1000;
     private static final String USER_AGENT = "Mozilla/5.0 (Linux; Android 9; AFTMM) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.104 Safari/537.36";
     private static final int STARTUP_MS = 20000;           // se un canale non parte entro questo tempo si passa alla fonte successiva
     private static final int ZAP_DELAY_MS = 350;           // attesa prima di avviare, se si scorrono i canali in fretta
@@ -77,6 +79,7 @@ public class MainActivity extends Activity {
     private boolean italianOnly = true;
     private String label;                                   // gruppo scelto, null = tutti
     private String status = "Carico la lista…";
+    private volatile Epg epg;                                // guida programmi, null finche' non e' scaricata
 
     // Lista
     private LinearLayout listScreen;
@@ -104,6 +107,18 @@ public class MainActivity extends Activity {
     private final Runnable zapRun = new Runnable() {
         @Override public void run() { if (inPlayer && cur != null) playGroup(cur); }
     };
+    private final Runnable epgTick = new Runnable() {
+        @Override public void run() {
+            adapter.notifyDataSetChanged();                  // il programma in corso cambia anche senza riscaricare la guida
+            ui.postDelayed(this, 60 * 1000);
+        }
+    };
+    private final Runnable epgReload = new Runnable() {
+        @Override public void run() {
+            loadEpg();
+            ui.postDelayed(this, EPG_RELOAD_MS);
+        }
+    };
     private final Runnable hideBanner = new Runnable() {
         @Override public void run() { banner.setVisibility(View.GONE); }
     };
@@ -119,6 +134,8 @@ public class MainActivity extends Activity {
         italianOnly = prefs.getBoolean("it", true);
         buildUi();
         refresh();
+        ui.post(epgReload);
+        ui.postDelayed(epgTick, 60 * 1000);
     }
 
     @Override protected void onStop() {
@@ -234,21 +251,32 @@ public class MainActivity extends Activity {
                 TextView num = text(20, Color.argb(190, 255, 255, 255), true);
                 num.setGravity(Gravity.END);
                 row.addView(num, new LinearLayout.LayoutParams(dp(64), ViewGroup.LayoutParams.WRAP_CONTENT));
+                LinearLayout col = new LinearLayout(MainActivity.this);
+                col.setOrientation(LinearLayout.VERTICAL);
+                col.setPadding(dp(20), 0, 0, 0);
                 TextView name = text(24, Color.WHITE, false);
                 name.setSingleLine(true);
-                name.setPadding(dp(20), 0, 0, 0);
-                row.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+                col.addView(name);
+                TextView guide = text(15, Color.argb(170, 255, 255, 255), false);
+                guide.setSingleLine(true);
+                col.addView(guide);
+                row.addView(col, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                 TextView grp = text(16, Color.argb(150, 255, 255, 255), false);
                 grp.setSingleLine(true);
                 row.addView(grp);
             }
             Dtt.Group g = shown.get(pos);
             TextView num = (TextView) row.getChildAt(0);
-            TextView name = (TextView) row.getChildAt(1);
+            LinearLayout col = (LinearLayout) row.getChildAt(1);
+            TextView name = (TextView) col.getChildAt(0);
+            TextView guide = (TextView) col.getChildAt(1);
             TextView grp = (TextView) row.getChildAt(2);
             num.setText(italianOnly ? (g.lcn != null ? String.valueOf(g.lcn) : "") : String.valueOf(pos + 1));
             name.setText(Dtt.cleanName(g.head) + (g.alts.size() > 1 ? "  ×" + g.alts.size() : ""));
             grp.setText(g.head.group != null ? g.head.group : "");
+            String now = guideText(g);
+            guide.setText(now);
+            guide.setVisibility(now.isEmpty() ? View.GONE : View.VISIBLE);
             return row;
         }
     }
@@ -267,7 +295,7 @@ public class MainActivity extends Activity {
                     cached = readCache();
                     if (!cached.isEmpty()) postApply(cached);
                     postStatus("Scarico la lista da tv.vannini.online…");
-                    String text = download();
+                    String text = download(PLAYLIST_URL);
                     postStatus("Scaricati " + (text.length() / 1024) + " KB, leggo i canali…");
                     List<Channel> fresh = M3u.parse(text);
                     if (!fresh.isEmpty()) {
@@ -306,8 +334,8 @@ public class MainActivity extends Activity {
         } catch (IOException ignored) { /* senza copia salvata si riscarica la prossima volta */ }
     }
 
-    private String download() throws IOException {
-        HttpURLConnection c = (HttpURLConnection) new URL(PLAYLIST_URL).openConnection();
+    private String download(String address) throws IOException {
+        HttpURLConnection c = (HttpURLConnection) new URL(address).openConnection();
         c.setConnectTimeout(10000);
         c.setReadTimeout(20000);
         c.setRequestProperty("User-Agent", USER_AGENT);
@@ -329,6 +357,34 @@ public class MainActivity extends Activity {
             if (out.size() > MAX_PLAYLIST_BYTES) throw new IOException("lista troppo grande");
         }
         return new String(out.toByteArray(), StandardCharsets.UTF_8);
+    }
+
+    private String guideText(Dtt.Group g) {
+        Epg e = epg;
+        return e == null || !italianOf(g) ? "" : e.text(g);
+    }
+
+    private static boolean italianOf(Dtt.Group g) {
+        for (Channel c : g.alts) if (Dtt.isItalian(c)) return true;
+        return false;
+    }
+
+    // Guida programmi: se manca o non si scarica, i canali restano senza programma.
+    private void loadEpg() {
+        new Thread(new Runnable() {
+            @Override public void run() {
+                try {
+                    final Epg fresh = Epg.parse(download(EPG_URL));
+                    ui.post(new Runnable() {
+                        @Override public void run() {
+                            epg = fresh;
+                            adapter.notifyDataSetChanged();
+                            if (inPlayer && cur != null) showBanner();
+                        }
+                    });
+                } catch (IOException | org.json.JSONException ignored) { /* senza guida */ }
+            }
+        }).start();
     }
 
     private void postApply(final List<Channel> channels) {
@@ -553,7 +609,8 @@ public class MainActivity extends Activity {
         if (cur == null) return;
         String n = cur.lcn != null && italianOnly ? cur.lcn + "   " : "";
         String src = cur.alts.size() > 1 ? "\nFonte " + (altIdx + 1) + " di " + cur.alts.size() : "";
-        banner.setText(n + Dtt.cleanName(cur.head) + src);
+        String now = guideText(cur);
+        banner.setText(n + Dtt.cleanName(cur.head) + src + (now.isEmpty() ? "" : "\n" + now));
         banner.setVisibility(View.VISIBLE);
         ui.removeCallbacks(hideBanner);
         ui.postDelayed(hideBanner, BANNER_MS);
