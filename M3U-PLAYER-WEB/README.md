@@ -116,3 +116,7 @@ Tutto il codice e' sotto `if (AUTO)` in `public/app.js` (`AUTO` = indirizzo `/au
 `M3U-PLAYER-WEB/GUIDA-TV-VANNINI.pdf` descrive come funziona tutto (sito, app Fire TV, modo auto, admin, guida programmi, manutenzione).
 Sorgente in `M3U-PLAYER-WEB/guida/` (`parts/*.html` + `img/`): per rigenerare il PDF, `node guida/build.mjs` (serve Playwright con Chromium,
 `pdftotext` e Python con pypdf e reportlab; con `PLAYWRIGHT=/percorso/di/playwright` se non e' installato qui).
+
+## Per chi riprende il progetto
+**Leggi `STATO-PROGETTO.md`**: è il documento completo (architettura, file, formati, regole, trucchi, prove, pubblicazione, decisioni, stato e backlog). Nella radice del repository c'è anche un `CLAUDE.md` che rimanda a quel file.
+Strumenti di verifica: `strumenti/prova-browser.mjs` (browser) e `firetv/strumenti/verifica.sh` (app Java senza Android SDK).
