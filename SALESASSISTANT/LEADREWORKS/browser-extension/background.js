@@ -44,33 +44,62 @@ function calcolaRettangoloFinestra(offsetFrazione, larghezzaFrazione, altezzaFra
 // type:"popup" apre una finestra senza tab/barra indirizzi (la cosa più vicina a
 // "app esterna" che un'estensione può fare: non può lanciare Chrome in vera
 // modalità --app, quella è disponibile solo da riga di comando, vedi apri-console.command).
-function openNewConsoleWindow() {
-  console.log("[LRW] apro una nuova finestra:", CONSOLE_FALLBACK_URL);
+function openNewConsoleWindow(url, done) {
+  url = url || CONSOLE_FALLBACK_URL;
+  console.log("[LRW] apro una nuova finestra:", url);
   if (chrome.system && chrome.system.display && chrome.system.display.getInfo) {
     chrome.system.display.getInfo((schermi) => {
       const primario = (schermi && schermi.find(s => s.isPrimary)) || (schermi && schermi[0]);
-      if (!primario) { openWithDefaultSize(); return; }
+      if (!primario) { openWithDefaultSize(url, done); return; }
       const area = primario.workArea;
       const width = Math.round(area.width * LARGHEZZA_FRAZIONE_LEAD_REWORK);
       const height = Math.round(area.height * ALTEZZA_FRAZIONE_LEAD_REWORK);
-      chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", left: area.left, top: area.top, width: width, height: height, focused: true }, (win) => {
+      chrome.windows.create({ url: url, type: "popup", left: area.left, top: area.top, width: width, height: height, focused: true }, (win) => {
         if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
         else console.log("[LRW] finestra creata, id:", win && win.id);
+        if (done) done(!chrome.runtime.lastError);
       });
     });
   } else {
-    openWithDefaultSize();
+    openWithDefaultSize(url, done);
   }
 }
 
-function openWithDefaultSize() {
-  chrome.windows.create({ url: CONSOLE_FALLBACK_URL, type: "popup", width: 800, height: 700, focused: true }, (win) => {
+function openWithDefaultSize(url, done) {
+  chrome.windows.create({ url: url || CONSOLE_FALLBACK_URL, type: "popup", width: 800, height: 700, focused: true }, (win) => {
     if (chrome.runtime.lastError) console.error("[LRW] errore in windows.create:", chrome.runtime.lastError.message);
+    if (done) done(!chrome.runtime.lastError);
   });
 }
 
-chrome.runtime.onMessage.addListener((msg) => {
+// Apertura dall'icona "Lead Rework" sul Desktop (programma di avvio in "Lead Rework.app"): apre il file della console in una
+// scheda normale con #apri-finestra; console-content.js se ne accorge e manda qui "openConsoleWindow". Facciamo ESATTAMENTE
+// quello che fa il pulsante "Invia a Lead Rework Console" (finestra popup in alto a sinistra, 35% x 60%), ma senza dati e
+// senza ricaricare una console già aperta (così non si perde quello che si sta scrivendo). La scheda di passaggio si chiude.
+function openConsoleFromLauncher(senderTab) {
+  const url = ((senderTab && senderTab.url) || CONSOLE_FALLBACK_URL).split("#")[0];
+  const chiudiSchedaDiPassaggio = () => {
+    if (senderTab && senderTab.id !== undefined) chrome.tabs.remove(senderTab.id, () => { void chrome.runtime.lastError; });
+  };
+  chrome.tabs.query({ url: "file:///*lead-rework-console.html" }, (tabs) => {
+    const altre = (tabs || []).filter(t => !senderTab || t.id !== senderTab.id);
+    if (!altre.length) { openNewConsoleWindow(url, chiudiSchedaDiPassaggio); return; }
+    const tab = altre[0];
+    calcolaRettangoloFinestra(OFFSET_FRAZIONE_LEAD_REWORK, LARGHEZZA_FRAZIONE_LEAD_REWORK, ALTEZZA_FRAZIONE_LEAD_REWORK, (r) => {
+      chrome.windows.update(tab.windowId, { focused: true, left: r.left, top: r.top, width: r.width, height: r.height }, () => { void chrome.runtime.lastError; });
+      chrome.tabs.update(tab.id, { active: true });
+      chiudiSchedaDiPassaggio();
+    });
+  });
+}
+
+chrome.runtime.onMessage.addListener((msg, sender) => {
   if (!msg) return;
+
+  if (msg.type === "openConsoleWindow") {
+    openConsoleFromLauncher(sender && sender.tab);
+    return;
+  }
 
   if (msg.type === "leadCaptured") {
     console.log("[LRW] leadCaptured ricevuto, cerco una scheda console già aperta…");

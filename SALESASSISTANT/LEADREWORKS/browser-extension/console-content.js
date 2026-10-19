@@ -4,6 +4,12 @@
 // passa i dati con window.postMessage, che la console ascolta già (vedi il listener
 // aggiunto in lead-rework-console.html, sezione "import diretto dal CRM").
 
+// Apertura dall'icona sul Desktop: l'indirizzo termina con #apri-finestra. Chiediamo al background di aprire la console
+// nella finestra popup (stesso metodo del pulsante "Invia a Lead Rework Console") e di chiudere questa scheda di passaggio.
+if (/(^|[#&])apri-finestra(&|$)/.test(location.hash)) {
+  chrome.runtime.sendMessage({ type: "openConsoleWindow" });
+}
+
 function deliverPendingLead() {
   chrome.storage.local.get("pendingLead", (res) => {
     if (res && res.pendingLead) {
