@@ -1664,8 +1664,14 @@ async function importFromLeadCollector(){
   let pending;
   try { pending = await lcFetch("/api/ext/pending"); }
   catch(e){
+    // "Failed to fetch" vale sia per server spento sia per server acceso ma vecchio (senza i permessi per la console):
+    // una richiesta "no-cors" riesce solo se il server risponde, quindi distingue i due casi.
+    let acceso = false;
+    try { await fetch(LEAD_COLLECTOR_URL + "/", { mode:"no-cors" }); acceso = true; } catch(_){}
     state.lcImporting = false;
-    state.lcImportMsg = "Non riesco a collegarmi a Lead Collector (" + e.message + "). Controlla che sia acceso e raggiungibile su " + LEAD_COLLECTOR_URL + ".";
+    state.lcImportMsg = acceso
+      ? "Lead Collector è acceso ma non risponde alla console (" + e.message + "): probabilmente è ancora la versione vecchia. Chiudilo con «⏻ Chiudi Lead Collector» e riaprilo con l'app (dopo aver fatto «git pull»)."
+      : "Non riesco a collegarmi a Lead Collector (" + e.message + "): sembra spento. Aprilo con l'app «Lead Collector» e controlla che risponda su " + LEAD_COLLECTOR_URL + ".";
     render(); return;
   }
   if (!pending.length){ state.lcImporting = false; state.lcImportMsg = "Nessun lead da importare: sono tutti già esportati."; render(); return; }

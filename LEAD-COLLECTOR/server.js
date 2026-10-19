@@ -109,7 +109,10 @@ const server = http.createServer(async (req, res) => {
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
         res.setHeader('Vary', 'Origin');
       }
-      if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+      if (req.method === 'OPTIONS') {
+        if (co && req.headers['access-control-request-private-network']) res.setHeader('Access-Control-Allow-Private-Network', 'true');
+        res.writeHead(204); return res.end();
+      }
       if (req.method === 'GET' && url.pathname === '/api/ext/pending') {
         // dal più vecchio al più recente, così LEADREWORKS li lavora in ordine di arrivo
         return json(res, 200, store.load().filter(l => !l.exported).reverse());

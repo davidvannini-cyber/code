@@ -15,6 +15,16 @@ done
 cd "$DIR" || exit 1
 mkdir -p data
 
+# 1b) Se il server acceso è una versione vecchia (senza il ponte per LEADREWORKS, /api/ext/pending), lo ferma per riavviarlo nuovo.
+CODICE="$(curl -s -o /dev/null -w '%{http_code}' "$URL/api/ext/pending" 2>/dev/null)"
+if [ "$CODICE" != "000" ] && [ "$CODICE" != "200" ]; then
+  VECCHIO="$(cat data/server.pid 2>/dev/null)"
+  if [ -n "$VECCHIO" ] && ps -p "$VECCHIO" -o command= 2>/dev/null | grep -q 'server.js'; then
+    kill "$VECCHIO" 2>/dev/null
+    sleep 1
+  fi
+fi
+
 # 2) Se il server non è già acceso, lo avvia in background.
 if [ "$(curl -s -o /dev/null -w '%{http_code}' "$URL/" 2>/dev/null)" = "000" ]; then
   NODE="$(/bin/zsh -lic 'command -v node' 2>/dev/null | tail -1)"
