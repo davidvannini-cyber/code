@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YesMobility CRM -> Lead Rework Console",
-  "version": "1.1",
+  "version": "1.0",
   "description": "Cattura i dati del lead dalla pagina Facile Salire CRM e li invia automaticamente alla Lead Rework Console, e da lì a Suggerimenti Vendita.",
   "permissions": ["storage", "tabs", "system.display"],
   "host_permissions": [

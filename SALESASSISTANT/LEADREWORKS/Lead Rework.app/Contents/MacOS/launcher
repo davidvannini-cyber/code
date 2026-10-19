@@ -29,19 +29,6 @@ else
   if [ -n "$SW" ] && [ -n "$SH" ]; then X=0; Y=25; W=$(( SW * 35 / 100 )); H=$(( SH * 60 / 100 )); else X=40; Y=40; W=900; H=700; fi
 fi
 
-# 2b) Metodo preferito: se l'estensione Chrome (browser-extension/) è installata, le si lascia aprire la finestra con lo STESSO
-#     codice del pulsante "Invia a Lead Rework Console" (chrome.windows.create, popup in alto a sinistra, 35% x 60%).
-#     Si apre il file in una scheda normale con #apri-finestra: l'estensione crea la finestra e chiude la scheda di passaggio.
-#     Vale il profilo Chrome normale (stesso storico lead). Se l'estensione non c'è, si usa il metodo qui sotto.
-ESTENSIONE=""
-for P in "$HOME/Library/Application Support/Google/Chrome/"*/Preferences "$HOME/Library/Application Support/Google/Chrome/"*/"Secure Preferences"; do
-  if [ -f "$P" ] && grep -qE 'LEADREWORKS\\?/browser-extension' "$P" 2>/dev/null; then ESTENSIONE=1; break; fi
-done
-if [ -n "$ESTENSIONE" ]; then
-  open -a "Google Chrome" "file://${FILE// /%20}#apri-finestra"
-  exit 0
-fi
-
 # 3) -n: nuova istanza, altrimenti "open" riporta in primo piano Chrome e ignora gli argomenti.
 open -na "Google Chrome" --args --app="$URL" --window-position=$X,$Y --window-size=$W,$H
 
