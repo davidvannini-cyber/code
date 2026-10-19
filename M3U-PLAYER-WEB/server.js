@@ -407,7 +407,8 @@ async function route(req, res) {
 
   /* Pagina pubblica: con VIEWER_PASSWORD serve l'accesso (o la sessione admin). */
   if (req.method !== 'GET' && req.method !== 'HEAD') throw httpError(405, 'Metodo non consentito.');
-  if (pathname === '/') pathname = '/index.html';
+  if (pathname === '/auto/') return send(res, 302, '', { Location: '/auto' });
+  if (pathname === '/' || pathname === '/auto') pathname = '/index.html';       // /auto: stessa pagina, che attiva i comandi per l'auto
   if (viewerHash && !OPEN_PATHS.has(pathname) && !viewerSessions.check(req) && !adminSessions.check(req)) {
     if (pathname === '/index.html') return send(res, 302, '', { Location: '/login.html' });
     throw httpError(401, 'Accesso richiesto.');

@@ -41,6 +41,11 @@ async function scenarioBase() {
     assert.strictEqual(r.status, 200);
     assert.ok((await r.text()).startsWith('#EXTM3U'), 'playlist iniziale');
     assert.strictEqual((await fetch(base + '/')).status, 200, 'pagina pubblica');
+    r = await fetch(base + '/auto');
+    assert.strictEqual(r.status, 200, 'pagina auto');
+    assert.ok((await r.text()).includes('id="channels"'), '/auto e\' la stessa pagina');
+    r = await fetch(base + '/auto/', { redirect: 'manual' });
+    assert.strictEqual(r.status, 302); assert.strictEqual(r.headers.get('location'), '/auto');
     assert.strictEqual((await fetch(base + '/admin')).status, 200, 'pagina admin');
     assert.strictEqual((await fetch(base + '/login.html', { redirect: 'manual' })).status, 302, 'login spettatore assente');
     assert.strictEqual((await login(base, '/api/viewer-login', 'x')).status, 404, 'viewer-login disattivato');

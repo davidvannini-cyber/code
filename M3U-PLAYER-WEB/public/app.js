@@ -6,6 +6,10 @@
   const $ = id => document.getElementById(id);
   const video = $('video');
   const player = $('player');
+  // Modo auto: indirizzo /auto (o ?auto=1). Solo li' valgono i comandi per la manopola e i tasti dell'auto; altrove il sito resta com'e'.
+  const AUTO = location.pathname.replace(/\/+$/, '') === '/auto' || new URLSearchParams(location.search).get('auto') === '1';
+  if (AUTO) document.documentElement.classList.add('auto');
+
   const state = {
     it: false, channels: [], groups: [], filtered: [], shown: 0, hidden: new Set(), epg: null,
     cur: null,                            // { g: gruppo, i: indice della fonte in prova }
@@ -66,6 +70,7 @@
       list.appendChild(row(g, n));
     });
     state.shown += slice.length;
+    if (AUTO) autoEnsure();
     $('more').hidden = state.shown >= state.filtered.length;
     // Il conteggio non si mostra piu': resta solo un avviso quando non c'e' niente da vedere.
     $('count').textContent = state.filtered.length ? '' : (state.groups.length ? 'Nessun canale trovato.' : 'Nessun canale nella playlist.');
@@ -115,6 +120,8 @@
     b.appendChild(nm);
     if (g.alts.length > 1) b.appendChild(span('alts', '×' + g.alts.length));
     if (g.head.group) b.appendChild(span('grp', g.head.group));
+    b._g = g;
+    if (AUTO) b.tabIndex = -1;                                    // la tappa (tabindex 0) la ha solo il canale selezionato
     b.addEventListener('click', () => openPlayer(g));
     li.appendChild(b);
     return li;
@@ -215,6 +222,7 @@
   /* ---------- Schermo intero ---------- */
   // Va chiamato dentro il gestore del click: il browser concede il fullscreen solo a un gesto dell'utente.
   function openPlayer(g) {
+    if (AUTO) autoOpening(g);
     player.hidden = false;
     document.body.classList.add('noscroll');
     const req = player.requestFullscreen || player.webkitRequestFullscreen;
@@ -223,6 +231,63 @@
     }
     playGroup(g);
     showBar();
+    if (AUTO) { player.tabIndex = -1; player.focus({ preventScroll: true }); }      // il tasto invio non deve riaprire la riga sotto
+  }
+
+  /* ---------- Modo auto: manopola, frecce e tasto Indietro ---------- */
+  const auto = { pushed: false, last: null };
+
+  const autoRows = () => [...document.querySelectorAll('#channels li button')];
+
+  // Una sola riga alla volta e' raggiungibile con Tab/manopola: girando si entra e si passa oltre, senza vagare tra tutti i canali.
+  function autoSelect(btn, focus) {
+    for (const b of autoRows()) b.tabIndex = b === btn ? 0 : -1;
+    if (btn && focus) { btn.focus({ preventScroll: true }); btn.scrollIntoView({ block: 'center' }); }
+  }
+  function autoEnsure() {
+    const rows = autoRows();
+    if (rows.length && !rows.some(b => b.tabIndex === 0)) rows[0].tabIndex = 0;
+  }
+
+  // Dal canale aperto nasce un passo nella cronologia: Indietro chiude il video e torna all'elenco.
+  function autoOpening(g) {
+    auto.last = g;
+    if (!auto.pushed) { try { history.pushState({ player: 1 }, ''); auto.pushed = true; } catch (_) { /* cronologia non disponibile */ } }
+  }
+  function leavePlayer() {
+    if (AUTO && auto.pushed) history.back();            // poi ci pensa popstate
+    else closePlayer();
+  }
+  if (AUTO) {
+    window.addEventListener('popstate', () => {
+      auto.pushed = false;
+      if (player.hidden) return;
+      const g = (state.cur && state.cur.g) || auto.last;           // il canale che si stava guardando (anche dopo averne cambiati)
+      closePlayer();
+      const row = autoRows().find(b => b._g === g);
+      autoSelect(row, true);
+      if (row) setTimeout(() => { if (player.hidden) row.focus({ preventScroll: true }); }, 200);   // l'uscita dal tutto schermo puo' togliere il fuoco
+    });
+    // Fuori dalla lista (ricerca, gruppi, temi...) la manopola non deve fermarsi: qui si usa il tocco.
+    document.querySelectorAll('.dock input, .dock select, .dock button, #more, header a, footer a').forEach(el => { el.tabIndex = -1; });
+  }
+
+  // Elenco: su/giu' e Tab/Maiusc+Tab scorrono i canali e, in fondo, si torna in cima: non si esce mai dalla pagina.
+  function autoListKey(e) {
+    const dir = e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey) ? 1 : e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey) ? -1 : 0;
+    if (!dir || e.altKey || e.ctrlKey || e.metaKey) return false;
+    if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return false;
+    let rows = autoRows();
+    if (!rows.length) return false;
+    let i = rows.indexOf(document.activeElement);
+    if (i < 0) i = rows.findIndex(b => b.tabIndex === 0);
+    let n = i + dir;
+    if (n >= rows.length && state.shown < state.filtered.length) { renderMore(); rows = autoRows(); }
+    if (n >= rows.length) n = 0;
+    else if (n < 0) n = rows.length - 1;
+    e.preventDefault();
+    autoSelect(rows[n], true);
+    return true;
   }
 
   function closePlayer() {
@@ -557,7 +622,7 @@
   $('search').addEventListener('input', applyFilter);
   $('group').addEventListener('change', applyFilter);
   $('more').addEventListener('click', renderMore);
-  $('close').addEventListener('click', closePlayer);
+  $('close').addEventListener('click', leavePlayer);
   $('prev').addEventListener('click', () => step(-1));
   $('next').addEventListener('click', () => step(1));
   $('alt').addEventListener('click', cycleSource);
@@ -584,8 +649,15 @@
   // Tasti nel player. In fase di cattura e con stopImmediatePropagation, cosi' le frecce non spostano il cursore del video
   // (su un flusso in diretta non serve) e il player non le intercetta prima di noi.
   document.addEventListener('keydown', e => {
+    if (AUTO && player.hidden && autoListKey(e)) { e.stopImmediatePropagation(); return; }
     if (player.hidden || e.altKey || e.ctrlKey || e.metaKey) return;
     const swallow = () => { e.preventDefault(); e.stopImmediatePropagation(); };
+    if (AUTO) {                                                   // nel video: manopola e frecce cambiano canale, invio mostra i pulsanti
+      const onBar = e.target && e.target.closest && e.target.closest('#bar');
+      if (e.key === 'ArrowUp' || e.key === 'ArrowRight' || (e.key === 'Tab' && !e.shiftKey)) { swallow(); step(1); return; }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowLeft' || (e.key === 'Tab' && e.shiftKey)) { swallow(); step(-1); return; }
+      if ((e.key === 'Enter' || e.key === ' ') && !onBar) { swallow(); showBar(); return; }
+    }
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { swallow(); step(1); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { swallow(); step(-1); }
     else if (e.key === 'i' || e.key === 'I') { swallow(); toggleInfo(); showBar(); }

@@ -70,6 +70,11 @@ try {
   assert.equal(r.status, 200, 'pagina');
   assert.ok((await r.text()).includes('id="channels"'));
   assert.match(r.headers.get('content-security-policy'), /default-src 'self'/, 'intestazioni di sicurezza sulla pagina');
+  r = await call(env, '/auto');
+  assert.equal(r.status, 200, 'pagina auto');
+  assert.ok((await r.text()).includes('id="channels"'), '/auto e\' la stessa pagina');
+  r = await call(env, '/auto/');
+  assert.equal(r.status, 302); assert.equal(r.headers.get('location'), '/auto', '/auto/ torna a /auto');
   assert.equal((await call(env, '/admin')).status, 200, 'pagina admin');
   assert.equal((await call(env, '/login.html')).status, 302);
   assert.equal((await call(env, '/non-esiste.js')).status, 404);

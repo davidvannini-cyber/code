@@ -102,3 +102,12 @@ La scelta e' per canale (identificativo `DTT.identity`), quindi vale anche se il
 Le fonti ("Liste (fonti)") sono indirizzi: ogni lista si unisce alle altre. Il caricamento di un file (o l'incolla del testo) sostituisce
 tutto e disattiva le fonti. Per usare un file insieme agli indirizzi basta metterlo nel repository e usare il suo indirizzo `raw.githubusercontent.com`
 (come `extra.m3u`). Esempio: Free-TV Italia, `https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_italy.m3u8`.
+
+## Modo auto (`/auto`)
+`https://tv.vannini.online/auto` e' la stessa pagina e le stesse liste, ma con i comandi pensati per manopola e tasti dell'auto (CarPlay/APTV):
+- in elenco, **una sola riga alla volta e' raggiungibile con Tab/manopola** (le altre hanno `tabindex=-1`), cosi' girando la manopola si entra nella pagina e si passa oltre;
+- **su/giu' e Tab/Maiusc+Tab scorrono i canali**, in fondo si torna in cima (non si esce mai dalla pagina), invio apre il canale;
+- nel video: **su/destra/Tab = canale successivo, giu'/sinistra/Maiusc+Tab = precedente**, invio mostra i pulsanti;
+- l'apertura del video aggiunge un passo alla cronologia: **Indietro (anche quello dell'auto) chiude il video e torna all'elenco**, con il canale guardato selezionato;
+- righe piu' grandi e selezione ben visibile (`html.auto` in `style.css`).
+Tutto il codice e' sotto `if (AUTO)` in `public/app.js` (`AUTO` = indirizzo `/auto` o `?auto=1`): sulla pagina normale non cambia nulla.

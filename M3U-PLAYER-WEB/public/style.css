@@ -87,3 +87,8 @@ ol.vis li label:hover { background: color-mix(in srgb, var(--accent) 14%, transp
 ol.vis .num { width: 2.5em; text-align: right; color: var(--muted); flex: none; font-variant-numeric: tabular-nums; }
 ol.vis .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 ol.vis .grp { color: var(--muted); font-size: 13px; white-space: nowrap; }
+
+/* Modo auto (/auto): righe piu' grandi e selezione ben visibile per manopola e frecce */
+html.auto li button { min-height: 64px; font-size: 1.15rem; }
+html.auto li button:focus, html.auto li button:focus-visible { outline: 4px solid var(--accent); outline-offset: -4px;
+  background: color-mix(in srgb, var(--accent) 28%, transparent); }

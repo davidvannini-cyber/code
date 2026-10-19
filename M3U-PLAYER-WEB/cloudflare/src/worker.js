@@ -325,8 +325,12 @@ async function route(request, env) {
   if (path === '/login.html') return respond(302, '', { Location: '/' });     // senza password per vedere i canali
   if (request.method !== 'GET' && request.method !== 'HEAD') throw new HttpError(405, 'Metodo non consentito.');
 
+  // /auto e' la stessa pagina; la pagina stessa riconosce l'indirizzo e attiva i comandi per l'auto.
+  if (path === '/auto/') return respond(302, '', { Location: '/auto' });
+  const assetRequest = path === '/auto' ? new Request(new URL('/', request.url), request) : request;
+
   // Tutto il resto e' la pagina (file statici).
-  const res = await env.ASSETS.fetch(request);
+  const res = await env.ASSETS.fetch(assetRequest);
   const h = new Headers(res.headers);
   for (const [k, v] of Object.entries(SECURITY)) h.set(k, v);
   h.set('Cache-Control', 'no-cache');
