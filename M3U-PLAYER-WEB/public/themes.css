@@ -51,6 +51,8 @@ html[data-theme="vetrina"] li .num { position: absolute; top: 9px; left: 12px; w
 html[data-theme="vetrina"] li .mono, html[data-theme="vetrina"] li img, html[data-theme="vetrina"] li .ph { width: 72px; height: 72px; border-radius: 20px; font-size: 24px; }
 html[data-theme="vetrina"] li img { object-fit: contain; background: #fff1; padding: 6px; }
 html[data-theme="vetrina"] li .name { flex: 0 1 auto; max-width: 100%; white-space: normal; font-weight: 700; font-size: 16px; }
+html[data-theme="vetrina"] li .nm { flex: 0 1 auto; width: 100%; max-width: 100%; align-items: center; text-align: center; }
+html[data-theme="vetrina"] li .epg { max-width: 100%; white-space: normal; font-size: 11px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 html[data-theme="vetrina"] li .grp { font-size: 12px; }
 html[data-theme="vetrina"] li .alts { position: absolute; top: 9px; right: 12px; }
 html[data-theme="vetrina"] .dock { background: #12151cf0; border-top-color: #272c39; }

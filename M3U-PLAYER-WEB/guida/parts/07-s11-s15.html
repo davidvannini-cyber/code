@@ -1,0 +1,138 @@
+<section class="sec" id="s11">
+  <div class="sec-head"><span class="sec-num">11</span><h1>Dietro le quinte</h1><span class="tag">Hosting e automazioni</span></div>
+  <p class="lead">Il sito vive su Cloudflare e non sul tuo computer: il Mac serve solo a pubblicare le modifiche, e dopo si può spegnere. Il codice e le automazioni stanno su GitHub.</p>
+  <div class="grid2">
+    <div class="card"><h3>Cloudflare (il sito)</h3><ul class="small"><li><b>Worker</b> «tv-vannini»: pagina, admin, /auto, elenco unito, API;</li><li><b>KV</b> (archivio): playlist, fonti, canali nascosti;</li><li>dominio <code>tv.vannini.online</code> con certificato HTTPS;</li><li>aggiornamento delle liste ogni 6 ore (<code>0 */6 * * *</code>);</li><li>piano gratuito.</li></ul></div>
+    <div class="card"><h3>GitHub (il resto)</h3><ul class="small"><li>codice, cronologia e punti di ripristino;</li><li>«Fire TV APK»: costruisce l'app a ogni modifica;</li><li>«Guida programmi (EPG)»: ogni 2 ore prepara <code>epg.json</code>;</li><li>le release <code>firetv-latest</code> e <code>epg-latest</code> sono i due file scaricabili.</li></ul></div>
+  </div>
+  <h2>Le automazioni nel tempo</h2>
+  <div class="infog">
+  <svg viewBox="0 0 760 150" font-family="Inter, sans-serif">
+    <line x1="20" y1="70" x2="740" y2="70" stroke="#c4c8dc" stroke-width="2"/>
+    <g font-size="8.6" fill="#5b607c" text-anchor="middle"><text x="20" y="92">0</text><text x="140" y="92">2</text><text x="260" y="92">4</text><text x="380" y="92">6 h</text><text x="500" y="92">8</text><text x="620" y="92">10</text><text x="740" y="92">12</text></g>
+    <g fill="#e43d8f"><circle cx="20" cy="70" r="6"/><circle cx="140" cy="70" r="6"/><circle cx="260" cy="70" r="6"/><circle cx="380" cy="70" r="6"/><circle cx="500" cy="70" r="6"/><circle cx="620" cy="70" r="6"/><circle cx="740" cy="70" r="6"/></g>
+    <g fill="#6d4aff"><rect x="14" y="40" width="12" height="12" rx="3" transform="rotate(45 20 46)"/><rect x="374" y="40" width="12" height="12" rx="3" transform="rotate(45 380 46)"/><rect x="734" y="40" width="12" height="12" rx="3" transform="rotate(45 740 46)"/></g>
+    <g font-size="9.5" font-weight="700"><text x="20" y="22" fill="#e43d8f">● Guida programmi: ogni 2 ore</text><text x="380" y="22" fill="#6d4aff">◆ Liste: ogni 6 ore</text></g>
+    <text x="20" y="124" font-size="9" fill="#5b607c">Più i momenti in cui l'amministratore preme «Salva e aggiorna» / «Aggiorna ora», o cambia i canali visibili.</text>
+  </svg>
+  </div>
+  <h2>I limiti del piano gratuito (e cosa significano)</h2>
+  <table>
+    <tr><th style="width:28%">Limite</th><th>In pratica</th></tr>
+    <tr><td>Tempo di calcolo breve</td><td>Il sito non «legge» le liste: le unisce come testo. Liste piccole o medie vanno bene; una lista da 11.000 canali può non starci.</td></tr>
+    <tr><td>Fino a 8 liste</td><td>Il piano gratuito concede un numero limitato di richieste esterne per aggiornamento.</td></tr>
+    <tr><td>1.000 scritture al giorno</td><td>Più che sufficienti per uso personale (le scritture sono: aggiornamenti delle liste, canali nascosti).</td></tr>
+    <tr><td>Nessun backup della lista precedente</td><td>Se una lista si rompe, si ripristina rimettendo gli indirizzi: i dati veri stanno nelle liste originali.</td></tr>
+    <tr><td>Nessuna password per guardare</td><td>L'elenco è pubblico; solo /admin è protetta. Se in futuro serve, si può aggiungere.</td></tr>
+  </table>
+  <h2>Come è organizzata la cartella del progetto</h2>
+  <div class="tree"><span class="c">code/ (repository GitHub)</span>
+├─ M3U-PLAYER-WEB/
+│  ├─ public/            <span class="c">il sito: index.html, app.js, m3u.js, dtt-it.js, admin.*, temi…</span>
+│  ├─ cloudflare/        <span class="c">il Worker (src/worker.js) e wrangler.toml</span>
+│  ├─ epg/               <span class="c">build-epg.mjs: prepara la guida programmi</span>
+│  ├─ firetv/            <span class="c">l'app Android: app/src/main/java/online/vannini/tv/…</span>
+│  ├─ mac/               <span class="c">crea-icona-tv.sh</span>
+│  ├─ guida/             <span class="c">questa guida (sorgente e immagini)</span>
+│  ├─ server.js          <span class="c">versione per server normale (alternativa a Cloudflare)</span>
+│  ├─ extra.m3u          <span class="c">canali aggiunti a mano</span>
+│  └─ test-*.js / .mjs   <span class="c">prove automatiche (parser, ordine DTT, server, Worker, EPG)</span>
+├─ .github/workflows/    <span class="c">firetv-apk.yml, epg.yml</span>
+└─ REGISTRO-SALVATAGGI.md</div>
+  <p class="small muted" style="margin-top:2mm">Le stesse regole (riconoscere i canali italiani, ordine DTT, unire le fonti) esistono in due versioni identiche: JavaScript per il sito (<code>dtt-it.js</code>) e Java per l'app (<code>Dtt.java</code>); una prova controlla che diano gli stessi risultati.</p>
+  <h2>Le tecnologie usate</h2>
+  <table>
+    <tr><th style="width:26%">Parte</th><th>Con cosa è fatta</th></tr>
+    <tr><td>Il sito</td><td>HTML, CSS e JavaScript semplici, senza programmi di costruzione. Per la riproduzione: hls.js 1.5.17, dash.js 4.7.4 e mpegts.js 1.7.3 (caricati da una rete di distribuzione pubblica).</td></tr>
+    <tr><td>Il servizio online</td><td>Cloudflare Workers (JavaScript) con archivio KV e un'attività programmata ogni 6 ore.</td></tr>
+    <tr><td>Il server alternativo</td><td>Node.js senza librerie esterne, con Docker; stesse funzioni del Worker.</td></tr>
+    <tr><td>L'app Fire TV</td><td>Java per Android (da Android 5.1), lettore AndroidX Media3 / ExoPlayer 1.3.1; interfaccia fatta a mano, senza librerie grafiche, per essere leggera. Firma fissa per gli aggiornamenti.</td></tr>
+    <tr><td>La guida programmi</td><td>Un programma Node.js che legge file XMLTV e produce un JSON; gira su GitHub Actions.</td></tr>
+    <tr><td>Le prove</td><td>File <code>test-*.js</code> e <code>test-epg.mjs</code>: controllano parser, ordine DTT, server, Worker e guida; l'app Java è confrontata con il sito sugli stessi dati.</td></tr>
+  </table>
+</section>
+
+<section class="sec" id="s12">
+  <div class="sec-head"><span class="sec-num">12</span><h1>Manutenzione: come fare</h1><span class="tag">Le operazioni di tutti i giorni</span></div>
+  <div class="grid2">
+    <div class="card"><h3>Aggiungere una lista</h3><ol class="small"><li>/admin → accedi.</li><li>In «Liste (fonti)» aggiungi una riga con l'indirizzo.</li><li>«Salva e aggiorna»: sotto compare ✓ e il numero di canali.</li></ol><p class="small muted">Più in alto = priorità maggiore.</p></div>
+    <div class="card"><h3>Aggiungere un canale locale</h3><ol class="small"><li>Apri <code>M3U-PLAYER-WEB/extra.m3u</code> su GitHub e aggiungi due righe: <code>#EXTINF:-1 tvg-chno="18" group-title="Italia",Nome</code> e sotto l'indirizzo.</li><li>Salva (commit). Il sito lo legge al prossimo aggiornamento, o subito con «Aggiorna ora».</li></ol></div>
+    <div class="card"><h3>Nascondere un canale</h3><ol class="small"><li>/admin → «Canali visibili».</li><li>Cerca il canale, togli la spunta.</li><li>Premi <b>Salva</b>.</li></ol><p class="small muted">Sito e app lo tolgono al prossimo caricamento.</p></div>
+    <div class="card"><h3>Cambiare l'ordine di priorità</h3><ol class="small"><li>/admin → «Liste (fonti)».</li><li>Riordina le righe: la prima è la preferita.</li><li>«Salva e aggiorna».</li></ol><p class="small muted">Chi ha già visto un canale può ricordare la vecchia fonte: si cambia a mano con «cambia fonte».</p></div>
+    <div class="card"><h3>Pubblicare una modifica al sito</h3><ol class="small"><li>Terminale del Mac: <code>cd …/progetti/code && git pull origin main</code></li><li><code>cd M3U-PLAYER-WEB/cloudflare && npx wrangler deploy</code></li><li>Ricarica la pagina con la ricarica «forte» (capitolo 10).</li></ol><p class="small muted">Alla fine devono comparire «Deployed» e la riga «schedule».</p></div>
+    <div class="card"><h3>Aggiornare l'app Fire TV</h3><ol class="small"><li>Downloader → l'indirizzo dell'APK (capitolo 8).</li><li>Installa, apri, guarda la versione in alto.</li></ol><p class="small muted">Serve solo quando cambia l'app, non il sito.</p></div>
+    <div class="card"><h3>Aggiornare la guida programmi subito</h3><ol class="small"><li>GitHub → «Actions» → «Guida programmi (EPG)».</li><li>«Run workflow».</li></ol><p class="small muted">Altrimenti si aggiorna da sola ogni 2 ore.</p></div>
+    <div class="card"><h3>Tornare a una versione precedente</h3><ol class="small"><li>Terminale: <code>git checkout punto-stabile-2026-10-19-admin</code></li><li>Oppure in Claude Code: <code>/restore</code>.</li></ol><p class="small muted">Vedi il capitolo 14.</p></div>
+  </div>
+  <div class="note"><b>Prima di una modifica importante</b> conviene avere un punto di ripristino: ce ne sono tre, già pronti (capitolo 14).</div>
+</section>
+
+<section class="sec" id="s13">
+  <div class="sec-head"><span class="sec-num">13</span><h1>Se qualcosa non va</h1><span class="tag">Sintomo · causa · rimedio</span></div>
+  <table>
+    <tr><th style="width:24%">Sintomo</th><th style="width:34%">Causa probabile</th><th>Cosa fare</th></tr>
+    <tr><td>Un canale non parte</td><td>La fonte è spenta, scaduta o bloccata.</td><td>Premi «cambia fonte» (MENU sulla Fire TV). Leggi la diagnosi mostrata: dice il motivo.</td></tr>
+    <tr><td>Un canale si blocca per minuti e poi riparte con 20 secondi ripetuti</td><td>Una fonte serve male la diretta.</td><td>Passa a un'altra fonte del canale; poi, in /admin, sposta in alto la lista che funziona meglio.</td></tr>
+    <tr><td>Chrome e Safari mostrano «fonte» diverse</td><td>Ogni browser ricorda la sua.</td><td>Normale. Cambia fonte a mano nel browser che usa quella cattiva.</td></tr>
+    <tr><td>Schermo nero con solo audio per qualche secondo (Safari)</td><td>Flusso DASH di alcuni canali su Safari.</td><td>Limite del browser. Su Chrome e Fire TV non c'è.</td></tr>
+    <tr><td>Nessun programma sotto un canale</td><td>Il canale non è nella guida (locali, Warner TV…), o la guida non è ancora arrivata.</td><td>Normale per i locali. Altrimenti aspetta qualche minuto o ricarica; controlla <code>/api/epg</code>.</td></tr>
+    <tr><td>Il sito non mostra le novità dopo una modifica</td><td>Copia salvata dal browser.</td><td>Ricarica «forte»; controlla che il «deploy» sia andato a buon fine.</td></tr>
+    <tr><td>Dopo aver caricato un file in admin spariscono le liste</td><td>Il caricamento di un file sostituisce tutto.</td><td>Rimetti gli indirizzi in «Liste (fonti)» e salva.</td></tr>
+    <tr><td>Fire TV: l'elenco resta su «Carico la lista…»</td><td>Rete lenta, o l'elenco è vuoto con il filtro scelto.</td><td>Leggi il messaggio in alto (dice a che punto è); premi MENU → «Aggiorna la lista».</td></tr>
+    <tr><td>Fire TV: i canali nascosti si vedono ancora</td><td>App vecchia, o elenco non ancora riscaricato.</td><td>Aggiorna all'ultima versione; guarda in alto «v1.x» e «N nascosti»; MENU → «Aggiorna la lista».</td></tr>
+    <tr><td>Il deploy segnala un errore sul «cron» / «workers.dev»</td><td>Manca l'indirizzo workers.dev dell'account Cloudflare.</td><td>Apri «Workers e Pages» sul pannello Cloudflare (lo crea) e rilancia <code>npx wrangler deploy</code>.</td></tr>
+    <tr><td>La guida programmi non si aggiorna</td><td>Automazione ferma (60 giorni senza attività) o fonte non raggiungibile.</td><td>GitHub → Actions → guarda l'ultimo lancio; «Run workflow».</td></tr>
+    <tr><td>In auto la manopola vaga tra i menu</td><td>CarPlay gestisce da solo la manopola.</td><td>Usa le frecce direzionali; verifica di aver aperto <code>/auto</code> e non l'indirizzo normale.</td></tr>
+  </table>
+</section>
+
+<section class="sec" id="s14">
+  <div class="sec-head"><span class="sec-num">14</span><h1>Punti di ripristino</h1><span class="tag">Tornare indietro in sicurezza</span></div>
+  <p class="lead">Ogni modifica è registrata. In più, nei momenti in cui tutto funzionava, sono stati salvati dei <b>punti di ripristino stabili</b>: rami del progetto che non vengono mai modificati.</p>
+  <div class="infog">
+  <svg viewBox="0 0 760 130" font-family="Inter, sans-serif">
+    <line x1="30" y1="66" x2="730" y2="66" stroke="#c4c8dc" stroke-width="3"/>
+    <g font-size="9.4" text-anchor="middle">
+      <circle cx="110" cy="66" r="11" fill="#6d4aff"/><text x="110" y="36" font-weight="800" fill="#14142b">Punto 1</text><text x="110" y="96" fill="#5b607c">sito + app Fire TV 1.1</text><text x="110" y="109" fill="#5b607c">extra.m3u · icona Mac</text><text x="110" y="122" fill="#8a8fb0" font-size="8.2">punto-stabile-2026-10-19</text>
+      <circle cx="380" cy="66" r="11" fill="#6d4aff"/><text x="380" y="36" font-weight="800" fill="#14142b">Punto 2</text><text x="380" y="96" fill="#5b607c">+ guida programmi (EPG)</text><text x="380" y="109" fill="#5b607c">app 1.2</text><text x="380" y="122" fill="#8a8fb0" font-size="8.2">punto-stabile-2026-10-19-epg</text>
+      <circle cx="650" cy="66" r="13" fill="#e43d8f"/><text x="650" y="36" font-weight="800" fill="#14142b">Punto 3 · il più completo</text><text x="650" y="96" fill="#5b607c">+ canali nascosti · Free-TV</text><text x="650" y="109" fill="#5b607c">app 1.4</text><text x="650" y="122" fill="#8a8fb0" font-size="8.2">punto-stabile-2026-10-19-admin</text>
+    </g>
+  </svg>
+  </div>
+  <h2>Come tornare a un punto</h2>
+  <ol class="steps">
+    <li>Nel Terminale, dentro la cartella del progetto: <code>git checkout punto-stabile-2026-10-19-admin</code> (o il nome del punto che vuoi).</li>
+    <li>Per pubblicare quella versione sul sito: <code>cd M3U-PLAYER-WEB/cloudflare && npx wrangler deploy</code>.</li>
+    <li>Per tornare all'ultima versione: <code>git checkout main</code>.</li>
+  </ol>
+  <h2>Il registro dei salvataggi</h2>
+  <p>Il file <code>REGISTRO-SALVATAGGI.md</code> contiene una riga per ogni modifica: data, versione di partenza, file toccati e il comando per tornare indietro. In Claude Code il comando <code>/restore</code> mostra gli ultimi 20 salvataggi e ripristina quello scelto.</p>
+  <div class="note warn"><b>Attenzione all'app.</b> Tornare a un punto ripristina il <i>codice</i>. Il file dell'app già installata sulla Fire TV resta quello che hai installato; per un'app di una versione precedente va ricostruita da GitHub (si può fare dal punto di ripristino).</div>
+</section>
+
+<section class="sec" id="s15">
+  <div class="sec-head"><span class="sec-num">15</span><h1>Stato e glossario</h1><span class="tag">Cosa è provato · parole usate</span></div>
+  <h2>Cosa è stato provato</h2>
+  <table>
+    <tr><th style="width:44%">Funzione</th><th style="width:14%">Stato</th><th>Note</th></tr>
+    <tr><td>Sito su PC (Safari e Chrome), lettore, finestra flottante</td><td><span class="pill g">Provato</span></td><td>Con F7/F9 per cambiare canale dalla finestra flottante in Safari.</td></tr>
+    <tr><td>Sito su iPhone (tutto schermo)</td><td><span class="pill g">Provato</span></td><td></td></tr>
+    <tr><td>Liste multiple, ordine DTT, cambio fonte</td><td><span class="pill g">Provato</span></td><td>Anche con la lista Free-TV.</td></tr>
+    <tr><td>Rai 3 Toscana e 50 Canale</td><td><span class="pill g">Provato</span></td><td>Funzionano.</td></tr>
+    <tr><td>Area admin e canali visibili sul sito</td><td><span class="pill g">Provato</span></td><td></td></tr>
+    <tr><td>Guida programmi (sito e app Fire TV)</td><td><span class="pill g">Provato</span></td><td></td></tr>
+    <tr><td>App Fire TV (elenco, riproduzione, telecomando)</td><td><span class="pill g">Provato</span></td><td>Anche su Fire TV con versioni precedenti alla 1.4.</td></tr>
+    <tr><td>Canali nascosti nell'app Fire TV (1.4)</td><td><span class="pill a">Da provare</span></td><td>Verificato con dati veri e app di prova.</td></tr>
+    <tr><td>Modo auto in auto (manopola BMW, tasto Indietro)</td><td><span class="pill a">Da provare</span></td><td>Verificato con un browser di prova.</td></tr>
+    <tr><td>Schermo nero con audio su Safari (fonte DASH)</td><td><span class="pill r">Limite</span></td><td>Non risolvibile dal sito.</td></tr>
+    <tr><td>Fascia scura nella finestra flottante di Chrome</td><td><span class="pill r">Limite</span></td><td>Disegnata dal browser.</td></tr>
+  </table>
+  <h2>Glossario</h2>
+  <div class="grid2">
+    <div class="legend" style="grid-template-columns: 24mm 1fr"><b>M3U / M3U8</b><span>file di testo con l'elenco dei canali e i loro indirizzi.</span><b>HLS</b><span>formato di streaming più diffuso (<code>.m3u8</code>).</span><b>DASH</b><span>formato di streaming alternativo (<code>.mpd</code>), usato da Mediaset.</span><b>TS</b><span>flusso video grezzo, senza lista.</span><b>DRM</b><span>protezione a chiavi: i browser web non la riproducono.</span><b>CORS</b><span>permesso che un server deve dare perché una pagina web legga un flusso.</span><b>Token</b><span>codice con scadenza dentro un indirizzo.</span></div>
+    <div class="legend" style="grid-template-columns: 24mm 1fr"><b>DTT / LCN</b><span>digitale terrestre e numero del canale sul telecomando.</span><b>Fonte</b><span>una versione dello stesso canale in una lista.</span><b>EPG</b><span>guida elettronica dei programmi.</span><b>PiP</b><span>finestra flottante: il video sopra le altre app.</span><b>Worker</b><span>il programma che gira su Cloudflare e serve il sito.</span><b>KV</b><span>archivio di Cloudflare per i dati del sito.</span><b>APK</b><span>il file di installazione di un'app Android.</span></div>
+  </div>
+  <p class="small muted" style="margin-top:4mm">Guida generata il 19 ottobre 2026 a partire dal progetto M3U-PLAYER-WEB. Le schermate sono state prese dal sito reale con una lista di esempio; i filmati e gli indirizzi nelle immagini sono di prova. L'app Fire TV è rappresentata con schemi.</p>
+</section>
+</body>
+</html>

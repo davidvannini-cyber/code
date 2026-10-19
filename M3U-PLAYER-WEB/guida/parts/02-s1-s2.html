@@ -1,0 +1,87 @@
+<section class="sec" id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h1>In breve</h1><span class="tag">Panoramica</span></div>
+  <p class="lead"><b>TV Vannini</b> è un lettore per la televisione in diretta alimentato da liste di canali (file M3U). Mostra i canali in un elenco ordinato come sul digitale terrestre, li riproduce a tutto schermo, e si gestisce da una pagina di amministrazione protetta da password. Funziona sul computer, sul telefono, sulla Fire TV e nel browser di CarPlay.</p>
+  <div class="grid4">
+    <div class="card stat"><div class="n">3</div><div class="l">modi d'uso: sito, app Fire TV, modo auto</div></div>
+    <div class="card stat"><div class="n">8</div><div class="l">liste che si possono unire (fino a 8 fonti)</div></div>
+    <div class="card stat"><div class="n">6 h</div><div class="l">ogni quanto le liste si riaggiornano da sole</div></div>
+    <div class="card stat"><div class="n">2 h</div><div class="l">ogni quanto si aggiorna la guida programmi</div></div>
+  </div>
+
+  <h2>Lo schema generale</h2>
+  <div class="infog">
+  <svg viewBox="0 0 760 412" font-family="Inter, sans-serif">
+    <defs>
+      <linearGradient id="gv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d4aff"/><stop offset="1" stop-color="#e43d8f"/></linearGradient>
+      <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6d4aff"/></marker>
+    </defs>
+    <!-- liste -->
+    <text x="10" y="18" font-size="10" font-weight="700" fill="#5b607c" letter-spacing="1.4">LE LISTE (INDIRIZZI M3U)</text>
+    <g font-size="10.5" font-weight="600">
+      <rect x="10" y="28" width="190" height="42" rx="9" fill="#f4f5fb" stroke="#e3e5f0"/><text x="22" y="46" fill="#14142b">extra.m3u</text><text x="22" y="61" font-size="8.5" font-weight="400" fill="#5b607c">Rai 3 Toscana, 50 Canale (GitHub)</text>
+      <rect x="10" y="78" width="190" height="42" rx="9" fill="#f4f5fb" stroke="#e3e5f0"/><text x="22" y="96" fill="#14142b">IPTV-Italia</text><text x="22" y="111" font-size="8.5" font-weight="400" fill="#5b607c">canali nazionali italiani</text>
+      <rect x="10" y="128" width="190" height="42" rx="9" fill="#f4f5fb" stroke="#e3e5f0"/><text x="22" y="146" fill="#14142b">iptv-org Italia</text><text x="22" y="161" font-size="8.5" font-weight="400" fill="#5b607c">lista pubblica per paese</text>
+      <rect x="10" y="178" width="190" height="42" rx="9" fill="#f4f5fb" stroke="#e3e5f0"/><text x="22" y="196" fill="#14142b">Free-TV Italia</text><text x="22" y="211" font-size="8.5" font-weight="400" fill="#5b607c">~440 canali, anche locali</text>
+    </g>
+    <!-- worker -->
+    <rect x="262" y="60" width="226" height="190" rx="14" fill="url(#gv)"/>
+    <text x="375" y="88" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">tv.vannini.online</text>
+    <text x="375" y="104" text-anchor="middle" font-size="9" fill="#ffffffd0">Cloudflare Worker</text>
+    <g font-size="9.6" fill="#fff"><text x="282" y="132">• scarica e unisce le liste</text><text x="282" y="149">• ricorda l'ordine delle fonti</text><text x="282" y="166">• canali nascosti dall'admin</text><text x="282" y="183">• passa la guida programmi</text><text x="282" y="200">• pagina, area admin, /auto</text><text x="282" y="224" font-size="8.8" fill="#ffffffc0">aggiornamento automatico ogni 6 ore</text></g>
+    <g stroke="#6d4aff" stroke-width="1.6" fill="none" marker-end="url(#ar)"><path d="M200 49 H230 Q246 49 246 66 L262 100"/><path d="M200 99 H236 L262 120"/><path d="M200 149 H236 L262 150"/><path d="M200 199 H236 L262 180"/></g>
+    <!-- epg -->
+    <text x="10" y="262" font-size="10" font-weight="700" fill="#5b607c" letter-spacing="1.4">LA GUIDA PROGRAMMI</text>
+    <rect x="10" y="272" width="190" height="56" rx="9" fill="#e6defe"/><text x="22" y="292" font-size="10.5" font-weight="700" fill="#4a2fc2">GitHub, ogni 2 ore</text><text x="22" y="307" font-size="8.8" fill="#3a3f7a">scarica le guide, tiene «ora» e «poi»</text><text x="22" y="320" font-size="8.8" fill="#3a3f7a">file epg.json di poche decine di KB</text>
+    <path d="M200 300 H262 Q300 300 330 262" stroke="#6d4aff" stroke-width="1.6" fill="none" marker-end="url(#ar)" stroke-dasharray="4 3"/>
+    <!-- clients -->
+    <text x="548" y="18" font-size="10" font-weight="700" fill="#5b607c" letter-spacing="1.4">DOVE SI GUARDA</text>
+    <g font-size="10.5" font-weight="700">
+      <rect x="548" y="28" width="202" height="62" rx="10" fill="#fff" stroke="#6d4aff" stroke-width="1.4"/><text x="562" y="48" fill="#14142b">Il sito web</text><text x="562" y="64" font-size="8.8" font-weight="400" fill="#5b607c">computer e telefono</text><text x="562" y="78" font-size="8.8" font-weight="400" fill="#5b607c">Safari, Chrome, iPhone</text>
+      <rect x="548" y="104" width="202" height="62" rx="10" fill="#fff" stroke="#6d4aff" stroke-width="1.4"/><text x="562" y="124" fill="#14142b">App Fire TV</text><text x="562" y="140" font-size="8.8" font-weight="400" fill="#5b607c">Stick Lite, Stick, 4K</text><text x="562" y="154" font-size="8.8" font-weight="400" fill="#5b607c">telecomando, lettore nativo</text>
+      <rect x="548" y="180" width="202" height="62" rx="10" fill="#fff" stroke="#6d4aff" stroke-width="1.4"/><text x="562" y="200" fill="#14142b">Modo auto  /auto</text><text x="562" y="216" font-size="8.8" font-weight="400" fill="#5b607c">browser di APTV in CarPlay</text><text x="562" y="230" font-size="8.8" font-weight="400" fill="#5b607c">manopola e frecce</text>
+    </g>
+    <g stroke="#6d4aff" stroke-width="1.6" fill="none" marker-end="url(#ar)"><path d="M488 120 H520 L548 60"/><path d="M488 150 H548 "/><path d="M488 180 H520 L548 210"/></g>
+    <!-- github -->
+    <rect x="262" y="290" width="488" height="108" rx="12" fill="#14142b"/>
+    <text x="280" y="313" font-size="11" font-weight="800" fill="#fff">GitHub — il codice e le automazioni</text>
+    <g font-size="9.3" fill="#d9dcff"><text x="280" y="333">• conserva tutto il progetto e i punti di ripristino</text><text x="280" y="349">• costruisce da solo l'app Fire TV (file APK scaricabile)</text><text x="280" y="365">• aggiorna ogni 2 ore la guida programmi</text><text x="280" y="381" fill="#9aa0e0">• registro dei salvataggi e comando /restore</text></g>
+  </svg>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3>Il sito</h3><p class="small">Elenco dei canali in ordine DTT, lettore a tutto schermo, cambio canale, finestra flottante, 5 temi, installabile su iPhone.</p></div>
+    <div class="card"><h3>L'app Fire TV</h3><p class="small">Stesso elenco e stesso ordine, comandi dal telecomando, lettore del televisore (ExoPlayer), guida programmi, canali nascosti.</p></div>
+    <div class="card"><h3>L'area admin</h3><p class="small">Si decidono le liste, l'ordine di priorità e quali canali far vedere. Protetta da password; per guardare i canali non serve nessuna password.</p></div>
+  </div>
+</section>
+
+<section class="sec" id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h1>Indirizzi e componenti</h1><span class="tag">Dove si trova ogni cosa</span></div>
+  <p class="lead">Tutto passa da un solo indirizzo, <b>tv.vannini.online</b>. Le altre cose si trovano su GitHub.</p>
+  <h2>Gli indirizzi del sito</h2>
+  <table>
+    <tr><th style="width:32%">Indirizzo</th><th>A cosa serve</th><th style="width:16%">Accesso</th></tr>
+    <tr><td><code>tv.vannini.online</code></td><td>Il sito: elenco dei canali e lettore. È la pagina normale, per PC, telefono e tablet.</td><td><span class="pill g">libero</span></td></tr>
+    <tr><td><code>/auto</code></td><td>La stessa pagina con i comandi per manopola e tasti dell'auto (browser di APTV in CarPlay).</td><td><span class="pill g">libero</span></td></tr>
+    <tr><td><code>/admin</code></td><td>Area di amministrazione: liste, ordine delle fonti, canali visibili.</td><td><span class="pill a">password</span></td></tr>
+    <tr><td><code>/playlist.m3u</code></td><td>L'elenco unito di tutti i canali: lo leggono il sito e l'app Fire TV.</td><td><span class="pill g">libero</span></td></tr>
+    <tr><td><code>/api/epg</code></td><td>La guida programmi leggera («adesso» e «poi»).</td><td><span class="pill g">libero</span></td></tr>
+    <tr><td><code>/api/hidden</code></td><td>L'elenco dei canali nascosti dall'amministratore (lo leggono sito e app).</td><td><span class="pill g">lettura libera</span></td></tr>
+    <tr><td><code>/healthz</code></td><td>Risponde «ok» se il servizio è acceso.</td><td><span class="pill g">libero</span></td></tr>
+  </table>
+  <h2>I file e le release su GitHub</h2>
+  <table>
+    <tr><th style="width:30%">Cosa</th><th>Dove</th></tr>
+    <tr><td>Progetto (codice)</td><td><code>github.com/davidvannini-cyber/code</code> — cartella <code>M3U-PLAYER-WEB</code> (repository pubblico)</td></tr>
+    <tr><td>Canali aggiunti a mano</td><td><code>raw.githubusercontent.com/davidvannini-cyber/code/main/M3U-PLAYER-WEB/extra.m3u</code></td></tr>
+    <tr><td>App Fire TV (APK)</td><td><code>github.com/davidvannini-cyber/code/releases/download/firetv-latest/tv-vannini.apk</code></td></tr>
+    <tr><td>Guida programmi (file)</td><td><code>github.com/davidvannini-cyber/code/releases/download/epg-latest/epg.json</code></td></tr>
+    <tr><td>Registro dei salvataggi</td><td><code>REGISTRO-SALVATAGGI.md</code> nella radice del progetto</td></tr>
+    <tr><td>Punti di ripristino stabili</td><td>rami <code>punto-stabile-2026-10-19</code>, <code>…-epg</code>, <code>…-admin</code></td></tr>
+  </table>
+  <h2>Dove vivono i dati</h2>
+  <div class="grid2">
+    <div class="card"><h3>Sul sito (Cloudflare)</h3><ul class="small"><li>la <b>playlist unita</b> (ricostruita ogni 6 ore);</li><li>l'<b>elenco delle fonti</b> e il loro stato;</li><li>i <b>canali nascosti</b>;</li><li>la password di amministrazione, custodita come «segreto» di Cloudflare: non è scritta in nessun file.</li></ul></div>
+    <div class="card"><h3>Nel tuo browser</h3><ul class="small"><li>il <b>tema</b> scelto;</li><li>l'ultima <b>fonte che ha funzionato</b> per ogni canale (ogni browser ha la sua memoria);</li><li>l'accesso all'admin (cookie lungo 400 giorni, rinnovato a ogni uso).</li></ul></div>
+  </div>
+  <div class="note"><b>Alternativa pronta.</b> Il progetto contiene anche una versione per un server normale (Render, con Docker) che fa le stesse cose. Non è in uso: è il piano B se un giorno si volesse lasciare Cloudflare.</div>
+</section>

@@ -1,0 +1,122 @@
+<section class="sec" id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h1>La guida programmi (EPG)</h1><span class="tag">«Adesso in onda» e «poi»</span></div>
+  <p class="lead">Sotto il nome di ogni canale italiano compare il programma in onda e quello successivo, con l'orario: <i>«TG1 · poi 20:40 Affari tuoi»</i>. La guida è pensata per essere <b>leggera</b>: sito e app non scaricano mai la guida intera, ma un piccolo file già preparato.</p>
+  <div class="infog">
+  <svg viewBox="0 0 760 210" font-family="Inter, sans-serif">
+    <defs><marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6d4aff"/></marker></defs>
+    <g font-size="10" font-weight="700">
+      <rect x="0" y="30" width="150" height="86" rx="12" fill="#f4f5fb" stroke="#e3e5f0"/><text x="12" y="52" fill="#14142b">Guide pubbliche</text><text x="12" y="68" font-size="8.8" font-weight="400" fill="#5b607c">epgshare01 (Italia)</text><text x="12" y="82" font-size="8.8" font-weight="400" fill="#5b607c">open-epg (italy3)</text><text x="12" y="104" font-size="8.4" font-weight="400" fill="#5b607c">file XMLTV: 13 MB e 1 MB</text>
+      <rect x="190" y="30" width="170" height="86" rx="12" fill="#14142b"/><text x="204" y="52" fill="#fff">GitHub · ogni 2 ore</text><text x="204" y="68" font-size="8.8" font-weight="400" fill="#d9dcff">legge le guide, tiene solo</text><text x="204" y="82" font-size="8.8" font-weight="400" fill="#d9dcff">«ora» e le 8 ore successive</text><text x="204" y="104" font-size="8.4" font-weight="400" fill="#9aa0e0">epg.json ≈ 77 KB</text>
+      <rect x="400" y="30" width="150" height="86" rx="12" fill="url(#gv2)"/><text x="414" y="52" fill="#fff">tv.vannini.online</text><text x="414" y="68" font-size="8.8" font-weight="400" fill="#ffffffd0">/api/epg: lo passa così</text><text x="414" y="82" font-size="8.8" font-weight="400" fill="#ffffffd0">com'è, con copia di 20 min</text>
+      <rect x="590" y="30" width="170" height="86" rx="12" fill="#e6defe"/><text x="604" y="52" fill="#4a2fc2">Sito e app Fire TV</text><text x="604" y="68" font-size="8.8" font-weight="400" fill="#3a3f7a">scaricano il file ogni 10 min</text><text x="604" y="82" font-size="8.8" font-weight="400" fill="#3a3f7a">e aggiornano la riga ogni minuto</text>
+    </g>
+    <defs><linearGradient id="gv2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d4aff"/><stop offset="1" stop-color="#e43d8f"/></linearGradient></defs>
+    <g stroke="#6d4aff" stroke-width="1.8" fill="none" marker-end="url(#a4)"><path d="M152 73 H188"/><path d="M362 73 H398"/><path d="M552 73 H588"/></g>
+    <g font-size="9.2" fill="#5b607c"><text x="0" y="140" font-weight="700" letter-spacing="1.2">QUANTO PESA</text>
+    <text x="0" y="158">Pagina e app scaricano <tspan font-weight="700" fill="#14142b">≈ 77 KB</tspan> ogni 10 minuti: meno di una foto. Nessun calcolo sul telefono, sul computer o sul Fire TV Stick Lite.</text>
+    <text x="0" y="178" font-weight="700" letter-spacing="1.2">DOVE COMPARE</text><text x="0" y="196">sotto il nome nell'elenco · nel titolo del lettore · nei controlli multimediali del Mac · nell'elenco e nell'avviso dell'app Fire TV</text></g>
+  </svg>
+  </div>
+  <div class="grid3">
+    <div class="card stat"><div class="n">154</div><div class="l">canali con programmi nella guida principale (all'ultimo controllo)</div></div>
+    <div class="card stat"><div class="n">42/44</div><div class="l">dei canali principali del digitale terrestre avevano il programma in corso</div></div>
+    <div class="card stat"><div class="n">8 h</div><div class="l">di programmi in avanti: bastano per le 2 ore tra un aggiornamento e l'altro</div></div>
+  </div>
+  <h2>Come si collega un programma a un canale</h2>
+  <p>Ogni canale ha una «chiave» ricavata dal nome e dall'identificativo della lista (<code>Rai1.it</code>, <code>Rai.1.HD..101.it</code> e «Rai 1 HD» danno tutti <code>rai1</code>). La stessa regola vale per il sito, per l'app e per lo script che prepara la guida, quindi i nomi coincidono. Se due fonti hanno lo stesso canale vince quella che ha il programma in corso.</p>
+  <h2>Cosa aspettarsi</h2>
+  <ul>
+    <li>I canali nazionali (Rai, Mediaset, La7, TV8, Nove…) hanno quasi sempre la riga. <b>Warner TV e Rai Scuola</b> al momento non l'hanno.</li>
+    <li>I canali <b>locali</b> (per esempio 50 Canale) di solito non hanno guida: la riga semplicemente non compare.</li>
+    <li>I titoli sono quelli della fonte (a volte in maiuscolo o con errori di battitura): non li sceglie questo sistema.</li>
+    <li>La guida si applica solo ai canali italiani, per non confondere un canale straniero con lo stesso nome.</li>
+  </ul>
+  <div class="note"><b>Manutenzione.</b> Le fonti della guida sono un elenco nel file <code>epg/build-epg.mjs</code>. Per aggiornare la guida subito: GitHub → scheda «Actions» → «Guida programmi (EPG)» → «Run workflow». GitHub può sospendere le automazioni programmate dopo 60 giorni senza alcuna attività nel repository: basta una modifica per riattivarle.</div>
+</section>
+
+<section class="sec" id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h1>L'app per Fire TV</h1><span class="tag">TV Vannini · versione 1.4</span></div>
+  <p class="lead">L'app legge la <b>stessa lista del sito</b>, quindi le liste si gestiscono sempre da /admin. Non passa dal browser: usa il lettore del televisore (ExoPlayer), per questo è leggera, veloce e senza i limiti dei siti web. Funziona su Fire TV Stick Lite, Stick e 4K con Fire OS 7.</p>
+  <div class="grid2">
+    <div>
+      <div class="tvmock">
+        <div class="hd">TV · Italiani (DTT) · 431 canali (4 nascosti dall'admin) &nbsp;·&nbsp; v1.4</div>
+        <div class="hint">OK: guarda · MENU: filtri e aggiornamento · nel video: ◄ ► cambiano canale, MENU cambia fonte</div>
+        <div class="row"><span class="n">1</span><span class="nm"><b>Rai 1  ×3</b><i>TG1 · poi 20:40 Affari tuoi</i></span><span class="g">Rai</span></div>
+        <div class="row"><span class="n">2</span><span class="nm"><b>Rai 2  ×2</b><i>TG2 · poi 21:20 Il collegio</i></span><span class="g">Italy</span></div>
+        <div class="row sel"><span class="n">3</span><span class="nm"><b>Rai 3 Toscana  ×3</b><i>TGR Toscana · poi 14:20 Meteo</i></span><span class="g">Rai</span></div>
+        <div class="row"><span class="n">4</span><span class="nm"><b>Rete 4</b><i>Tg4 · poi 19:35 Dritto e rovescio</i></span><span class="g">Italy</span></div>
+        <div class="row"><span class="n">5</span><span class="nm"><b>Canale 5</b><i>Tg5 · poi 20:40 Striscia la notizia</i></span><span class="g">Italy</span></div>
+      </div>
+      <p class="small muted" style="margin-top:1.4mm"><span class="pill v">Schema</span> L'elenco: la riga selezionata (viola) si sposta con le frecce. I programmi sono un esempio.</p>
+    </div>
+    <div>
+      <div class="tvmock bg" style="height:46mm; position:relative; padding:0">
+        <div style="position:absolute; left:5mm; bottom:5mm; background:#0a0b1ed0; border-radius:2mm; padding:2mm 3.2mm; font-size:9pt; line-height:1.4"><b style="font-size:11pt">3&nbsp;&nbsp; Rai 3 Toscana</b><br>Fonte 1 di 3<br><span style="opacity:.8">TGR Toscana · poi 14:20 Meteo</span></div>
+      </div>
+      <p class="small muted" style="margin-top:1.4mm"><span class="pill v">Schema</span> In riproduzione: a ogni cambio canale compare per 4 secondi il numero, il nome, la fonte in uso e il programma in onda.</p>
+    </div>
+  </div>
+
+  <h2>Il telecomando</h2>
+  <div class="grid2" style="align-items:center">
+  <div class="infog">
+  <svg viewBox="0 0 250 330" font-family="Inter, sans-serif" style="max-width:62mm;margin:0 auto">
+    <rect x="70" y="4" width="110" height="320" rx="46" fill="#14142b"/>
+    <circle cx="125" cy="86" r="42" fill="#242749"/><circle cx="125" cy="86" r="17" fill="#6d4aff"/>
+    <text x="125" y="90" font-size="9" font-weight="800" text-anchor="middle" fill="#fff">OK</text>
+    <path d="M125 51 l-7 9 h14 z M125 121 l-7 -9 h14 z M90 86 l9 -7 v14 z M160 86 l-9 -7 v14 z" fill="#c9ccf5"/>
+    <circle cx="97" cy="164" r="13" fill="#242749"/><text x="97" y="168" font-size="11" text-anchor="middle" fill="#c9ccf5">↩</text>
+    <circle cx="153" cy="164" r="13" fill="#242749"/><text x="153" y="169" font-size="13" text-anchor="middle" fill="#c9ccf5">⌂</text>
+    <circle cx="97" cy="202" r="13" fill="#242749"/><text x="97" y="207" font-size="14" text-anchor="middle" fill="#c9ccf5">≡</text>
+    <circle cx="153" cy="202" r="13" fill="#242749"/><text x="153" y="206" font-size="10" text-anchor="middle" fill="#c9ccf5">⏯</text>
+    <g font-size="9" font-weight="700" fill="#6d4aff"><text x="186" y="66">▲ ▼</text><text x="186" y="94">◄ ►</text><text x="186" y="168">Home</text><text x="186" y="206">Play/Pausa</text></g>
+    <g font-size="9" font-weight="700" fill="#6d4aff" text-anchor="end"><text x="62" y="168">Indietro</text><text x="62" y="206">MENU</text></g>
+    <text x="125" y="300" font-size="9" fill="#9aa0e0" text-anchor="middle" font-weight="600">Fire TV</text>
+  </svg>
+  </div>
+  <table>
+    <tr><th>Dove</th><th>Tasto</th><th>Cosa fa</th></tr>
+    <tr><td rowspan="3">Elenco</td><td>▲ ▼</td><td>scorre i canali</td></tr>
+    <tr><td>OK</td><td>guarda il canale</td></tr>
+    <tr><td>MENU</td><td>filtri (Italiani/Tutti/gruppo) e «Aggiorna la lista»</td></tr>
+    <tr><td rowspan="5">Video</td><td>◄ ► (anche ▲ ▼)</td><td>canale precedente / successivo</td></tr>
+    <tr><td>OK</td><td>informazioni (server, risoluzione)</td></tr>
+    <tr><td>MENU</td><td>cambia fonte</td></tr>
+    <tr><td>Play/Pausa</td><td>pausa</td></tr>
+    <tr><td>Indietro</td><td>torna all'elenco</td></tr>
+  </table>
+  </div>
+</section>
+
+<section class="cont" id="s8b">
+  <h2 style="margin-top:0">Cosa sa fare l'app</h2>
+  <div class="grid2">
+    <div class="card"><h3>Stesso elenco del sito</h3><p class="small">Scarica <code>/playlist.m3u</code> e usa lo stesso ordine DTT, le stesse alternative e gli stessi nomi. Salva l'ultima lista: se la rete manca all'avvio, parte lo stesso.</p></div>
+    <div class="card"><h3>Cambio fonte automatico</h3><p class="small">Se un canale non parte entro 20 secondi, o dà errore, o resta in attesa di dati per più di 20 secondi, passa alla fonte successiva. Si ricorda la fonte che ha funzionato.</p></div>
+    <div class="card"><h3>Guida programmi</h3><p class="small">La riga «ora / poi» nell'elenco e il programma nell'avviso quando cambi canale. Si aggiorna da sola ogni 10 minuti.</p></div>
+    <div class="card"><h3>Canali nascosti</h3><p class="small">I canali tolti dall'admin non compaiono. L'intestazione dice quanti ne ha saputi (es. «4 nascosti dall'admin») e la versione dell'app.</p></div>
+  </div>
+  <h2>Che formati legge</h2>
+  <p>HLS e DASH senza difficoltà; un indirizzo senza estensione si prova prima come flusso diretto e, se non è un file video, come HLS. Non gli serve il permesso (CORS) dei server, e può quindi riprodurre canali che nel browser non partono. Non riproduce i canali con DRM.</p>
+
+  <h2>Installarla (una volta)</h2>
+  <ol class="steps">
+    <li>Sulla Fire TV: <b>Impostazioni → La mia Fire TV → Opzioni sviluppatore → Installa app sconosciute</b> e attiva l'opzione per <b>Downloader</b>. Se «Opzioni sviluppatore» manca: Informazioni → premi OK sul nome del dispositivo 7 volte.</li>
+    <li>Installa <b>Downloader</b> dall'Amazon Appstore (cerca «Downloader»).</li>
+    <li>Apri Downloader e nella casella dell'indirizzo scrivi: <code>https://github.com/davidvannini-cyber/code/releases/download/firetv-latest/tv-vannini.apk</code></li>
+    <li>Premi <b>Vai</b>, poi <b>Installa</b> e <b>Apri</b>. L'icona «TV Vannini» compare tra le app.</li>
+  </ol>
+  <h2>Aggiornarla</h2>
+  <p>Stessa procedura: il nuovo file si installa <b>sopra</b> il vecchio, senza perdere niente (il file è firmato sempre con la stessa chiave). Se Downloader propone il file già scaricato, scegli di riscaricare, o cancella il vecchio dal menu «File». La versione installata si legge nell'intestazione dell'elenco (es. «v1.4»).</p>
+  <h2>Come nasce il file</h2>
+  <p>Non serve compilare niente: ogni volta che cambia il codice dell'app, GitHub costruisce da solo il file (automazione «Fire TV APK») e lo pubblica come «ultima versione». Il sito non va ripubblicato quando cambia l'app, né l'app quando cambia il sito.</p>
+  <table>
+    <tr><th>Versione</th><th>Cosa aggiunge</th></tr>
+    <tr><td>1.0 – 1.1</td><td>Elenco DTT, lettore, cambio fonte, tasti del telecomando, messaggi chiari nel caricamento della lista.</td></tr>
+    <tr><td>1.2</td><td>Guida programmi: riga «ora / poi».</td></tr>
+    <tr><td>1.3</td><td>Canali nascosti dall'admin.</td></tr>
+    <tr><td>1.4</td><td>Intestazione con versione e numero di canali nascosti.</td></tr>
+  </table>
+  <div class="note warn"><b>Da confermare in uso.</b> I canali nascosti sull'app sono stati verificati con i dati veri del sito e con un'app di prova; la conferma sulla tua Fire TV, con la versione 1.4, è ancora da fare.</div>
+</section>

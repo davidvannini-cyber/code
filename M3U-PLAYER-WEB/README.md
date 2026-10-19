@@ -111,3 +111,8 @@ tutto e disattiva le fonti. Per usare un file insieme agli indirizzi basta mette
 - l'apertura del video aggiunge un passo alla cronologia: **Indietro (anche quello dell'auto) chiude il video e torna all'elenco**, con il canale guardato selezionato;
 - righe piu' grandi e selezione ben visibile (`html.auto` in `style.css`).
 Tutto il codice e' sotto `if (AUTO)` in `public/app.js` (`AUTO` = indirizzo `/auto` o `?auto=1`): sulla pagina normale non cambia nulla.
+
+## La guida in PDF
+`M3U-PLAYER-WEB/GUIDA-TV-VANNINI.pdf` descrive come funziona tutto (sito, app Fire TV, modo auto, admin, guida programmi, manutenzione).
+Sorgente in `M3U-PLAYER-WEB/guida/` (`parts/*.html` + `img/`): per rigenerare il PDF, `node guida/build.mjs` (serve Playwright con Chromium,
+`pdftotext` e Python con pypdf e reportlab; con `PLAYWRIGHT=/percorso/di/playwright` se non e' installato qui).
