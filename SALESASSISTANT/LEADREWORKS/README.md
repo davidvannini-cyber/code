@@ -87,6 +87,19 @@ attesa senza che nulla succeda visibilmente.
   dall'utente (codice sorgente HTML reale, non solo screenshot), ma va
   validata su più lead reali prima di fidarsene in produzione.
 
+## Import automatico da Lead Collector
+Nella sezione «1. Import dati lead» il tasto **Importa da Lead Collector** chiede al server `LEAD-COLLECTOR` (indirizzo fisso `http://localhost:3000`, costante `LEAD_COLLECTOR_URL`, nessuna password: solo da localhost) i lead **non ancora esportati** e li lavora **uno dopo l'altro, senza altri clic**:
+1. compila la bozza (nome, telefono, email, città → zona, azienda e messaggio → note);
+2. analisi AI (stessa funzione dell'import dal CRM, `runAiAnalysis`);
+3. **solo se «Analisi e strategia» è stata compilata**, genera gli script di **primo contatto** (stato sempre 1): con il telefono → script telefono + WhatsApp, con l'email → script email, il canale senza contatto non viene generato;
+4. salva nello Storico (campo `lead_collector_id` in `dati_lead_input`, per non duplicare) e segna il lead come esportato in Lead Collector.
+Se l'analisi o la generazione falliscono (o manca l'AI), il lead viene comunque salvato nello Storico **senza script** e finisce nel riepilogo finale. La bozza che stavi compilando viene rimessa a posto alla fine. Il segno «esportato» resta anche se poi cancelli il lead dallo Storico. L'import dal CRM non cambia (parte solo l'analisi, non gli script).
+Non provato dal vivo: serve Lead Collector acceso e un'AI (Artifact o API key) sul Mac; provato con jsdom e AI/server simulati.
+
+## Storico: colonne Lav. · F.U. · Chiuso
+Flusso: **Lav.** (telefono/WhatsApp/email fatti) → **F.U.** (il lead ha dato un esito, follow up) → **Chiuso** (nessun altro intervento). F.U. e Chiuso si possono spuntare solo se Lav. è acceso e non dipendono l'uno dall'altro; togliendo Lav. su un lead con F.U./Chiuso chiede conferma e spegne tutte e tre. Campi `followup` e `chiuso` nel record (assenti = spenti), presenti anche nell'export Excel e nel backup.
+Filtri: nel pannello «Filtri» i menu **Lavorati / Follow up / Chiusi** (Tutti-Sì-No); sopra la tabella le scorciatoie con conteggio **Tutti · Da lavorare · Follow up aperti · Chiusi**; tre caselle indipendenti **Nascondi lavorati / follow up / chiusi** (la scelta resta salvata nel browser). Nascondere i lavorati nasconde anche F.U. e Chiusi, che esistono solo sui lavorati.
+
 ## Origine della libreria script
 Il PDF `SCRIPT_YesMobility.pdf` citato nella specifica non era disponibile nel
 filesystem. La libreria in `src/data/script-library.json` è stata ricostruita

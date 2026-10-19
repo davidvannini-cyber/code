@@ -32,6 +32,7 @@
   <h1>Lead Collector <span class="muted" id="count"></span></h1>
   <input id="q" type="search" placeholder="Cerca…">
   <select id="st"><option value="">Tutti gli stati</option><option>nuovo</option><option>contattato</option><option>qualificato</option><option>perso</option></select>
+  <select id="ex"><option value="">Tutti (esportati e non)</option><option value="no">Non esportati</option><option value="si">Esportati</option></select>
   <button id="refresh">Aggiorna</button>
   <a href="/api/export.csv"><button type="button">Esporta CSV</button></a>
 </header>
@@ -47,7 +48,7 @@
 </main>
 <footer><button class="stop" id="quit">⏻ Chiudi Lead Collector</button></footer>
 <script>
-const COLS = [['receivedAt','Ricevuto'],['name','Nome'],['email','Email'],['phone','Telefono'],['company','Azienda'],['city','Città'],['message','Messaggio'],['status','Stato'],['subject','Oggetto']];
+const COLS = [['receivedAt','Ricevuto'],['name','Nome'],['email','Email'],['phone','Telefono'],['company','Azienda'],['city','Città'],['message','Messaggio'],['status','Stato'],['exported','Esportato'],['subject','Oggetto']];
 let leads = [], sort = ['receivedAt', -1];
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -56,8 +57,8 @@ $('head').onclick = e => { const k = e.target.dataset.k; if (!k) return; sort = 
 
 async function load() { leads = await (await fetch('/api/leads')).json(); render(); }
 function render() {
-  const q = $('q').value.toLowerCase(), st = $('st').value;
-  let rows = leads.filter(l => (!st || l.status === st) && (!q || Object.values(l).join(' ').toLowerCase().includes(q)));
+  const q = $('q').value.toLowerCase(), st = $('st').value, ex = $('ex').value;
+  let rows = leads.filter(l => (!st || l.status === st) && (!ex || (ex === 'si') === !!l.exported) && (!q || Object.values(l).join(' ').toLowerCase().includes(q)));
   rows.sort((a,b) => String(a[sort[0]]||'').localeCompare(String(b[sort[0]]||'')) * sort[1]);
   $('count').textContent = `(${rows.length}/${leads.length})`;
   $('body').innerHTML = rows.length ? rows.map(l => `<tr>
@@ -68,13 +69,16 @@ function render() {
     <td>${esc(l.company)}</td><td>${esc(l.city)}</td>
     <td class="msg">${esc(l.message)}</td>
     <td><select data-id="${l.id}" class="s">${['nuovo','contattato','qualificato','perso'].map(s => `<option${s===l.status?' selected':''}>${s}</option>`).join('')}</select></td>
+    <td><label title="${l.exported && l.exportedAt ? 'Esportato il ' + esc(new Date(l.exportedAt).toLocaleString('it-IT')) : 'Non ancora esportato'}"><input type="checkbox" data-ex="${l.id}"${l.exported ? ' checked' : ''}></label></td>
     <td class="muted">${esc(l.subject)}</td>
     <td><button data-del="${l.id}" title="Elimina">✕</button></td></tr>`).join('')
     : `<tr><td colspan="${COLS.length+1}" class="empty">Nessun lead. Inoltra una email all'endpoint o incollala qui sopra.</td></tr>`;
 }
-$('body').onchange = async e => { if (e.target.classList.contains('s')) { await fetch('/api/leads/' + e.target.dataset.id, { method:'PATCH', body: JSON.stringify({ status: e.target.value }) }); load(); } };
+$('body').onchange = async e => {
+  if (e.target.dataset.ex) { await fetch('/api/leads/' + e.target.dataset.ex, { method:'PATCH', body: JSON.stringify({ exported: e.target.checked }) }); load(); return; }
+  if (e.target.classList.contains('s')) { await fetch('/api/leads/' + e.target.dataset.id, { method:'PATCH', body: JSON.stringify({ status: e.target.value }) }); load(); } };
 $('body').onclick = async e => { const id = e.target.dataset.del; if (id && confirm('Eliminare il lead?')) { await fetch('/api/leads/' + id, { method:'DELETE' }); load(); } };
-$('q').oninput = $('st').onchange = render;
+$('q').oninput = $('st').onchange = $('ex').onchange = render;
 $('refresh').onclick = load;
 $('add').onclick = async () => {
   const r = await (await fetch('/api/paste', { method:'POST', body: $('paste').value })).json();

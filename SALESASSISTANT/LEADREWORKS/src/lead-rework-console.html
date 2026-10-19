@@ -566,7 +566,7 @@ let state = {
   tab: "nuovo",
   profile: null,
   leadsHistory: {},
-  historyFilter: Object.assign({ stato:"", da:"", a:"", lavorato:"", nascondiLavorati:false, ordina:"data_desc" }, loadHistoryPrefs()),
+  historyFilter: Object.assign({ stato:"", da:"", a:"", lavorato:"", followup:"", chiuso:"", nascondiLavorati:false, nascondiFollowup:false, nascondiChiusi:false, ordina:"data_desc" }, loadHistoryPrefs()),
   historyOpen: null,
   historyFiltersOpen: false,
   historySearch: "",
@@ -578,6 +578,8 @@ let state = {
   generationError: null,
   extracting: false,
   extractionError: null,
+  lcImporting: false, // import automatico da Lead Collector in corso
+  lcImportMsg: "",
   showImportPanel: false // sezione "1. Import dati lead": card sempre presente, contenuto espandibile con toggle
 };
 
@@ -596,6 +598,7 @@ function emptyDraft(){
     data_appuntamento: "", orario_appuntamento: "", indirizzo: "", tempistica: "",
     analisi_strategia: "",
     crm_lead_id: "",
+    lead_collector_id: "",
     data_attivita: "",
     stato_lead: 1,
     canali_attivi: defaultChannelsFor(1),
@@ -1093,6 +1096,11 @@ function renderNewLeadTab(){
           <button class="btn-secondary" onclick="pasteCrmImportFromClipboard()">${icon('clipboard')}Incolla dati dal CRM (dagli appunti)</button>
           <span id="crm_import_msg" class="hint"></span>
         </div>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn-secondary" onclick="importFromLeadCollector()" ${state.lcImporting?'disabled':''}>${icon('download')}${state.lcImporting ? 'Importazione in corso…' : 'Importa da Lead Collector'}</button>
+          <span class="hint">Porta qui tutti i lead non ancora esportati, uno dopo l'altro: analisi AI, script (primo contatto) e salvataggio nello Storico, senza altri clic. Lead Collector deve essere acceso.</span>
+        </div>
+        ${state.lcImportMsg ? `<div class="hint" style="margin-top:8px;white-space:pre-line;">${escapeHtml(state.lcImportMsg)}</div>` : ""}
         ${renderUploadedFilesList()}
         ${renderRowPicker()}
         ${d.uploaded_files.some(f=>f.kind==='image') ? `
@@ -1628,6 +1636,82 @@ function applyCrmImport(data){
   // posto del risultato, stesso comportamento del pulsante manuale).
   runAiAnalysis();
 }
+/* --- Import automatico da Lead Collector (server locale LEAD-COLLECTOR, /api/ext/*) ---
+   Per ogni lead non ancora esportato: bozza → analisi AI → script di primo contatto → Storico → segno "esportato".
+   Script solo per i contatti disponibili: telefono → telefono + WhatsApp; email → email.
+   La bozza che stai compilando viene rimessa a posto alla fine. */
+const LEAD_COLLECTOR_URL = "http://localhost:3000";
+async function lcFetch(path, opts){
+  const r = await fetch(LEAD_COLLECTOR_URL + path, opts);
+  if (!r.ok) throw new Error("risposta " + r.status);
+  return r.json();
+}
+function draftFromCollectorLead(l){
+  const d = emptyDraft();
+  d.nome = l.name || ""; d.telefono1 = l.phone || ""; d.email = l.email || ""; d.zona = l.city || "";
+  d.note = [l.company ? "Azienda: " + l.company : "", l.message || ""].filter(Boolean).join("\n");
+  d.lead_collector_id = l.id;
+  return d;
+}
+function setPrimoContattoChannels(d){
+  const hasTel = !!String(d.telefono1||"").trim(), hasMail = !!String(d.email||"").trim();
+  d.stato_lead = 1; // sempre «primo contatto», anche se l'AI ne ha suggerito un altro
+  d.canali_attivi = { telefono: hasTel, whatsapp: hasTel, email: hasMail };
+}
+async function importFromLeadCollector(){
+  if (state.lcImporting) return;
+  state.lcImporting = true; state.lcImportMsg = "Mi collego a Lead Collector…"; render();
+  let pending;
+  try { pending = await lcFetch("/api/ext/pending"); }
+  catch(e){
+    state.lcImporting = false;
+    state.lcImportMsg = "Non riesco a collegarmi a Lead Collector (" + e.message + "). Controlla che sia acceso e raggiungibile su " + LEAD_COLLECTOR_URL + ".";
+    render(); return;
+  }
+  if (!pending.length){ state.lcImporting = false; state.lcImportMsg = "Nessun lead da importare: sono tutti già esportati."; render(); return; }
+  const saved = { draft: state.draft, out: state.generatedOutput, meta: state.generatedMeta, edited: state.editedAfterGenerate, genErr: state.generationError, extErr: state.extractionError };
+  const res = { conScript: 0, senzaScript: [], gia: 0, problemi: [] };
+  for (let i = 0; i < pending.length; i++){
+    const l = pending[i];
+    const label = l.name || l.email || l.phone || "lead senza nome";
+    state.lcImportMsg = "Lead " + (i+1) + " di " + pending.length + ": " + label + "…"; render();
+    try {
+      const esiste = Object.values(state.leadsHistory).some(r => (r.dati_lead_input||{}).lead_collector_id === l.id);
+      if (esiste) res.gia++;
+      else {
+        state.draft = draftFromCollectorLead(l);
+        state.generatedOutput = null; state.generatedMeta = null; state.editedAfterGenerate = false;
+        state.generationError = null; state.extractionError = null;
+        await runAiAnalysis();
+        if (l.name) state.draft.nome = l.name; // il nome arrivato da Lead Collector non si tocca
+        setPrimoContattoChannels(state.draft);
+        const c = state.draft.canali_attivi;
+        let conScript = false;
+        // gli script partono solo se l'analisi AI ha davvero compilato «Analisi e strategia»
+        if (String(state.draft.analisi_strategia||"").trim() && (c.telefono || c.whatsapp || c.email)){
+          await generateScripts();
+          conScript = !!(state.generatedMeta && state.generatedMeta.source === "ai");
+          if (!conScript){ state.generatedOutput = null; state.generatedMeta = null; } // niente bozze di ripiego nello Storico
+        }
+        await persistDraftToHistory();
+        if (conScript) res.conScript++; else res.senzaScript.push(label);
+      }
+      try { await lcFetch("/api/ext/exported", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ id: l.id }) }); }
+      catch(e){ res.problemi.push(label + ": salvato nello Storico ma non segnato come esportato (" + e.message + ")"); }
+    } catch(e){
+      res.problemi.push(label + ": " + e.message);
+    }
+  }
+  state.draft = saved.draft; state.generatedOutput = saved.out; state.generatedMeta = saved.meta; state.editedAfterGenerate = saved.edited;
+  state.generationError = saved.genErr; state.extractionError = saved.extErr;
+  state.lcImporting = false; state.extracting = false; state.generating = false;
+  const righe = ["Importazione finita: " + pending.length + " lead letti da Lead Collector.", "Con script generati: " + res.conScript + "."];
+  if (res.senzaScript.length) righe.push("Salvati nello Storico SENZA script (analisi AI o generazione non riuscita): " + res.senzaScript.join(", ") + ".");
+  if (res.gia) righe.push("Già presenti nello Storico (solo segnati come esportati): " + res.gia + ".");
+  if (res.problemi.length) righe.push("Problemi: " + res.problemi.join(" · "));
+  state.lcImportMsg = righe.join("\n");
+  render();
+}
 window.crmImport = applyCrmImport; // ponte diretto, usato anche da eventuali script esterni
 
 async function pasteCrmImportFromClipboard(){
@@ -2035,7 +2119,14 @@ function exportHistoryItemToSuggerimentiVendita(id){
    ========================================================= */
 
 async function saveLeadToHistory(){
-  const id = "lead_" + Date.now();
+  await persistDraftToHistory();
+  alert("Lead salvato nello storico.");
+  switchTab("storico");
+}
+/* Salva la bozza corrente nello storico (senza avvisi né cambio scheda): usata anche dall'import da Lead Collector. */
+async function persistDraftToHistory(){
+  let id = "lead_" + Date.now();
+  while (state.leadsHistory[id]) id += "_";
   const d = state.draft;
   // Se il lead viene dal CRM, lo Storico mostra la data dell'attività CRM (duedate) invece di quella di importazione.
   const dataAttivita = d.data_attivita && !isNaN(new Date(d.data_attivita)) ? new Date(d.data_attivita).toISOString() : "";
@@ -2045,13 +2136,16 @@ async function saveLeadToHistory(){
     data_importazione: new Date().toISOString(),
     stato_lead: d.stato_lead,
     lavorato: false,
+    followup: false,
+    chiuso: false,
     canali_generati: Object.keys(state.generatedOutput||{}),
     dati_lead_input: {
       nome:d.nome, prodotto:d.prodotto, zona:d.zona, telefono1:d.telefono1, telefono2:d.telefono2, email:d.email, note:d.note, storico:d.storico,
       prezzo_esistente:d.prezzo_esistente, motivazione_rifiuto:d.motivazione_rifiuto,
       data_appuntamento:d.data_appuntamento, orario_appuntamento:d.orario_appuntamento,
       indirizzo:d.indirizzo, tempistica:d.tempistica, analisi_strategia:d.analisi_strategia,
-      crm_lead_id:d.crm_lead_id || ""
+      crm_lead_id:d.crm_lead_id || "",
+      lead_collector_id:d.lead_collector_id || ""
     },
     script_generati: state.generatedOutput,
     script_modificati_manualmente: !!state.editedAfterGenerate,
@@ -2060,18 +2154,17 @@ async function saveLeadToHistory(){
   };
   state.leadsHistory[id] = record;
   await dbSet("leads", state.leadsHistory);
-  alert("Lead salvato nello storico.");
-  switchTab("storico");
+  return id;
 }
 
 /* Preferenze di visualizzazione dello storico (ordinamento, nascondi lavorati): solo comodità, mai dati dei lead. */
 function loadHistoryPrefs(){
-  try { const p = JSON.parse(localStorage.getItem(LOCAL_PREFIX+"history_prefs") || "{}"); return { nascondiLavorati: !!p.nascondiLavorati, ordina: p.ordina || "data_desc" }; }
+  try { const p = JSON.parse(localStorage.getItem(LOCAL_PREFIX+"history_prefs") || "{}"); return { nascondiLavorati: !!p.nascondiLavorati, nascondiFollowup: !!p.nascondiFollowup, nascondiChiusi: !!p.nascondiChiusi, ordina: p.ordina || "data_desc" }; }
   catch(e){ return {}; }
 }
 function setHistoryPref(key, value){
   state.historyFilter[key] = value;
-  try { localStorage.setItem(LOCAL_PREFIX+"history_prefs", JSON.stringify({ nascondiLavorati: !!state.historyFilter.nascondiLavorati, ordina: state.historyFilter.ordina })); } catch(e){}
+  try { localStorage.setItem(LOCAL_PREFIX+"history_prefs", JSON.stringify({ nascondiLavorati: !!state.historyFilter.nascondiLavorati, nascondiFollowup: !!state.historyFilter.nascondiFollowup, nascondiChiusi: !!state.historyFilter.nascondiChiusi, ordina: state.historyFilter.ordina })); } catch(e){}
   render();
 }
 const HISTORY_SORTS = {
@@ -2106,11 +2199,17 @@ function filteredHistoryList(){
   return all.filter(r => {
     if (!matchesHistorySearch(r, tokens)) return false;
     if (state.historyFilter.nascondiLavorati && r.lavorato) return false;
+    if (state.historyFilter.nascondiFollowup && r.followup) return false;
+    if (state.historyFilter.nascondiChiusi && r.chiuso) return false;
     if (state.historyFilter.stato && String(r.stato_lead) !== state.historyFilter.stato) return false;
     if (state.historyFilter.da && r.data_creazione < state.historyFilter.da) return false;
     if (state.historyFilter.a && r.data_creazione > state.historyFilter.a + "T23:59:59") return false;
     if (state.historyFilter.lavorato === "si" && !r.lavorato) return false;
     if (state.historyFilter.lavorato === "no" && r.lavorato) return false;
+    if (state.historyFilter.followup === "si" && !r.followup) return false;
+    if (state.historyFilter.followup === "no" && r.followup) return false;
+    if (state.historyFilter.chiuso === "si" && !r.chiuso) return false;
+    if (state.historyFilter.chiuso === "no" && r.chiuso) return false;
     return true;
   });
 }
@@ -2124,12 +2223,41 @@ async function toggleAttivita(id, canale){
   render();
 }
 
+/* Flusso: LAV. (tel/WA/mail fatti) → F.U. (il lead ha dato un esito) → CHIUSO (nessun altro intervento).
+   F.U. e CHIUSO dipendono da LAV. ma non l'uno dall'altro. */
 async function toggleLavorato(id){
   const r = state.leadsHistory[id];
   if (!r) return;
+  if (r.lavorato && (r.followup || r.chiuso)){
+    if (!confirm("Togliendo «Lavorato» si tolgono anche F.U. e Chiuso di questo lead. Confermi?")){ render(); return; }
+    r.followup = false; r.chiuso = false;
+  }
   r.lavorato = !r.lavorato;
   await dbSet("leads", state.leadsHistory);
   render();
+}
+async function toggleFlagDopoLavorato(id, campo){
+  const r = state.leadsHistory[id];
+  if (!r) return;
+  if (!r.lavorato){ render(); return; } // senza LAV. non si può spuntare
+  r[campo] = !r[campo];
+  await dbSet("leads", state.leadsHistory);
+  render();
+}
+function toggleFollowup(id){ return toggleFlagDopoLavorato(id, "followup"); }
+function toggleChiuso(id){ return toggleFlagDopoLavorato(id, "chiuso"); }
+
+/* Scorciatoie sopra la tabella: impostano i tre menu Lavorati / Follow up / Chiusi */
+const HISTORY_QUICK = {
+  tutti:   { label:"Tutti",             set:{ lavorato:"",   followup:"",   chiuso:"" },   count:r => true },
+  da_lav:  { label:"Da lavorare",       set:{ lavorato:"no", followup:"",   chiuso:"" },   count:r => !r.lavorato },
+  fu:      { label:"Follow up aperti",  set:{ lavorato:"",   followup:"si", chiuso:"no" }, count:r => r.followup && !r.chiuso },
+  chiusi:  { label:"Chiusi",            set:{ lavorato:"",   followup:"",   chiuso:"si" }, count:r => r.chiuso }
+};
+function setHistoryQuick(k){ Object.assign(state.historyFilter, HISTORY_QUICK[k].set); render(); }
+function activeHistoryQuick(){
+  const f = state.historyFilter;
+  return Object.keys(HISTORY_QUICK).find(k => { const q = HISTORY_QUICK[k].set; return f.lavorato===q.lavorato && f.followup===q.followup && f.chiuso===q.chiuso; }) || "";
 }
 
 async function esportaStoricoExcel(){
@@ -2147,7 +2275,9 @@ async function esportaStoricoExcel(){
     "Telefonata": (r.attivita && r.attivita.telefono) ? "Sì" : "No",
     "WhatsApp": (r.attivita && r.attivita.whatsapp) ? "Sì" : "No",
     "Email inviata": (r.attivita && r.attivita.email) ? "Sì" : "No",
-    "Lavorato": r.lavorato ? "Sì" : "No"
+    "Lavorato": r.lavorato ? "Sì" : "No",
+    "Follow up": r.followup ? "Sì" : "No",
+    "Chiuso": r.chiuso ? "Sì" : "No"
   }));
   const foglio = XLSX.utils.json_to_sheet(righe);
   const cartella = XLSX.utils.book_new();
@@ -2230,10 +2360,10 @@ async function recoverFromAutoCopy(){
 
 function activeHistoryFilters(){
   const f = state.historyFilter;
-  return (f.stato?1:0) + (f.lavorato?1:0) + (f.da?1:0) + (f.a?1:0);
+  return (f.stato?1:0) + (f.lavorato?1:0) + (f.followup?1:0) + (f.chiuso?1:0) + (f.da?1:0) + (f.a?1:0);
 }
 function resetHistoryFilters(){
-  Object.assign(state.historyFilter, { stato:"", da:"", a:"", lavorato:"" });
+  Object.assign(state.historyFilter, { stato:"", da:"", a:"", lavorato:"", followup:"", chiuso:"" });
   render();
 }
 
@@ -2257,6 +2387,15 @@ function renderHistoryTab(){
         <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding-bottom:6px;white-space:nowrap;">
           <input type="checkbox" ${state.historyFilter.nascondiLavorati?'checked':''} onchange="setHistoryPref('nascondiLavorati', this.checked)"> Nascondi lavorati
         </label>
+        <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding-bottom:6px;white-space:nowrap;">
+          <input type="checkbox" ${state.historyFilter.nascondiFollowup?'checked':''} onchange="setHistoryPref('nascondiFollowup', this.checked)"> Nascondi follow up
+        </label>
+        <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding-bottom:6px;white-space:nowrap;">
+          <input type="checkbox" ${state.historyFilter.nascondiChiusi?'checked':''} onchange="setHistoryPref('nascondiChiusi', this.checked)"> Nascondi chiusi
+        </label>
+      </div>
+      <div class="hp-row" style="margin-top:7px;flex-wrap:wrap;">
+        ${Object.entries(HISTORY_QUICK).map(([k,q]) => `<button class="${activeHistoryQuick()===k?'btn-primary':'btn-secondary'}" onclick="setHistoryQuick('${k}')">${q.label} (${all.filter(q.count).length})</button>`).join("")}
       </div>
       <div class="hp-row" style="margin-top:7px;">
         <button class="btn-secondary" onclick="esportaStoricoExcel()">${icon('download')}Esporta storico</button>
@@ -2274,6 +2413,18 @@ function renderHistoryTab(){
             <option value="" ${state.historyFilter.lavorato===''?'selected':''}>Tutti i lead</option>
             <option value="si" ${state.historyFilter.lavorato==='si'?'selected':''}>Solo lavorati</option>
             <option value="no" ${state.historyFilter.lavorato==='no'?'selected':''}>Solo da lavorare</option>
+          </select></div>
+        <div><span class="hp-lbl">Follow up</span>
+          <select onchange="state.historyFilter.followup=this.value; render();">
+            <option value="" ${state.historyFilter.followup===''?'selected':''}>Tutti i lead</option>
+            <option value="si" ${state.historyFilter.followup==='si'?'selected':''}>Solo con follow up</option>
+            <option value="no" ${state.historyFilter.followup==='no'?'selected':''}>Solo senza follow up</option>
+          </select></div>
+        <div><span class="hp-lbl">Chiusi</span>
+          <select onchange="state.historyFilter.chiuso=this.value; render();">
+            <option value="" ${state.historyFilter.chiuso===''?'selected':''}>Tutti i lead</option>
+            <option value="si" ${state.historyFilter.chiuso==='si'?'selected':''}>Solo chiusi</option>
+            <option value="no" ${state.historyFilter.chiuso==='no'?'selected':''}>Solo non chiusi</option>
           </select></div>
         <div><span class="hp-lbl">Dal</span><input type="date" onchange="state.historyFilter.da=this.value; render();" value="${state.historyFilter.da}"></div>
         <div><span class="hp-lbl">Al</span><input type="date" onchange="state.historyFilter.a=this.value; render();" value="${state.historyFilter.a}"></div>
@@ -2303,7 +2454,9 @@ function renderHistoryTab(){
           <th class="ck" title="Telefonata fatta">${icon('phone',{noMargin:true})}</th>
           <th class="ck" title="WhatsApp inviato">${WHATSAPP_LOGO_SVG}</th>
           <th class="ck" title="Email inviata">${MAC_MAIL_LOGO_SVG}</th>
-          <th class="ck" title="Lavorato">Lav.</th><th></th>
+          <th class="ck" title="Lavorato">Lav.</th>
+          <th class="ck" title="Follow up (si attiva dopo Lav.)">F.U.</th>
+          <th class="ck" title="Chiuso: nessun altro intervento (si attiva dopo Lav.)">Chiuso</th><th></th>
         </tr></thead>
         <tbody>
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
@@ -2315,6 +2468,8 @@ function renderHistoryTab(){
               <td class="c-gen">${r.canali_generati.length}</td>
               ${ck('telefono','Telefonata fatta')}${ck('whatsapp','WhatsApp inviato')}${ck('email','Email inviata')}
               <td class="ck"><input type="checkbox" ${r.lavorato?'checked':''} onchange="toggleLavorato('${r.id}')" title="Segna come lavorato"></td>
+              <td class="ck"><input type="checkbox" ${r.followup?'checked':''} ${r.lavorato?'':'disabled'} onchange="toggleFollowup('${r.id}')" title="${r.lavorato ? 'Follow up: il lead ha dato un esito' : 'Prima segna il lead come lavorato'}"></td>
+              <td class="ck"><input type="checkbox" ${r.chiuso?'checked':''} ${r.lavorato?'':'disabled'} onchange="toggleChiuso('${r.id}')" title="${r.lavorato ? 'Chiuso: nessun altro intervento necessario' : 'Prima segna il lead come lavorato'}"></td>
               <td class="acts">
                 <button class="btn-ghost" title="Invia questo lead al telefono Android" aria-label="Telefono" style="font-size:12px;font-weight:600;" onclick="sendHistoryToPhone('${r.id}')">Tel</button>
                 <button class="btn-ghost" title="${r.dati_lead_input.crm_lead_id ? 'Apri questo lead nel CRM Facile Salire' : 'Apri l\'elenco lead del CRM (ID non ancora collegato)'}" aria-label="CRM" style="font-size:12px;font-weight:600;" onclick="openCrmFromHistory('${r.id}')">CRM</button>

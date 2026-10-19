@@ -55,10 +55,23 @@ function closeBrowserTabs() {
 }
 const json = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
 
+// Accesso senza password per la console LEADREWORKS (/api/ext/*): solo dal Mac stesso (localhost)
+function isLocalRequest(req) {
+  const a = req.socket.remoteAddress || '';
+  const host = (req.headers.host || '').replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
+  return ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(a) && ['localhost', '127.0.0.1', '::1'].includes(host);
+}
+// La console è un file aperto dal disco (origine "null") o una pagina locale
+function corsOrigin(req) {
+  const o = req.headers.origin;
+  return o === 'null' || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o || '') ? o : '';
+}
+
 const csvCell = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
 function toCsv(leads) {
-  const cols = ['receivedAt', 'name', 'email', 'phone', 'company', 'city', 'message', 'status', 'subject', 'from'];
-  return '﻿' + [cols.join(',')].concat(leads.map(l => cols.map(c => csvCell(l[c])).join(','))).join('\r\n');
+  const cols = ['receivedAt', 'name', 'email', 'phone', 'company', 'city', 'message', 'status', 'exported', 'subject', 'from'];
+  const cell = (l, c) => c === 'exported' ? (l.exported ? 'sì' : 'no') : l[c];
+  return '﻿' + [cols.join(',')].concat(leads.map(l => cols.map(c => csvCell(cell(l, c))).join(','))).join('\r\n');
 }
 
 const server = http.createServer(async (req, res) => {
@@ -85,6 +98,30 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(302, { 'Set-Cookie': `${COOKIE}=${authToken()}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`, Location: '/' });
         return res.end();
       }
+    }
+    // Ponte con LEADREWORKS: lead non ancora esportati e segno "esportato" (solo da localhost, senza password)
+    if (url.pathname.startsWith('/api/ext/')) {
+      if (!isLocalRequest(req)) return json(res, 403, { error: 'solo da localhost' });
+      const co = corsOrigin(req);
+      if (co) {
+        res.setHeader('Access-Control-Allow-Origin', co);
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Vary', 'Origin');
+      }
+      if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+      if (req.method === 'GET' && url.pathname === '/api/ext/pending') {
+        // dal più vecchio al più recente, così LEADREWORKS li lavora in ordine di arrivo
+        return json(res, 200, store.load().filter(l => !l.exported).reverse());
+      }
+      if (req.method === 'POST' && url.pathname === '/api/ext/exported') {
+        const { id } = JSON.parse(await readBody(req));
+        const leads = store.load(); const l = leads.find(x => x.id === id);
+        if (!l) return json(res, 404, { error: 'non trovato' });
+        l.exported = true; l.exportedAt = new Date().toISOString();
+        store.save(leads); return json(res, 200, l);
+      }
+      return json(res, 404, { error: 'non trovato' });
     }
     if (!pageAuthOk(req)) {
       res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="Lead Collector"' });
@@ -117,6 +154,7 @@ const server = http.createServer(async (req, res) => {
       const leads = store.load(); const l = leads.find(x => x.id === m[1]);
       if (!l) return json(res, 404, { error: 'non trovato' });
       for (const k of ['status', 'name', 'email', 'phone', 'company', 'city', 'message']) if (typeof patch[k] === 'string') l[k] = patch[k];
+      if (typeof patch.exported === 'boolean') { l.exported = patch.exported; l.exportedAt = patch.exported ? new Date().toISOString() : ''; }
       store.save(leads); return json(res, 200, l);
     }
     if (m && req.method === 'DELETE') {

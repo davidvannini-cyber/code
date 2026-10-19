@@ -21,8 +21,15 @@ Apri http://localhost:3000 (utente qualsiasi, password = `PAGE_PASSWORD`). Dati 
 ## Come vengono riconosciuti i campi
 Righe `Etichetta: valore` (nome, cognome, email, telefono/cellulare, azienda, città, messaggio/note… in italiano e inglese). Se mancano, si usano il Reply-To/mittente, la prima email nel testo (esclusi gli indirizzi in `OWN_ADDRESSES`, separati da virgola) e il primo numero di telefono. Duplicati scartati per Message-ID. Regole in `extract.js`.
 
+## Esportazione verso LEADREWORKS (segno «Esportato»)
+Ogni lead ha una casella **Esportato** nella tabella (con data nel suggerimento): si spunta da sola quando LEADREWORKS importa il lead, ma puoi togliere o rimettere la spunta a mano. In alto c'è il filtro **Tutti / Non esportati / Esportati**; il CSV ha la colonna `exported`.
+Per LEADREWORKS il server offre due indirizzi **senza password, ma solo dal Mac stesso** (localhost, controllo anche sul nome del sito):
+- `GET /api/ext/pending` → lead non esportati, dal più vecchio al più recente
+- `POST /api/ext/exported` con `{"id":"..."}` → li segna come esportati
+Il resto del sito resta protetto da `PAGE_PASSWORD`. Se il server è esposto in rete, questi due indirizzi rispondono comunque solo a chi è sul Mac.
+
 ## Test
-`npm test`
+`npm test` (prova l'estrazione dalle email e il ponte con LEADREWORKS)
 
 Nota: il server va ospitato dove resta acceso (VPS, Render, Fly…); la modalità IMAP non richiede un indirizzo pubblico.
 

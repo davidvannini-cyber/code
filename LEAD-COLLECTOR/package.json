@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Riceve email con lead e li raccoglie in una tabella web",
   "main": "server.js",
-  "scripts": { "start": "node server.js", "test": "node test/parser.test.js" },
+  "scripts": { "start": "node server.js", "test": "node test/parser.test.js && node test/server.test.js" },
   "optionalDependencies": { "imapflow": "^1.0.150" },
   "license": "UNLICENSED"
 }
