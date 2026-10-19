@@ -21,6 +21,9 @@ Apri http://localhost:3000 (utente qualsiasi, password = `PAGE_PASSWORD`). Dati 
 ## Come vengono riconosciuti i campi
 Righe `Etichetta: valore` (nome, cognome, email, telefono/cellulare, azienda, città, messaggio/note… in italiano e inglese). Se mancano, si usano il Reply-To/mittente, la prima email nel testo (esclusi gli indirizzi in `OWN_ADDRESSES`, separati da virgola) e il primo numero di telefono. Duplicati scartati per Message-ID. Regole in `extract.js`.
 
+## Grafica
+La pagina usa la stessa grafica di LEADREWORKS (tema chiaro, barra in alto, schede grigie, font Manrope e IBM Plex, stessi bottoni e campi). Se cambi palette o misure in `SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html`, allinea anche `public/index.html`. I font arrivano da Google Fonts: senza internet si vede il font di sistema.
+
 ## Esportazione verso LEADREWORKS (segno «Esportato»)
 Ogni lead ha una casella **Esportato** nella tabella (con data nel suggerimento): si spunta da sola quando LEADREWORKS importa il lead, ma puoi togliere o rimettere la spunta a mano. In alto c'è il filtro **Tutti / Non esportati / Esportati**; il CSV ha la colonna `exported`.
 Per LEADREWORKS il server offre due indirizzi **senza password, ma solo dal Mac stesso** (localhost, controllo anche sul nome del sito):
