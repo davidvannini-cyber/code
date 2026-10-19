@@ -232,10 +232,15 @@ public class MainActivity extends Activity {
         return t;
     }
 
+    private String versionName() {
+        try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionName; } catch (Exception e) { return "?"; }
+    }
+
     private void updateHeader() {
         String filter = italianOnly ? "Italiani (DTT)" : "Tutti i canali";
         if (label != null) filter += " · " + label;
-        header.setText(shown.isEmpty() ? status : "TV · " + filter + " · " + shown.size() + " canali");
+        String off = hidden.isEmpty() ? "" : " (" + hidden.size() + " nascosti dall'admin)";
+        header.setText((shown.isEmpty() ? status : "TV · " + filter + " · " + shown.size() + " canali" + off) + "   ·   v" + versionName());
     }
 
     private final class ChannelAdapter extends BaseAdapter {
@@ -425,6 +430,7 @@ public class MainActivity extends Activity {
                         @Override public void run() {
                             epg = fresh;
                             if (hiddenChanged && !inPlayer) applyFilter();
+                            updateHeader();
                             adapter.notifyDataSetChanged();
                             if (inPlayer && cur != null) showBanner();
                         }
