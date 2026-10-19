@@ -10,7 +10,7 @@
     it: false, channels: [], groups: [], filtered: [], shown: 0, hidden: new Set(), epg: null,
     cur: null,                            // { g: gruppo, i: indice della fonte in prova }
     current: -1,                          // id del canale (fonte) in riproduzione
-    hls: null, ts: null, dash: null, failFn: null, startTimer: 0,
+    hls: null, ts: null, dash: null, failFn: null, startTimer: 0, gateTimer: 0,
     type: null, playUrl: null, engine: null, fs: false, idleTimer: 0,
   };
 
@@ -324,6 +324,7 @@
 
   function stopPlayback() {
     clearTimeout(state.startTimer);
+    clearInterval(state.gateTimer);
     state.failFn = null;
     if (state.hls) { state.hls.destroy(); state.hls = null; }
     if (state.ts) { state.ts.destroy(); state.ts = null; }
@@ -402,6 +403,21 @@
     }
   }
 
+  // Fa partire il video quando ha almeno 3 secondi di buffer; in ogni caso dopo 8 secondi.
+  function startWhenBuffered(dash, id) {
+    const t0 = Date.now();
+    clearInterval(state.gateTimer);
+    state.gateTimer = setInterval(() => {
+      if (state.dash !== dash || state.current !== id) { clearInterval(state.gateTimer); return; }
+      let ready = false;
+      try { ready = dash.getBufferLength('video') >= 3; } catch (_) { ready = true; }
+      if (ready || Date.now() - t0 > 8000) {
+        clearInterval(state.gateTimer);
+        video.play().catch(() => { /* l'utente puo' premere play */ });
+      }
+    }, 250);
+  }
+
   async function start(c) {
     stopPlayback();
     state.current = c.id;
@@ -421,6 +437,7 @@
       if (found) { type = found.type; url = found.url; }
     }
     let engine;
+    let gated = false;                                       // l'avvio e' rimandato (vedi startWhenBuffered)
     let triedNative = false;
     let failed = false;
     state.type = type; state.playUrl = url;
@@ -470,7 +487,9 @@
         } });
       } catch (_) { /* impostazioni non supportate da questa versione: si usano quelle predefinite */ }
       dash.on(dashjs.MediaPlayer.events.ERROR, fail);
-      dash.initialize(video, url, true);
+      // Safari: con questi flussi l'audio parte prima del video (schermo nero con l'audio). Si parte quando c'e' un po' di video in buffer.
+      dash.initialize(video, url, !isSafari);
+      if (isSafari) { gated = true; startWhenBuffered(dash, c.id); }
     } else if (type === 'ts' && window.mpegts && mpegts.getFeatureList().mseLivePlayback) {
       engine = 'mpegts.js';
       const ts = state.ts = mpegts.createPlayer({ type: 'mpegts', isLive: true, url });
@@ -482,7 +501,7 @@
       video.src = url;                                       // ultima possibilita': il browser ci prova da solo
     }
     state.engine = engine;
-    video.play().catch(() => { /* l'utente puo' premere play */ });
+    if (!gated) video.play().catch(() => { /* l'utente puo' premere play */ });
   }
 
   video.addEventListener('playing', () => {
