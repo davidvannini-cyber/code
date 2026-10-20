@@ -179,12 +179,10 @@ Trasformazione estetica: da tema scuro a tema chiaro, da sidebar verticale a top
 - Niente workaround che cambiano le abitudini dell'utente quando il problema è nel codice.
 - Per cambi di layout/UX importanti, discutere e aspettare il via libera prima di scrivere codice.
 
-### Flusso di sincronizzazione (dal 2026-09-29)
-- La copia di lavoro di Claude è `/root/progetti/code-repo/SALESASSISTANT/` (clone di `davidvannini-cyber/code`, push su `origin main`). È l'unica sorgente di verità: le vecchie copie in `/root/progetti/LEADREWORKS/` sono obsolete e non vanno modificate.
-- L'icona **«Sync»** sulla scrivania del Mac (lancia `Sync.command` nella radice del repo) fa `git pull --ff-only` di tutto il repository da GitHub. Ciò che non è stato pubblicato su GitHub sul Mac non arriva.
-- **Automatismo**: uno Stop hook di Claude Code (`/root/.claude/hooks/sync-code-repo.sh`, registrato in `/root/.claude/settings.json`) a fine lavoro fa `git add` della sola cartella `SALESASSISTANT`, commit e `git push origin HEAD:main`. Non fa mai force push, non fa nulla se non ci sono modifiche, esclude file con nome tipo `.env`/`secret`/`token`/`.pem`/`.key`, e in caso di errore (rete, push rifiutato, conflitto di rebase) mostra un messaggio **«SYNC FALLITA»**.
-- **Per l'utente**: quando Claude ha finito e compare «Sync pronta», fare «Sync» (icona sulla scrivania) sul Mac e ricaricare la console con Cmd+Shift+R. Se compare «SYNC FALLITA», non fare Sync: chiedere a Claude di risolvere.
-- Se l'hook non parte (sessione nuova senza il file di impostazioni), Claude deve fare a mano commit e push prima di dire «finito».
+### Flusso di sincronizzazione (aggiornato il 2026-10-20)
+- Claude lavora nel clone di `davidvannini-cyber/code` della sessione (cartella `code`) ed è l'unica sorgente di verità. Non esiste più nessuno Stop hook automatico né le cartelle `/root/progetti/...` (verificato il 2026-10-20: non ci sono).
+- A fine lavoro Claude aggiunge la riga a `REGISTRO-SALVATAGGI.md`, fa commit e push fast-forward su `main` (mai force push), poi scrive «Fai Sync». Le regole sono nell'hook di avvio `.claude/hooks/consensi-avvio.sh`.
+- **Per l'utente**: fare «Sync» (icona sulla scrivania → `Sync.command`, `git pull --ff-only` di tutto il repo) e ricaricare la console con Cmd+Shift+R. Ciò che non è stato pubblicato su GitHub sul Mac non arriva.
 
 ---
 

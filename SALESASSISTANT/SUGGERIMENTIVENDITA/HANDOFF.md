@@ -132,7 +132,7 @@ Taratura fatta sul MacBook Air 2015 con lo splitter TRRS e il telefono:
 
 ## 5. File da sincronizzare sul Mac
 
-**Flusso Sandbox → GitHub → Mac**: Claude lavora in `/root/progetti/code-repo/SALESASSISTANT/`; a fine lavoro uno Stop hook (`/root/.claude/hooks/sync-code-repo.sh`) fa commit e push su `origin main`, poi l'utente fa «Sync» (icona sulla scrivania) sul Mac. Dettagli e messaggi di errore in `../LEADREWORKS/docs/HANDOFF.md`, sezione «Flusso di sincronizzazione».
+**Flusso Claude → GitHub → Mac**: Claude lavora nel clone della repo `code`, a fine lavoro fa push su `main` e scrive «Fai Sync»; David fa «Sync» (icona sulla scrivania). Dettagli in `../LEADREWORKS/docs/HANDOFF.md`, sezione «Flusso di sincronizzazione».
 
 (Per David vale solo la copia nel repository, aperta dall'alias sulla scrivania: vedi §1. Il discorso «copia in Applicazioni» sotto riguarda solo chi installasse l'app dal `.dmg`.)
 

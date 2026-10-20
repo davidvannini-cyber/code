@@ -61,7 +61,7 @@ Diagnosi in ordine: spia → log server (`picco ultimo secondo` ≈ 0 = niente a
 Dispositivo scelto esplicitamente: "External Microphone (Built-in)" (il jack con lo splitter). Livello di ingresso macOS alzato finché la barra "prima del limiter" sta su verde/arancione (~40%, picco ≈ 0,3), senza rosso né clipping. Volume del telefono quello usato in chiamata. Filtri `getUserMedia` lasciati attivi; cattura con `AudioWorklet`. Con livello troppo basso (barra a monte < 15%) le frasi trascritte erano imprecise anche se i suggerimenti erano giusti. Da annotare: posizione esatta del cursore macOS e volume del telefono. Dettagli in `SUGGERIMENTIVENDITA/HANDOFF.md` §4.
 
 ## 8. Sincronizzazione e regole operative
-- Flusso: sandbox → GitHub (`origin main`) → Mac (icona «Sync» sulla scrivania = `Sync.command`, che fa `git pull --ff-only` di tutto il repo).
+- Flusso: Claude → GitHub (`origin main`) → Mac (icona «Sync» sulla scrivania = `Sync.command`, che fa `git pull --ff-only` di tutto il repo).
 - Ogni modifica a un sorgente **non ha effetto sull'app** finché non è copiata anche nel bundle (o si rigenera l'installer). Attenzione: `schema/esempio-libreria-script.json` nel bundle verrebbe sovrascritta.
 - Dopo ogni modifica dentro il bundle, sul Mac: Cmd+Q (il server non ricarica il proprio codice) → `codesign --force --deep --sign "<Apple Development>" "Suggerimenti Vendita.app"` → se serve `tccutil reset Microphone …` / `ripara_permessi.command` → se serve `lsregister -f`.
 - Dopo modifiche a `../LEADREWORKS/browser-extension/` ricaricare l'estensione in `chrome://extensions`.
