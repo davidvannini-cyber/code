@@ -41,7 +41,7 @@ ciascuno.
 
 ## Installazione come vera app Mac (consigliato)
 
-> **Nota per David:** tu usi un alias sulla scrivania che punta all'app dentro questa cartella, quindi per l'uso quotidiano **non ti servono** il `.dmg` né `Crea Installer.app`: dopo ogni `git pull` l'app è già aggiornata. Se l'alias sparisce, rifallo (clic destro sull'app → «Crea alias»). `Crea Installer.app` resta disponibile quando vuoi: risincronizza l'app con le cartelle sorgente (sovrascrive la libreria script) e crea il `.dmg` da distribuire o installare in Applicazioni.
+> **Nota per David:** tu usi un alias sulla scrivania che punta all'app dentro questa cartella, quindi per l'uso quotidiano **non ti servono** il `.dmg` né `Crea Installer.app`: dopo ogni «Sync» (icona sulla scrivania) l'app è già aggiornata. Se l'alias sparisce, rifallo (clic destro sull'app → «Crea alias»). `Crea Installer.app` resta disponibile quando vuoi: risincronizza l'app con le cartelle sorgente (sovrascrive la libreria script) e crea il `.dmg` da distribuire o installare in Applicazioni.
 
 Per ottenere l'esperienza classica — un file `.dmg` che, aperto, mostra
 l'icona dell'app da trascinare nella cartella Applicazioni — apri con

@@ -11,5 +11,6 @@ Promemoria minimi (dettagli nel file):
 - Se David scrive «aspetta il mio Procedi», **non modificare nulla** finché non scrive «Procedi».
 - La pagina web normale **non deve cambiare** quando si aggiungono funzioni per altri dispositivi (isolale: `/auto`, app separata).
 - Prima di pubblicare lancia le prove (`M3U-PLAYER-WEB/STATO-PROGETTO.md` §14); dichiara sempre cosa non hai potuto provare (Fire TV vera, auto, siti esterni).
+- Il «Sync» di David = icona sulla scrivania che lancia `Sync.command` (`git pull --ff-only` di tutto il repo): digli «Fai Sync», non comandi git a mano.
 - Pubblicare il sito = `git pull` + `npx wrangler deploy` **dal Mac dell'utente** (due cose diverse: spiegalo sempre).
 - Repository **pubblico**: mai segreti, email o ID di account nei file.

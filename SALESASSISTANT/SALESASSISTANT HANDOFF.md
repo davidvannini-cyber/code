@@ -26,7 +26,7 @@ Chrome (getUserMedia) → PCM16 mono 16 kHz → WebSocket 8765
 - `menu/`: finestra Cocoa (PyObjC + WebKit), server "lead in attesa" sulla porta 8767, schema URL `suggerimentivendita://`.
 - `overlay/index.html`: pannello chiamata (selettore dispositivo, spia livello, AGC + limiter, canovaccio, suggerimenti, Pausa / Termina).
 - `matching-engine/`, `audio-capture/` (solo test da terminale), `schema/`, `server/`.
-- `Crea Installer.app` / `crea_installer.command`: generano il `.dmg` e risincronizzano il bundle. **Non servono per l'uso quotidiano** (David apre l'app dalla cartella del repo tramite un alias sulla scrivania, quindi gli basta `git pull`), **ma restano utili**: copiano le cartelle sorgente dentro l'app del repo (sovrascrivendo la libreria script con `schema/esempio-libreria-script.json`) e creano il `.dmg` da distribuire o da installare in Applicazioni. Non creano alias. Dettagli in `SUGGERIMENTIVENDITA/HANDOFF.md` §1.
+- `Crea Installer.app` / `crea_installer.command`: generano il `.dmg` e risincronizzano il bundle. **Non servono per l'uso quotidiano** (David apre l'app dalla cartella del repo tramite un alias sulla scrivania, quindi gli basta il «Sync» (icona sulla scrivania → `Sync.command`, `git pull --ff-only` di tutto il repo)), **ma restano utili**: copiano le cartelle sorgente dentro l'app del repo (sovrascrivendo la libreria script con `schema/esempio-libreria-script.json`) e creano il `.dmg` da distribuire o da installare in Applicazioni. Non creano alias. Dettagli in `SUGGERIMENTIVENDITA/HANDOFF.md` §1.
 
 ## 4. Tre modalità di chiamata (menu)
 | Modalità | Azione | Canovaccio |
@@ -61,7 +61,7 @@ Diagnosi in ordine: spia → log server (`picco ultimo secondo` ≈ 0 = niente a
 Dispositivo scelto esplicitamente: "External Microphone (Built-in)" (il jack con lo splitter). Livello di ingresso macOS alzato finché la barra "prima del limiter" sta su verde/arancione (~40%, picco ≈ 0,3), senza rosso né clipping. Volume del telefono quello usato in chiamata. Filtri `getUserMedia` lasciati attivi; cattura con `AudioWorklet`. Con livello troppo basso (barra a monte < 15%) le frasi trascritte erano imprecise anche se i suggerimenti erano giusti. Da annotare: posizione esatta del cursore macOS e volume del telefono. Dettagli in `SUGGERIMENTIVENDITA/HANDOFF.md` §4.
 
 ## 8. Sincronizzazione e regole operative
-- Flusso: sandbox → GitHub (`origin main`) → Mac (`git pull`, poi SYNC SALESASSISTANT).
+- Flusso: sandbox → GitHub (`origin main`) → Mac (icona «Sync» sulla scrivania = `Sync.command`, che fa `git pull --ff-only` di tutto il repo).
 - Ogni modifica a un sorgente **non ha effetto sull'app** finché non è copiata anche nel bundle (o si rigenera l'installer). Attenzione: `schema/esempio-libreria-script.json` nel bundle verrebbe sovrascritta.
 - Dopo ogni modifica dentro il bundle, sul Mac: Cmd+Q (il server non ricarica il proprio codice) → `codesign --force --deep --sign "<Apple Development>" "Suggerimenti Vendita.app"` → se serve `tccutil reset Microphone …` / `ripara_permessi.command` → se serve `lsregister -f`.
 - Dopo modifiche a `../LEADREWORKS/browser-extension/` ricaricare l'estensione in `chrome://extensions`.
