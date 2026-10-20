@@ -23,6 +23,11 @@ Copre le sessioni del **21–29 settembre 2026**. Le parti che riguardano l'inte
 
 **Dove vive il progetto**: dal 2026-09-25 in `SALESASSISTANT/SUGGERIMENTIVENDITA/` del repo `davidvannini-cyber/code`. Sul Mac: `/Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/` (aggiornato con `git pull origin main`). Il vecchio percorso `…/SuggeritoreVendite/sales-ai-assistant v2/` non è più valido.
 
+> **QUALE APP USA DAVID (chiarito il 2026-10-20 — non rimettere in dubbio).** David **non** installa l'app in `Applicazioni` e **non** usa il `.dmg`. Sulla scrivania ha un **alias** che punta direttamente a
+> `/Users/davidvannini_1/Documents/progetti/code/SALESASSISTANT/SUGGERIMENTIVENDITA/Suggerimenti Vendita.app`.
+> Quindi l'unica copia in uso è quella dentro il repository: **basta `git pull origin main` dal Mac, senza `Crea Installer.app` e senza `.dmg`**. Non dire mai a David di rigenerare l'installer o di aggiornare una copia in Applicazioni. (`Crea Installer.app` resta nel progetto solo per un'eventuale distribuzione ad altri.)
+> Dopo il `git pull`, se l'app era aperta va chiusa del tutto (Cmd+Q): il server resta vivo tra una chiamata e l'altra e non ricarica il codice.
+
 ---
 
 ## 2. Cosa funziona
@@ -126,6 +131,8 @@ Taratura fatta sul MacBook Air 2015 con lo splitter TRRS e il telefono:
 ## 5. File da sincronizzare sul Mac
 
 **Flusso Sandbox → GitHub → Mac**: Claude lavora in `/root/progetti/code-repo/SALESASSISTANT/`; a fine lavoro uno Stop hook (`/root/.claude/hooks/sync-code-repo.sh`) fa commit e push su `origin main`, poi l'utente lancia SYNC SALESASSISTANT sul Mac (solo `git pull`). Dettagli e messaggi di errore in `../LEADREWORKS/docs/HANDOFF.md`, sezione «Flusso di sincronizzazione».
+
+(Per David vale solo la copia nel repository, aperta dall'alias sulla scrivania: vedi §1. Il discorso «copia in Applicazioni» sotto riguarda solo chi installasse l'app dal `.dmg`.)
 
 Il bundle `Suggerimenti Vendita.app` contiene una **copia completa** del progetto in `Contents/Resources/progetto/`. L'app usa **solo** quella copia; `avvia_sistema.command` usa le cartelle sorgenti. Una modifica a un sorgente non ha effetto sull'app finché non viene copiata nel bundle, o finché non si rigenera l'installer (`Crea Installer.app` risincronizza da sé).
 
@@ -241,3 +248,8 @@ SALESASSISTANT/SUGGERIMENTIVENDITA/
     ├── esempio-libreria-script.json # libreria script reale (17 voci)
     └── canovaccio-rinforzo-facile-salire.json
 ```
+
+---
+
+## Cronologia correzioni
+- **2026-10-20** — Errore «Il sistema impiega troppo tempo ad avviarsi» premendo *Chiamata Gestione Lead*: in `Suggerimenti Vendita.app/Contents/MacOS/avvia` (`assicura_server_pronto`) l'attesa era 30 s (150 tentativi × 0,2 s), ma il server apre la porta 8766 solo dopo aver caricato libreria e modello di embedding (15+ s, di più al primo avvio). Portata a 2 minuti (600 tentativi). Non ancora verificato sul Mac; se persiste serve `logs/server.log`.
