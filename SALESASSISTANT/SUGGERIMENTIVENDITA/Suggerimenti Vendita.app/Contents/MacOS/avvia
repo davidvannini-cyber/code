@@ -839,8 +839,8 @@ assicura_server_pronto() {
       return 1
     fi
     tentativi=$((tentativi + 1))
-    if [ "$tentativi" -ge 150 ]; then
-      msg_errore "Il sistema impiega troppo tempo ad avviarsi (oltre 30 secondi). Dettagli nel file logs/server.log."
+    if [ "$tentativi" -ge 600 ]; then
+      msg_errore "Il sistema impiega troppo tempo ad avviarsi (oltre 2 minuti). Dettagli nel file logs/server.log."
       return 1
     fi
     sleep 0.2
@@ -904,7 +904,7 @@ avvia_chiamata_comune() {
   local tentativi=0
   until [ -f "$marker" ]; do
     tentativi=$((tentativi + 1))
-    if [ "$tentativi" -ge 150 ]; then
+    if [ "$tentativi" -ge 600 ]; then
       # La pagina non si è mai collegata entro 30s (es. chiusa subito,
       # permesso mai concesso): non teniamo il menu bloccato per sempre.
       return
