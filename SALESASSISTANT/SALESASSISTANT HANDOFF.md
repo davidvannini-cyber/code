@@ -26,7 +26,7 @@ Chrome (getUserMedia) → PCM16 mono 16 kHz → WebSocket 8765
 - `menu/`: finestra Cocoa (PyObjC + WebKit), server "lead in attesa" sulla porta 8767, schema URL `suggerimentivendita://`.
 - `overlay/index.html`: pannello chiamata (selettore dispositivo, spia livello, AGC + limiter, canovaccio, suggerimenti, Pausa / Termina).
 - `matching-engine/`, `audio-capture/` (solo test da terminale), `schema/`, `server/`.
-- `Crea Installer.app` / `crea_installer.command`: generano il `.dmg` e risincronizzano il bundle. **David non li usa**: apre l'app dalla cartella del repo tramite un alias sulla scrivania, quindi gli basta `git pull` (dettagli in `SUGGERIMENTIVENDITA/HANDOFF.md` §1).
+- `Crea Installer.app` / `crea_installer.command`: generano il `.dmg` e risincronizzano il bundle. **Non servono per l'uso quotidiano** (David apre l'app dalla cartella del repo tramite un alias sulla scrivania, quindi gli basta `git pull`), **ma restano utili**: copiano le cartelle sorgente dentro l'app del repo (sovrascrivendo la libreria script con `schema/esempio-libreria-script.json`) e creano il `.dmg` da distribuire o da installare in Applicazioni. Non creano alias. Dettagli in `SUGGERIMENTIVENDITA/HANDOFF.md` §1.
 
 ## 4. Tre modalità di chiamata (menu)
 | Modalità | Azione | Canovaccio |
