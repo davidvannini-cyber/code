@@ -5,17 +5,86 @@
 <title>Note chiamata</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: #fffef5; display: flex; flex-direction: column; height: 100vh; }
-  .hd { display: flex; align-items: center; justify-content: space-between; background: #ca8a04; color: #fff; font-weight: 700; font-size: 13px; padding: 6px 10px; }
-  .hd button { border: 0; border-radius: 4px; background: #fff; color: #854d0e; font-weight: 700; font-size: 12px; padding: 4px 8px; cursor: pointer; }
-  textarea { flex: 1; width: 100%; border: 0; background: transparent; font: inherit; font-size: 15px; padding: 10px; resize: none; outline: 0; }
-  .nb { font-size: 10px; color: #854d0e; padding: 4px 10px 6px; }
+  html, body { height: 100%; margin: 0; }
+  /* Aspetto "post-it": foglietto giallo, angolo piegato, scrittura a mano */
+  body {
+    font-family: "Bradley Hand", "Marker Felt", "Segoe Print", "Comic Sans MS", cursive;
+    background: #e9e4cf;
+    padding: 10px;
+    display: flex;
+  }
+  .postit {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #fff59a 0%, #ffee74 100%);
+    box-shadow: 0 6px 14px rgba(0,0,0,.28), 0 1px 2px rgba(0,0,0,.2);
+    border-radius: 2px 2px 2px 26px / 2px 2px 2px 26px;
+    overflow: hidden;
+  }
+  /* striscia adesiva in alto con il titolo */
+  .hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px 6px;
+    background: rgba(0,0,0,.06);
+    border-bottom: 1px dashed rgba(120,90,0,.35);
+    font-weight: 700;
+    font-size: 17px;
+    color: #6b4e00;
+  }
+  .hd button {
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    border: 0;
+    border-radius: 4px;
+    background: #6b4e00;
+    color: #fff8c4;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 5px 9px;
+    cursor: pointer;
+  }
+  .hd button:hover { background: #4d3800; }
+  textarea {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    background: repeating-linear-gradient(transparent 0, transparent 27px, rgba(120,90,0,.22) 27px, rgba(120,90,0,.22) 28px);
+    font: inherit;
+    font-size: 21px;
+    line-height: 28px;
+    color: #3b2f00;
+    padding: 4px 14px;
+    resize: none;
+    outline: 0;
+  }
+  textarea::placeholder { color: rgba(107,78,0,.5); }
+  .nb {
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    font-size: 10px;
+    color: #7a5c00;
+    padding: 4px 14px 8px 40px;
+  }
+  /* angolo piegato in basso a sinistra */
+  .postit:after {
+    content: "";
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 26px; height: 26px;
+    background: linear-gradient(45deg, #e9e4cf 50%, #e0c94a 50%);
+    box-shadow: 2px -2px 4px rgba(0,0,0,.18);
+    border-top-right-radius: 4px;
+  }
 </style>
 </head>
 <body>
-  <div class="hd"><span>📝 Note chiamata</span><button id="chiudi">Chiudi e salva</button></div>
-  <textarea id="t" placeholder="Appunti durante la telefonata…" autofocus></textarea>
-  <div class="nb">Resta aperta mentre telefoni. Alla chiusura il testo va nelle Note YM del lead.</div>
+  <div class="postit">
+    <div class="hd"><span>📌 Note chiamata</span><button id="chiudi">Chiudi e salva</button></div>
+    <textarea id="t" placeholder="Appunti durante la telefonata…" autofocus></textarea>
+    <div class="nb">Resta aperta mentre telefoni. Alla chiusura il testo va nelle Note YM del lead.</div>
+  </div>
 <script>
   // La pagina della chiamata (index.html) apre questa finestra con #<sessione>.
   const canale = new BroadcastChannel("sv-note-" + location.hash.slice(1));

@@ -1261,7 +1261,15 @@
     };
     document.getElementById("pulsante-note").addEventListener("click", () => {
       if (finestraNote && !finestraNote.closed) { finestraNote.focus(); return; }
-      finestraNote = window.open("note.html#" + sessione, "svNote", "popup=yes,width=340,height=320");
+      // A destra del pannello, all'altezza della "Guida chiamata", 442x416 (340x320 +30%).
+      const L = 442, A = 416;
+      const guida = document.getElementById("riquadro-canovaccio");
+      const alto = window.screenY + (window.outerHeight - window.innerHeight) + (guida.style.display !== "none" ? guida.getBoundingClientRect().top : 0);
+      let sinistra = window.screenX + window.outerWidth + 8;
+      const schermoDx = (window.screen.availLeft || 0) + window.screen.availWidth;
+      if (sinistra + L > schermoDx) sinistra = Math.max(0, schermoDx - L); // poco spazio a destra: resta dentro lo schermo
+      finestraNote = window.open("note.html#" + sessione, "svNote",
+        "popup=yes,width=" + L + ",height=" + A + ",left=" + Math.round(sinistra) + ",top=" + Math.round(alto));
       if (!finestraNote) alert("Il browser ha bloccato la finestra delle note: consenti i popup per questa pagina.");
     });
 
