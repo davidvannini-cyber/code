@@ -139,6 +139,10 @@ def logga_frase_cliente(testo: str, script_scelto_id, fase: str):
         f.write(json.dumps(voce, ensure_ascii=False) + "\n")
 
 
+_CODA_CHIAMATA = {}  # sessione -> ultimo stato inviato dal pannello (vedi sotto)
+_LOCK_CODA_CHIAMATA = threading.Lock()
+
+
 class _GestoreOverlaySenzaCache(http.server.SimpleHTTPRequestHandler):
     """
     Come SimpleHTTPRequestHandler, ma dice esplicitamente al browser di non
@@ -155,6 +159,69 @@ class _GestoreOverlaySenzaCache(http.server.SimpleHTTPRequestHandler):
         self.send_header("Pragma", "no-cache")
         self.send_header("Expires", "0")
         super().end_headers()
+
+    # ---- Ponte pannello chiamata -> Lead Rework Console -------------------
+    # Il pannello manda qui misure della scala e note della telefonata
+    # (POST /api/chiamata); la Console (pagina file://, altra origine) le
+    # legge ogni pochi secondi (GET /api/chiamata, che svuota la coda).
+    # Niente estensione di mezzo. Per sessione di chiamata teniamo solo
+    # l'ultimo stato (è un'istantanea completa), con i flag "fine" e
+    # "notaChiusa" che una volta veri restano veri.
+    def _cors(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Private-Network", "true")
+
+    def _e_api(self):
+        return self.path.split("?", 1)[0] == "/api/chiamata"
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors()
+        self.end_headers()
+
+    def do_POST(self):
+        if not self._e_api():
+            self.send_error(404)
+            return
+        try:
+            n = int(self.headers.get("Content-Length", 0))
+            ev = json.loads(self.rfile.read(n).decode("utf-8"))
+            sessione = str(ev["sessione"])[:64]
+        except (ValueError, KeyError, TypeError):
+            self.send_response(400)
+            self._cors()
+            self.end_headers()
+            return
+        with _LOCK_CODA_CHIAMATA:
+            prec = _CODA_CHIAMATA.get(sessione)
+            if prec:
+                for flag in ("fine", "notaChiusa"):
+                    if prec.get(flag):
+                        ev[flag] = True
+            _CODA_CHIAMATA[sessione] = ev
+            while len(_CODA_CHIAMATA) > 50:
+                _CODA_CHIAMATA.pop(next(iter(_CODA_CHIAMATA)))
+        self.send_response(200)
+        self._cors()
+        self.end_headers()
+        self.wfile.write(b"ok")
+
+    def do_GET(self):
+        if not self._e_api():
+            super().do_GET()
+            return
+        with _LOCK_CODA_CHIAMATA:
+            eventi = list(_CODA_CHIAMATA.values())
+            _CODA_CHIAMATA.clear()
+        corpo = json.dumps(eventi, ensure_ascii=False).encode("utf-8")
+        self.send_response(200)
+        self._cors()
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(corpo)))
+        self.end_headers()
+        self.wfile.write(corpo)
 
 
 def avvia_server_http_overlay():

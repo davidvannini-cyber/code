@@ -2160,8 +2160,20 @@ function exportHistoryItemToSuggerimentiVendita(id){
    ========================================================= */
 
 async function saveLeadToHistory(){
-  await persistDraftToHistory();
-  alert("Lead salvato nello storico.");
+  const id = await persistDraftToHistory();
+  let extra = "";
+  if (state.pendingChiamata && state.pendingChiamata.blocco){
+    // Misure/note di una telefonata fatta senza lead in storico: finiscono nel campo "Note YM:".
+    const r = state.leadsHistory[id];
+    r.note_ym = state.pendingChiamata.blocco;
+    await dbSet("leads", state.leadsHistory);
+    const sess = svSessioni[state.pendingChiamata.sessione];
+    if (sess){ sess.id = id; sess.scritto = state.pendingChiamata.blocco; }
+    svTogliBanner();
+    state.pendingChiamata = null;
+    extra = "\nLe misure e le note della chiamata sono state aggiunte in «Note YM:».";
+  }
+  alert("Lead salvato nello storico." + extra);
   switchTab("storico");
 }
 /* Salva la bozza corrente nello storico (senza avvisi né cambio scheda): usata anche dall'import da Lead Collector. */
@@ -2690,6 +2702,119 @@ async function deleteHistoryItem(id){
   await dbSet("leads", state.leadsHistory);
   render();
 }
+
+/* =========================================================
+   MISURE E NOTE DALLA CHIAMATA (pannello Suggerimenti Vendita)
+   Il pannello (http://localhost:8766) manda un'istantanea a ogni modifica;
+   qui la leggiamo ogni 2 secondi (GET svuota la coda sul server).
+   - Lead già in storico (trovato dal numero di telefono): le righe vanno nel
+     campo "Note YM:" di quel lead, senza cancellare il testo già presente.
+   - Nessun lead in storico: a fine chiamata (o alla chiusura delle note) si
+     salva un'eventuale scheda "Lead" in compilazione, si apre una scheda
+     vuota e le righe vengono aggiunte in "Note YM:" quando salvi il lead.
+   ========================================================= */
+const SV_API = "http://localhost:8766/api/chiamata";
+const svSessioni = {};          // sessione -> {id, scritto, navigato, suDraft, bloccata}
+state.pendingChiamata = null;   // {sessione, blocco}
+
+function svTelNorm(t){
+  let d = String(t||"").replace(/\D/g,"");
+  if (d.startsWith("0039")) d = d.slice(4);
+  else if (d.startsWith("39") && d.length > 10) d = d.slice(2);
+  return d;
+}
+function svBlocco(ev){
+  const righe = (ev.misure||[]).map(m => m[0] + ": " + m[1]);
+  if (ev.nota && ev.nota.trim()) righe.push("Note chiamata: " + ev.nota.trim());
+  return righe.join("\n");
+}
+function svTogliBanner(){ const b = document.getElementById("sv-banner"); if (b) b.remove(); }
+function svBanner(msg, scarta){
+  svTogliBanner();
+  const b = document.createElement("div");
+  b.id = "sv-banner";
+  b.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);top:8px;z-index:9999;max-width:90%;background:#fef3c7;border:2px solid #b45309;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;color:#1a1f2e;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;";
+  const t = document.createElement("span"); t.textContent = msg; b.appendChild(t);
+  const x = document.createElement("button");
+  x.textContent = scarta ? "Scarta le note" : "OK";
+  x.style.cssText = "border:0;border-radius:6px;padding:4px 8px;font-weight:700;cursor:pointer;background:#b45309;color:#fff;";
+  x.onclick = () => {
+    if (scarta && state.pendingChiamata){ const s = svSessioni[state.pendingChiamata.sessione]; if (s) s.bloccata = true; state.pendingChiamata = null; }
+    b.remove();
+  };
+  b.appendChild(x);
+  document.body.appendChild(b);
+}
+function svScriviNoteYM(sess, blocco){
+  const r = state.leadsHistory[sess.id]; if (!r) return;
+  let t = r.note_ym || "";
+  if (sess.scritto && t.includes(sess.scritto)) t = t.replace(sess.scritto, blocco);
+  else if (blocco) t = (t ? t.replace(/\s+$/,"") + "\n" : "") + blocco;
+  r.note_ym = t;
+  sess.scritto = blocco;
+  scheduleHistorySave();
+  if (state.historyOpen === sess.id){
+    const ta = document.querySelector('textarea[oninput^="saveHistoryNoteYM(\'' + sess.id + '\'"]');
+    if (ta){ ta.value = t; hmGrow(ta); }
+  }
+}
+async function svVaiANuovo(){
+  const d = state.draft;
+  if (d && ((d.nome||"").trim() || (d.telefono1||"").trim())){
+    await persistDraftToHistory();
+    var salvato = (d.nome||"").trim() || (d.telefono1||"").trim();
+  }
+  state.draft = emptyDraft();
+  state.generatedOutput = null;
+  state.generatedMeta = null;
+  switchTab("nuovo");
+  svBanner((salvato ? "Lead in sospeso salvato in storico: " + salvato + ". " : "") +
+    "Note della chiamata pronte: inserisci i dati del nuovo lead e salvalo in storico, finiranno in «Note YM:».", true);
+}
+async function svApplica(ev){
+  const blocco = svBlocco(ev);
+  const sess = svSessioni[ev.sessione] = svSessioni[ev.sessione] || { id:null, scritto:"", navigato:false, suDraft:false, bloccata:false };
+  if (!blocco && !sess.scritto) return;
+  const tel = svTelNorm(ev.telefono);
+  if (tel && !sess.id && !sess.pendente && !sess.bloccata){
+    const trovati = Object.values(state.leadsHistory).filter(r => {
+      const d = r.dati_lead_input || {};
+      return svTelNorm(d.telefono1) === tel || svTelNorm(d.telefono2) === tel;
+    });
+    if (trovati.length === 1) sess.id = trovati[0].id;
+    else if (trovati.length > 1){
+      sess.bloccata = true;
+      svBanner("Più lead in storico hanno il numero " + ev.telefono + ": non ho scritto le note della chiamata. Aprile a mano in «Note YM:».");
+      return;
+    }
+    else if (svTelNorm(state.draft.telefono1) === tel || svTelNorm(state.draft.telefono2) === tel) sess.suDraft = true;
+  }
+  if (sess.bloccata) return;
+  if (sess.id){ svScriviNoteYM(sess, blocco); return; }
+  // Nessun lead in storico: le righe restano in attesa fino al salvataggio.
+  sess.pendente = true;
+  state.pendingChiamata = { sessione: ev.sessione, blocco };
+  if (sess.suDraft){
+    if (!sess.avvisato){ sess.avvisato = true; svBanner("Note della chiamata pronte: quando salvi questo lead in storico finiranno in «Note YM:».", true); }
+    return;
+  }
+  if ((ev.fine || ev.notaChiusa) && !sess.navigato && blocco){
+    sess.navigato = true;
+    await svVaiANuovo();
+  }
+}
+let svInPolling = false;
+async function svPoll(){
+  if (svInPolling) return;
+  svInPolling = true;
+  try {
+    const r = await fetch(SV_API, { cache: "no-store" });
+    const eventi = await r.json();
+    for (const ev of eventi) await svApplica(ev);
+  } catch(e) { /* pannello/server spento: niente da fare */ }
+  svInPolling = false;
+}
+setTimeout(() => setInterval(svPoll, 2000), 3000);
 
 /* =========================================================
    BOOT

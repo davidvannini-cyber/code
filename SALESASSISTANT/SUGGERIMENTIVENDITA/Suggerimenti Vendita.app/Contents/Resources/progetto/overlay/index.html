@@ -374,15 +374,61 @@
     color: #9ca3af;
     flex-shrink: 0;
   }
+
+  /* ===== Layout compatto (approvato 2026-10-21) ===== */
+  .riquadro-logo { display: none; }
+  body { padding: 6px 8px; gap: 5px; }
+  .navbar-overlay { padding: 3px 8px; margin-bottom: 0; border-radius: 3px; }
+  #selettore-microfono { padding: 1px 4px; font-size: 10px; max-width: 150px; }
+  .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: center; }
+  .controls-section { margin: 0; gap: 4px; }
+  .btn-large { padding: 0 4px; height: 26px; font-size: 10px; gap: 3px; white-space: nowrap; border-radius: 3px; }
+  .btn-large svg { width: 12px; height: 12px; }
+  .riquadro-livello { margin: 0; padding: 0; border: 0; box-shadow: none; background: transparent; font-size: 8.5px; gap: 1px; line-height: 1.15; }
+  .riquadro-livello .barra-livello-track { margin-bottom: 2px; }
+  .riquadro { padding: 3px 8px; box-shadow: none; border: 1px solid #d0d0d8; border-radius: 3px; }
+  #lead-info { justify-content: space-between; text-align: left; gap: 6px; font-size: 12px; flex-wrap: nowrap; }
+  #lead-info .separatore { display: none; }
+  #lead-info #pulsante-telefono, #lead-info #pulsante-note { height: 22px; padding: 0 7px; font-size: 10px; flex: none; }
+  #pulsante-note { background: #ca8a04; color: #fff; border: 0; }
+  #pulsante-note:hover { background: #a16207; }
+  #riquadro-canovaccio { padding: 6px 8px; box-shadow: none; }
+  .guida-scheda { padding: 2px 9px; margin-bottom: 2px; }
+  .guida-scheda.f { opacity: .4; }
+  .guida-scheda.f:before { content: "✓ "; color: #0f766e; font-weight: 800; }
+  .guida-scheda.att { font-size: 15px; padding: 7px 10px; margin: 3px 0; }
+  #guida-nav { gap: 5px; margin-top: 4px; }
+  #guida-nav button { flex: 1 1 0 !important; padding: 5px; font-size: 16px; }
+  #guida-indietro { background: #9ca3af !important; }
+  #guida-scala { margin-top: 6px; padding: 5px 7px; }
+  #guida-scala .tit { margin-bottom: 4px; }
+  #guida-scala .voci { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  #guida-scala .voce { border-radius: 8px; padding: 3px 2px; font-size: 10.5px; text-align: center; line-height: 1.15; text-decoration: none; }
+  #guida-scala .voce span { display: block; font-size: 15px; }
+  #guida-scala .voce small { display: block; font-size: 9.5px; font-weight: 700; color: #14532d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #guida-scala .voce.ok { text-decoration: none; }
+  #guida-scala .voce.ok small { color: #fff; }
+  .riquadro-sugg { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .riquadro-sugg #fase-badge { margin-bottom: 0; }
+  #suggerimento-principale { font-size: 11.5px; }
+  #suggerimento-alternativo { width: 100%; margin-top: 2px; font-size: 12px; min-height: 0; }
+  .etichetta-trascrizioni { font-size: 9px; margin-bottom: 2px; }
+  #trascrizioni { font-size: 11.5px; line-height: 1.4; }
+  #trascrizioni .riga { padding: 2px 0; }
+  .footer-copyright { font-size: 8px; padding: 0; }
+  /* popup misure (dentro la pagina) */
+  #vela-misura { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: none; align-items: center; justify-content: center; z-index: 50; }
+  #vela-misura .pop { background: #fff; border-radius: 10px; padding: 12px; width: min(300px, 92vw); box-shadow: 0 6px 24px rgba(0,0,0,.35); }
+  #vela-misura h3 { margin: 0 0 8px; font-size: 14px; }
+  #vela-misura input { width: 100%; font: inherit; font-size: 16px; padding: 7px; border: 2px solid #0f766e; border-radius: 8px; }
+  #vela-misura .az { display: flex; gap: 6px; margin-top: 8px; }
+  #vela-misura .az button { flex: 1; height: 32px; border: 0; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; color: #fff; background: #0f766e; }
+  #vela-misura .az button.ann { background: #9ca3af; }
 </style>
 </head>
 <body>
 
   <div id="stato-connessione" class="disconnesso">disconnesso</div>
-
-  <div class="riquadro-logo">
-    <img src="logo-yesmobility.png" alt="YesMobility" onerror="this.parentElement.remove()">
-  </div>
 
   <div class="navbar-overlay">
     <div class="navbar-brand">SUGGERIMENTI LIVE</div>
@@ -396,6 +442,7 @@
     </div>
   </div>
 
+  <div class="meta">
   <div class="controls-section">
     <button id="pulsante-microfono" class="btn-large" title="Avvia microfono">
       <svg viewBox="0 0 24 24" fill="currentColor">
@@ -429,11 +476,14 @@
     <div class="avviso-audio" id="avviso-ingresso"></div>
   </div>
 
+  </div>
+
   <div class="riquadro" id="lead-info">
-    <span>Nome: <b id="lead-nome">—</b></span>
+    <span title="Nome">👤 <b id="lead-nome">—</b></span>
     <span class="separatore">·</span>
-    <span>Numero di telefono: <b id="lead-telefono">—</b></span>
+    <span title="Numero di telefono">📞 <b id="lead-telefono">—</b></span>
     <button id="pulsante-telefono" class="btn-large" title="Invia nome, numero ed email al telefono Android">Invia a telefono</button>
+    <button id="pulsante-note" class="btn-large" title="Apri le note della telefonata">📝 Note</button>
     <span id="esito-telefono" style="font-size:11px;"></span>
   </div>
 
@@ -441,11 +491,11 @@
     <div id="guida-testa"><div class="etichetta-canovaccio">Guida chiamata</div><div id="guida-cont"></div></div>
     <div id="guida-barra"><div></div></div>
     <div id="canovaccio-testo"></div>
-    <div id="guida-nav"><button id="guida-indietro" title="Passo precedente">◀</button><button id="guida-avanti">AVANTI ▶</button></div>
-    <div id="guida-scala"><div class="tit">📋 Chiedi i dettagli della scala (tocca per spuntare)</div><div class="voci"></div></div>
+    <div id="guida-nav"><button id="guida-indietro" title="Passo precedente">◀</button><button id="guida-avanti" title="Passo successivo">▶</button></div>
+    <div id="guida-scala"><div class="tit">📋 Dettagli scala da chiedere (tocca per inserire)</div><div class="voci"></div></div>
   </div>
 
-  <div class="riquadro">
+  <div class="riquadro riquadro-sugg">
     <div id="fase-badge">in attesa</div>
     <div id="suggerimento-principale">In attesa del primo suggerimento…</div>
     <div id="suggerimento-alternativo" style="display:none;"></div>
@@ -455,6 +505,12 @@
     <div class="etichetta-trascrizioni">FRASI CLIENTE</div>
     <div id="trascrizioni"></div>
   </div>
+
+  <div id="vela-misura"><div class="pop">
+    <h3 id="misura-titolo"></h3>
+    <input id="misura-valore" autocomplete="off" placeholder="es. 5 metri">
+    <div class="az"><button class="ann" id="misura-annulla">Annulla</button><button id="misura-ok">Conferma</button></div>
+  </div></div>
 
   <div class="footer-copyright">© Designed and krafted by Momandis David Vannini</div>
 
@@ -916,6 +972,7 @@
   }
 
   function terminaChiamata() {
+    if (window.svFineChiamata) window.svFineChiamata();
     elBottoneTermina.disabled = true;
     elBottonePausa.disabled = true;
     // Chiude questa chiamata (il server resta acceso, pronto per la
@@ -1042,10 +1099,14 @@
   // Facoltativi: **grassetto**, e a fine passo [R] respiro, [P] pausa,
   // [S] stop-ascolta. Senza segni: finisce con "?" -> STOP, altrimenti respiro.
   (function () {
-    const DETTAGLI_SCALA = ["📏 Lunghezza", "🏠 Interno / esterno", "↔️ Larghezza minima",
-      "📐 N° rampe", "↪️ N° curve", "⬇️ Tipo di partenza", "⬆️ Tipo di arrivo"];
+    // [icona, nome nel popup / nelle Note, nome corto sul tasto]
+    const DETTAGLI_SCALA = [["📏", "Lunghezza", "Lunghezza"], ["🏠", "Interno / esterno", "Interno/Esterno"],
+      ["↔️", "Larghezza minima", "Larghezza min."], ["📐", "N° rampe", "N° rampe"], ["↪️", "N° curve", "N° curve"],
+      ["⬇️", "Tipo di partenza", "Partenza"], ["⬆️", "Tipo di arrivo", "Arrivo"]];
+    const valoriScala = {}; // indice -> testo inserito
+    window.svMisure = () => DETTAGLI_SCALA.map((d, k) => valoriScala[k] ? [d[1], valoriScala[k]] : null).filter(Boolean);
     const ETICHETTE = { R: "respiro · 1 s", P: "pausa · 2 s", S: "STOP · ascolta" };
-    let passi = [], attivo = 0, testoCorrente = null, spuntati = new Set();
+    let passi = [], attivo = 0, testoCorrente = null;
     const elLista = document.getElementById("canovaccio-testo");
 
     function spezza(testo) {
@@ -1088,9 +1149,8 @@
     function disegna() {
       elLista.textContent = "";
       passi.forEach((p, k) => {
-        if (k < attivo || k > attivo + 2) return; // fatti nascosti, mostro attivo + 2 prossimi
         const d = document.createElement("div");
-        d.className = "guida-scheda" + (k === attivo ? " att" : "");
+        d.className = "guida-scheda" + (k === attivo ? " att" : k < attivo ? " f" : "");
         conGrassetto(d, p.t);
         if (k === attivo) {
           const b = document.createElement("div");
@@ -1103,33 +1163,53 @@
       });
       document.getElementById("guida-cont").textContent = (attivo + 1) + "/" + passi.length;
       document.querySelector("#guida-barra div").style.width = ((attivo + 1) / passi.length * 100) + "%";
-      document.getElementById("guida-avanti").textContent = attivo >= passi.length - 1 ? "FINE ✔" : "AVANTI ▶";
+      document.getElementById("guida-avanti").textContent = attivo >= passi.length - 1 ? "✔" : "▶";
     }
 
     function disegnaScala() {
       const c = document.querySelector("#guida-scala .voci");
       c.textContent = "";
       DETTAGLI_SCALA.forEach((v, k) => {
-        const e = document.createElement("span");
-        e.className = "voce" + (spuntati.has(k) ? " ok" : "");
-        e.textContent = v;
-        e.onclick = () => { spuntati.has(k) ? spuntati.delete(k) : spuntati.add(k); disegnaScala(); };
+        const e = document.createElement("div");
+        e.className = "voce" + (valoriScala[k] ? " ok" : "");
+        const ic = document.createElement("span"); ic.textContent = v[0];
+        e.appendChild(ic); e.appendChild(document.createTextNode(v[2]));
+        if (valoriScala[k]) { const sm = document.createElement("small"); sm.textContent = valoriScala[k]; e.appendChild(sm); }
+        e.onclick = () => apriMisura(k);
         c.appendChild(e);
       });
     }
 
+    let misuraCorrente = null;
+    const elVela = document.getElementById("vela-misura"), elVal = document.getElementById("misura-valore");
+    function apriMisura(k) {
+      misuraCorrente = k;
+      document.getElementById("misura-titolo").textContent = DETTAGLI_SCALA[k][0] + " " + DETTAGLI_SCALA[k][1];
+      elVal.value = valoriScala[k] || "";
+      elVela.style.display = "flex";
+      elVal.focus();
+    }
+    function chiudiMisura() { elVela.style.display = "none"; misuraCorrente = null; }
+    document.getElementById("misura-annulla").onclick = chiudiMisura;
+    document.getElementById("misura-ok").onclick = () => {
+      const v = elVal.value.trim();
+      if (v) valoriScala[misuraCorrente] = v; else delete valoriScala[misuraCorrente];
+      chiudiMisura(); disegnaScala();
+      if (window.svInviaStato) window.svInviaStato();
+    };
+    elVal.addEventListener("keydown", (e) => { if (e.key === "Enter") document.getElementById("misura-ok").click(); if (e.key === "Escape") chiudiMisura(); });
+    disegnaScala();
+
     window.mostraGuida = function (testo) {
       if (!testo) return;
       if (testo !== testoCorrente) { // stesso testo ripetuto: non perdere il punto raggiunto
-        testoCorrente = testo; passi = spezza(testo); attivo = 0; spuntati = new Set();
-        disegnaScala();
+        testoCorrente = testo; passi = spezza(testo); attivo = 0;
       }
       if (!passi.length) return;
       disegna();
       document.getElementById("riquadro-canovaccio").style.display = "block";
     };
     // Testo mandato dall'estensione (script del lead), vedi suggerimenti-vendita-content.js
-    disegnaScala();
     // Rete di sicurezza: se qualcuno (es. una vecchia versione dell'estensione)
     // scrive paragrafi <p> a mano nel riquadro, li ricostruiamo come guida.
     new MutationObserver((mutazioni) => {
@@ -1143,6 +1223,51 @@
     });
     document.getElementById("guida-avanti").onclick = () => { if (attivo < passi.length - 1) { attivo++; disegna(); } };
     document.getElementById("guida-indietro").onclick = () => { if (attivo > 0) { attivo--; disegna(); } };
+  })();
+
+  // ---- Misure e note -> Lead Rework Console ---------------------------------
+  // Ogni modifica manda al server (stessa origine, /api/chiamata) un'istantanea
+  // completa; la Console la legge e scrive in "Note YM:" del lead (o apre la
+  // scheda "Nuovo" se la chiamata è senza lead). Vedi server_suggerimenti.py.
+  (function () {
+    const sessione = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    let nota = "", notaChiusaFlag = false, fineInviata = false, timer = null, finestraNote = null;
+    const canale = new BroadcastChannel("sv-note-" + sessione);
+
+    const telefono = () => { const t = (elLeadTelefono.textContent || "").trim(); return /\d/.test(t) ? t : ""; };
+    const haDati = () => window.svMisure().length > 0 || nota.trim() !== "";
+    function invia(extra, beacon) {
+      const corpo = JSON.stringify(Object.assign({ tipo: "stato", sessione, telefono: telefono(), misure: window.svMisure(), nota }, extra || {}));
+      if (beacon && navigator.sendBeacon) { navigator.sendBeacon("/api/chiamata", new Blob([corpo], { type: "text/plain" })); return; }
+      fetch("/api/chiamata", { method: "POST", headers: { "Content-Type": "text/plain" }, body: corpo }).catch(() => {});
+    }
+    window.svInviaStato = (extra) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { if (haDati() || (extra && extra.fine)) invia(extra); }, 300);
+    };
+    window.svFineChiamata = () => {
+      if (fineInviata) return;
+      fineInviata = true;
+      clearTimeout(timer);
+      if (haDati()) invia({ fine: true, notaChiusa: notaChiusaFlag }, true);
+    };
+
+    // Popup "Note": finestra separata che resta aperta durante la telefonata.
+    canale.onmessage = (ev) => {
+      const m = ev.data || {};
+      if (m.tipo === "pronto") canale.postMessage({ tipo: "testo", testo: nota });
+      if (m.tipo === "testo") { nota = m.testo; window.svInviaStato(); }
+      if (m.tipo === "chiuso") { nota = m.testo; notaChiusaFlag = true; clearTimeout(timer); if (haDati()) invia({ notaChiusa: true }); finestraNote = null; }
+    };
+    document.getElementById("pulsante-note").addEventListener("click", () => {
+      if (finestraNote && !finestraNote.closed) { finestraNote.focus(); return; }
+      finestraNote = window.open("note.html#" + sessione, "svNote", "popup=yes,width=340,height=320");
+      if (!finestraNote) alert("Il browser ha bloccato la finestra delle note: consenti i popup per questa pagina.");
+    });
+
+    // Chiusura con la X: equivale a "Termina". Avviso se ci sono dati.
+    window.addEventListener("beforeunload", (e) => { if (!fineInviata && haDati()) { e.preventDefault(); e.returnValue = ""; } });
+    window.addEventListener("pagehide", () => { if (finestraNote && !finestraNote.closed) finestraNote.close(); window.svFineChiamata(); });
   })();
 </script>
 

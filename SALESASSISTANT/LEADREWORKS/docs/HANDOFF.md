@@ -226,3 +226,10 @@ SALESASSISTANT/LEADREWORKS/
 
 ### File collegati fuori da questa cartella (progetto Suggerimenti Vendita)
 `SALESASSISTANT/SUGGERIMENTIVENDITA/`: `menu/index.html`, `menu/menu_finestra.py` (server 8767, polling, `calcola_rettangolo_finestra`, `application_openURLs_`), `server/server_suggerimenti.py` (8766), e nel bundle `Suggerimenti Vendita.app/Contents/MacOS/avvia` + `Info.plist`. Le modifiche a `menu/` vanno replicate anche nella copia dentro `Contents/Resources/progetto/`.
+
+## Misure e note dalla chiamata → «Note YM:» (2026-10-21)
+Il pannello di Suggerimenti Vendita manda a `http://localhost:8766/api/chiamata` misure della scala e note della telefonata; la Console le legge ogni 2 s (`svPoll`, blocco «MISURE E NOTE DALLA CHIAMATA» in `src/lead-rework-console.html`). **Nessuna estensione coinvolta.**
+- «Note YM:» è il campo `note_ym` del record dello **Storico** (modale del lead); non è il campo «Note» della scheda inserimento (`d.note`, dato CRM, sola lettura nello Storico).
+- Lead trovato in Storico dal numero di telefono (normalizzato, anche `+39`): righe aggiunte in fondo a `note_ym`, aggiornate in-place a ogni modifica (un solo blocco per chiamata), salvataggio automatico. Numero ambiguo (più lead): non scrive e avvisa.
+- Chiamata senza lead («Chiamata YesMobility», «Rinforzo Facile Salire»): alla chiusura del popup Note o a Termina/X, se c'è una scheda «Lead» in compilazione (nome o telefono) viene **salvata in Storico** con avviso, si apre «Lead» vuoto con banner, e al «Salva lead in storico» le righe vanno in `note_ym` del nuovo lead (`state.pendingChiamata`).
+

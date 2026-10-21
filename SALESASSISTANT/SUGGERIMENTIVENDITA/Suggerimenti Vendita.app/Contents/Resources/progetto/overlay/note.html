@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Note chiamata</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Arial, sans-serif; background: #fffef5; display: flex; flex-direction: column; height: 100vh; }
+  .hd { display: flex; align-items: center; justify-content: space-between; background: #ca8a04; color: #fff; font-weight: 700; font-size: 13px; padding: 6px 10px; }
+  .hd button { border: 0; border-radius: 4px; background: #fff; color: #854d0e; font-weight: 700; font-size: 12px; padding: 4px 8px; cursor: pointer; }
+  textarea { flex: 1; width: 100%; border: 0; background: transparent; font: inherit; font-size: 15px; padding: 10px; resize: none; outline: 0; }
+  .nb { font-size: 10px; color: #854d0e; padding: 4px 10px 6px; }
+</style>
+</head>
+<body>
+  <div class="hd"><span>📝 Note chiamata</span><button id="chiudi">Chiudi e salva</button></div>
+  <textarea id="t" placeholder="Appunti durante la telefonata…" autofocus></textarea>
+  <div class="nb">Resta aperta mentre telefoni. Alla chiusura il testo va nelle Note YM del lead.</div>
+<script>
+  // La pagina della chiamata (index.html) apre questa finestra con #<sessione>.
+  const canale = new BroadcastChannel("sv-note-" + location.hash.slice(1));
+  const t = document.getElementById("t");
+  let invio = null;
+  canale.onmessage = (ev) => { if (ev.data && ev.data.tipo === "testo" && !t.value) t.value = ev.data.testo || ""; };
+  canale.postMessage({ tipo: "pronto" });
+  t.addEventListener("input", () => { clearTimeout(invio); invio = setTimeout(() => canale.postMessage({ tipo: "testo", testo: t.value }), 600); });
+  document.getElementById("chiudi").onclick = () => window.close();
+  window.addEventListener("pagehide", () => canale.postMessage({ tipo: "chiuso", testo: t.value }));
+</script>
+</body>
+</html>

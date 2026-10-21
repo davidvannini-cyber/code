@@ -15,11 +15,12 @@ function mostraCanovaccio(canovaccio) {
   const contenitore = document.getElementById("canovaccio-testo");
   const riquadro = document.getElementById("riquadro-canovaccio");
   if (!contenitore || !riquadro) return; // pagina diversa da quella attesa, non facciamo nulla
-  // Un content script non vede le funzioni della pagina (mondo isolato):
-  // il testo passa da un attributo del DOM + un evento, e la pagina della
-  // chiamata (overlay/index.html) lo mostra una frase alla volta.
-  riquadro.setAttribute("data-guida-testo", canovaccio.testo);
-  document.dispatchEvent(new Event("guida-aggiorna"));
+  contenitore.textContent = "";
+  canovaccio.testo.split(/\n\s*\n/).forEach((paragrafo) => {
+    const p = document.createElement("p");
+    p.textContent = paragrafo.trim();
+    contenitore.appendChild(p);
+  });
   riquadro.style.display = "block";
 }
 
