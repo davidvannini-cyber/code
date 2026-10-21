@@ -90,7 +90,11 @@
   const canale = new BroadcastChannel("sv-note-" + location.hash.slice(1));
   const t = document.getElementById("t");
   let invio = null;
-  canale.onmessage = (ev) => { if (ev.data && ev.data.tipo === "testo" && !t.value) t.value = ev.data.testo || ""; };
+  canale.onmessage = (ev) => {
+    if (!ev.data) return;
+    if (ev.data.tipo === "testo" && !t.value) t.value = ev.data.testo || "";
+    if (ev.data.tipo === "chiudi") window.close(); // dal tasto Note del pannello
+  };
   canale.postMessage({ tipo: "pronto" });
   t.addEventListener("input", () => { clearTimeout(invio); invio = setTimeout(() => canale.postMessage({ tipo: "testo", testo: t.value }), 600); });
   document.getElementById("chiudi").onclick = () => window.close();

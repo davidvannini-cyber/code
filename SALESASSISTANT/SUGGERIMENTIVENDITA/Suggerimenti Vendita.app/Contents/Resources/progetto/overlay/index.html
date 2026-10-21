@@ -436,6 +436,7 @@
     writing-mode: vertical-rl; display: flex; align-items: center; justify-content: center; gap: 6px;
     font: 800 16px "Bradley Hand", "Marker Felt", "Segoe Print", "Comic Sans MS", cursive; letter-spacing: .06em;
   }
+  #pulsante-note.aperta { box-shadow: inset 3px 0 6px rgba(0,0,0,.25), -2px 2px 6px rgba(0,0,0,.3); }
   #pulsante-note:hover { background: linear-gradient(90deg, #fff176, #ffe94a); }
 
   #misura-stepper { display: flex; gap: 6px; align-items: stretch; }
@@ -581,7 +582,7 @@
     <div id="trascrizioni"></div>
   </div>
 
-  <button id="pulsante-note" title="Note della telefonata (tasto N)">📝 NOTE</button>
+  <button id="pulsante-note" title="Apri / chiudi le note della telefonata (tasto N)">📝 NOTE</button>
 
   <div id="vela-misura"><div class="pop">
     <h3 id="misura-titolo"></h3>
@@ -1431,10 +1432,16 @@
       const m = ev.data || {};
       if (m.tipo === "pronto") canale.postMessage({ tipo: "testo", testo: nota });
       if (m.tipo === "testo") { nota = m.testo; window.svInviaStato(); }
-      if (m.tipo === "chiuso") { nota = m.testo; notaChiusaFlag = true; clearTimeout(timer); if (haDati()) invia({ notaChiusa: true }); finestraNote = null; }
+      if (m.tipo === "chiuso") { nota = m.testo; notaChiusaFlag = true; clearTimeout(timer); if (haDati()) invia({ notaChiusa: true }); finestraNote = null; linguetta.classList.remove("aperta"); }
     };
     document.getElementById("pulsante-note").addEventListener("click", () => {
-      if (finestraNote && !finestraNote.closed) { finestraNote.focus(); return; }
+      // Stesso tasto: apre e, se la finestra è già aperta, la chiude (il testo viene salvato).
+      if (finestraNote && !finestraNote.closed) {
+        canale.postMessage({ tipo: "chiudi" });
+        const f = finestraNote;
+        setTimeout(() => { if (!f.closed) f.close(); }, 800);
+        return;
+      }
       // A destra del pannello, all'altezza della "Guida chiamata", 442x416 (340x320 +30%).
       const L = 442, A = 416;
       const guida = document.getElementById("riquadro-canovaccio");
@@ -1445,6 +1452,7 @@
       finestraNote = window.open("note.html#" + sessione, "svNote",
         "popup=yes,width=" + L + ",height=" + A + ",left=" + Math.round(sinistra) + ",top=" + Math.round(alto));
       if (!finestraNote) alert("Il browser ha bloccato la finestra delle note: consenti i popup per questa pagina.");
+      else linguetta.classList.add("aperta");
     });
 
     // Chiusura con la X: equivale a "Termina". Avviso se ci sono dati.
