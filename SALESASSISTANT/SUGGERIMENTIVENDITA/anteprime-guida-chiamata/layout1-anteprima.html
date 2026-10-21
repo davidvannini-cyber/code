@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layout 1 — anteprima</title>
+<style>
+:root{--ink:#1a1f2e;--mute:#6b7280;--teal:#0f766e;--tealbg:rgba(20,184,166,.08);--line:rgba(20,184,166,.35);--g:#e8e8ed;--gl:#d0d0d8;--amb:#b45309;--ambbg:#fffbeb}
+*{box-sizing:border-box}
+body{margin:0;padding:14px;background:#cfd3da;font:13px/1.3 -apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
+h1{font-size:16px;margin:0 0 3px}.sub{margin:0 0 10px;font-size:12px;color:#333}
+.wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.win{position:relative;width:440px;height:700px;background:#f4f4f7;border:1px solid #9aa;box-shadow:0 3px 12px rgba(0,0,0,.2);padding:6px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.box{background:var(--g);border:1px solid var(--gl);border-radius:3px;padding:3px 8px}
+.led{display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;margin-right:4px}
+select{font-size:11px;padding:1px 2px;max-width:130px}
+.bt{border:0;border-radius:3px;background:#14532d;color:#fff;font-weight:600;font-size:11px;padding:0 8px;height:26px;display:inline-flex;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+.bt.g{background:#4b5563}.bt.r{background:#b91c1c}.bt.w{background:#fff;color:var(--ink);border:1px solid var(--gl)}
+.riga{display:flex;align-items:center;gap:8px}.sp{flex:1}
+/* metà e metà: pulsanti a sinistra, livelli a destra */
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}
+.pulsanti{display:flex;gap:4px}.pulsanti .bt{flex:1;padding:0 2px;font-size:10px;white-space:nowrap;gap:2px}
+.liv{font-size:8.5px;color:#374151;line-height:1.15}
+.liv .tr{height:5px;background:#d1d5db;border-radius:3px;margin:1px 0 3px;overflow:hidden}.liv .tr i{display:block;height:100%;background:#16a34a}.liv .tr i.am{background:#f59e0b}
+/* guida */
+.guida{border:1px solid var(--line);background:var(--tealbg);border-radius:8px;padding:6px 8px}
+.gh{display:flex;justify-content:space-between;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--teal)}
+.gb{height:5px;background:#d1d5db;border-radius:3px;margin:3px 0 5px;overflow:hidden}.gb i{display:block;height:100%;background:var(--teal);transition:width .2s}
+.lista{display:flex;flex-direction:column;gap:2px}
+.s{border-radius:10px;padding:2px 9px;background:#fff;border:1px solid var(--gl);opacity:.5;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.s.f{opacity:.4}.s.f:before{content:'✓ ';color:var(--teal);font-weight:800}
+.s.a{opacity:1;white-space:normal;border:2px solid var(--teal);font-size:15px;font-weight:600;line-height:1.25;padding:7px 10px;box-shadow:0 2px 6px rgba(15,118,110,.22)}
+.s.a b{color:var(--teal);font-weight:800}
+.p{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:#fee2e2;color:#b91c1c}
+.nav{display:flex;gap:5px;margin-top:5px}.nav .bt{flex:1 1 0;height:28px;border-radius:10px;font-size:15px;background:var(--teal)}.nav .bt.ind{background:#9ca3af}
+/* scala */
+.scala{border:2px solid var(--amb);background:var(--ambbg);border-radius:8px;padding:5px 7px}
+.scala .t{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--amb);margin-bottom:4px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.v{border:1px solid #d6b36a;background:#fff;border-radius:8px;padding:3px 2px;font-size:10.5px;font-weight:600;text-align:center;cursor:pointer;line-height:1.15;user-select:none}
+.v span{display:block;font-size:15px}
+.v small{display:block;font-size:9.5px;font-weight:700;color:#14532d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v.ok{background:#16a34a;border-color:#16a34a;color:#fff}.v.ok small{color:#fff}
+.att{display:flex;align-items:center;gap:8px;font-size:11.5px}
+.badge{font-size:8px;font-weight:700;text-transform:uppercase;background:#6b7280;color:#fff;padding:2px 6px;border-radius:2px}
+.frasi{font-size:11.5px;flex:1;overflow:hidden;line-height:1.5}.frasi .et{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}.frasi p{margin:0 0 2px}
+/* popup */
+.vela{position:absolute;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:5}
+.pop{background:#fff;border-radius:10px;padding:12px;width:300px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.pop h3{margin:0 0 8px;font-size:14px}.pop input,.pop textarea{width:100%;font:inherit;font-size:15px;padding:7px;border:2px solid var(--teal);border-radius:8px}
+.pop .az{display:flex;gap:6px;margin-top:8px}.pop .az .bt{flex:1;height:32px;border-radius:8px;font-size:13px}
+/* popup note: non blocca la pagina, resta aperto */
+.wrap{position:relative}.note{position:absolute;left:470px;top:380px;width:300px;background:#fffef5;border:2px solid #ca8a04;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35);display:none;z-index:4}
+.note .hd{display:flex;align-items:center;justify-content:space-between;background:#ca8a04;color:#fff;font-weight:700;font-size:12px;padding:5px 9px;border-radius:7px 7px 0 0}
+.note .hd .bt{height:20px;font-size:11px;background:#fff;color:#854d0e}
+.note textarea{width:100%;height:150px;border:0;background:transparent;font:inherit;font-size:14px;padding:8px;resize:none;outline:0}
+.note .nb{font-size:10px;color:#854d0e;padding:0 9px 6px}
+/* console simulata */
+.cons{width:360px;background:#fff;border:1px solid #9aa;border-radius:4px;padding:10px;box-shadow:0 3px 12px rgba(0,0,0,.2)}
+.cons h2{font-size:12px;margin:0 0 6px;color:#555;text-transform:uppercase;letter-spacing:.04em}
+.cons label{font-size:11px;font-weight:700}.cons textarea{width:100%;height:150px;font:inherit;font-size:13px;border:1px solid #bbb;border-radius:4px;padding:6px;margin-top:3px}
+.cons p{font-size:11px;color:#666;margin:6px 0 0}
+</style>
+</head>
+<body>
+<h1>Layout 1 — anteprima con le tue modifiche</h1>
+<p class="sub">Prova a cliccare: le misure della scala (popup editabile), il tasto <b>📝 Note</b> (popup che resta aperto), i tasti ◀ ▶. A destra c'è il campo «Note» della Lead Rework Console, simulato, per vedere cosa ci finisce.</p>
+<div class="wrap">
+
+<div class="win" id="win">
+  <div class="box riga"><b style="font-size:11px;letter-spacing:.03em">SUGGERIMENTI LIVE</b><span class="sp"></span><span style="font-size:10px">🎤</span><select><option>Predefinito di sistema</option></select><span style="font-size:10px"><i class="led"></i>connesso</span></div>
+  <div class="meta">
+    <div class="pulsanti"><button class="bt">🎤 Microf.</button><button class="bt g">⏸ Pausa</button><button class="bt r">✕ Termina</button></div>
+    <div class="liv">Segnale in ingresso (prima del limiter)<div class="tr"><i class="am" style="width:62%"></i></div>Segnale trascritto (dopo il limiter)<div class="tr"><i style="width:48%"></i></div></div>
+  </div>
+  <div class="box riga"><span>👤 <b>Grazia Saeli</b></span><span class="sp"></span><span>📞 <b>3282817586</b></span><button class="bt w" style="height:22px;font-size:10.5px">Invia a telefono</button><button class="bt" id="apri-note" style="height:22px;font-size:10.5px;background:#ca8a04">📝 Note</button></div>
+
+  <div class="guida">
+    <div class="gh"><span>Guida chiamata</span><span id="cont"></span></div><div class="gb"><i id="barra"></i></div>
+    <div class="lista" id="lista"></div>
+    <div class="nav"><button class="bt ind" id="ind">◀</button><button class="bt" id="avanti">▶</button></div>
+  </div>
+
+  <div class="scala"><div class="t">📋 Dettagli scala da chiedere (tocca per inserire)</div>
+    <div class="g4" id="scala"></div></div>
+
+  <div class="box att"><span class="badge">in attesa</span><span>In attesa del primo suggerimento…</span></div>
+  <div class="box frasi"><div class="et">Frasi cliente</div><p><b>Sì, buongiorno, mi dica pure.</b></p><p>Sono in casa da sola, abito al primo piano.</p></div>
+
+  <div class="vela" id="vela"><div class="pop">
+    <h3 id="pop-tit"></h3><input id="pop-val" placeholder="es. 5 metri"><div class="az"><button class="bt g" id="pop-ann">Annulla</button><button class="bt" id="pop-ok">Conferma</button></div>
+  </div></div>
+
+</div>
+
+<div class="note" id="note"><div class="hd"><span>📝 Note chiamata</span><button class="bt" id="chiudi-note">Chiudi e salva</button></div>
+    <textarea id="note-txt" placeholder="Appunti durante la telefonata…"></textarea><div class="nb">Resta aperto mentre telefoni. Alla chiusura il testo va nelle Note del lead.</div></div>
+
+<div class="cons">
+  <h2>Lead Rework Console · scheda lead · (simulata)</h2>
+  <label>Note</label>
+  <textarea id="cons-note" readonly>Rinnovo contratto richiesto a settembre.</textarea>
+  <p>Le righe nuove vengono <b>aggiunte in fondo</b>, senza cancellare quello che c'era già.</p>
+</div>
+</div>
+
+<script>
+const frasi=["Buongiorno/Buonasera, sono David di YesMobility.","Parlo con la Sig.ra Saeli? <span style='color:#b91c1c;font-weight:700'>· attendi conferma</span>","La chiamo perché abbiamo ricevuto la sua richiesta online per un Montascale…","Siamo un servizio che lavora con i migliori produttori del settore (Access, Handicare, …)","Possiamo darle una prima valutazione di fattibilità e un'idea di prezzo, gratuita e senza impegno.","Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?","Così le do subito un'indicazione. <span style='color:#b91c1c;font-weight:700'>· raccogli i dati</span>","Grazie, Sig.ra Saeli.","Con questi elementi, grazie ai volumi che gestiamo, posso proporle una soluzione…","Se la cifra la convince, procediamo subito con la proposta…","Se le sembra una buona base di partenza, procediamo?"];
+let a=5;
+function guida(){
+  document.getElementById('lista').innerHTML=frasi.map((f,k)=>`<div class="s ${k<a?'f':k==a?'a':''}" data-k="${k}">${f}${k==a?'<br><span class="p">STOP · ascolta e raccogli i dati</span>':''}</div>`).join('');
+  document.getElementById('cont').textContent=(a+1)+'/'+frasi.length;
+  document.getElementById('barra').style.width=((a+1)/frasi.length*100)+'%';
+  document.querySelectorAll('#lista .s').forEach(e=>e.onclick=()=>{a=+e.dataset.k;guida()});
+}
+document.getElementById('avanti').onclick=()=>{if(a<frasi.length-1){a++;guida()}};
+document.getElementById('ind').onclick=()=>{if(a>0){a--;guida()}};
+guida();
+
+const misure=[["📏","Lunghezza","Lunghezza"],["🏠","Interno / esterno","Interno/Esterno"],["↔️","Larghezza minima","Larghezza minima"],["📐","N° rampe","N° rampe"],["↪️","N° curve","N° curve"],["⬇️","Tipo di partenza","Partenza"],["⬆️","Tipo di arrivo","Arrivo"]];
+const valori={};let corr=null;
+function scala(){
+  document.getElementById('scala').innerHTML=misure.map((m,k)=>`<div class="v ${valori[k]?'ok':''}" data-k="${k}"><span>${m[0]}</span>${m[2]}${valori[k]?`<small>${valori[k]}</small>`:''}</div>`).join('');
+  document.querySelectorAll('#scala .v').forEach(e=>e.onclick=()=>{corr=+e.dataset.k;document.getElementById('pop-tit').textContent=misure[corr][0]+' '+misure[corr][1];document.getElementById('pop-val').value=valori[corr]||'';document.getElementById('vela').style.display='flex';document.getElementById('pop-val').focus()});
+}
+scala();
+const consBase=document.getElementById('cons-note').value;
+let righe={};   // chiave -> testo, così riconfermare aggiorna la stessa riga
+function aggiornaConsole(){
+  document.getElementById('cons-note').value=[consBase,...Object.values(righe)].join('\n');
+}
+document.getElementById('pop-ann').onclick=()=>document.getElementById('vela').style.display='none';
+document.getElementById('pop-ok').onclick=()=>{
+  const v=document.getElementById('pop-val').value.trim();
+  if(v){valori[corr]=v;righe['m'+corr]=misure[corr][1]+': '+v}else{delete valori[corr];delete righe['m'+corr]}
+  document.getElementById('vela').style.display='none';scala();aggiornaConsole();
+};
+document.getElementById('pop-val').onkeydown=e=>{if(e.key==='Enter')document.getElementById('pop-ok').click()};
+document.getElementById('apri-note').onclick=()=>{document.getElementById('note').style.display='block';document.getElementById('note-txt').focus()};
+document.getElementById('chiudi-note').onclick=()=>{
+  const t=document.getElementById('note-txt').value.trim();
+  document.getElementById('note').style.display='none';
+  if(t){righe.chiamata='Note chiamata: '+t}else delete righe.chiamata;
+  aggiornaConsole();
+};
+</script>
+</body>
+</html>
