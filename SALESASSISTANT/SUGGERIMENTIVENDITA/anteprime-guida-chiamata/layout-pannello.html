@@ -28,12 +28,12 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
 .guida{border:1px solid var(--line);background:var(--tealbg);border-radius:8px;padding:6px 8px;flex:0 0 auto;display:flex;flex-direction:column}
 .gh{display:flex;justify-content:space-between;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--teal)}
 .gb{height:5px;background:#d1d5db;border-radius:3px;margin:3px 0 5px;overflow:hidden}.gb i{display:block;height:100%;width:45%;background:var(--teal)}
-.lista{display:flex;flex-direction:column;gap:4px}
-.s{border-radius:10px;padding:4px 9px;background:#fff;border:1px solid var(--gl);opacity:.5;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lista{display:flex;flex-direction:column;gap:2px}.s.f{opacity:.4}.s.f:before{content:'✓ ';color:var(--teal);font-weight:800}
+.s{border-radius:10px;padding:2px 9px;background:#fff;border:1px solid var(--gl);opacity:.5;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .s.a{opacity:1;white-space:normal;border:2px solid var(--teal);font-size:15px;font-weight:600;line-height:1.25;padding:7px 10px;box-shadow:0 2px 6px rgba(15,118,110,.22)}
 .s.a b{color:var(--teal);font-weight:800}
 .p{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:#fee2e2;color:#b91c1c}
-.nav{display:flex;gap:5px;margin-top:5px}.nav .bt{height:28px;border-radius:10px;background:var(--teal)}.nav .bt:first-child{background:#9ca3af;width:44px;justify-content:center}.nav .bt:last-child{flex:1;justify-content:center}
+.nav{display:flex;gap:5px;margin-top:5px}.nav .bt{height:28px;border-radius:10px;background:var(--teal);flex:1 1 0;justify-content:center;font-size:15px}
 /* scala */
 .scala{border:2px solid var(--amb);background:var(--ambbg);border-radius:8px;padding:5px 7px}
 .scala .t{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--amb);margin-bottom:4px}
@@ -51,11 +51,12 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
 .frasi .et{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);margin-bottom:2px}
 .liv{height:4px;background:#d1d5db;border-radius:2px;width:70px;overflow:hidden;display:inline-block;vertical-align:middle}.liv i{display:block;width:55%;height:100%;background:#16a34a}
 .tab{display:flex;gap:4px;margin-bottom:4px}.tab span{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;background:#fff;border:1px solid var(--gl)}.tab span.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.liv2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.liv2 div{font-size:9px;color:#374151}.liv2 .tr{height:5px;background:#d1d5db;border-radius:3px;margin-top:2px;overflow:hidden}.liv2 .tr i{display:block;height:100%;background:#16a34a}.liv2 .tr i.am{background:#f59e0b}
 </style>
 </head>
 <body>
 <h1>Pannello «Suggerimenti Live» — 3 layout rivisti</h1>
-<p class="sub">Finestra alta come il 60% dello schermo, larghezza reale (~440 px). Dati di prova (Grazia Saeli). In tutti e 3 la guida è alta quanto il suo contenuto e lo spazio che resta va alle «Frasi cliente»: frasi già dette e prossime restano visibili («effetto lente»), frase in corso più piccola di prima ma più grande delle altre, dettagli scala in ordine numerato, spazi ridotti.</p>
+<p class="sub">Finestra alta come il 60% dello schermo, larghezza reale (~440 px). Dati di prova (Grazia Saeli). In tutti e 3: TUTTE le frasi sempre visibili, quella in corso evidenziata e più grande, le già dette con ✓; livelli audio sempre visibili; tasti ◀ ▶ uguali (metà e metà); dettagli scala numerati in ordine.</p>
 
 <div class="griglia">
 
@@ -65,18 +66,12 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
   <p>Intestazione, pulsanti e cliente in 3 righe sottili. Audio in un piccolo menu a tendina. Dettagli scala in griglia 4×2 numerata.</p>
   <div class="win">
     <div class="box riga" style="padding:3px 8px"><b style="font-size:11px;letter-spacing:.03em">SUGGERIMENTI LIVE</b><span class="sp"></span><span style="font-size:10px;color:var(--mute)">🎤</span><select><option>Predefinito di sistema</option></select><span style="font-size:10px"><i class="led on"></i>connesso</span></div>
-    <div class="riga"><button class="bt">🎤 Microfono</button><button class="bt g">⏸ Pausa</button><button class="bt r">✕ Termina</button><span class="sp"></span><span style="font-size:9px;color:var(--mute)">segnale</span><span class="liv"><i></i></span></div>
+    <div class="riga"><button class="bt">🎤 Microfono</button><button class="bt g">⏸ Pausa</button><button class="bt r">✕ Termina</button></div><div class="box liv2" style="padding:3px 8px"><div>Segnale in ingresso (prima del limiter)<div class="tr"><i class="am" style="width:62%"></i></div></div><div>Segnale trascritto (dopo il limiter)<div class="tr"><i style="width:48%"></i></div></div></div>
     <div class="box riga" style="padding:3px 8px"><span>👤 <b>Grazia Saeli</b></span><span class="sp"></span><span>📞 <b>3282817586</b></span><button class="bt w" style="height:22px;font-size:10.5px">Invia a telefono</button></div>
     <div class="guida">
       <div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
-      <div class="lista">
-        <div class="s">Siamo un servizio che lavora con i migliori produttori…</div>
-        <div class="s">Le diamo una prima valutazione di fattibilità e un'idea di prezzo…</div>
-        <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
-        <div class="s">Perfetto, grazie.</div>
-        <div class="s">Con questi elementi posso già indicare una cifra e il modello più…</div>
-      </div>
-      <div class="nav"><button class="bt">◀</button><button class="bt">AVANTI ▶</button></div>
+      <div class="lista"><div class="s f">Buongiorno/Buonasera, sono David di YesMobility.</div><div class="s f">Parlo con la Sig.ra Saeli? <span style='color:#b91c1c;font-weight:700'>· attendi conferma</span></div><div class="s f">La chiamo perché abbiamo ricevuto la sua richiesta online per un Montascale…</div><div class="s f">Siamo un servizio che lavora con i migliori produttori del settore (Access, Handicare, …)</div><div class="s f">Possiamo darle una prima valutazione di fattibilità e un'idea di prezzo, gratuita e senza impegno.</div><div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div><div class="s">Così le do subito un'indicazione. <span style='color:#b91c1c;font-weight:700'>· raccogli i dati</span></div><div class="s">Grazie, Sig.ra Saeli.</div><div class="s">Con questi elementi, grazie ai volumi che gestiamo, posso proporle una soluzione…</div><div class="s">Se la cifra la convince, procediamo subito con la proposta…</div><div class="s">Se le sembra una buona base di partenza, procediamo?</div></div>
+      <div class="nav"><button class="bt">◀</button><button class="bt">▶</button></div>
     </div>
     <div class="scala"><div class="t">📋 Dettagli scala da chiedere</div>
       <div class="g4"><div class="v ok"><em>1</em>Lunghezza</div><div class="v"><em>2</em>Int./Est.</div><div class="v ok"><em>3</em>Largh. min</div><div class="v"><em>4</em>Rampe</div>
@@ -94,15 +89,12 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
     <div class="box" style="padding:3px 6px">
       <div class="riga"><b style="font-size:11px">SUGGERIMENTI LIVE</b><span style="font-size:10px"><i class="led on"></i>connesso</span><span class="sp"></span><select><option>🎤 Predefinito di sistema</option></select></div>
       <div class="riga" style="margin-top:3px"><button class="bt ic" title="Microfono">🎤</button><button class="bt g ic" title="Pausa">⏸</button><button class="bt r ic" title="Termina">✕</button><span style="border-left:1px solid var(--gl);height:20px"></span><span style="font-size:12px"><b>Grazia Saeli</b> · <b>3282817586</b></span><span class="sp"></span><button class="bt w ic" title="Invia a telefono">📲</button></div>
+      <div style="margin-top:3px"><div class="liv2" style="padding:0"><div>Segnale in ingresso (prima del limiter)<div class="tr"><i class="am" style="width:62%"></i></div></div><div>Segnale trascritto (dopo il limiter)<div class="tr"><i style="width:48%"></i></div></div></div></div>
     </div>
     <div class="guida">
       <div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
-      <div class="lista">
-        <div class="s">Le diamo una prima valutazione di fattibilità e un'idea di prezzo…</div>
-        <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
-        <div class="s">Perfetto, grazie.</div>
-      </div>
-      <div class="nav"><button class="bt">◀</button><button class="bt">AVANTI ▶</button></div>
+      <div class="lista"><div class="s f">Buongiorno/Buonasera, sono David di YesMobility.</div><div class="s f">Parlo con la Sig.ra Saeli? <span style='color:#b91c1c;font-weight:700'>· attendi conferma</span></div><div class="s f">La chiamo perché abbiamo ricevuto la sua richiesta online per un Montascale…</div><div class="s f">Siamo un servizio che lavora con i migliori produttori del settore (Access, Handicare, …)</div><div class="s f">Possiamo darle una prima valutazione di fattibilità e un'idea di prezzo, gratuita e senza impegno.</div><div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div><div class="s">Così le do subito un'indicazione. <span style='color:#b91c1c;font-weight:700'>· raccogli i dati</span></div><div class="s">Grazie, Sig.ra Saeli.</div><div class="s">Con questi elementi, grazie ai volumi che gestiamo, posso proporle una soluzione…</div><div class="s">Se la cifra la convince, procediamo subito con la proposta…</div><div class="s">Se le sembra una buona base di partenza, procediamo?</div></div>
+      <div class="nav"><button class="bt">◀</button><button class="bt">▶</button></div>
     </div>
     <div class="scala"><div class="t">📋 Dettagli scala da chiedere</div>
       <div class="g3">
@@ -118,19 +110,13 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
 <!-- ================= LAYOUT 3 ================= -->
 <div class="col">
   <h2>Layout 3 · Guida a tutta altezza</h2>
-  <p>Massimo spazio alla guida. Controlli ridotti a una striscia. Scala fissa in basso a 7 caselle in una riga. In attesa + Frasi cliente in un solo riquadro con schede.</p>
+  <p>Controlli ridotti a una striscia. Scala fissa in basso a 7 caselle in una riga. In attesa + Frasi cliente in un solo riquadro con schede.</p>
   <div class="win">
-    <div class="box riga" style="padding:3px 6px"><i class="led on"></i><b style="font-size:10.5px">LIVE</b><button class="bt ic">🎤</button><button class="bt g ic">⏸</button><button class="bt r ic">✕</button><span class="sp"></span><span style="font-size:11.5px"><b>Grazia Saeli</b> · <b>3282817586</b></span><button class="bt w ic">📲</button><button class="bt w ic" title="Audio: Predefinito di sistema">⚙</button></div>
+    <div class="box riga" style="padding:3px 6px"><i class="led on"></i><b style="font-size:10.5px">LIVE</b><button class="bt ic">🎤</button><button class="bt g ic">⏸</button><button class="bt r ic">✕</button><span class="sp"></span><span style="font-size:11.5px"><b>Grazia Saeli</b> · <b>3282817586</b></span><button class="bt w ic">📲</button><button class="bt w ic" title="Audio: Predefinito di sistema">⚙</button></div><div class="box liv2" style="padding:3px 8px"><div>Segnale in ingresso (prima del limiter)<div class="tr"><i class="am" style="width:62%"></i></div></div><div>Segnale trascritto (dopo il limiter)<div class="tr"><i style="width:48%"></i></div></div></div>
     <div class="guida">
       <div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
-      <div class="lista">
-        <div class="s">Le diamo una prima valutazione di fattibilità e un'idea di prezzo…</div>
-        <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
-        <div class="s">Perfetto, grazie.</div>
-        <div class="s">Con questi elementi posso già indicare una cifra e il modello più…</div>
-        <div class="s" style="display:none">Se la cifra la convince, procediamo subito con la proposta…</div>
-      </div>
-      <div class="nav"><button class="bt">◀</button><button class="bt">AVANTI ▶</button></div>
+      <div class="lista"><div class="s f">Buongiorno/Buonasera, sono David di YesMobility.</div><div class="s f">Parlo con la Sig.ra Saeli? <span style='color:#b91c1c;font-weight:700'>· attendi conferma</span></div><div class="s f">La chiamo perché abbiamo ricevuto la sua richiesta online per un Montascale…</div><div class="s f">Siamo un servizio che lavora con i migliori produttori del settore (Access, Handicare, …)</div><div class="s f">Possiamo darle una prima valutazione di fattibilità e un'idea di prezzo, gratuita e senza impegno.</div><div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div><div class="s">Così le do subito un'indicazione. <span style='color:#b91c1c;font-weight:700'>· raccogli i dati</span></div><div class="s">Grazie, Sig.ra Saeli.</div><div class="s">Con questi elementi, grazie ai volumi che gestiamo, posso proporle una soluzione…</div><div class="s">Se la cifra la convince, procediamo subito con la proposta…</div><div class="s">Se le sembra una buona base di partenza, procediamo?</div></div>
+      <div class="nav"><button class="bt">◀</button><button class="bt">▶</button></div>
     </div>
     <div class="scala" style="padding:4px 6px"><div class="t" style="margin-bottom:3px">📋 Scala · chiedi</div>
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">
