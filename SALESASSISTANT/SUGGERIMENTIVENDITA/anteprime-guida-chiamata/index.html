@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guida chiamata — 5 proposte</title>
+<style>
+  :root{--ink:#1a1f2e;--mute:#6b7280;--teal:#0f766e;--tealbg:rgba(20,184,166,.08);--line:rgba(20,184,166,.35);
+    --amb:#b45309;--ambbg:#fef3c7;--red:#b91c1c;--redbg:#fee2e2;--blu:#1d4ed8;--blubg:#dbeafe;--bg:#f3f4f6}
+  *{box-sizing:border-box}
+  body{margin:0;padding:16px;background:var(--bg);color:var(--ink);font:14px/1.35 -apple-system,Segoe UI,Roboto,sans-serif}
+  h1{font-size:18px;margin:0 0 4px}
+  .sub{color:var(--mute);margin:0 0 12px}
+  .legenda{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;font-size:12px}
+  .legenda span{padding:3px 8px;border-radius:3px;background:#fff;border:1px solid #d0d0d8}
+  .griglia{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+  .proposta{width:380px;max-width:100%}
+  .proposta>h2{font-size:13px;margin:0 0 6px;color:var(--teal);text-transform:uppercase;letter-spacing:.04em}
+  .proposta>p.desc{font-size:12px;color:var(--mute);margin:0 0 8px}
+  .box{border:1px solid var(--line);background:var(--tealbg);border-radius:2px;padding:10px}
+  .et{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--teal);margin-bottom:6px}
+  b.k{font-weight:800}
+  /* pause */
+  .p{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;white-space:nowrap}
+  .p.b{background:var(--blubg);color:var(--blu)}      /* respiro */
+  .p.m{background:var(--ambbg);color:var(--amb)}      /* pausa */
+  .p.s{background:var(--redbg);color:var(--red)}      /* stop: ascolta */
+
+  /* A — scaletta numerata */
+  .A .r{display:flex;gap:8px;padding:7px 0;border-top:1px dashed var(--line)}
+  .A .r:first-of-type{border-top:0}
+  .A .n{flex:0 0 22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .A .t{font-size:16px;line-height:1.25}
+  .A .t small{display:block;color:var(--mute);font-size:11px;margin-top:2px}
+
+  /* B — parola chiave grande + frase piccola */
+  .B .r{padding:8px 0;border-top:1px dashed var(--line)}
+  .B .r:first-of-type{border-top:0}
+  .B .h{font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .B .h i{font-style:normal;margin-right:6px}
+  .B .f{font-size:12px;color:var(--mute);margin-top:2px}
+
+  /* C — timeline con icone e pause */
+  .C .tl{position:relative;padding-left:34px}
+  .C .tl:before{content:"";position:absolute;left:13px;top:6px;bottom:6px;width:3px;background:var(--line);border-radius:2px}
+  .C .st{position:relative;margin-bottom:10px}
+  .C .ic{position:absolute;left:-34px;top:0;width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:14px}
+  .C .st .t{font-size:15px;line-height:1.25}
+  .C .pausa{margin:-2px 0 10px;font-size:11px}
+
+  /* D — una scheda alla volta (cliccabile) */
+  .D .sch{border-radius:3px;padding:8px 10px;margin-bottom:6px;background:#fff;border:1px solid #d0d0d8;opacity:.45;cursor:pointer;transition:.15s}
+  .D .sch.fatta{opacity:.3;text-decoration:line-through}
+  .D .sch.att{opacity:1;border:2px solid var(--teal);background:#fff;box-shadow:0 2px 8px rgba(15,118,110,.25)}
+  .D .sch .t{font-size:13px}
+  .D .sch.att .t{font-size:19px;line-height:1.25;font-weight:600}
+  .D .sch .p{margin-top:5px}
+  .D .barra{height:6px;background:#d1d5db;border-radius:3px;margin-bottom:8px;overflow:hidden}
+  .D .barra div{height:100%;background:var(--teal);width:0;transition:.2s}
+  .D .tasto{width:100%;margin-top:4px;padding:10px;border:0;border-radius:3px;background:var(--teal);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+
+  /* E — DICO / ASPETTO + infografica */
+  .E .blocco{margin-bottom:8px;border-radius:3px;overflow:hidden;border:1px solid #d0d0d8;background:#fff}
+  .E .tit{background:var(--teal);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;text-transform:uppercase;letter-spacing:.04em}
+  .E .tit.ask{background:var(--red)}
+  .E .cor{padding:7px 9px;font-size:15px;line-height:1.25}
+  .E .tre{display:flex;gap:4px;padding:8px}
+  .E .tre div{flex:1;text-align:center;background:var(--tealbg);border:1px solid var(--line);border-radius:3px;padding:6px 2px;font-size:11px;font-weight:700}
+  .E .tre div span{display:block;font-size:20px}
+  .E .freccia{text-align:center;color:var(--teal);font-weight:800;line-height:1}
+  .E .cta{background:var(--ambbg);border:2px solid var(--amb);border-radius:3px;padding:8px;font-size:15px;font-weight:700;text-align:center}
+</style>
+</head>
+<body>
+<h1>Guida chiamata — 5 proposte di formattazione</h1>
+<p class="sub">Larghezza reale del pannello (circa 380 px). Testo preso dal canovaccio «Rinforzo Facile Salire». Nella proposta D clicca sulle schede o sul tasto.</p>
+<div class="legenda">
+  <span><i class="p b">respiro</i> 1 secondo</span>
+  <span><i class="p m">pausa</i> 2 secondi</span>
+  <span><i class="p s">STOP · ascolta</i> aspetta la risposta</span>
+  <span><b>grassetto</b> = parole da dire con enfasi</span>
+</div>
+
+<div class="griglia">
+
+<!-- A -->
+<section class="proposta A">
+  <h2>A · Scaletta numerata</h2>
+  <p class="desc">Passi numerati, frase breve in grande, pausa a fine riga. Il più semplice da seguire con l'occhio.</p>
+  <div class="box"><div class="et">Guida chiamata</div>
+    <div class="r"><div class="n">1</div><div class="t">Sono <b class="k">DAVID</b> di <b class="k">YesMobility</b>, comparatore montascale <span class="p b">respiro</span></div></div>
+    <div class="r"><div class="n">2</div><div class="t">Ho ricevuto la sua <b class="k">richiesta online</b> per poltroncina o pedana <span class="p b">respiro</span></div></div>
+    <div class="r"><div class="n">3</div><div class="t">La chiamo per capire <b class="k">di cosa ha bisogno</b> <span class="p s">STOP · ascolta</span></div></div>
+    <div class="r"><div class="n">4</div><div class="t">Immagino l'abbiano già <b class="k">contattata altri colleghi</b> <span class="p s">STOP · ascolta</span></div></div>
+    <div class="r"><div class="n">5</div><div class="t">Noi <b class="k">studiamo le sue esigenze</b> e proponiamo la soluzione <b class="k">più conveniente</b> col <b class="k">miglior servizio</b> <span class="p m">pausa</span></div></div>
+    <div class="r"><div class="n">6</div><div class="t">Per la sua zona è fortunata: <b class="k">Facile Salire</b> <small>Pontedera · produttore · installa e assiste · top 3 Italia per assistenza</small> <span class="p m">pausa</span></div></div>
+    <div class="r"><div class="n">7</div><div class="t"><b class="k">Ci mettiamo noi in contatto</b> con loro e otteniamo il <b class="k">prezzo migliore</b> <span class="p s">STOP · chiedi il sì</span></div></div>
+  </div>
+</section>
+
+<!-- B -->
+<section class="proposta B">
+  <h2>B · Titolo grande + frase sotto</h2>
+  <p class="desc">Colpo d'occhio: leggi solo il titolo in grande; la frase intera sotto, piccola, solo se ti serve.</p>
+  <div class="box"><div class="et">Guida chiamata</div>
+    <div class="r"><div class="h"><i>👋</i>SONO DAVID <span class="p b">respiro</span></div><div class="f">Sono David di YesMobility, comparatore montascale.</div></div>
+    <div class="r"><div class="h"><i>📩</i>HO LA SUA RICHIESTA <span class="p b">respiro</span></div><div class="f">Abbiamo ricevuto la sua richiesta online per poltroncina o pedana.</div></div>
+    <div class="r"><div class="h"><i>❓</i>DI COSA HA BISOGNO? <span class="p s">STOP</span></div><div class="f">La chiamo per capire meglio di cosa ha bisogno.</div></div>
+    <div class="r"><div class="h"><i>👥</i>GIÀ CONTATTATA? <span class="p s">STOP</span></div><div class="f">Immagino sia già stata contattata da altri colleghi.</div></div>
+    <div class="r"><div class="h"><i>🎯</i>SOLUZIONE MIGLIORE <span class="p m">pausa</span></div><div class="f">Studiamo le esigenze → soluzioni più convenienti col miglior servizio.</div></div>
+    <div class="r"><div class="h"><i>🏭</i>FACILE SALIRE <span class="p m">pausa</span></div><div class="f">Produttore a Pontedera, installa e assiste, top 3 in Italia per assistenza.</div></div>
+    <div class="r"><div class="h"><i>🤝</i>CI PENSIAMO NOI <span class="p s">STOP · sì?</span></div><div class="f">Ci mettiamo in contatto noi e le facciamo avere il prezzo migliore.</div></div>
+  </div>
+</section>
+
+<!-- C -->
+<section class="proposta C">
+  <h2>C · Timeline con icone</h2>
+  <p class="desc">Percorso verticale: si vede a che punto sei. Le pause stanno tra un passo e l'altro, come interruzioni vere.</p>
+  <div class="box"><div class="et">Guida chiamata</div>
+    <div class="tl">
+      <div class="st"><div class="ic">👋</div><div class="t">Sono <b class="k">DAVID</b> di <b class="k">YesMobility</b>, comparatore montascale</div></div>
+      <div class="pausa"><span class="p b">respiro</span></div>
+      <div class="st"><div class="ic">📩</div><div class="t">Ho la sua <b class="k">richiesta online</b>: poltroncina o pedana</div></div>
+      <div class="pausa"><span class="p b">respiro</span></div>
+      <div class="st"><div class="ic">❓</div><div class="t">La chiamo per capire <b class="k">di cosa ha bisogno</b></div></div>
+      <div class="pausa"><span class="p s">STOP · ascolta</span></div>
+      <div class="st"><div class="ic">👥</div><div class="t">Immagino l'abbiano già <b class="k">contattata altri</b></div></div>
+      <div class="pausa"><span class="p s">STOP · ascolta</span></div>
+      <div class="st"><div class="ic">🎯</div><div class="t">Studiamo le sue esigenze → <b class="k">soluzione più conveniente</b> + <b class="k">miglior servizio</b></div></div>
+      <div class="pausa"><span class="p m">pausa</span></div>
+      <div class="st"><div class="ic">🏭</div><div class="t"><b class="k">Facile Salire</b> (Pontedera): produce, installa, assiste · <b class="k">top 3 Italia</b></div></div>
+      <div class="pausa"><span class="p m">pausa</span></div>
+      <div class="st"><div class="ic">🤝</div><div class="t"><b class="k">Ci mettiamo noi in contatto</b>: prezzo migliore</div></div>
+      <div class="pausa"><span class="p s">STOP · chiedi il sì</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- D -->
+<section class="proposta D">
+  <h2>D · Una frase alla volta (cliccabile)</h2>
+  <p class="desc">Solo il passo attuale è grande e acceso, gli altri sono sfumati. Clicchi «Avanti» e la guida scorre. Barra di avanzamento in alto.</p>
+  <div class="box"><div class="et">Guida chiamata · <span id="d-cont">1/7</span></div>
+    <div class="barra"><div id="d-bar"></div></div>
+    <div id="d-list"></div>
+    <button class="tasto" id="d-next">AVANTI ▶</button>
+  </div>
+</section>
+
+<!-- E -->
+<section class="proposta E">
+  <h2>E · DICO / ASPETTO + infografica</h2>
+  <p class="desc">Divide quello che devi dire da quello che devi ascoltare. Il «perché noi» diventa una piccola infografica a 3 pilastri.</p>
+  <div class="box"><div class="et">Guida chiamata</div>
+    <div class="blocco"><div class="tit">1 · DICO — presentazione</div>
+      <div class="cor">Sono <b class="k">DAVID</b>, <b class="k">YesMobility</b> · comparatore montascale <span class="p b">respiro</span><br>Ho la sua <b class="k">richiesta online</b> (poltroncina / pedana)</div></div>
+    <div class="blocco"><div class="tit ask">2 · ASPETTO — ascolta</div>
+      <div class="cor">«Di cosa ha bisogno?» <span class="p s">STOP</span><br>«L'hanno già contattata altri?» <span class="p s">STOP</span></div></div>
+    <div class="blocco"><div class="tit">3 · DICO — perché noi</div>
+      <div class="tre"><div><span>🔍</span>STUDIAMO le esigenze</div><div><span>💶</span>PREZZO più conveniente</div><div><span>🛠️</span>MIGLIOR servizio</div></div></div>
+    <div class="freccia">▼ <span class="p m">pausa</span></div>
+    <div class="blocco"><div class="tit">4 · DICO — la soluzione</div>
+      <div class="cor"><b class="k">Facile Salire</b> · Pontedera<br>produce · installa · assiste<br>🏆 <b class="k">top 3 Italia</b> per assistenza</div></div>
+    <div class="cta">🤝 Ci mettiamo noi in contatto → prezzo migliore <br><span class="p s">STOP · chiedi il sì</span></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+const passi=[
+ ["Sono <b>DAVID</b> di <b>YesMobility</b>, comparatore montascale","b"],
+ ["Ho la sua <b>richiesta online</b>: poltroncina o pedana","b"],
+ ["Chiamo per capire <b>di cosa ha bisogno</b>","s"],
+ ["Immagino l'abbiano già <b>contattata altri</b>","s"],
+ ["Studiamo le esigenze → <b>soluzione più conveniente</b> + <b>miglior servizio</b>","m"],
+ ["<b>Facile Salire</b> (Pontedera): produce, installa, assiste · <b>top 3 Italia</b>","m"],
+ ["<b>Ci mettiamo noi in contatto</b>: prezzo migliore","s"]];
+const nomi={b:"respiro",m:"pausa",s:"STOP · ascolta"};
+let i=0;
+function disegna(){
+  document.getElementById("d-list").innerHTML=passi.map((p,k)=>
+    `<div class="sch ${k<i?'fatta':k==i?'att':''}" data-k="${k}"><div class="t">${p[0]}</div>${k==i?`<span class="p ${p[1]}">${nomi[p[1]]}</span>`:''}</div>`).join("");
+  document.getElementById("d-cont").textContent=(i+1)+"/"+passi.length;
+  document.getElementById("d-bar").style.width=((i+1)/passi.length*100)+"%";
+  document.querySelectorAll("#d-list .sch").forEach(e=>e.onclick=()=>{i=+e.dataset.k;disegna()});
+}
+document.getElementById("d-next").onclick=()=>{i=Math.min(i+1,passi.length-1);disegna()};
+disegna();
+</script>
+</body>
+</html>
