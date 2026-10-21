@@ -389,9 +389,7 @@
   .riquadro { padding: 3px 8px; box-shadow: none; border: 1px solid #d0d0d8; border-radius: 3px; }
   #lead-info { justify-content: space-between; text-align: left; gap: 6px; font-size: 12px; flex-wrap: nowrap; }
   #lead-info .separatore { display: none; }
-  #lead-info #pulsante-telefono, #lead-info #pulsante-note { height: 22px; padding: 0 7px; font-size: 10px; flex: none; }
-  #pulsante-note { background: #ca8a04; color: #fff; border: 0; }
-  #pulsante-note:hover { background: #a16207; }
+  #lead-info #pulsante-telefono { height: 22px; padding: 0 7px; font-size: 10px; flex: none; }
   #riquadro-canovaccio { padding: 6px 8px; box-shadow: none; }
   .guida-scheda { padding: 2px 9px; margin-bottom: 2px; }
   .guida-scheda.f { opacity: .4; }
@@ -424,6 +422,20 @@
   #vela-misura .az { display: flex; gap: 6px; margin-top: 8px; }
   #vela-misura .az button { flex: 1; height: 32px; border: 0; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; color: #fff; background: #0f766e; }
   #vela-misura .az button.ann { background: #9ca3af; }
+
+  /* Linguetta "Note": post-it giallo sul bordo destro, all'altezza della Guida chiamata */
+  body { padding-right: 40px; }
+  #pulsante-note {
+    position: fixed; right: 0; top: 40%; width: 34px; height: 150px; z-index: 20;
+    border: 0; border-radius: 10px 0 0 10px;
+    background: linear-gradient(90deg, #fff59a, #ffee74); color: #6b4e00;
+    box-shadow: -2px 2px 6px rgba(0,0,0,.3); cursor: pointer;
+    writing-mode: vertical-rl; font: 800 16px "Bradley Hand", "Marker Felt", "Segoe Print", "Comic Sans MS", cursive;
+    letter-spacing: .06em; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  #pulsante-note:hover { background: linear-gradient(90deg, #fff176, #ffe94a); }
+  #pulsante-note #note-badge { display: none; position: absolute; top: 6px; left: -8px; writing-mode: horizontal-tb;
+    background: #dc2626; color: #fff; border-radius: 10px; padding: 1px 6px; font: 700 10px -apple-system, sans-serif; letter-spacing: 0; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
 </style>
 </head>
 <body>
@@ -483,7 +495,6 @@
     <span class="separatore">·</span>
     <span title="Numero di telefono">📞 <b id="lead-telefono">—</b></span>
     <button id="pulsante-telefono" class="btn-large" title="Invia nome, numero ed email al telefono Android">Invia a telefono</button>
-    <button id="pulsante-note" class="btn-large" title="Apri le note della telefonata">📝 Note</button>
     <span id="esito-telefono" style="font-size:11px;"></span>
   </div>
 
@@ -505,6 +516,8 @@
     <div class="etichetta-trascrizioni">FRASI CLIENTE</div>
     <div id="trascrizioni"></div>
   </div>
+
+  <button id="pulsante-note" title="Note della telefonata (tasto N)">📝 NOTE<span id="note-badge"></span></button>
 
   <div id="vela-misura"><div class="pop">
     <h3 id="misura-titolo"></h3>
@@ -1208,6 +1221,7 @@
       if (!passi.length) return;
       disegna();
       document.getElementById("riquadro-canovaccio").style.display = "block";
+      if (window.svPosizionaLinguetta) window.svPosizionaLinguetta();
     };
     // Testo mandato dall'estensione (script del lead), vedi suggerimenti-vendita-content.js
     // Rete di sicurezza: se qualcuno (es. una vecchia versione dell'estensione)
@@ -1234,6 +1248,34 @@
     let nota = "", notaChiusaFlag = false, fineInviata = false, timer = null, finestraNote = null;
     const canale = new BroadcastChannel("sv-note-" + sessione);
 
+
+    // Linguetta Note: allineata in alto alla Guida chiamata (o a 40% se la guida non c'è).
+    const linguetta = document.getElementById("pulsante-note");
+    const badgeNote = document.getElementById("note-badge");
+    function posizionaLinguetta() {
+      const g = document.getElementById("riquadro-canovaccio");
+      let top = window.innerHeight * 0.4;
+      if (g && g.style.display !== "none") top = g.getBoundingClientRect().top;
+      linguetta.style.top = Math.max(4, Math.min(top, window.innerHeight - 154)) + "px";
+    }
+    function aggiornaBadgeNote() {
+      const righe = nota.split("\n").filter((r) => r.trim()).length;
+      badgeNote.textContent = "•" + righe;
+      badgeNote.style.display = righe ? "block" : "none";
+    }
+    window.addEventListener("resize", posizionaLinguetta);
+    window.svPosizionaLinguetta = posizionaLinguetta;
+    const osservatore = new ResizeObserver(posizionaLinguetta);
+    osservatore.observe(document.body);
+    osservatore.observe(document.getElementById("riquadro-canovaccio"));
+    posizionaLinguetta();
+    // Scorciatoia: tasto N (fuori dai campi di testo).
+    document.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() !== "n" || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ""))) return;
+      e.preventDefault(); linguetta.click();
+    });
+
     const telefono = () => { const t = (elLeadTelefono.textContent || "").trim(); return /\d/.test(t) ? t : ""; };
     const haDati = () => window.svMisure().length > 0 || nota.trim() !== "";
     function invia(extra, beacon) {
@@ -1256,8 +1298,8 @@
     canale.onmessage = (ev) => {
       const m = ev.data || {};
       if (m.tipo === "pronto") canale.postMessage({ tipo: "testo", testo: nota });
-      if (m.tipo === "testo") { nota = m.testo; window.svInviaStato(); }
-      if (m.tipo === "chiuso") { nota = m.testo; notaChiusaFlag = true; clearTimeout(timer); if (haDati()) invia({ notaChiusa: true }); finestraNote = null; }
+      if (m.tipo === "testo") { nota = m.testo; aggiornaBadgeNote(); window.svInviaStato(); }
+      if (m.tipo === "chiuso") { nota = m.testo; aggiornaBadgeNote(); notaChiusaFlag = true; clearTimeout(timer); if (haDati()) invia({ notaChiusa: true }); finestraNote = null; }
     };
     document.getElementById("pulsante-note").addEventListener("click", () => {
       if (finestraNote && !finestraNote.closed) { finestraNote.focus(); return; }
