@@ -1053,17 +1053,27 @@
       testo.split(/\n\s*\n/).forEach((par) => {
         par = par.trim();
         if (!par) return;
-        let m = par.match(/\s*\[([RPS])\]\s*$/i);
+        const m = par.match(/\s*\[([RPS])\]\s*$/i);
         if (m) { out.push({ t: par.slice(0, m.index), pausa: m[1].toUpperCase() }); return; }
-        const frasi = par.length > 140 ? par.split(/(?<=[.!?])\s+/) : [par];
+        // Frasi; una frase tutta tra parentesi, es. "(Attendi conferma.)", è
+        // un'indicazione di regia: diventa il segno STOP del passo precedente.
+        const frasi = par.split(/(?<=[.!?)])\s+/);
         let corrente = "";
-        frasi.concat([null]).forEach((f) => {
-          if (f !== null && (corrente + " " + f).trim().length <= 140) { corrente = (corrente + " " + f).trim(); return; }
-          if (corrente) out.push({ t: corrente, pausa: /\?\s*$/.test(corrente) ? "S" : "R" });
-          corrente = f === null ? "" : f;
+        const chiudi = () => { if (corrente) out.push({ t: corrente, pausa: /\?\s*$/.test(corrente) ? "S" : "R" }); corrente = ""; };
+        frasi.forEach((f) => {
+          const regia = f.match(/^\((.*?)\.?\)\.?$/);
+          if (regia) {
+            chiudi();
+            if (out.length) { out[out.length - 1].pausa = "S"; out[out.length - 1].regia = regia[1]; }
+            else out.push({ t: "", pausa: "S", regia: regia[1] });
+            return;
+          }
+          if (corrente && (corrente + " " + f).length > 110) chiudi();
+          corrente = (corrente + " " + f).trim();
         });
+        chiudi();
       });
-      return out;
+      return out.filter((p) => p.t || p.regia).map((p) => (p.t ? p : { t: p.regia, pausa: "S" }));
     }
 
     function conGrassetto(el, testo) {
@@ -1085,7 +1095,7 @@
         if (k === attivo) {
           const b = document.createElement("div");
           b.className = "guida-pausa " + p.pausa;
-          b.textContent = ETICHETTE[p.pausa];
+          b.textContent = p.regia ? "STOP · " + p.regia : ETICHETTE[p.pausa];
           d.appendChild(b);
         }
         d.onclick = () => { attivo = k; disegna(); };
@@ -1119,6 +1129,15 @@
       document.getElementById("riquadro-canovaccio").style.display = "block";
     };
     // Testo mandato dall'estensione (script del lead), vedi suggerimenti-vendita-content.js
+    disegnaScala();
+    // Rete di sicurezza: se qualcuno (es. una vecchia versione dell'estensione)
+    // scrive paragrafi <p> a mano nel riquadro, li ricostruiamo come guida.
+    new MutationObserver((mutazioni) => {
+      const esterno = mutazioni.some((m) => [...m.addedNodes].some((n) => n.nodeName === "P"));
+      if (!esterno) return;
+      const testo = [...elLista.querySelectorAll("p")].map((x) => x.textContent).join("\n\n");
+      window.mostraGuida(testo);
+    }).observe(elLista, { childList: true });
     document.addEventListener("guida-aggiorna", () => {
       window.mostraGuida(document.getElementById("riquadro-canovaccio").getAttribute("data-guida-testo"));
     });
