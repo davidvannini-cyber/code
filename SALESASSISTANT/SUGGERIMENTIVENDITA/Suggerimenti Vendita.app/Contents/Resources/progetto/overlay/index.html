@@ -437,6 +437,15 @@
     font: 800 16px "Bradley Hand", "Marker Felt", "Segoe Print", "Comic Sans MS", cursive; letter-spacing: .06em;
   }
   #pulsante-note:hover { background: linear-gradient(90deg, #fff176, #ffe94a); }
+
+  #misura-stepper { display: flex; gap: 6px; align-items: stretch; }
+  #misura-stepper button { flex: 0 0 52px; border: 0; border-radius: 8px; background: #0f766e; color: #fff; font-size: 20px; font-weight: 700; cursor: pointer; }
+  #misura-stepper button:active { background: #0b5a54; }
+  #misura-stepper input { flex: 1; min-width: 0; text-align: center; font-size: 22px !important; font-weight: 700; }
+  #misura-passo { font-size: 11px; color: #6b7280; text-align: center; margin-top: 4px; }
+  #misura-opzioni { display: none; flex-direction: column; gap: 6px; }
+  #misura-opzioni button { height: 40px; border: 2px solid #0f766e; border-radius: 10px; background: #fff; color: #0f766e; font-weight: 800; font-size: 15px; cursor: pointer; }
+  #misura-opzioni button.sel { background: #0f766e; color: #fff; }
 </style>
 </head>
 <body>
@@ -522,7 +531,9 @@
 
   <div id="vela-misura"><div class="pop">
     <h3 id="misura-titolo"></h3>
-    <input id="misura-valore" autocomplete="off" placeholder="es. 5 metri">
+    <div id="misura-stepper"><button id="misura-meno" title="Diminuisci">◀</button><input id="misura-valore" autocomplete="off" inputmode="decimal" placeholder="valore"><button id="misura-piu" title="Aumenta">▶</button></div>
+    <div id="misura-passo"></div>
+    <div id="misura-opzioni"></div>
     <div class="az"><button class="ann" id="misura-annulla">Annulla</button><button id="misura-ok">Conferma</button></div>
   </div></div>
 
@@ -1113,12 +1124,19 @@
   // Facoltativi: **grassetto**, e a fine passo [R] respiro, [P] pausa,
   // [S] stop-ascolta. Senza segni: finisce con "?" -> STOP, altrimenti respiro.
   (function () {
-    // [icona, nome nel popup / nelle Note, nome corto sul tasto]
-    const DETTAGLI_SCALA = [["📏", "Lunghezza", "Lunghezza"], ["🏠", "Interno / esterno", "Interno/Esterno"],
-      ["↔️", "Larghezza minima", "Larghezza min."], ["📐", "N° rampe", "N° rampe"], ["↪️", "N° curve", "N° curve"],
-      ["⬇️", "Tipo di partenza", "Partenza"], ["⬆️", "Tipo di arrivo", "Arrivo"]];
+    // icona, nome nel popup / nelle Note, nome corto sul tasto, tipo di campo:
+    //   num = testo modificabile + ◀ ▶ a passi (min 0), unità facoltativa; sel = scelta fra opzioni.
+    const DETTAGLI_SCALA = [
+      { ic: "📏", nome: "Lunghezza", corto: "Lunghezza", tipo: "num", passo: 0.5, unita: "m" },
+      { ic: "🏠", nome: "Interno / esterno", corto: "Interno/Esterno", tipo: "sel", opzioni: ["Interno", "Esterno"] },
+      { ic: "↔️", nome: "Larghezza minima", corto: "Larghezza min.", tipo: "num", passo: 0.05, unita: "m" },
+      { ic: "📐", nome: "N° rampe", corto: "N° rampe", tipo: "num", passo: 1 },
+      { ic: "↪️", nome: "Curve 90°", corto: "Curve 90°", tipo: "num", passo: 1 },
+      { ic: "↩️", nome: "Curve 180°", corto: "Curve 180°", tipo: "num", passo: 1 },
+      { ic: "⬇️", nome: "Tipo di partenza", corto: "Partenza", tipo: "sel", opzioni: ["Dritta", "90°", "180°", "Prolungata"] },
+      { ic: "⬆️", nome: "Tipo di arrivo", corto: "Arrivo", tipo: "sel", opzioni: ["Filo Gradino", "90°", "180°", "Prolungata"] }];
     const valoriScala = {}; // indice -> testo inserito
-    window.svMisure = () => DETTAGLI_SCALA.map((d, k) => valoriScala[k] ? [d[1], valoriScala[k]] : null).filter(Boolean);
+    window.svMisure = () => DETTAGLI_SCALA.map((d, k) => valoriScala[k] ? [d.nome, valoriScala[k]] : null).filter(Boolean);
     const ETICHETTE = { R: "respiro · 1 s", P: "pausa · 2 s", S: "STOP · ascolta" };
     let passi = [], attivo = 0, testoCorrente = null;
     const elLista = document.getElementById("canovaccio-testo");
@@ -1186,8 +1204,8 @@
       DETTAGLI_SCALA.forEach((v, k) => {
         const e = document.createElement("div");
         e.className = "voce" + (valoriScala[k] ? " ok" : "");
-        const ic = document.createElement("span"); ic.textContent = v[0];
-        e.appendChild(ic); e.appendChild(document.createTextNode(v[2]));
+        const ic = document.createElement("span"); ic.textContent = v.ic;
+        e.appendChild(ic); e.appendChild(document.createTextNode(v.corto));
         if (valoriScala[k]) { const sm = document.createElement("small"); sm.textContent = valoriScala[k]; e.appendChild(sm); }
         e.onclick = () => apriMisura(k);
         c.appendChild(e);
@@ -1196,22 +1214,59 @@
 
     let misuraCorrente = null;
     const elVela = document.getElementById("vela-misura"), elVal = document.getElementById("misura-valore");
+    const elStepper = document.getElementById("misura-stepper"), elOpz = document.getElementById("misura-opzioni");
+    const elPasso = document.getElementById("misura-passo"), elOk = document.getElementById("misura-ok");
+    const numero = (t) => { const m = String(t).replace(",", ".").match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : NaN; };
+    const formatta = (n) => String(Math.round(n * 100) / 100).replace(".", ",");
     function apriMisura(k) {
       misuraCorrente = k;
-      document.getElementById("misura-titolo").textContent = DETTAGLI_SCALA[k][0] + " " + DETTAGLI_SCALA[k][1];
-      elVal.value = valoriScala[k] || "";
+      const d = DETTAGLI_SCALA[k];
+      document.getElementById("misura-titolo").textContent = d.ic + " " + d.nome;
+      const num = d.tipo === "num";
+      elStepper.style.display = num ? "flex" : "none";
+      elPasso.style.display = num ? "block" : "none";
+      elOpz.style.display = num ? "none" : "flex";
+      elOk.style.display = num ? "" : "none";
+      if (num) {
+        const n = numero(valoriScala[k] || "");
+        elVal.value = isNaN(n) ? "" : formatta(n);
+        elPasso.textContent = "◀ ▶ = passi di " + formatta(d.passo) + (d.unita ? " " + d.unita : "");
+      } else {
+        elOpz.textContent = "";
+        d.opzioni.forEach((o) => {
+          const b = document.createElement("button");
+          b.textContent = o;
+          if (valoriScala[k] === o) b.className = "sel";
+          b.onclick = () => { if (valoriScala[k] === o) delete valoriScala[k]; else valoriScala[k] = o; confermaMisura(); };
+          elOpz.appendChild(b);
+        });
+      }
       elVela.style.display = "flex";
-      elVal.focus();
+      if (num) elVal.focus();
     }
     function chiudiMisura() { elVela.style.display = "none"; misuraCorrente = null; }
+    function confermaMisura() { chiudiMisura(); disegnaScala(); if (window.svInviaStato) window.svInviaStato(); }
+    function passo(segno) {
+      const d = DETTAGLI_SCALA[misuraCorrente];
+      const n = numero(elVal.value);
+      elVal.value = formatta(Math.max(0, (isNaN(n) ? 0 : n) + segno * d.passo));
+    }
+    document.getElementById("misura-meno").onclick = () => passo(-1);
+    document.getElementById("misura-piu").onclick = () => passo(1);
     document.getElementById("misura-annulla").onclick = chiudiMisura;
-    document.getElementById("misura-ok").onclick = () => {
-      const v = elVal.value.trim();
+    elOk.onclick = () => {
+      const d = DETTAGLI_SCALA[misuraCorrente];
+      let v = elVal.value.trim();
+      if (v && d.unita && /^[\d.,]+$/.test(v)) v += " " + d.unita;
       if (v) valoriScala[misuraCorrente] = v; else delete valoriScala[misuraCorrente];
-      chiudiMisura(); disegnaScala();
-      if (window.svInviaStato) window.svInviaStato();
+      confermaMisura();
     };
-    elVal.addEventListener("keydown", (e) => { if (e.key === "Enter") document.getElementById("misura-ok").click(); if (e.key === "Escape") chiudiMisura(); });
+    elVal.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") elOk.click();
+      if (e.key === "Escape") chiudiMisura();
+      if (e.key === "ArrowUp") { e.preventDefault(); passo(1); }
+      if (e.key === "ArrowDown") { e.preventDefault(); passo(-1); }
+    });
     disegnaScala();
 
     window.mostraGuida = function (testo) {
