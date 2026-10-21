@@ -166,6 +166,11 @@
   .tbl-storico .acts{white-space:nowrap;width:1%;}
   .tbl-storico .acts .btn-ghost{padding:2px 4px;}
   .tbl-storico input[type=checkbox]{margin:0;}
+  /* intestazioni sempre visibili durante lo scorrimento: la lista scorre dentro il suo riquadro */
+  .tbl-scroll{overflow:auto;max-height:calc(100vh - 150px);}
+  .tbl-storico thead th{position:sticky;top:0;z-index:2;background:var(--card,#fff);box-shadow:0 1px 0 var(--border);}
+  .tbl-storico .nome-link{cursor:pointer;color:var(--topnav-active);text-decoration:underline;text-decoration-color:transparent;}
+  .tbl-storico .nome-link:hover{text-decoration-color:currentColor;}
   /* finestra stretta (colonna 35% dello schermo): nascondi Prodotto, Stato e Gen. (lo stato resta nel tooltip del nome) per far stare tutte le colonne */
   @media (max-width:900px){ .tbl-storico .c-prod,.tbl-storico .c-gen,.tbl-storico .c-stato{display:none;} .tbl-storico th,.tbl-storico td{padding:3px 5px;} }
   tr:hover td{background:rgba(0,0,0,.02);}
@@ -2484,7 +2489,7 @@ function renderHistoryTab(){
         <span class="hs-cnt"><b>${filtered.length}</b> di ${all.length}</span>
       </div>
       ${filtered.length === 0 ? `<div class="hint">Nessun lead trovato.</div>` : `
-      <table class="tbl-storico">
+      <div class="tbl-scroll"><table class="tbl-storico">
         <thead><tr>
           <th>Data</th><th>Cliente</th><th class="c-prod">Prodotto</th><th class="c-stato">Stato</th><th class="c-gen" title="Canali generati">Gen.</th>
           <th class="ck" title="Telefonata fatta">${icon('phone',{noMargin:true})}</th>
@@ -2498,7 +2503,7 @@ function renderHistoryTab(){
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
             <tr>
               <td>${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
-              <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}">${escapeHtml(r.dati_lead_input.nome || '—')}</td>
+              <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}"><span class="nome-link" onclick="openHistoryItem('${r.id}')">${escapeHtml(r.dati_lead_input.nome || '—')}</span></td>
               <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
               <td class="c-stato">${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
               <td class="c-gen">${r.canali_generati.length}</td>
@@ -2515,7 +2520,7 @@ function renderHistoryTab(){
               </td>
             </tr>`; }).join("")}
         </tbody>
-      </table>`}
+      </table></div>`}
     </div>
     ${state.historyOpen ? renderHistoryModal(state.historyOpen) : ""}
   `;
