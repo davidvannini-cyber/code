@@ -29,8 +29,7 @@ h1{font-size:16px;margin:0 0 3px}.sub{margin:0 0 10px;font-size:12px;color:#333;
 .v .ic{display:block;margin:0 auto 2px;font-size:17px;color:var(--ac)}.v small{display:block;font-size:9.5px;font-weight:700;color:var(--ac);white-space:nowrap}
 .v.ok{background:var(--ok);border-color:var(--ok);color:var(--okt)}.v.ok .ic,.v.ok small{color:var(--okt)}
 .S3 .v.ok{background:var(--tint);border-color:var(--ac);color:var(--ac)}.S3 .v.ok .ic,.S3 .v.ok small{color:var(--ac)}
-.tab{position:absolute;right:0;width:34px;background:var(--tab);color:var(--tabt);writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-radius:var(--r) 0 0 var(--r);box-shadow:-1px 1px 4px rgba(0,0,0,.25)}
-.S3 .tab{border:1px solid var(--ac);border-right:0}.tab .ic{transform:rotate(90deg);font-size:16px}
+.tab{position:absolute;right:0;width:34px;border-radius:10px 0 0 10px;background:linear-gradient(90deg,#fff59a,#ffee74);color:#6b4e00;box-shadow:-2px 2px 6px rgba(0,0,0,.3);writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center;gap:6px;font:800 16px "Bradley Hand","Marker Felt","Segoe Print","Comic Sans MS",cursive;letter-spacing:.06em}
 /* ===== popup ===== */
 .pops{display:flex;gap:10px;margin-bottom:12px}.pop{width:228px;background:var(--pn);border:1px solid var(--bd);border-radius:var(--r);box-shadow:0 6px 20px rgba(0,0,0,.25);overflow:hidden}
 .pop .h{display:flex;align-items:center;gap:7px;padding:8px 10px;font-weight:700;font-size:13px;background:var(--hd);color:var(--hdt);border-bottom:1px solid var(--bd)}
@@ -43,15 +42,15 @@ h1{font-size:16px;margin:0 0 3px}.sub{margin:0 0 10px;font-size:12px;color:#333;
 .az .a{background:var(--bg);color:var(--mu);border:1px solid var(--bd)}.az .o{background:var(--ac);color:#fff}
 .opt{height:34px;border:1px solid var(--bd);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:5px;color:var(--ink);background:var(--pn)}
 .opt.sel{background:var(--ac);border-color:var(--ac);color:#fff}.S3 .opt.sel{background:var(--tint);color:var(--ac)}
-/* finestra Note */
-.nw{width:340px;border:1px solid var(--bd);border-radius:var(--r);background:var(--pn);box-shadow:0 6px 20px rgba(0,0,0,.25);overflow:hidden}
-.nw .h{display:flex;align-items:center;gap:8px;padding:8px 12px;font-weight:700;font-size:13px;background:var(--hd);color:var(--hdt);border-bottom:1px solid var(--bd)}
-.nw .h .sp{flex:1}.nw .h .cl{font-size:11px;padding:4px 9px;background:var(--ac);color:#fff;border-radius:var(--r)}.S3 .nw .h .cl{background:var(--ac)}
-.nw .t{height:120px;padding:8px 12px;font-size:14px;line-height:22px;color:var(--ink);background:repeating-linear-gradient(transparent 0,transparent 21px,var(--bd) 21px,var(--bd) 22px)}
-.nw .f{font-size:10px;color:var(--mu);padding:5px 12px 7px;border-top:1px solid var(--bd);background:var(--bg)}
+/* finestra Note: post-it giallo, invariata */
+.nw{width:340px;background:linear-gradient(180deg,#fff59a,#ffee74);box-shadow:0 6px 14px rgba(0,0,0,.28);border-radius:2px 2px 2px 22px;overflow:hidden;font-family:"Bradley Hand","Marker Felt","Segoe Print","Comic Sans MS",cursive;position:relative}
+.nw .h{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 6px;background:rgba(0,0,0,.06);border-bottom:1px dashed rgba(120,90,0,.35);font-weight:700;font-size:16px;color:#6b4e00}
+.nw .cl{font:700 11px -apple-system,sans-serif;background:#6b4e00;color:#fff8c4;padding:4px 8px;border-radius:4px}
+.nw .t{height:120px;padding:4px 14px;font-size:19px;line-height:28px;color:#3b2f00;background:repeating-linear-gradient(transparent 0,transparent 27px,rgba(120,90,0,.22) 27px,rgba(120,90,0,.22) 28px)}
+.nw .f{font:10px -apple-system,sans-serif;color:#7a5c00;padding:4px 14px 8px 40px}
 </style></head><body>
 <h1>Grafica professionale — 3 stili</h1>
-<p class="sub">Per ogni stile: riquadro «Dettagli scala» con i tasti, linguetta Note, popup numerico, popup a scelta e finestra Note. Icone al posto delle emoji (linee sottili), angoli squadrati o quasi, niente giallo/arancio. Contenuti e funzioni restano identici.</p>
+<p class="sub">Linguetta e finestra Note restano gialle e invariate (post-it). Per ogni stile: riquadro «Dettagli scala» con i tasti, linguetta Note, popup numerico, popup a scelta e finestra Note. Icone al posto delle emoji (linee sottili), angoli squadrati o quasi, niente giallo/arancio. Contenuti e funzioni restano identici.</p>
 <div class="wrap" id="w"></div>
 <script>
 const P={
@@ -81,13 +80,13 @@ function col(k){return `<div class="col ${k}"><h2>${S[k][0]}</h2><p>${S[k][1]}</
   <div class="s">Così le do subito un'indicazione.</div>
   <div class="nav"><div class="g">${I('left')}</div><div>${I('right')}</div></div></div>
  <div class="scala"><div class="t">${I('list')} Dettagli scala da chiedere</div><div class="g4">${tiles.map(t=>`<div class="v ${t[3]?'ok':''}">${I(t[0])}${t[1]}${t[2]?`<small>${t[2]}</small>`:''}</div>`).join('')}</div></div>
- <div class="tab" style="top:40px;height:176px">${I('note')} Note</div>
+ <div class="tab" style="top:40px;height:176px">📝 NOTE</div>
 </div>
 <div class="pops">
  <div class="pop"><div class="h">${I('ruler')} Lunghezza</div><div class="c"><div class="st"><div class="b">${I('left')}</div><div class="i">6,5</div><div class="b">${I('right')}</div></div><div class="hint">passi di 0,5 m</div><div class="az"><div class="a">Annulla</div><div class="o">Conferma</div></div></div></div>
  <div class="pop"><div class="h">${I('start')} Tipo di partenza</div><div class="c"><div class="opt">Dritta</div><div class="opt sel">90°</div><div class="opt">180°</div><div class="opt">Prolungata</div></div></div>
 </div>
-<div class="nw"><div class="h">${I('clip')} Note chiamata<span class="sp"></span><span class="cl">Chiudi e salva</span></div><div class="t">Richiamare lunedì dopo le 17.<br>Vuole sentire il figlio.</div><div class="f">Resta aperta durante la telefonata. Alla chiusura il testo va nelle Note YM del lead.</div></div>
+<div class="nw"><div class="h"><span>📌 Note chiamata</span><span class="cl">Chiudi e salva</span></div><div class="t">Richiamare lunedì dopo le 17.<br>Vuole sentire il figlio.</div><div class="f">Resta aperta durante la telefonata. Alla chiusura il testo va nelle Note YM del lead.</div></div>
 </div>`}
 document.getElementById('w').innerHTML=['S1','S2','S3'].map(col).join('');
 </script></body></html>
