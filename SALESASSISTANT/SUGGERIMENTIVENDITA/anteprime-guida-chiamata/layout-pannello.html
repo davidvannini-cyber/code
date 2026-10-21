@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pannello Suggerimenti Live — 3 layout</title>
+<style>
+:root{--ink:#1a1f2e;--mute:#6b7280;--teal:#0f766e;--tealbg:rgba(20,184,166,.08);--line:rgba(20,184,166,.35);--g:#e8e8ed;--gl:#d0d0d8;--amb:#b45309;--ambbg:#fffbeb}
+*{box-sizing:border-box}
+body{margin:0;padding:14px;background:#cfd3da;font:13px/1.3 -apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
+h1{font-size:17px;margin:0 0 3px}.sub{color:#444;margin:0 0 12px;font-size:12px}
+.griglia{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.col{width:440px}
+.col>h2{font-size:12px;margin:0 0 2px;text-transform:uppercase;letter-spacing:.04em;color:var(--teal)}
+.col>p{font-size:11.5px;color:#444;margin:0 0 6px;min-height:46px}
+/* finestra finta, alta come il 60% di uno schermo */
+.win{height:660px;background:#f4f4f7;border:1px solid #9aa;box-shadow:0 3px 12px rgba(0,0,0,.2);padding:6px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.box{background:var(--g);border:1px solid var(--gl);border-radius:3px;padding:5px 8px}
+.led{display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc2626;margin-right:4px}
+.led.on{background:#16a34a}
+select{font-size:11px;padding:1px 2px;max-width:130px}
+.bt{border:0;border-radius:3px;background:#14532d;color:#fff;font-weight:600;font-size:11.5px;padding:0 10px;height:26px;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.bt.g{background:#4b5563}.bt.r{background:#b91c1c}.bt.w{background:#fff;color:var(--ink);border:1px solid var(--gl)}
+.ic{width:26px;padding:0;justify-content:center}
+.riga{display:flex;align-items:center;gap:8px}
+.sp{flex:1}
+/* guida */
+.guida{border:1px solid var(--line);background:var(--tealbg);border-radius:8px;padding:6px 8px;flex:1;min-height:0;display:flex;flex-direction:column}
+.gh{display:flex;justify-content:space-between;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--teal)}
+.gb{height:5px;background:#d1d5db;border-radius:3px;margin:3px 0 5px;overflow:hidden}.gb i{display:block;height:100%;width:45%;background:var(--teal)}
+.lista{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.s{border-radius:10px;padding:4px 9px;background:#fff;border:1px solid var(--gl);opacity:.5;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s.a{opacity:1;white-space:normal;border:2px solid var(--teal);font-size:15px;font-weight:600;line-height:1.25;padding:7px 10px;box-shadow:0 2px 6px rgba(15,118,110,.22)}
+.s.a b{color:var(--teal);font-weight:800}
+.p{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:#fee2e2;color:#b91c1c}
+.nav{display:flex;gap:5px;margin-top:5px}.nav .bt{height:28px;border-radius:10px;background:var(--teal)}.nav .bt:first-child{background:#9ca3af;width:44px;justify-content:center}.nav .bt:last-child{flex:1;justify-content:center}
+/* scala */
+.scala{border:2px solid var(--amb);background:var(--ambbg);border-radius:8px;padding:5px 7px}
+.scala .t{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--amb);margin-bottom:4px}
+.v{border:1px solid #d6b36a;background:#fff;border-radius:7px;padding:3px 6px;font-size:11px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.v.ok{background:#16a34a;border-color:#16a34a;color:#fff}
+.v em{font-style:normal;font-size:9px;font-weight:800;color:var(--amb);background:#fde9bd;border-radius:50%;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center}
+.v.ok em{background:#fff;color:#16a34a}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.g3 .gr{display:flex;flex-direction:column;gap:3px}.g3 .gr small{font-size:9px;font-weight:700;color:var(--amb);text-transform:uppercase}
+/* suggerimento + frasi */
+.att{display:flex;align-items:center;gap:8px;font-size:11.5px}
+.badge{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#6b7280;color:#fff;padding:2px 6px;border-radius:2px}
+.frasi{font-size:11px;color:var(--mute);min-height:44px}
+.frasi .et{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);margin-bottom:2px}
+.liv{height:4px;background:#d1d5db;border-radius:2px;width:70px;overflow:hidden;display:inline-block;vertical-align:middle}.liv i{display:block;width:55%;height:100%;background:#16a34a}
+.tab{display:flex;gap:4px;margin-bottom:4px}.tab span{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;background:#fff;border:1px solid var(--gl)}.tab span.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+</style>
+</head>
+<body>
+<h1>Pannello «Suggerimenti Live» — 3 layout rivisti</h1>
+<p class="sub">Finestra alta come il 60% dello schermo, larghezza reale (~440 px). Dati di prova (Grazia Saeli). In tutti e 3: frasi già dette e prossime restano visibili («effetto lente»), frase in corso più piccola di prima ma più grande delle altre, dettagli scala in ordine numerato, spazi ridotti.</p>
+
+<div class="griglia">
+
+<!-- ================= LAYOUT 1 ================= -->
+<div class="col">
+  <h2>Layout 1 · Compatto a righe</h2>
+  <p>Intestazione, pulsanti e cliente in 3 righe sottili. Audio in un piccolo menu a tendina. Dettagli scala in griglia 4×2 numerata.</p>
+  <div class="win">
+    <div class="box riga" style="padding:3px 8px"><b style="font-size:11px;letter-spacing:.03em">SUGGERIMENTI LIVE</b><span class="sp"></span><span style="font-size:10px;color:var(--mute)">🎤</span><select><option>Predefinito di sistema</option></select><span style="font-size:10px"><i class="led on"></i>connesso</span></div>
+    <div class="riga"><button class="bt">🎤 Microfono</button><button class="bt g">⏸ Pausa</button><button class="bt r">✕ Termina</button><span class="sp"></span><span style="font-size:9px;color:var(--mute)">segnale</span><span class="liv"><i></i></span></div>
+    <div class="box riga" style="padding:3px 8px"><span>👤 <b>Grazia Saeli</b></span><span class="sp"></span><span>📞 <b>3282817586</b></span><button class="bt w" style="height:22px;font-size:10.5px">Invia a telefono</button></div>
+    <div class="guida">
+      <div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
+      <div class="lista">
+        <div class="s">Siamo un servizio che lavora con i migliori produttori…</div>
+        <div class="s">Le diamo una prima valutazione di fattibilità e un'idea di prezzo…</div>
+        <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
+        <div class="s">Perfetto, grazie.</div>
+        <div class="s">Con questi elementi posso già indicare una cifra e il modello più…</div>
+      </div>
+      <div class="nav"><button class="bt">◀</button><button class="bt">AVANTI ▶</button></div>
+    </div>
+    <div class="scala"><div class="t">📋 Dettagli scala da chiedere</div>
+      <div class="g4"><div class="v ok"><em>1</em>Lunghezza</div><div class="v"><em>2</em>Int./Est.</div><div class="v ok"><em>3</em>Largh. min</div><div class="v"><em>4</em>Rampe</div>
+      <div class="v"><em>5</em>Curve</div><div class="v"><em>6</em>Partenza</div><div class="v"><em>7</em>Arrivo</div><div></div></div></div>
+    <div class="box att"><span class="badge">in attesa</span><span>In attesa del primo suggerimento…</span></div>
+    <div class="box frasi"><div class="et">Frasi cliente</div>Sì, buongiorno, mi dica pure.</div>
+  </div>
+</div>
+
+<!-- ================= LAYOUT 2 ================= -->
+<div class="col">
+  <h2>Layout 2 · Barra unica + scala a gruppi</h2>
+  <p>Tutto in alto in 2 righe: titolo, stato e audio in una; pulsanti a icona e cliente nell'altra. Scala divisa in 3 gruppi (Percorso · Struttura · Estremi).</p>
+  <div class="win">
+    <div class="box" style="padding:3px 6px">
+      <div class="riga"><b style="font-size:11px">SUGGERIMENTI LIVE</b><span style="font-size:10px"><i class="led on"></i>connesso</span><span class="sp"></span><select><option>🎤 Predefinito di sistema</option></select></div>
+      <div class="riga" style="margin-top:3px"><button class="bt ic" title="Microfono">🎤</button><button class="bt g ic" title="Pausa">⏸</button><button class="bt r ic" title="Termina">✕</button><span style="border-left:1px solid var(--gl);height:20px"></span><span style="font-size:12px"><b>Grazia Saeli</b> · <b>3282817586</b></span><span class="sp"></span><button class="bt w ic" title="Invia a telefono">📲</button></div>
+    </div>
+    <div class="guida">
+      <div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
+      <div class="lista">
+        <div class="s">Le diamo una prima valutazione di fattibilità e un'idea di prezzo…</div>
+        <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
+        <div class="s">Perfetto, grazie.</div>
+      </div>
+      <div class="nav"><button class="bt">◀</button><button class="bt">AVANTI ▶</button></div>
+    </div>
+    <div class="scala"><div class="t">📋 Dettagli scala da chiedere</div>
+      <div class="g3">
+        <div class="gr"><small>Percorso</small><div class="v ok"><em>1</em>Lunghezza</div><div class="v"><em>2</em>Interno / esterno</div><div class="v ok"><em>3</em>Larghezza min.</div></div>
+        <div class="gr"><small>Struttura</small><div class="v"><em>4</em>N° rampe</div><div class="v"><em>5</em>N° curve</div></div>
+        <div class="gr"><small>Estremi</small><div class="v"><em>6</em>Partenza</div><div class="v"><em>7</em>Arrivo</div></div>
+      </div></div>
+    <div class="box att"><span class="badge">in attesa</span><span>In attesa del primo suggerimento…</span></div>
+    <div class="box frasi" style="flex:0 0 auto"><div class="et">Frasi cliente</div>Sì, buongiorno, mi dica pure.</div>
+  </div>
+</div>
+
+<!-- ================= LAYOUT 3 ================= -->
+<div class="col">
+  <h2>Layout 3 · Guida a tutta altezza</h2>
+  <p>Massimo spazio alla guida. Controlli ridotti a una striscia. Scala fissa in basso a 7 caselle in una riga. In attesa + Frasi cliente in un solo riquadro con schede.</p>
+  <div class="win">
+    <div class="box riga" style="padding:3px 6px"><i class="led on"></i><b style="font-size:10.5px">LIVE</b><button class="bt ic">🎤</button><button class="bt g ic">⏸</button><button class="bt r ic">✕</button><span class="sp"></span><span style="font-size:11.5px"><b>Grazia Saeli</b> · <b>3282817586</b></span><button class="bt w ic">📲</button><button class="bt w ic" title="Audio: Predefinito di sistema">⚙</button></div>
+    <div class="guida">
+      <div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
+      <div class="lista">
+        <div class="s">Siamo un servizio che lavora con i migliori produttori…</div>
+        <div class="s">Le diamo una prima valutazione di fattibilità e un'idea di prezzo…</div>
+        <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
+        <div class="s">Perfetto, grazie.</div>
+        <div class="s">Con questi elementi posso già indicare una cifra e il modello più…</div>
+        <div class="s">Se la cifra la convince, procediamo subito con la proposta…</div>
+      </div>
+      <div class="nav"><button class="bt">◀</button><button class="bt">AVANTI ▶</button></div>
+    </div>
+    <div class="scala" style="padding:4px 6px"><div class="t" style="margin-bottom:3px">📋 Scala · chiedi</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">
+        <div class="v ok" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>📏</span>Lungh.</div>
+        <div class="v" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>🏠</span>Int/Est</div>
+        <div class="v ok" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>↔️</span>Largh.</div>
+        <div class="v" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>📐</span>Rampe</div>
+        <div class="v" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>↪️</span>Curve</div>
+        <div class="v" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>⬇️</span>Parten.</div>
+        <div class="v" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>⬆️</span>Arrivo</div>
+      </div></div>
+    <div class="box" style="padding:4px 6px"><div class="tab"><span class="on">Suggerimento</span><span>Frasi cliente</span></div><div class="att"><span class="badge">in attesa</span><span>In attesa del primo suggerimento…</span></div></div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
