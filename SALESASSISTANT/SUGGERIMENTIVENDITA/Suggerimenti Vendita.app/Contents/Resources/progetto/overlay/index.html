@@ -8,7 +8,7 @@
     --colore-apertura: #3b82f6;
     --colore-scoperta: #14b8a6;
     --colore-presentazione: #8b5cf6;
-    --colore-obiezioni: #f59e0b;
+    --colore-obiezioni: #9f1d1d;
     --colore-chiusura: #22c55e;
     --colore-default: #6b7280;
   }
@@ -446,6 +446,51 @@
   #misura-opzioni { display: none; flex-direction: column; gap: 6px; }
   #misura-opzioni button { height: 40px; border: 2px solid #0f766e; border-radius: 10px; background: #fff; color: #0f766e; font-weight: 800; font-size: 15px; cursor: pointer; }
   #misura-opzioni button.sel { background: #0f766e; color: #fff; }
+
+  /* ===== Stile 2 "grafite e verde" (approvato): angoli squadrati, niente giallo/arancio
+     (la linguetta Note e la finestra Note restano gialle di proposito) ===== */
+  :root { --gf: #2f3a45; --gf2: #1c2228; --bd2: #b9c0c7; --mu2: #5d666f; --vd: #0f766e; }
+  body { background: #eef0f2; color: #1c2228; }
+  .ic { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.14em; flex: none; }
+  .navbar-overlay { background: #e3e7ea; border: 1px solid var(--bd2); border-radius: 0; }
+  .btn-large, #selettore-microfono { border-radius: 0 !important; }
+  #pulsante-pausa.in-pausa { background: #e3e7ea; border-color: var(--gf); color: var(--gf2); }
+  #pulsante-termina { border-color: rgba(159,29,29,.45); background: rgba(159,29,29,.08); color: #9f1d1d; }
+  .riquadro { background: #fff; border: 1px solid var(--bd2); border-radius: 0; }
+  #lead-info { background: #fff; }
+  #riquadro-canovaccio { background: #fff; border: 1px solid var(--bd2); border-radius: 0; }
+  .etichetta-canovaccio, #guida-cont { color: var(--mu2); }
+  #guida-barra { background: var(--bd2); border-radius: 0; height: 4px; }
+  #guida-barra div { background: var(--gf); }
+  .guida-scheda { border-radius: 0; background: #eef0f2; color: var(--mu2); border: 1px solid var(--bd2); }
+  .guida-scheda.f:before { color: var(--vd); }
+  .guida-scheda.att { background: #fff; color: #1c2228; border: 2px solid var(--gf); box-shadow: none; }
+  .guida-scheda.att b { color: var(--gf); }
+  .guida-pausa { border-radius: 0; }
+  .guida-pausa.R { background: #e3e7ea; color: var(--gf); }
+  .guida-pausa.P { background: #e3e7ea; color: var(--gf); }
+  .guida-pausa.S { background: #f6e3e3; color: #9f1d1d; }
+  #guida-nav button { border-radius: 0 !important; background: var(--gf); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  #guida-nav #guida-indietro { background: #8b95a1 !important; }
+  #guida-scala { border: 1px solid var(--gf); background: #fff; border-radius: 0; padding: 0; margin-top: 6px; }
+  #guida-scala .tit { display: flex; align-items: center; gap: 6px; margin: 0; padding: 4px 8px; background: var(--gf); color: #fff; letter-spacing: .05em; }
+  #guida-scala .voci { padding: 6px; }
+  #guida-scala .voce { border: 1px solid var(--bd2); background: #fff; border-radius: 0; color: #1c2228; padding: 5px 2px 4px; }
+  #guida-scala .voce .ic { display: block; margin: 0 auto 2px; font-size: 17px; color: var(--gf); }
+  #guida-scala .voce small { color: var(--gf); }
+  #guida-scala .voce.ok { background: var(--vd); border-color: var(--vd); color: #fff; }
+  #guida-scala .voce.ok .ic, #guida-scala .voce.ok small { color: #fff; }
+  #vela-misura .pop { border-radius: 0; padding: 0; overflow: hidden; border: 1px solid var(--bd2); }
+  #vela-misura h3 { margin: 0; padding: 9px 12px; background: var(--gf); color: #fff; font-size: 13px; display: flex; align-items: center; gap: 7px; }
+  #vela-misura .corpo { padding: 12px; }
+  #vela-misura input { border: 1px solid var(--gf) !important; border-radius: 0 !important; }
+  #misura-stepper button { background: var(--gf); border-radius: 0; display: flex; align-items: center; justify-content: center; }
+  #misura-stepper button:active { background: var(--gf2); }
+  #misura-passo { color: var(--mu2); }
+  #misura-opzioni button { border: 1px solid var(--bd2); border-radius: 0; background: #fff; color: #1c2228; height: 38px; }
+  #misura-opzioni button.sel { background: var(--gf); border-color: var(--gf); color: #fff; }
+  #vela-misura .az button { border-radius: 0; background: var(--gf); }
+  #vela-misura .az button.ann { background: #eef0f2; color: var(--mu2); border: 1px solid var(--bd2); }
 </style>
 </head>
 <body>
@@ -512,8 +557,8 @@
     <div id="guida-testa"><div class="etichetta-canovaccio">Guida chiamata</div><div id="guida-cont"></div></div>
     <div id="guida-barra"><div></div></div>
     <div id="canovaccio-testo"></div>
-    <div id="guida-nav"><button id="guida-indietro" title="Passo precedente">◀</button><button id="guida-avanti" title="Passo successivo">▶</button></div>
-    <div id="guida-scala"><div class="tit">📋 Dettagli scala da chiedere (tocca per inserire)</div><div class="voci"></div></div>
+    <div id="guida-nav"><button id="guida-indietro" title="Passo precedente" data-icona="left"></button><button id="guida-avanti" title="Passo successivo" data-icona="right"></button></div>
+    <div id="guida-scala"><div class="tit"><span data-icona="list"></span>Dettagli scala da chiedere</div><div class="voci"></div></div>
   </div>
 
   <div class="riquadro riquadro-sugg">
@@ -531,10 +576,12 @@
 
   <div id="vela-misura"><div class="pop">
     <h3 id="misura-titolo"></h3>
-    <div id="misura-stepper"><button id="misura-meno" title="Diminuisci">◀</button><input id="misura-valore" autocomplete="off" inputmode="decimal" placeholder="valore"><button id="misura-piu" title="Aumenta">▶</button></div>
+    <div class="corpo">
+    <div id="misura-stepper"><button id="misura-meno" title="Diminuisci" data-icona="left"></button><input id="misura-valore" autocomplete="off" inputmode="decimal" placeholder="valore"><button id="misura-piu" title="Aumenta" data-icona="right"></button></div>
     <div id="misura-passo"></div>
     <div id="misura-opzioni"></div>
     <div class="az"><button class="ann" id="misura-annulla">Annulla</button><button id="misura-ok">Conferma</button></div>
+    </div>
   </div></div>
 
   <div class="footer-copyright">© Designed and krafted by Momandis David Vannini</div>
@@ -1124,17 +1171,33 @@
   // Facoltativi: **grassetto**, e a fine passo [R] respiro, [P] pausa,
   // [S] stop-ascolta. Senza segni: finisce con "?" -> STOP, altrimenti respiro.
   (function () {
-    // icona, nome nel popup / nelle Note, nome corto sul tasto, tipo di campo:
+    // Icone a linee (SVG inline, stile Lucide).
+    const ICONE = {
+      ruler: '<path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/>',
+      home: '<path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+      width: '<path d="M3 12h18"/><path d="m7 8-4 4 4 4"/><path d="m17 8 4 4-4 4"/>',
+      ramp: '<path d="M3 20h5v-4h5v-4h5V8h3"/><path d="M3 20V4"/>',
+      c90: '<path d="M6 20V10a4 4 0 0 1 4-4h8"/><path d="m14 2 4 4-4 4"/>',
+      c180: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+      start: '<path d="M12 3v14"/><path d="m6 11 6 6 6-6"/><path d="M4 21h16"/>',
+      end: '<path d="M12 21V7"/><path d="m6 13 6-6 6 6"/><path d="M4 3h16"/>',
+      left: '<path d="m14 6-6 6 6 6"/>', right: '<path d="m10 6 6 6-6 6"/>',
+      check: '<path d="m5 12 5 5 9-10"/>',
+      list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>' };
+    const icona = (n) => '<svg class="ic" viewBox="0 0 24 24">' + ICONE[n] + '</svg>';
+    window.svIcona = icona;
+    document.querySelectorAll("[data-icona]").forEach((e) => { e.innerHTML = icona(e.dataset.icona); });
+    // ic = chiave icona, nome nel popup / nelle Note, nome corto sul tasto, tipo di campo:
     //   num = testo modificabile + ◀ ▶ a passi (min 0), unità facoltativa; sel = scelta fra opzioni.
     const DETTAGLI_SCALA = [
-      { ic: "📏", nome: "Lunghezza", corto: "Lunghezza", tipo: "num", passo: 0.5, unita: "m" },
-      { ic: "🏠", nome: "Interno / esterno", corto: "Interno/Esterno", tipo: "sel", opzioni: ["Interno", "Esterno"] },
-      { ic: "↔️", nome: "Larghezza minima", corto: "Larghezza min.", tipo: "num", passo: 0.05, unita: "m" },
-      { ic: "📐", nome: "N° rampe", corto: "N° rampe", tipo: "num", passo: 1 },
-      { ic: "↪️", nome: "Curve 90°", corto: "Curve 90°", tipo: "num", passo: 1 },
-      { ic: "↩️", nome: "Curve 180°", corto: "Curve 180°", tipo: "num", passo: 1 },
-      { ic: "⬇️", nome: "Tipo di partenza", corto: "Partenza", tipo: "sel", opzioni: ["Dritta", "90°", "180°", "Prolungata"] },
-      { ic: "⬆️", nome: "Tipo di arrivo", corto: "Arrivo", tipo: "sel", opzioni: ["Filo Gradino", "90°", "180°", "Prolungata"] }];
+      { ic: "ruler", nome: "Lunghezza", corto: "Lunghezza", tipo: "num", passo: 0.5, unita: "m" },
+      { ic: "home", nome: "Interno / esterno", corto: "Interno/Esterno", tipo: "sel", opzioni: ["Interno", "Esterno"] },
+      { ic: "width", nome: "Larghezza minima", corto: "Larghezza min.", tipo: "num", passo: 0.05, unita: "m" },
+      { ic: "ramp", nome: "N° rampe", corto: "N° rampe", tipo: "num", passo: 1 },
+      { ic: "c90", nome: "Curve 90°", corto: "Curve 90°", tipo: "num", passo: 1 },
+      { ic: "c180", nome: "Curve 180°", corto: "Curve 180°", tipo: "num", passo: 1 },
+      { ic: "start", nome: "Tipo di partenza", corto: "Partenza", tipo: "sel", opzioni: ["Dritta", "90°", "180°", "Prolungata"] },
+      { ic: "end", nome: "Tipo di arrivo", corto: "Arrivo", tipo: "sel", opzioni: ["Filo Gradino", "90°", "180°", "Prolungata"] }];
     const valoriScala = {}; // indice -> testo inserito
     window.svMisure = () => DETTAGLI_SCALA.map((d, k) => valoriScala[k] ? [d.nome, valoriScala[k]] : null).filter(Boolean);
     const ETICHETTE = { R: "respiro · 1 s", P: "pausa · 2 s", S: "STOP · ascolta" };
@@ -1195,7 +1258,7 @@
       });
       document.getElementById("guida-cont").textContent = (attivo + 1) + "/" + passi.length;
       document.querySelector("#guida-barra div").style.width = ((attivo + 1) / passi.length * 100) + "%";
-      document.getElementById("guida-avanti").textContent = attivo >= passi.length - 1 ? "✔" : "▶";
+      document.getElementById("guida-avanti").innerHTML = window.svIcona(attivo >= passi.length - 1 ? "check" : "right");
     }
 
     function disegnaScala() {
@@ -1204,8 +1267,7 @@
       DETTAGLI_SCALA.forEach((v, k) => {
         const e = document.createElement("div");
         e.className = "voce" + (valoriScala[k] ? " ok" : "");
-        const ic = document.createElement("span"); ic.textContent = v.ic;
-        e.appendChild(ic); e.appendChild(document.createTextNode(v.corto));
+        e.insertAdjacentHTML("beforeend", icona(v.ic)); e.appendChild(document.createTextNode(v.corto));
         if (valoriScala[k]) { const sm = document.createElement("small"); sm.textContent = valoriScala[k]; e.appendChild(sm); }
         e.onclick = () => apriMisura(k);
         c.appendChild(e);
@@ -1221,7 +1283,8 @@
     function apriMisura(k) {
       misuraCorrente = k;
       const d = DETTAGLI_SCALA[k];
-      document.getElementById("misura-titolo").textContent = d.ic + " " + d.nome;
+      document.getElementById("misura-titolo").innerHTML = icona(d.ic);
+      document.getElementById("misura-titolo").appendChild(document.createTextNode(d.nome));
       const num = d.tipo === "num";
       elStepper.style.display = num ? "flex" : "none";
       elPasso.style.display = num ? "block" : "none";
@@ -1230,7 +1293,7 @@
       if (num) {
         const n = numero(valoriScala[k] || "");
         elVal.value = isNaN(n) ? "" : formatta(n);
-        elPasso.textContent = "◀ ▶ = passi di " + formatta(d.passo) + (d.unita ? " " + d.unita : "");
+        elPasso.textContent = "Passi di " + formatta(d.passo) + (d.unita ? " " + d.unita : "");
       } else {
         elOpz.textContent = "";
         d.opzioni.forEach((o) => {
