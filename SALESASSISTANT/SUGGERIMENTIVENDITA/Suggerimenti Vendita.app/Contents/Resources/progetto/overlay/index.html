@@ -447,50 +447,59 @@
   #misura-opzioni button { height: 40px; border: 2px solid #0f766e; border-radius: 10px; background: #fff; color: #0f766e; font-weight: 800; font-size: 15px; cursor: pointer; }
   #misura-opzioni button.sel { background: #0f766e; color: #fff; }
 
-  /* ===== Stile 2 "grafite e verde" (approvato): angoli squadrati, niente giallo/arancio
-     (la linguetta Note e la finestra Note restano gialle di proposito) ===== */
-  :root { --gf: #2f3a45; --gf2: #1c2228; --bd2: #b9c0c7; --mu2: #5d666f; --vd: #0f766e; }
-  body { background: #eef0f2; color: #1c2228; }
+  /* ===== Stile 1 "blu istituzionale" (approvato): angoli quasi squadrati (2px), blu navy,
+     valori compilati in VERDE; niente giallo/arancio (la linguetta Note e la finestra Note
+     restano gialle di proposito) ===== */
+  :root { --gf: #1f4e79; --gf2: #163a5c; --bd2: #c5cdd8; --mu2: #5b6b7f; --vd: #0f766e; --tint: #e6eef6; --bg1: #f4f6f9; --ink1: #1b2a3d; --r: 2px; }
+  body { background: var(--bg1); color: var(--ink1); }
   .ic { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.14em; flex: none; }
-  .navbar-overlay { background: #e3e7ea; border: 1px solid var(--bd2); border-radius: 0; }
-  .btn-large, #selettore-microfono { border-radius: 0 !important; }
-  #pulsante-pausa.in-pausa { background: #e3e7ea; border-color: var(--gf); color: var(--gf2); }
+  .navbar-overlay { background: var(--tint); border: 1px solid var(--bd2); border-radius: var(--r); }
+  .btn-large, #selettore-microfono { border-radius: var(--r) !important; }
+  #pulsante-pausa.in-pausa { background: var(--tint); border-color: var(--gf); color: var(--gf2); }
   #pulsante-termina { border-color: rgba(159,29,29,.45); background: rgba(159,29,29,.08); color: #9f1d1d; }
-  .riquadro { background: #fff; border: 1px solid var(--bd2); border-radius: 0; }
+  .riquadro { background: #fff; border: 1px solid var(--bd2); border-radius: var(--r); }
   #lead-info { background: #fff; }
-  #riquadro-canovaccio { background: #fff; border: 1px solid var(--bd2); border-radius: 0; }
+  #riquadro-canovaccio { background: #fff; border: 1px solid var(--bd2); border-radius: var(--r); }
   .etichetta-canovaccio, #guida-cont { color: var(--mu2); }
-  #guida-barra { background: var(--bd2); border-radius: 0; height: 4px; }
+  #guida-barra { background: var(--bd2); border-radius: var(--r); height: 4px; }
   #guida-barra div { background: var(--gf); }
-  .guida-scheda { border-radius: 0; background: #eef0f2; color: var(--mu2); border: 1px solid var(--bd2); }
+  .guida-scheda { border-radius: var(--r); background: var(--bg1); color: var(--mu2); border: 1px solid var(--bd2); }
   .guida-scheda.f:before { color: var(--vd); }
-  .guida-scheda.att { background: #fff; color: #1c2228; border: 2px solid var(--gf); box-shadow: none; }
+  .guida-scheda.att { background: #fff; color: var(--ink1); border: 2px solid var(--gf); box-shadow: none; }
   .guida-scheda.att b { color: var(--gf); }
-  .guida-pausa { border-radius: 0; }
-  .guida-pausa.R { background: #e3e7ea; color: var(--gf); }
-  .guida-pausa.P { background: #e3e7ea; color: var(--gf); }
-  .guida-pausa.S { background: #f6e3e3; color: #9f1d1d; }
-  #guida-nav button { border-radius: 0 !important; background: var(--gf); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .guida-pausa { border-radius: var(--r); }
+  .guida-pausa.R { background: var(--tint); color: var(--gf); }
+  .guida-pausa.P { background: var(--tint); color: var(--gf); }
+  .guida-pausa.S { background: #f8e4e4; color: #9f1d1d; }
+  #guida-nav button { border-radius: var(--r) !important; background: var(--gf); display: flex; align-items: center; justify-content: center; font-size: 18px; }
   #guida-nav #guida-indietro { background: #8b95a1 !important; }
-  #guida-scala { border: 1px solid var(--gf); background: #fff; border-radius: 0; padding: 0; margin-top: 6px; }
-  #guida-scala .tit { display: flex; align-items: center; gap: 6px; margin: 0; padding: 4px 8px; background: var(--gf); color: #fff; letter-spacing: .05em; }
-  #guida-scala .voci { padding: 6px; }
-  #guida-scala .voce { border: 1px solid var(--bd2); background: #fff; border-radius: 0; color: #1c2228; padding: 5px 2px 4px; }
-  #guida-scala .voce .ic { display: block; margin: 0 auto 2px; font-size: 17px; color: var(--gf); }
-  #guida-scala .voce small { color: var(--gf); }
+  /* dettagli scala: riquadro compatto, tasti a riga unica (icona + nome/valore), altezza fissa */
+  #guida-scala { border: 1px solid var(--gf); background: #fff; border-radius: var(--r); padding: 0; margin-top: 6px; }
+  #guida-scala .tit { display: flex; align-items: center; gap: 6px; margin: 0; padding: 3px 8px; background: var(--gf); color: #fff; letter-spacing: .05em; font-size: 9px; }
+  #guida-scala .voci { padding: 4px; gap: 3px; }
+  #guida-scala .voce { display: flex; align-items: center; gap: 4px; height: 30px; padding: 2px 4px; text-align: left; border: 1px solid var(--bd2); background: #fff; border-radius: var(--r); color: var(--ink1); overflow: hidden; }
+  #guida-scala .voce .ic { display: block; margin: 0; font-size: 14px; color: var(--gf); }
+  #guida-scala .voce .tx { min-width: 0; flex: 1; line-height: 1.1; font-size: 9.5px; font-weight: 700; }
+  #guida-scala .voce .tx span { font-size: 9.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #guida-scala .voce .tx small { display: block; font-size: 9.5px; font-weight: 800; color: var(--vd); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #guida-scala .voce.ok { background: var(--vd); border-color: var(--vd); color: #fff; }
-  #guida-scala .voce.ok .ic, #guida-scala .voce.ok small { color: #fff; }
-  #vela-misura .pop { border-radius: 0; padding: 0; overflow: hidden; border: 1px solid var(--bd2); }
+  #guida-scala .voce.ok .ic, #guida-scala .voce.ok .tx small { color: #fff; }
+  /* "In attesa" / suggerimento: spazio per 5 righe di testo */
+  .riquadro-sugg { align-items: flex-start; }
+  .riquadro-sugg #fase-badge { margin-top: 2px; }
+  #suggerimento-principale { flex: 1; min-height: calc(5 * 1.3em); line-height: 1.3; }
+  /* popup */
+  #vela-misura .pop { border-radius: var(--r); padding: 0; overflow: hidden; border: 1px solid var(--bd2); }
   #vela-misura h3 { margin: 0; padding: 9px 12px; background: var(--gf); color: #fff; font-size: 13px; display: flex; align-items: center; gap: 7px; }
   #vela-misura .corpo { padding: 12px; }
-  #vela-misura input { border: 1px solid var(--gf) !important; border-radius: 0 !important; }
-  #misura-stepper button { background: var(--gf); border-radius: 0; display: flex; align-items: center; justify-content: center; }
+  #vela-misura input { border: 1px solid var(--gf) !important; border-radius: var(--r) !important; }
+  #misura-stepper button { background: var(--gf); border-radius: var(--r); display: flex; align-items: center; justify-content: center; }
   #misura-stepper button:active { background: var(--gf2); }
   #misura-passo { color: var(--mu2); }
-  #misura-opzioni button { border: 1px solid var(--bd2); border-radius: 0; background: #fff; color: #1c2228; height: 38px; }
-  #misura-opzioni button.sel { background: var(--gf); border-color: var(--gf); color: #fff; }
-  #vela-misura .az button { border-radius: 0; background: var(--gf); }
-  #vela-misura .az button.ann { background: #eef0f2; color: var(--mu2); border: 1px solid var(--bd2); }
+  #misura-opzioni button { border: 1px solid var(--bd2); border-radius: var(--r); background: #fff; color: var(--ink1); height: 38px; }
+  #misura-opzioni button.sel { background: var(--vd); border-color: var(--vd); color: #fff; }
+  #vela-misura .az button { border-radius: var(--r); background: var(--gf); }
+  #vela-misura .az button.ann { background: var(--bg1); color: var(--mu2); border: 1px solid var(--bd2); }
 </style>
 </head>
 <body>
@@ -1191,8 +1200,8 @@
     //   num = testo modificabile + ◀ ▶ a passi (min 0), unità facoltativa; sel = scelta fra opzioni.
     const DETTAGLI_SCALA = [
       { ic: "ruler", nome: "Lunghezza", corto: "Lunghezza", tipo: "num", passo: 0.5, unita: "m" },
-      { ic: "home", nome: "Interno / esterno", corto: "Interno/Esterno", tipo: "sel", opzioni: ["Interno", "Esterno"] },
-      { ic: "width", nome: "Larghezza minima", corto: "Larghezza min.", tipo: "num", passo: 0.05, unita: "m" },
+      { ic: "home", nome: "Interno / esterno", corto: "Int./Esterno", tipo: "sel", opzioni: ["Interno", "Esterno"] },
+      { ic: "width", nome: "Larghezza minima", corto: "Largh. min.", tipo: "num", passo: 0.05, unita: "m" },
       { ic: "ramp", nome: "N° rampe", corto: "N° rampe", tipo: "num", passo: 1 },
       { ic: "c90", nome: "Curve 90°", corto: "Curve 90°", tipo: "num", passo: 1 },
       { ic: "c180", nome: "Curve 180°", corto: "Curve 180°", tipo: "num", passo: 1 },
@@ -1267,8 +1276,11 @@
       DETTAGLI_SCALA.forEach((v, k) => {
         const e = document.createElement("div");
         e.className = "voce" + (valoriScala[k] ? " ok" : "");
-        e.insertAdjacentHTML("beforeend", icona(v.ic)); e.appendChild(document.createTextNode(v.corto));
-        if (valoriScala[k]) { const sm = document.createElement("small"); sm.textContent = valoriScala[k]; e.appendChild(sm); }
+        e.insertAdjacentHTML("beforeend", icona(v.ic));
+        const tx = document.createElement("div"); tx.className = "tx";
+        const nome = document.createElement("span"); nome.textContent = v.corto; tx.appendChild(nome);
+        if (valoriScala[k]) { const sm = document.createElement("small"); sm.textContent = valoriScala[k]; tx.appendChild(sm); }
+        e.appendChild(tx);
         e.onclick = () => apriMisura(k);
         c.appendChild(e);
       });
