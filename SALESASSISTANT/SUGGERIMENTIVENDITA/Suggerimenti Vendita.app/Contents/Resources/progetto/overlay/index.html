@@ -278,6 +278,36 @@
     margin-bottom: 0;
   }
 
+
+  /* Guida chiamata: una frase alla volta. Angoli arrotondati (10px) di
+     proposito: devono distinguersi dal resto del pannello (raggio 2px). */
+  #riquadro-canovaccio { border-radius: 10px; }
+  #guida-testa { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+  #guida-testa .etichetta-canovaccio { margin-bottom:0; }
+  #guida-cont { font-size:11px; font-weight:700; color:#0f766e; }
+  #guida-barra { height:6px; background:#d1d5db; border-radius:3px; margin-bottom:7px; overflow:hidden; }
+  #guida-barra div { height:100%; width:0; background:#0f766e; transition:width .2s; }
+  .guida-scheda { border-radius:10px; padding:6px 9px; margin-bottom:5px; background:#fff;
+    border:1px solid #d0d0d8; opacity:.5; cursor:pointer; font-size:12px; line-height:1.25;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .guida-scheda.att { opacity:1; white-space:normal; border:2px solid #0f766e;
+    box-shadow:0 2px 8px rgba(15,118,110,.25); font-size:19px; line-height:1.25; font-weight:600; padding:9px 11px; }
+  .guida-scheda.att b, .guida-scheda b { font-weight:800; }
+  .guida-scheda.att b { color:#0f766e; }
+  .guida-pausa { display:inline-block; margin-top:6px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; }
+  .guida-pausa.R { background:#dbeafe; color:#1d4ed8; }
+  .guida-pausa.P { background:#fef3c7; color:#b45309; }
+  .guida-pausa.S { background:#fee2e2; color:#b91c1c; }
+  #guida-nav { display:flex; gap:6px; margin-top:3px; }
+  #guida-nav button { border:0; border-radius:10px; padding:9px; font-weight:700; font-size:14px; cursor:pointer; color:#fff; background:#0f766e; }
+  #guida-avanti { flex:1; }
+  #guida-indietro { flex:0 0 52px; background:#9ca3af !important; }
+  #guida-scala { margin-top:8px; border:2px solid #b45309; background:#fffbeb; border-radius:10px; padding:7px 9px; }
+  #guida-scala .tit { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:#b45309; margin-bottom:5px; }
+  #guida-scala .voci { display:flex; flex-wrap:wrap; gap:5px; }
+  #guida-scala .voce { border:1px solid #d6b36a; background:#fff; border-radius:10px; padding:4px 8px; font-size:12px; font-weight:600; cursor:pointer; user-select:none; }
+  #guida-scala .voce.ok { background:#16a34a; border-color:#16a34a; color:#fff; text-decoration:line-through; }
+
   #fase-badge {
     display: inline-block;
     padding: 3px 8px;
@@ -408,8 +438,11 @@
   </div>
 
   <div class="riquadro" id="riquadro-canovaccio" style="display:none;">
-    <div class="etichetta-canovaccio">Guida chiamata</div>
+    <div id="guida-testa"><div class="etichetta-canovaccio">Guida chiamata</div><div id="guida-cont"></div></div>
+    <div id="guida-barra"><div></div></div>
     <div id="canovaccio-testo"></div>
+    <div id="guida-nav"><button id="guida-indietro" title="Passo precedente">◀</button><button id="guida-avanti">AVANTI ▶</button></div>
+    <div id="guida-scala"><div class="tit">📋 Chiedi i dettagli della scala (tocca per spuntare)</div><div class="voci"></div></div>
   </div>
 
   <div class="riquadro">
@@ -970,14 +1003,7 @@
       }
 
       if (msg.tipo === "canovaccio") {
-        const contenitore = document.getElementById("canovaccio-testo");
-        contenitore.textContent = "";
-        msg.testo.split(/\n\s*\n/).forEach((paragrafo) => {
-          const p = document.createElement("p");
-          p.textContent = paragrafo.trim();
-          contenitore.appendChild(p);
-        });
-        document.getElementById("riquadro-canovaccio").style.display = "block";
+        window.mostraGuida(msg.testo);
       }
 
       if (msg.tipo === "trascrizione") {
@@ -1008,6 +1034,97 @@
   }
 
   connetti();
+
+  // ---- Guida chiamata: una frase alla volta -------------------------------
+  // Il testo arriva dal server (canovaccio fisso) o dall'estensione
+  // (script del lead): chiamano entrambi window.mostraGuida(testo).
+  // Formato: un paragrafo (riga vuota tra l'uno e l'altro) = un passo.
+  // Facoltativi: **grassetto**, e a fine passo [R] respiro, [P] pausa,
+  // [S] stop-ascolta. Senza segni: finisce con "?" -> STOP, altrimenti respiro.
+  (function () {
+    const DETTAGLI_SCALA = ["📏 Lunghezza", "🏠 Interno / esterno", "↔️ Larghezza minima",
+      "📐 N° rampe", "↪️ N° curve", "⬇️ Tipo di partenza", "⬆️ Tipo di arrivo"];
+    const ETICHETTE = { R: "respiro · 1 s", P: "pausa · 2 s", S: "STOP · ascolta" };
+    let passi = [], attivo = 0, testoCorrente = null, spuntati = new Set();
+    const elLista = document.getElementById("canovaccio-testo");
+
+    function spezza(testo) {
+      const out = [];
+      testo.split(/\n\s*\n/).forEach((par) => {
+        par = par.trim();
+        if (!par) return;
+        let m = par.match(/\s*\[([RPS])\]\s*$/i);
+        if (m) { out.push({ t: par.slice(0, m.index), pausa: m[1].toUpperCase() }); return; }
+        const frasi = par.length > 140 ? par.split(/(?<=[.!?])\s+/) : [par];
+        let corrente = "";
+        frasi.concat([null]).forEach((f) => {
+          if (f !== null && (corrente + " " + f).trim().length <= 140) { corrente = (corrente + " " + f).trim(); return; }
+          if (corrente) out.push({ t: corrente, pausa: /\?\s*$/.test(corrente) ? "S" : "R" });
+          corrente = f === null ? "" : f;
+        });
+      });
+      return out;
+    }
+
+    function conGrassetto(el, testo) {
+      testo.split(/\*\*(.+?)\*\*/g).forEach((parte, i) => {
+        if (!parte) return;
+        const n = i % 2 ? document.createElement("b") : document.createElement("span");
+        n.textContent = parte;
+        el.appendChild(n);
+      });
+    }
+
+    function disegna() {
+      elLista.textContent = "";
+      passi.forEach((p, k) => {
+        if (k < attivo || k > attivo + 2) return; // fatti nascosti, mostro attivo + 2 prossimi
+        const d = document.createElement("div");
+        d.className = "guida-scheda" + (k === attivo ? " att" : "");
+        conGrassetto(d, p.t);
+        if (k === attivo) {
+          const b = document.createElement("div");
+          b.className = "guida-pausa " + p.pausa;
+          b.textContent = ETICHETTE[p.pausa];
+          d.appendChild(b);
+        }
+        d.onclick = () => { attivo = k; disegna(); };
+        elLista.appendChild(d);
+      });
+      document.getElementById("guida-cont").textContent = (attivo + 1) + "/" + passi.length;
+      document.querySelector("#guida-barra div").style.width = ((attivo + 1) / passi.length * 100) + "%";
+      document.getElementById("guida-avanti").textContent = attivo >= passi.length - 1 ? "FINE ✔" : "AVANTI ▶";
+    }
+
+    function disegnaScala() {
+      const c = document.querySelector("#guida-scala .voci");
+      c.textContent = "";
+      DETTAGLI_SCALA.forEach((v, k) => {
+        const e = document.createElement("span");
+        e.className = "voce" + (spuntati.has(k) ? " ok" : "");
+        e.textContent = v;
+        e.onclick = () => { spuntati.has(k) ? spuntati.delete(k) : spuntati.add(k); disegnaScala(); };
+        c.appendChild(e);
+      });
+    }
+
+    window.mostraGuida = function (testo) {
+      if (!testo) return;
+      if (testo !== testoCorrente) { // stesso testo ripetuto: non perdere il punto raggiunto
+        testoCorrente = testo; passi = spezza(testo); attivo = 0; spuntati = new Set();
+        disegnaScala();
+      }
+      if (!passi.length) return;
+      disegna();
+      document.getElementById("riquadro-canovaccio").style.display = "block";
+    };
+    // Testo mandato dall'estensione (script del lead), vedi suggerimenti-vendita-content.js
+    document.addEventListener("guida-aggiorna", () => {
+      window.mostraGuida(document.getElementById("riquadro-canovaccio").getAttribute("data-guida-testo"));
+    });
+    document.getElementById("guida-avanti").onclick = () => { if (attivo < passi.length - 1) { attivo++; disegna(); } };
+    document.getElementById("guida-indietro").onclick = () => { if (attivo > 0) { attivo--; disegna(); } };
+  })();
 </script>
 
 </body>

@@ -30,6 +30,9 @@ Copre le sessioni del **21–29 settembre 2026**. Le parti che riguardano l'inte
 > **Come David sincronizza (chiarito il 2026-10-20):** usa l'icona **«Sync»** sulla scrivania, che lancia `Sync.command` nella radice del repo. Lo script trova da solo la cartella `code` (prima dove si trova lui, poi `~/Documents/progetti/code`, `~/Documents/code`, `~/code`), fa `git pull --ff-only` di **tutto il repository** `code` (non solo SALESASSISTANT; solo avanzamento, mai forzato: se non riesce non cambia nulla e lascia la finestra aperta con l'errore), poi scrive «Fatto», aspetta 3 secondi e chiude la finestra di Terminale. Quindi a David si dice **«Fai Sync»**, non di scrivere comandi `git pull` a mano.
 > Dopo il Sync, se l'app era aperta va chiusa del tutto (Cmd+Q): il server resta vivo tra una chiamata e l'altra e non ricarica il codice.
 
+### Guida chiamata (aggiornata 2026-10-21)
+Riquadro verde in `overlay/index.html`: **una frase alla volta** (passo attivo grande + 2 successivi sfumati, barra di avanzamento, tasti AVANTI/◀), schede con angoli arrotondati 10px (volutamente diversi dal resto, raggio 2px) e riquadro arancione «Chiedi i dettagli della scala» con 7 voci spuntabili (lunghezza, interno/esterno, larghezza minima, n° rampe, n° curve, tipo di partenza, tipo di arrivo). Funzione `window.mostraGuida(testo)`: un paragrafo = un passo; facoltativi `**grassetto**` e a fine passo `[R]` respiro 1 s, `[P]` pausa 2 s, `[S]` stop-ascolta; senza segni, «?» finale = STOP e i paragrafi lunghi (>140 caratteri) si spezzano a frasi. Lo script del lead (estensione `suggerimenti-vendita-content.js`) passa il testo con attributo `data-guida-testo` + evento `guida-aggiorna` (il content script non vede le funzioni della pagina). Canovaccio fisso riscritto con i segni. Non provato: Chrome vero con l'estensione e una chiamata reale (provato solo in browser di prova).
+
 ---
 
 ## 2. Cosa funziona

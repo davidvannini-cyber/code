@@ -1118,6 +1118,10 @@
       disegna();
       document.getElementById("riquadro-canovaccio").style.display = "block";
     };
+    // Testo mandato dall'estensione (script del lead), vedi suggerimenti-vendita-content.js
+    document.addEventListener("guida-aggiorna", () => {
+      window.mostraGuida(document.getElementById("riquadro-canovaccio").getAttribute("data-guida-testo"));
+    });
     document.getElementById("guida-avanti").onclick = () => { if (attivo < passi.length - 1) { attivo++; disegna(); } };
     document.getElementById("guida-indietro").onclick = () => { if (attivo > 0) { attivo--; disegna(); } };
   })();
