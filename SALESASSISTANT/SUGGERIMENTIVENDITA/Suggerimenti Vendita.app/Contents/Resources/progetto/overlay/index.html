@@ -437,8 +437,6 @@
     font: 800 16px "Bradley Hand", "Marker Felt", "Segoe Print", "Comic Sans MS", cursive; letter-spacing: .06em;
   }
   #pulsante-note:hover { background: linear-gradient(90deg, #fff176, #ffe94a); }
-  #pulsante-note #note-badge { display: none; position: absolute; top: 6px; left: -8px; writing-mode: horizontal-tb;
-    background: #dc2626; color: #fff; border-radius: 10px; padding: 1px 6px; font: 700 10px -apple-system, sans-serif; letter-spacing: 0; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
 </style>
 </head>
 <body>
@@ -520,7 +518,7 @@
     <div id="trascrizioni"></div>
   </div>
 
-  <button id="pulsante-note" title="Note della telefonata (tasto N)">📝 NOTE<span id="note-badge"></span></button>
+  <button id="pulsante-note" title="Note della telefonata (tasto N)">📝 NOTE</button>
 
   <div id="vela-misura"><div class="pop">
     <h3 id="misura-titolo"></h3>
@@ -1254,7 +1252,6 @@
 
     // Linguetta Note: allineata in alto alla Guida chiamata (o a 40% se la guida non c'è).
     const linguetta = document.getElementById("pulsante-note");
-    const badgeNote = document.getElementById("note-badge");
     function posizionaLinguetta() {
       const g = document.getElementById("riquadro-canovaccio");
       const conGuida = g && g.style.display !== "none";
@@ -1267,11 +1264,6 @@
         linguetta.style.height = "150px";
       }
       document.body.style.paddingRight = conGuida ? "8px" : "40px";
-    }
-    function aggiornaBadgeNote() {
-      const righe = nota.split("\n").filter((r) => r.trim()).length;
-      badgeNote.textContent = "•" + righe;
-      badgeNote.style.display = righe ? "block" : "none";
     }
     window.addEventListener("resize", posizionaLinguetta);
     window.svPosizionaLinguetta = posizionaLinguetta;
@@ -1308,8 +1300,8 @@
     canale.onmessage = (ev) => {
       const m = ev.data || {};
       if (m.tipo === "pronto") canale.postMessage({ tipo: "testo", testo: nota });
-      if (m.tipo === "testo") { nota = m.testo; aggiornaBadgeNote(); window.svInviaStato(); }
-      if (m.tipo === "chiuso") { nota = m.testo; aggiornaBadgeNote(); notaChiusaFlag = true; clearTimeout(timer); if (haDati()) invia({ notaChiusa: true }); finestraNote = null; }
+      if (m.tipo === "testo") { nota = m.testo; window.svInviaStato(); }
+      if (m.tipo === "chiuso") { nota = m.testo; notaChiusaFlag = true; clearTimeout(timer); if (haDati()) invia({ notaChiusa: true }); finestraNote = null; }
     };
     document.getElementById("pulsante-note").addEventListener("click", () => {
       if (finestraNote && !finestraNote.closed) { finestraNote.focus(); return; }
