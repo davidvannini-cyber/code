@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tasto Note — 3 proposte</title>
+<style>
+:root{--ink:#1a1f2e;--teal:#0f766e;--tealbg:rgba(20,184,166,.08);--line:rgba(20,184,166,.35);--g:#e8e8ed;--gl:#d0d0d8;--amb:#b45309;--ambbg:#fffbeb;--pi:#ffee74;--pib:#e0c94a;--pit:#6b4e00}
+*{box-sizing:border-box}body{margin:0;padding:14px;background:#cfd3da;font:13px/1.3 -apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
+h1{font-size:16px;margin:0 0 3px}.sub{margin:0 0 10px;font-size:12px;color:#333;max-width:1400px}
+.wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}.col{width:470px}
+.col>h2{font-size:12px;margin:0 0 2px;text-transform:uppercase;letter-spacing:.04em;color:var(--teal)}
+.col>p{font-size:11.5px;color:#333;margin:0 0 6px;min-height:62px}
+.win{position:relative;width:440px;height:640px;background:#f4f4f7;border:1px solid #9aa;box-shadow:0 3px 12px rgba(0,0,0,.2);padding:6px;display:flex;flex-direction:column;gap:5px;overflow:visible}
+.box{background:var(--g);border:1px solid var(--gl);border-radius:3px;padding:3px 8px}
+.riga{display:flex;align-items:center;gap:8px}.sp{flex:1}
+.bt{border:0;border-radius:3px;background:#14532d;color:#fff;font-weight:600;font-size:10px;padding:0 4px;height:26px;display:inline-flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap}
+.bt.g{background:#4b5563}.bt.r{background:#b91c1c}.bt.w{background:#fff;color:var(--ink);border:1px solid var(--gl)}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}.pul{display:flex;gap:4px}.pul .bt{flex:1}
+.liv{font-size:8.5px;color:#374151;line-height:1.15}.liv .tr{height:5px;background:#d1d5db;border-radius:3px;margin:1px 0 3px;overflow:hidden}.liv .tr i{display:block;height:100%;background:#16a34a}
+.guida{border:1px solid var(--line);background:var(--tealbg);border-radius:8px;padding:6px 8px;position:relative}
+.gh{display:flex;justify-content:space-between;font-size:9px;font-weight:700;text-transform:uppercase;color:var(--teal)}
+.gb{height:5px;background:#d1d5db;border-radius:3px;margin:3px 0 5px;overflow:hidden}.gb i{display:block;height:100%;width:45%;background:var(--teal)}
+.s{border-radius:10px;padding:2px 9px;background:#fff;border:1px solid var(--gl);opacity:.5;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.s.f:before{content:'✓ ';color:var(--teal);font-weight:800}.s.a{opacity:1;white-space:normal;border:2px solid var(--teal);font-size:15px;font-weight:600;padding:7px 10px;margin:3px 0}
+.s.a b{color:var(--teal)}.p{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:#fee2e2;color:#b91c1c}
+.nav{display:flex;gap:5px;margin-top:4px}.nav .n{flex:1 1 0;height:30px;border-radius:10px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}.nav .n.ind{background:#9ca3af}
+.scala{border:2px solid var(--amb);background:var(--ambbg);border-radius:8px;padding:5px 7px}.scala .t{font-size:9px;font-weight:800;text-transform:uppercase;color:var(--amb);margin-bottom:4px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.v{border:1px solid #d6b36a;background:#fff;border-radius:8px;padding:3px 2px;font-size:10.5px;font-weight:600;text-align:center}.v span{display:block;font-size:15px}
+.frasi{flex:1;font-size:11.5px;line-height:1.5;overflow:hidden}.frasi .et{font-size:9px;font-weight:700;text-transform:uppercase;color:#6b7280}
+.att{font-size:11.5px;display:flex;gap:8px;align-items:center}.badge{font-size:8px;font-weight:700;background:#6b7280;color:#fff;padding:2px 6px;border-radius:2px}
+
+/* ====== il tasto Note, 3 versioni ====== */
+.postit-bt{background:linear-gradient(180deg,#fff59a,var(--pi));color:var(--pit);border:0;box-shadow:0 2px 4px rgba(0,0,0,.3);font-weight:800;cursor:pointer;position:relative;
+  font-family:"Bradley Hand","Marker Felt","Segoe Print","Comic Sans MS",cursive}
+.postit-bt:after{content:"";position:absolute;left:0;bottom:0;width:9px;height:9px;background:linear-gradient(45deg,#f4f4f7 50%,var(--pib) 50%)}
+.bdg{position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:10px;font:700 10px -apple-system,sans-serif;padding:1px 6px;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+/* A: linguetta laterale */
+.A .tab{position:absolute;right:-34px;top:238px;width:34px;height:150px;border-radius:0 10px 10px 0;writing-mode:vertical-rl;font-size:17px;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;padding-top:0}
+.A .tab:after{display:none}.A .tab .bdg{top:6px;right:auto;left:-8px}
+/* B: nella fila ◀ ▶ */
+.B .nav .n.note{flex:0 0 28%;height:30px;border-radius:8px;font-size:15px;gap:4px}
+.B .nav .n.note small{font:800 10px -apple-system,sans-serif}
+/* C: pulsante tondo flottante */
+.C .fab{position:absolute;right:10px;bottom:34px;width:62px;height:62px;border-radius:50%;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.C .fab:after{display:none}.C .fab small{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font:800 9px -apple-system,sans-serif;color:var(--pit);white-space:nowrap}
+.note{font-size:10px;color:#444;margin-top:6px}
+</style></head><body>
+<h1>Tasto «Note» — 3 proposte di grafica e posizione</h1>
+<p class="sub">Tutte e 3: stile post-it giallo (coerente con la finestra Note), il tasto è lasciato libero dalla riga del cliente, diventa grande (facile da cliccare al volo) e mostra un <b style="background:#dc2626;color:#fff;border-radius:10px;padding:0 6px">•3</b> rosso con il numero di righe quando hai già scritto qualcosa. Scorciatoia da tastiera <b>N</b> (o Cmd+N) in tutte.</p>
+<div class="wrap" id="w"></div>
+<script>
+const frasi=["Buongiorno/Buonasera, sono David di YesMobility.","Parlo con la Sig.ra Saeli? <span style='color:#b91c1c;font-weight:700'>· attendi conferma</span>","La chiamo perché abbiamo ricevuto la sua richiesta online…","Siamo un servizio che lavora con i migliori produttori…","Possiamo darle una prima valutazione di fattibilità…"];
+const dopo=["Così le do subito un'indicazione. <span style='color:#b91c1c;font-weight:700'>· raccogli i dati</span>","Grazie, Sig.ra Saeli.","Con questi elementi posso proporle una soluzione…","Se la cifra la convince, procediamo subito…","Se le sembra una buona base, procediamo?"];
+function pannello(v){
+ const bdg='<span class="bdg">•3</span>';
+ const noteLead = v==='A'||v==='B'||v==='C' ? '' : '';
+ return `<div class="win">
+  <div class="box riga" style="padding:3px 8px"><b style="font-size:11px">SUGGERIMENTI LIVE</b><span class="sp"></span><span style="font-size:10px">🎤 Predefinito</span><span style="font-size:10px">● connesso</span></div>
+  <div class="meta"><div class="pul"><button class="bt">🎤 Microf.</button><button class="bt g">⏸ Pausa</button><button class="bt r">✕ Termina</button></div>
+   <div class="liv">Segnale in ingresso (prima del limiter)<div class="tr"><i style="width:62%;background:#f59e0b"></i></div>Segnale trascritto (dopo il limiter)<div class="tr"><i style="width:48%"></i></div></div></div>
+  <div class="box riga"><span>👤 <b>Grazia Saeli</b></span><span class="sp"></span><span>📞 <b>3282817586</b></span><button class="bt w" style="height:22px;padding:0 7px">Invia a telefono</button></div>
+  <div class="guida"><div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
+   ${frasi.map(f=>`<div class="s f">${f}</div>`).join('')}
+   <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
+   ${dopo.slice(0,3).map(f=>`<div class="s">${f}</div>`).join('')}
+   <div class="nav"><div class="n ind">◀</div><div class="n">▶</div>${v==='B'?`<div class="n postit-bt note">📝 <small>NOTE</small>${bdg}</div>`:''}</div>
+  </div>
+  <div class="scala"><div class="t">📋 Dettagli scala da chiedere (tocca per inserire)</div><div class="g4"><div class="v"><span>📏</span>Lunghezza</div><div class="v"><span>🏠</span>Int/Est</div><div class="v"><span>↔️</span>Largh. min.</div><div class="v"><span>📐</span>N° rampe</div><div class="v"><span>↪️</span>N° curve</div><div class="v"><span>⬇️</span>Partenza</div><div class="v"><span>⬆️</span>Arrivo</div></div></div>
+  <div class="box att"><span class="badge">in attesa</span>In attesa del primo suggerimento…</div>
+  <div class="box frasi"><div class="et">Frasi cliente</div><b>Sì, buongiorno, mi dica pure.</b><br>Sono in casa da sola, abito al primo piano.</div>
+  ${v==='A'?`<button class="tab postit-bt">📝 NOTE${bdg}</button>`:''}
+  ${v==='C'?`<button class="fab postit-bt">📝${bdg}<small>NOTE (N)</small></button>`:''}
+ </div>`;
+}
+const info={A:["A · Linguetta post-it sul bordo destro","Una linguetta gialla alta 150 px attaccata al bordo destro del pannello, all'altezza della guida. Sempre visibile, enorme da colpire, e la finestra Note si apre proprio lì accanto, a destra. Non occupa spazio nel pannello.","Pro: più grande e più vicino alla finestra Note. Contro: sporge fuori dal pannello (serve un margine a destra, 34 px)."],
+B:["B · Terzo tasto nella fila ◀ ▶","Il tasto Note entra nella riga dei tasti guida: ◀ ▶ 📝 NOTE (28% della larghezza). Lo usi con la stessa mano e lo stesso movimento con cui avanzi la guida.","Pro: il più ergonomico, tutto sotto il dito. Contro: ◀ e ▶ perdono un po' di larghezza."],
+C:["C · Pulsante tondo flottante","Un grande cerchio giallo (62 px) in basso a destra sopra «Frasi cliente», con la scritta NOTE (N). Sempre raggiungibile, non sposta nient'altro.","Pro: massima visibilità, stile «aggiungi nota». Contro: copre un angolo di «Frasi cliente»."]};
+document.getElementById('w').innerHTML=['A','B','C'].map(v=>`<div class="col ${v}"><h2>${info[v][0]}</h2><p>${info[v][1]}<br><i>${info[v][2]}</i></p>${pannello(v)}</div>`).join('');
+</script></body></html>
