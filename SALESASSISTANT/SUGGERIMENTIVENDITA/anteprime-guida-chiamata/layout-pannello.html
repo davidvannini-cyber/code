@@ -25,10 +25,10 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
 .riga{display:flex;align-items:center;gap:8px}
 .sp{flex:1}
 /* guida */
-.guida{border:1px solid var(--line);background:var(--tealbg);border-radius:8px;padding:6px 8px;flex:1;min-height:0;display:flex;flex-direction:column}
+.guida{border:1px solid var(--line);background:var(--tealbg);border-radius:8px;padding:6px 8px;flex:0 0 auto;display:flex;flex-direction:column}
 .gh{display:flex;justify-content:space-between;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--teal)}
 .gb{height:5px;background:#d1d5db;border-radius:3px;margin:3px 0 5px;overflow:hidden}.gb i{display:block;height:100%;width:45%;background:var(--teal)}
-.lista{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.lista{display:flex;flex-direction:column;gap:4px}
 .s{border-radius:10px;padding:4px 9px;background:#fff;border:1px solid var(--gl);opacity:.5;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .s.a{opacity:1;white-space:normal;border:2px solid var(--teal);font-size:15px;font-weight:600;line-height:1.25;padding:7px 10px;box-shadow:0 2px 6px rgba(15,118,110,.22)}
 .s.a b{color:var(--teal);font-weight:800}
@@ -47,7 +47,7 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
 /* suggerimento + frasi */
 .att{display:flex;align-items:center;gap:8px;font-size:11.5px}
 .badge{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#6b7280;color:#fff;padding:2px 6px;border-radius:2px}
-.frasi{font-size:11px;color:var(--mute);min-height:44px}
+.frasi{font-size:11.5px;color:#374151;flex:1;min-height:44px;overflow:hidden;line-height:1.5}.frasi p{margin:0 0 3px}.frasi p:first-of-type{font-weight:600;color:var(--ink)}
 .frasi .et{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);margin-bottom:2px}
 .liv{height:4px;background:#d1d5db;border-radius:2px;width:70px;overflow:hidden;display:inline-block;vertical-align:middle}.liv i{display:block;width:55%;height:100%;background:#16a34a}
 .tab{display:flex;gap:4px;margin-bottom:4px}.tab span{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;background:#fff;border:1px solid var(--gl)}.tab span.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -55,7 +55,7 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
 </head>
 <body>
 <h1>Pannello «Suggerimenti Live» — 3 layout rivisti</h1>
-<p class="sub">Finestra alta come il 60% dello schermo, larghezza reale (~440 px). Dati di prova (Grazia Saeli). In tutti e 3: frasi già dette e prossime restano visibili («effetto lente»), frase in corso più piccola di prima ma più grande delle altre, dettagli scala in ordine numerato, spazi ridotti.</p>
+<p class="sub">Finestra alta come il 60% dello schermo, larghezza reale (~440 px). Dati di prova (Grazia Saeli). In tutti e 3 la guida è alta quanto il suo contenuto e lo spazio che resta va alle «Frasi cliente»: frasi già dette e prossime restano visibili («effetto lente»), frase in corso più piccola di prima ma più grande delle altre, dettagli scala in ordine numerato, spazi ridotti.</p>
 
 <div class="griglia">
 
@@ -82,7 +82,7 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
       <div class="g4"><div class="v ok"><em>1</em>Lunghezza</div><div class="v"><em>2</em>Int./Est.</div><div class="v ok"><em>3</em>Largh. min</div><div class="v"><em>4</em>Rampe</div>
       <div class="v"><em>5</em>Curve</div><div class="v"><em>6</em>Partenza</div><div class="v"><em>7</em>Arrivo</div><div></div></div></div>
     <div class="box att"><span class="badge">in attesa</span><span>In attesa del primo suggerimento…</span></div>
-    <div class="box frasi"><div class="et">Frasi cliente</div>Sì, buongiorno, mi dica pure.</div>
+    <div class="box frasi"><div class="et">Frasi cliente</div><p>Sì, buongiorno, mi dica pure.</p><p>Sono in casa da sola, abito al primo piano.</p><p>Le scale sono un po' strette, sì.</p></div>
   </div>
 </div>
 
@@ -111,7 +111,7 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
         <div class="gr"><small>Estremi</small><div class="v"><em>6</em>Partenza</div><div class="v"><em>7</em>Arrivo</div></div>
       </div></div>
     <div class="box att"><span class="badge">in attesa</span><span>In attesa del primo suggerimento…</span></div>
-    <div class="box frasi" style="flex:0 0 auto"><div class="et">Frasi cliente</div>Sì, buongiorno, mi dica pure.</div>
+    <div class="box frasi"><div class="et">Frasi cliente</div><p>Sì, buongiorno, mi dica pure.</p><p>Sono in casa da sola, abito al primo piano.</p><p>Le scale sono un po' strette, sì.</p></div>
   </div>
 </div>
 
@@ -124,12 +124,11 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
     <div class="guida">
       <div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
       <div class="lista">
-        <div class="s">Siamo un servizio che lavora con i migliori produttori…</div>
         <div class="s">Le diamo una prima valutazione di fattibilità e un'idea di prezzo…</div>
         <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione (tipo di scale, altezza, larghezza)?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
         <div class="s">Perfetto, grazie.</div>
         <div class="s">Con questi elementi posso già indicare una cifra e il modello più…</div>
-        <div class="s">Se la cifra la convince, procediamo subito con la proposta…</div>
+        <div class="s" style="display:none">Se la cifra la convince, procediamo subito con la proposta…</div>
       </div>
       <div class="nav"><button class="bt">◀</button><button class="bt">AVANTI ▶</button></div>
     </div>
@@ -143,7 +142,7 @@ select{font-size:11px;padding:1px 2px;max-width:130px}
         <div class="v" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>⬇️</span>Parten.</div>
         <div class="v" style="flex-direction:column;gap:1px;padding:3px 0;font-size:9.5px"><span>⬆️</span>Arrivo</div>
       </div></div>
-    <div class="box" style="padding:4px 6px"><div class="tab"><span class="on">Suggerimento</span><span>Frasi cliente</span></div><div class="att"><span class="badge">in attesa</span><span>In attesa del primo suggerimento…</span></div></div>
+    <div class="box frasi" style="padding:4px 6px"><div class="tab"><span>Suggerimento</span><span class="on">Frasi cliente</span><span style="margin-left:auto;background:#6b7280;color:#fff;border-color:#6b7280;font-size:8px">IN ATTESA</span></div><p>Sì, buongiorno, mi dica pure.</p><p>Sono in casa da sola, abito al primo piano.</p><p>Le scale sono un po' strette, sì.</p></div>
   </div>
 </div>
 
