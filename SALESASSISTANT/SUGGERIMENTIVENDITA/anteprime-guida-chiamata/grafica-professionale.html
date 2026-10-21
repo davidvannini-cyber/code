@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grafica professionale — 3 stili</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:14px;background:#cfd3da;font:13px/1.3 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1f2e}
+h1{font-size:16px;margin:0 0 3px}.sub{margin:0 0 10px;font-size:12px;color:#333;max-width:1400px}
+.wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}.col{width:470px}
+.col>h2{font-size:12px;margin:0 0 2px;text-transform:uppercase;letter-spacing:.04em}.col>p{font-size:11.5px;color:#333;margin:0 0 6px;min-height:48px}
+.ic{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.14em;flex:none}
+/* ===== variabili per stile ===== */
+.S1{--bg:#f4f6f9;--pn:#fff;--bd:#c5cdd8;--ink:#1b2a3d;--mu:#5b6b7f;--ac:#1f4e79;--ac2:#163a5c;--tint:#e6eef6;--ok:#1f4e79;--okt:#fff;--r:2px;--hd:#1f4e79;--hdt:#fff;--tab:#1f4e79;--tabt:#fff;--stop:#9f1d1d;--stopbg:#f8e4e4}
+.S2{--bg:#eef0f2;--pn:#fff;--bd:#b9c0c7;--ink:#1c2228;--mu:#5d666f;--ac:#2f3a45;--ac2:#1c2228;--tint:#e3e7ea;--ok:#0f766e;--okt:#fff;--r:0px;--hd:#2f3a45;--hdt:#fff;--tab:#2f3a45;--tabt:#fff;--stop:#9f1d1d;--stopbg:#f6e3e3}
+.S3{--bg:#f7f8fa;--pn:#fff;--bd:#d5dae1;--ink:#1f2937;--mu:#6b7280;--ac:#2563eb;--ac2:#1d4ed8;--tint:#eaf1ff;--ok:#2563eb;--okt:#fff;--r:4px;--hd:#fff;--hdt:#1f2937;--tab:#fff;--tabt:#2563eb;--stop:#b42318;--stopbg:#fdecea}
+.col{color:var(--ink)}.col>h2{color:var(--ac)}
+/* ===== pannello ===== */
+.win{position:relative;background:var(--bg);border:1px solid #9aa;box-shadow:0 3px 12px rgba(0,0,0,.2);padding:6px 40px 6px 8px;margin-bottom:12px}
+.guida{background:var(--pn);border:1px solid var(--bd);border-radius:var(--r);padding:6px 8px}
+.gh{display:flex;justify-content:space-between;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mu)}
+.gb{height:4px;background:var(--bd);margin:3px 0 5px;border-radius:var(--r)}.gb i{display:block;height:100%;width:45%;background:var(--ac)}
+.s{border:1px solid var(--bd);border-radius:var(--r);padding:2px 9px;background:var(--bg);color:var(--mu);font-size:11.5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s.a{background:var(--pn);color:var(--ink);border:2px solid var(--ac);font-size:15px;font-weight:600;padding:7px 10px;margin:3px 0;white-space:normal}
+.s.a b{color:var(--ac)}.p{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:var(--r);background:var(--stopbg);color:var(--stop)}
+.nav{display:flex;gap:5px;margin-top:4px}.nav div{flex:1;height:28px;border-radius:var(--r);background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}.nav div.g{background:#8b95a1}
+.scala{margin-top:6px;border:1px solid var(--ac);background:var(--pn);border-radius:var(--r);padding:0}
+.scala .t{display:flex;align-items:center;gap:6px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--hdt);background:var(--hd);padding:4px 8px;border-radius:var(--r) var(--r) 0 0;border-bottom:1px solid var(--bd)}
+.S3 .scala .t{border-bottom:1px solid var(--bd)}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:6px}
+.v{border:1px solid var(--bd);background:var(--pn);border-radius:var(--r);padding:5px 2px 4px;font-size:10.5px;font-weight:600;text-align:center;line-height:1.15;color:var(--ink)}
+.v .ic{display:block;margin:0 auto 2px;font-size:17px;color:var(--ac)}.v small{display:block;font-size:9.5px;font-weight:700;color:var(--ac);white-space:nowrap}
+.v.ok{background:var(--ok);border-color:var(--ok);color:var(--okt)}.v.ok .ic,.v.ok small{color:var(--okt)}
+.S3 .v.ok{background:var(--tint);border-color:var(--ac);color:var(--ac)}.S3 .v.ok .ic,.S3 .v.ok small{color:var(--ac)}
+.tab{position:absolute;right:0;width:34px;background:var(--tab);color:var(--tabt);writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-radius:var(--r) 0 0 var(--r);box-shadow:-1px 1px 4px rgba(0,0,0,.25)}
+.S3 .tab{border:1px solid var(--ac);border-right:0}.tab .ic{transform:rotate(90deg);font-size:16px}
+/* ===== popup ===== */
+.pops{display:flex;gap:10px;margin-bottom:12px}.pop{width:228px;background:var(--pn);border:1px solid var(--bd);border-radius:var(--r);box-shadow:0 6px 20px rgba(0,0,0,.25);overflow:hidden}
+.pop .h{display:flex;align-items:center;gap:7px;padding:8px 10px;font-weight:700;font-size:13px;background:var(--hd);color:var(--hdt);border-bottom:1px solid var(--bd)}
+.pop .c{padding:10px}
+.st{display:flex;gap:6px}.st .b{flex:0 0 44px;height:44px;background:var(--ac);color:#fff;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:20px}
+.S3 .st .b{background:var(--tint);color:var(--ac);border:1px solid var(--ac)}
+.st .i{flex:1;border:1px solid var(--ac);border-radius:var(--r);text-align:center;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.hint{font-size:10.5px;color:var(--mu);text-align:center;margin:5px 0 8px}
+.az{display:flex;gap:6px}.az div{flex:1;height:30px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.az .a{background:var(--bg);color:var(--mu);border:1px solid var(--bd)}.az .o{background:var(--ac);color:#fff}
+.opt{height:34px;border:1px solid var(--bd);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:5px;color:var(--ink);background:var(--pn)}
+.opt.sel{background:var(--ac);border-color:var(--ac);color:#fff}.S3 .opt.sel{background:var(--tint);color:var(--ac)}
+/* finestra Note */
+.nw{width:340px;border:1px solid var(--bd);border-radius:var(--r);background:var(--pn);box-shadow:0 6px 20px rgba(0,0,0,.25);overflow:hidden}
+.nw .h{display:flex;align-items:center;gap:8px;padding:8px 12px;font-weight:700;font-size:13px;background:var(--hd);color:var(--hdt);border-bottom:1px solid var(--bd)}
+.nw .h .sp{flex:1}.nw .h .cl{font-size:11px;padding:4px 9px;background:var(--ac);color:#fff;border-radius:var(--r)}.S3 .nw .h .cl{background:var(--ac)}
+.nw .t{height:120px;padding:8px 12px;font-size:14px;line-height:22px;color:var(--ink);background:repeating-linear-gradient(transparent 0,transparent 21px,var(--bd) 21px,var(--bd) 22px)}
+.nw .f{font-size:10px;color:var(--mu);padding:5px 12px 7px;border-top:1px solid var(--bd);background:var(--bg)}
+</style></head><body>
+<h1>Grafica professionale — 3 stili</h1>
+<p class="sub">Per ogni stile: riquadro «Dettagli scala» con i tasti, linguetta Note, popup numerico, popup a scelta e finestra Note. Icone al posto delle emoji (linee sottili), angoli squadrati o quasi, niente giallo/arancio. Contenuti e funzioni restano identici.</p>
+<div class="wrap" id="w"></div>
+<script>
+const P={
+ ruler:'<path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/>',
+ home:'<path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+ width:'<path d="M3 12h18"/><path d="m7 8-4 4 4 4"/><path d="m17 8 4 4-4 4"/>',
+ ramp:'<path d="M3 20h5v-4h5v-4h5V8h3"/><path d="M3 20V4"/>',
+ c90:'<path d="M6 20V10a4 4 0 0 1 4-4h8"/><path d="m14 2 4 4-4 4"/>',
+ c180:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+ start:'<path d="M12 3v14"/><path d="m6 11 6 6 6-6"/><path d="M4 21h16"/>',
+ end:'<path d="M12 21V7"/><path d="m6 13 6-6 6 6"/><path d="M4 3h16"/>',
+ note:'<path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4"/><path d="M8 12h8M8 16h6"/>',
+ clip:'<path d="M9 4h6v3H9z"/><path d="M7 5H5v16h14V5h-2"/><path d="M8 12h8M8 16h6"/>',
+ left:'<path d="m14 6-6 6 6 6"/>',right:'<path d="m10 6 6 6-6 6"/>',
+ list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+ pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/>'};
+const I=(n,extra='')=>`<svg class="ic" viewBox="0 0 24 24" ${extra}>${P[n]}</svg>`;
+const tiles=[['ruler','Lunghezza','6 m',1],['home','Interno/Esterno','Esterno',1],['width','Larghezza min.','',0],['ramp','N° rampe','2',1],['c90','Curve 90°','',0],['c180','Curve 180°','',0],['start','Partenza','',0],['end','Arrivo','',0]];
+const S={S1:['Stile 1 · Blu istituzionale','Blu navy e grigi freddi. Angoli quasi squadrati (2 px). Intestazioni blu pieno con testo bianco, tasti compilati in blu. Il più «aziendale».'],
+S2:['Stile 2 · Grafite e verde','Grafite scuro con verde acqua per i valori compilati, angoli a 0 px (completamente squadrato). Coerente con il verde già presente nel pannello, aspetto da strumento tecnico.'],
+S3:['Stile 3 · Chiaro e blu elettrico','Bianco e grigi chiarissimi, linee sottili, blu come unico colore (azioni e valori compilati con riempimento leggero). Angoli 4 px. Il più moderno e leggero.']};
+function col(k){return `<div class="col ${k}"><h2>${S[k][0]}</h2><p>${S[k][1]}</p>
+<div class="win">
+ <div class="guida"><div class="gh"><span>Guida chiamata</span><span>6/11</span></div><div class="gb"><i></i></div>
+  <div class="s">✓ Possiamo darle una prima valutazione di fattibilità…</div>
+  <div class="s a">Le va di dedicarmi <b>2 minuti</b> per capire meglio la situazione?<br><span class="p">STOP · ascolta e raccogli i dati</span></div>
+  <div class="s">Così le do subito un'indicazione.</div>
+  <div class="nav"><div class="g">${I('left')}</div><div>${I('right')}</div></div></div>
+ <div class="scala"><div class="t">${I('list')} Dettagli scala da chiedere</div><div class="g4">${tiles.map(t=>`<div class="v ${t[3]?'ok':''}">${I(t[0])}${t[1]}${t[2]?`<small>${t[2]}</small>`:''}</div>`).join('')}</div></div>
+ <div class="tab" style="top:40px;height:176px">${I('note')} Note</div>
+</div>
+<div class="pops">
+ <div class="pop"><div class="h">${I('ruler')} Lunghezza</div><div class="c"><div class="st"><div class="b">${I('left')}</div><div class="i">6,5</div><div class="b">${I('right')}</div></div><div class="hint">passi di 0,5 m</div><div class="az"><div class="a">Annulla</div><div class="o">Conferma</div></div></div></div>
+ <div class="pop"><div class="h">${I('start')} Tipo di partenza</div><div class="c"><div class="opt">Dritta</div><div class="opt sel">90°</div><div class="opt">180°</div><div class="opt">Prolungata</div></div></div>
+</div>
+<div class="nw"><div class="h">${I('clip')} Note chiamata<span class="sp"></span><span class="cl">Chiudi e salva</span></div><div class="t">Richiamare lunedì dopo le 17.<br>Vuole sentire il figlio.</div><div class="f">Resta aperta durante la telefonata. Alla chiusura il testo va nelle Note YM del lead.</div></div>
+</div>`}
+document.getElementById('w').innerHTML=['S1','S2','S3'].map(col).join('');
+</script></body></html>
