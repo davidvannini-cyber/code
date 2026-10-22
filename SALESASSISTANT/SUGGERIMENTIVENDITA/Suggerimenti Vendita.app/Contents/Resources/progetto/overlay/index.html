@@ -1405,7 +1405,14 @@
       finestraNote = window.open("note.html#" + sessione, "svNote",
         "popup=yes,width=" + L + ",height=" + A + ",left=" + Math.round(sinistra) + ",top=" + Math.round(alto));
       if (!finestraNote) alert("Il browser ha bloccato la finestra delle note: consenti i popup per questa pagina.");
-      else linguetta.classList.add("aperta");
+      else {
+        linguetta.classList.add("aperta");
+        // Chrome può ignorare left/top/width/height di window.open (finestra aperta in alto a sinistra e
+        // grande come il pannello): posizione e misura vengono quindi imposte di nuovo dopo l'apertura.
+        const cornice = window.outerHeight - window.innerHeight;
+        const posiziona = () => { try { finestraNote.moveTo(Math.round(sinistra), Math.round(alto)); finestraNote.resizeTo(L, A + cornice); } catch (e) {} };
+        posiziona(); setTimeout(posiziona, 150); setTimeout(posiziona, 600);
+      }
     });
 
     // Chiusura con la X: equivale a "Termina". Avviso se ci sono dati.
