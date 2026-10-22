@@ -1,5 +1,6 @@
 package it.yesmobility.rubrica
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,7 +10,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.telecom.TelecomManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -97,6 +100,8 @@ class NtfyService : Service() {
             if (t > 0) Prefs.setUltimoTempo(this, t + 1)
             val corpo = m.optString("message")
             val o = try { JSONObject(corpo) } catch (e: Exception) { return }
+            // Comando dal Mac (tasto «Termina» del pannello): chiude la chiamata in corso.
+            if (o.optString("azione") == "termina") { terminaChiamata(t); return }
             val lead = Lead(
                 o.optString("nome").trim(), o.optString("cognome").trim(),
                 o.optString("telefono").trim(), o.optString("email").trim()
@@ -106,6 +111,31 @@ class NtfyService : Service() {
             gestisci(lead, o.optString("azione", "salva") == "chiama")
         } catch (e: Exception) {
             Prefs.aggiungiLog(this, "Errore: " + (e.message ?: e.javaClass.simpleName))
+        }
+    }
+
+    /** Chiude la chiamata in corso sul telefono (richiede il permesso «Rispondi alle chiamate»). */
+    private fun terminaChiamata(tempo: Long) {
+        // Un vecchio messaggio riletto dopo un riavvio dell'ascolto non deve chiudere una chiamata nuova.
+        if (tempo > 0 && System.currentTimeMillis() / 1000 - tempo > 30) {
+            Prefs.aggiungiLog(this, "Comando «termina» scaduto, ignorato")
+            return
+        }
+        if (Build.VERSION.SDK_INT < 28) {
+            Prefs.aggiungiLog(this, "Termina chiamata: serve Android 9 o successivo")
+            return
+        }
+        if (checkSelfPermission(Manifest.permission.ANSWER_PHONE_CALLS) != PackageManager.PERMISSION_GRANTED) {
+            Prefs.aggiungiLog(this, "Termina chiamata: permesso «Rispondi alle chiamate» mancante (pulsante 2)")
+            return
+        }
+        try {
+            val tm = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+            @Suppress("DEPRECATION")
+            val chiusa = tm.endCall()
+            Prefs.aggiungiLog(this, if (chiusa) "Chiamata terminata dal Mac" else "Termina chiamata: nessuna chiamata da chiudere (o non chiudibile da qui)")
+        } catch (e: Exception) {
+            Prefs.aggiungiLog(this, "Termina chiamata non riuscito: " + (e.message ?: e.javaClass.simpleName))
         }
     }
 

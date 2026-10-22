@@ -48,7 +48,7 @@ class MainActivity : Activity() {
         }
         colonna.addView(campoCodice)
         colonna.addView(bottone("1. Salva e avvia l'ascolto") { salvaEAvvia() })
-        colonna.addView(bottone("2. Concedi i permessi (contatti e notifiche)") { chiediPermessi() })
+        colonna.addView(bottone("2. Concedi i permessi (contatti, notifiche e chiusura chiamata)") { chiediPermessi() })
         colonna.addView(bottone("3. Non limitare la batteria") { escludiBatteria() })
         colonna.addView(bottone("4. Consenti \"Mostra sopra altre app\" (serve per far partire Lyber)") { chiediSovrapposizione() })
         colonna.addView(bottone("Ferma l'ascolto") {
@@ -67,6 +67,8 @@ class MainActivity : Activity() {
     private fun permessiDaChiedere(): Array<String> {
         val l = mutableListOf(Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS)
         if (Build.VERSION.SDK_INT >= 33) l.add(Manifest.permission.POST_NOTIFICATIONS)
+        // Serve al comando «Termina» del Mac (chiude la chiamata in corso sul telefono).
+        if (Build.VERSION.SDK_INT >= 28) l.add(Manifest.permission.ANSWER_PHONE_CALLS)
         return l.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }.toTypedArray()
     }
 

@@ -11,8 +11,8 @@ android {
         applicationId = "it.yesmobility.rubrica"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.4"
+        versionCode = 6
+        versionName = "1.5"
     }
 
     // Chiave fissa (solo per l'uso personale): così ogni nuova versione dell'APK
