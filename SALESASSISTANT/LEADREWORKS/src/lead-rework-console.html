@@ -168,6 +168,8 @@
   .tbl-storico input[type=checkbox]{margin:0;}
   /* intestazioni sempre visibili durante lo scorrimento: la lista scorre dentro il suo riquadro */
   .tbl-scroll{overflow:auto;max-height:calc(100vh - 150px);}
+  .tbl-storico tr.riga-sel td{background:#dbeafe !important;}
+  .tbl-storico tr.riga-sel td:first-child{box-shadow:inset 4px 0 0 #2563eb;}
   .tbl-storico thead th{position:sticky;top:0;z-index:2;background:var(--card,#fff);box-shadow:0 1px 0 var(--border);}
   .tbl-storico .nome-link{cursor:pointer;color:var(--topnav-active);text-decoration:underline;text-decoration-color:transparent;}
   .tbl-storico .nome-link:hover{text-decoration-color:currentColor;}
@@ -854,6 +856,10 @@ async function init(){
 function render(){
   const app = document.getElementById("app");
   const showRail = state.tab === "nuovo";
+  // Ogni render() ricostruisce tutta la pagina: senza questo, ogni flag o filtro
+  // riportava la lista in cima. Si conserva lo scorrimento solo restando nella stessa scheda.
+  const scrollPrec = document.querySelector(".tbl-scroll");
+  const mantieni = (state._schedaRender === state.tab) ? { lista: scrollPrec ? scrollPrec.scrollTop : 0, pagina: window.scrollY } : null;
   app.innerHTML = `
     <div class="topnav">
       <div class="brand">Lead Rework Console</div>
@@ -878,6 +884,18 @@ function render(){
   // requestAnimationFrame: aspetta che il browser abbia finito il layout della
   // nuova innerHTML prima di misurare scrollHeight, altrimenti il calcolo può
   // basarsi su una larghezza/altezza non ancora definitiva.
+  state._schedaRender = state.tab;
+  if (mantieni){
+    const sc = document.querySelector(".tbl-scroll");
+    if (sc) sc.scrollTop = mantieni.lista;
+    window.scrollTo(0, mantieni.pagina);
+  }
+  // Dopo la chiusura di «Vedi»: porta in vista (una volta sola) il lead appena chiuso.
+  if (state.historyScrollTo){
+    const tr = document.querySelector('tr[data-id="' + state.historyScrollTo + '"]');
+    if (tr) tr.scrollIntoView({ block: "center" });
+    state.historyScrollTo = null;
+  }
   requestAnimationFrame(() => {
     document.querySelectorAll("textarea.autogrow").forEach(autoGrowTextarea);
   });
@@ -918,7 +936,7 @@ function renderRightRail(){
   `;
 }
 
-function switchTab(tab){ state.tab = tab; state.historyOpen = null; render(); }
+function switchTab(tab){ state.tab = tab; state.historyOpen = null; state.historyHighlight = null; render(); }
 function openImportPanel(){ state.tab = "nuovo"; state.showImportPanel = true; render(); }
 function closeImportPanel(){ state.showImportPanel = false; render(); }
 function autoGrowTextarea(el){
@@ -2513,7 +2531,7 @@ function renderHistoryTab(){
         </tr></thead>
         <tbody>
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
-            <tr>
+            <tr data-id="${r.id}" class="${state.historyHighlight === r.id ? 'riga-sel' : ''}">
               <td>${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
               <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}"><span class="nome-link" onclick="openHistoryItem('${r.id}')">${escapeHtml(r.dati_lead_input.nome || '—')}</span></td>
               <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
@@ -2540,8 +2558,8 @@ function renderHistoryTab(){
 
 const MOMANDIS_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAYAAAA5ZDbSAAAJXklEQVR42u2df5CVVRnHP3d/wMICu/xcEHH5IYtAJTYajKWYTjhSOTnTL9OQfihmaTo6peOomTriqDFlQ6WTWpnFYKVJSAYqUmT+ABIEF5CIQJHdaVlZVmCXe/3jPHfmznqXe573vu97370+n5kzC8x53/fZ8z3nOc95zmEOGIZhGAklFfH7BwDTgclAAzAWGC0/K4B9UlqktAJbgNeAdMS2VQMfBSYCI4CRUkbJ348AbwN7xca9wB7gZaD9gyxwA3Aa8AngLGAKUK94vgV4AXgceA7YEbJ904BPAecDpwJDFM92Sed7Dnha7Gz7oHiDBuAGoFlGXyaEsht4SDpLscwF/iSjMQzbuoF/AwuA2nIWdghwKbAhpIbLV9qA7wCVAeyrBRYCnRHatxr4vLj9suKTwJoIGy63HAUWA3UK+5qApTHZ1wU8AcwoB2EHAjcC+2NqvNyyQgK3YzEcuBb4Xwns2wPMB6r6qriNMY6K3spWmRamS6SepQ64BHilxPZ1Az9XBpeJ4FRgU4kbL7e0AC8CPwLulDggnSD7ngEm9RVxxwDrE9R4faUs7+FlYsU3Ku0H/BSYY7khNZOBwxKMJparQ3R9XRKc7Zc/J23EHZZlWbtE7mG8s1OWUYnMZJ0mbmZEEd95U3rwS8A2SYakZBnTBJwBzFYugcJkH/A3sa8Z2C5udYrYNxM4vcg2eAM4G9iVpJHbH1hWRHJiCTAPGCe5596okvXjD4CNMQVKXcBaWU41FWiHKqmzQJZpBwN+856kueYLJOTX/iIPi2BBct1DgYuBzRGK+7zkooOkGKsldfpUgO+2AqckRdzBwN8D/BL3hpSymygbDmFnw+6XREixDBMPpbVhaVJSmpcFcJU/AWpCznP/NkSBfxhyhqkeeExpw7vAOUkYvS8oR8Y9EfXM4ZLML1bcJbLcC5sgI/lXRL8XXzBy1uy+PB7yyO3JrCLz3tvF5UfFMMmo+dqzE3fwoWTcrDD2CG4DPWoWFpEXnh+DfVcobbqoVOIOBJ5VGPtPeSZqGgJG1isj9i5Zxst639eu3xHDjlO+tek4ZSi/TNx51LwNPKp8JiNB2qEY7NsJrFLUnymxTuwCj8A/Od6JO5sUFyuVnekt8UZx8aQEnL6esj5qg6p6cYW+rmMD7hCaLycAH8OdBKmW1OArwDrP5zdJpmumZ/3VuE1/XyZLQHeGdPK1uAN2WzyfXyOpyAkedWtkhfAfZTA3CzhT/rxWpshmjeiXK+aRXyqyP1eJIflSmjcpOpUmg3Sv5zvrgNuB/5L/hMaVnsuaSvEyPrYdAs5V6PIl4F95chO7JQAdFkUEfZ3nO6/xeNe3Pd+1QmHfIk9RFhV4T1raxWcdfZ/Cvq94/s5zKJz/XpxvkOSbg0cqepWP6xopo9enEzSUYNVwIvC1AnVSIrDPfvg2xbeHenbA73qsVOYBU30E7q8wsMOjzkmewo2WunEzwzOarQQ+7lFPE7H7HLgYg9u2LEQt7n9qFBQ4ozDQZ16a4hmV18poipsPc+ytzFw+FFKbaDhelq4+fMRH4LCpiahuWAxS2hd3DrkG/xz64FIInImortnnUbcCo6wxgU1gwwQ2TGDDBDZMYMMENkxgE9gwgQ0T2DCBDRPYMIENE9gENkxgwwQ2TGDDBDZMYMMENkxgE9gwgQ0T2DCBDRPYMIENE9gENkxgwwQ2TGDDBDZMYMMENoENE9gwgQ0T2DCBDRPYMIENE9gENkxgwwQ2TGDDBDZMYMMENoENE9jo+wKnyuj3S5nA76db8Xy6BDZrLoo6mnD70qUQ+FXPZ/fg7q6Nm82Kht5UAvu243dB5WF0N5WGJvAaoN3j2VdxFyrH7VKf9vQy7bjbseNmPe4W8EK8id/N5xXFeIR8Dzfj7qIvNDoe9HSBBxQGHudR51ngZx71/iKjKW7agF971HsUaPWo16j49v995+BFwGvHeNFSYLnnR1uALs+60zxG8RHgFmDZMepslN/BZ6RrL3/0qf8AsNqjk/q8a7rCvrd6/kNVLxXXAefg7o0/F3eJ8iGZ/1YCDwGdCoE7gTqPupNx170e8BglFwHfAD4NnCxz2npx4UuAfZ72aa607Ye71LmQ59oHfBF3bf0s6bhHgZelY/4ReMfTPU9VuOe9QVxOFTAWd0N3ZYDnG6Vn+dxp/y5wnvL9/eUbxwewbxTwuqdtGXGBM5Tf6CftNyZA202VAeJj2xH8bigPnTpgq6IRH4kxAfNV6fkZRbk1xrb7nsKudqCpVGvt3ygMbcHvKvViGQT8QyluBtgJTIjBviHi0n3teh4YWEwIHpQ0sEqxqB8BzI3Brktkfgwy5Xw/hrabrZwO1iriotCZIOs+3964ERgZoT1NkqTJBCydEoRGRQ3wlMKeLuBsSkilrK01jfggUB2RPQ8UIW62rMrnEkPiemVssC1gEBcqlwZoxJsisGMucDAEgdPAtRHYd2EA+35MAjZWhgMblIYfAm4DBofw/cHANcqpolDpAO4KafRUApcD+5U27AWmkBAulPkiiDsMusZLAZ/D5dgzEZXNwDeVSZOe691HJBmi/fYtJAht8JBb2oCFwHjF96YBv5AsVyaG8iRwuiLh0gBcidu0CfK9N4BxJIzZ4tqCNuJu4PfA14GTJNquzEmqjAcukLV3S0zC5pYDwBNi34kyNWUZBkwCvgDcr0wA9SxHJa4p6L7iJiXBUxgZof24rbkdMkpPEIFHBUyrhk1rjn1pYKKso4eHsI5+GFggKcrEUQ3cV4LRVS7lr5IQSjQDgT+bWOqyTjyVF1UlFLgT+JbYcF5COl2nRMRdOancJmBoQuzbAMzH78RIYqhHtxkRVVmF21seIFNItswqYgkTZnlG5vA+yQDgbgkY4m64w8DtBdKOKeAKCZpKIe4fIs7Nx0IFcBVuUz2uhtsFXKyw8SzcYcM4O9/duK3NsuEU3KG1gxE2XAfu2FGQFN9o4M6I19jdwApgDmVKBW77a3nIDbcVWAycGUIOYAZwR4D8eqHyEvBlmbbKnv7A+bitw+YAgU72INpj4oqj2FIbCnxGbNwRMBjbJTbOk6Az1KxSX2GsjJrP4g4Q1Elj1EsjZ9OYuyS3+7osebYDW2KysVHSp9kyCXcYsFE6axvu7FT25x5xxS9KXjmStGFfZRBQKz8HicCtuCOr3QmxMSUZpwZZcnVIbNEhJY1hGEavvAfCb1bIm8iRHgAAAABJRU5ErkJggg==";
 
-function openHistoryItem(id){ state.historyOpen = id; render(); }
-function closeHistoryModal(){ flushHistorySave(); state.historyOpen = null; render(); }
+function openHistoryItem(id){ state.historyOpen = id; state.historyHighlight = id; render(); }
+function closeHistoryModal(){ flushHistorySave(); state.historyScrollTo = state.historyOpen; state.historyOpen = null; render(); }
 
 // salvataggio automatico delle modifiche fatte nella schermata "Vedi" (ritardato per non appesantire a ogni tasto)
 let _hmSaveTimer = null;

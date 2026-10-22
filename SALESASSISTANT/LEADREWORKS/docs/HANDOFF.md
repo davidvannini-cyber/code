@@ -233,3 +233,8 @@ Il pannello di Suggerimenti Vendita manda a `http://localhost:8766/api/chiamata`
 - Lead trovato in Storico dal numero di telefono (normalizzato, anche `+39`): righe aggiunte in fondo a `note_ym`, aggiornate in-place a ogni modifica (un solo blocco per chiamata), salvataggio automatico. Numero ambiguo (più lead): non scrive e avvisa.
 - Chiamata senza lead («Chiamata YesMobility», «Rinforzo Facile Salire»): alla chiusura del popup Note o a Termina/X, se c'è una scheda «Lead» in compilazione (nome o telefono) viene **salvata in Storico** con avviso, si apre «Lead» vuoto con banner, e al «Salva lead in storico» le righe vanno in `note_ym` del nuovo lead (`state.pendingChiamata`).
 
+## Storico Lead: scorrimento e lead evidenziato (2026-10-22)
+- `render()` ricostruisce tutta la pagina: ora conserva lo scorrimento della lista (`.tbl-scroll`) e della pagina quando resta nella stessa scheda (`state._schedaRender`), così spuntare Lav./F.U./Chiuso/tel/WA/mail o cambiare un filtro non riporta in cima.
+- Aprendo «Vedi» (`openHistoryItem`) il lead diventa `state.historyHighlight`; alla chiusura (`closeHistoryModal`) la riga (`tr[data-id]`, classe `riga-sel`: sfondo azzurro + barra blu a sinistra) viene portata in vista una sola volta (`state.historyScrollTo`). L'evidenziazione resta finché non si cambia scheda (`switchTab`) o si apre un altro lead.
+- Provato in Chromium con 60 lead finti; non con lo storico reale di David.
+
