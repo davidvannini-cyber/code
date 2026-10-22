@@ -44,9 +44,9 @@ if curl -s --max-time 5 http://127.0.0.1:8769/stato | grep -q '"dati-v2"'; then
   echo "✅ Servizio dati installato e attivo."
   echo "   I lead vivono in: $HOME/DATI-LEAD (file leads.json, copie giornaliere in copie/)"
   echo "   Riparte da solo ad ogni accensione del Mac."
-  echo "   Seconda copia automatica in iCloud Drive: cartella BACKUP-LEAD-YesMobility."
-  echo "   Se macOS chiede di consentire l'accesso a iCloud Drive: premi CONSENTI."
-  echo "   Ora ricarica la Console: in alto a destra deve comparire anche «☁ iCloud ✓»."
+  echo "   Copie automatiche in $HOME/DATI-LEAD/copie: una per giorno (30 giorni) e una per ora (48 ore)."
+  echo "   (Copia esterna facoltativa: iCloud Drive se attivo, oppure la cartella scritta in DATI-LEAD/copia-esterna.txt)"
+  echo "   Ora ricarica la Console: in alto a destra deve comparire «✓ Dati nella cartella ~/DATI-LEAD»."
 else
   echo ""
   echo "⚠️  Il servizio non risponde. Guarda: $DEST_DIR/errori.log"

@@ -5,6 +5,7 @@ Servizio DATI dei lead (Lead Rework Console) — versione 2.
 I lead vivono in una cartella sul Mac, fuori da Chrome:  ~/DATI-LEAD
   leads.json                    l'archivio vero (la Console lo legge all'apertura e lo riscrive a ogni modifica)
   copie/leads-AAAA-MM-GG.json   una copia per giorno (ultime 30)
+  copie/ore/leads-AAAA-MM-GG_HH.json   una copia per ora (ultime 48 ore): per annullare un errore recente
   copie/leads-ANOMALO-<data>.json   copie di sicurezza di salvataggi sospetti (calo forte di lead)
 Seconda copia automatica ("copia esterna": ultimo + una per giorno, 30 giorni), al massimo una volta al minuto.
 Dove: se esiste il file ~/DATI-LEAD/copia-esterna.txt, la cartella scritta nella sua prima riga (es. una cartella di
@@ -28,6 +29,7 @@ PORTA = int(os.environ.get("LEADBACKUP_PORTA", "8769"))
 CARTELLA = os.environ.get("LEADBACKUP_DIR", os.path.expanduser("~/DATI-LEAD"))
 VECCHIA_CARTELLA = os.path.expanduser("~/BACKUP-LEAD")
 GIORNI_DA_TENERE = 30
+ORE_DA_TENERE = 48
 MAX_BYTE = 200 * 1024 * 1024
 BLOCCO = threading.Lock()
 FORMATO = "leadrework-leads-backup"
@@ -92,6 +94,11 @@ def copia_icloud():
     icloud["da_copiare"] = False
     base, dest = destinazione_copia()
     icloud["cartella"] = dest
+    configurata = os.path.exists(os.path.join(CARTELLA, "copia-esterna.txt"))
+    if not configurata and not os.path.exists(ICLOUD_BASE):
+        # nessuna copia esterna scelta e iCloud Drive non presente: non è un errore, la copia esterna è facoltativa
+        icloud.update(ok=None, errore="", ultima="")
+        return
     try:
         try:
             os.stat(base)
@@ -120,6 +127,15 @@ def ciclo_icloud():
         with BLOCCO:
             if icloud["da_copiare"] and time.time() - icloud["ultimo_tentativo"] >= ICLOUD_INTERVALLO:
                 copia_icloud()
+
+
+def pulisci_orarie():
+    orarie = sorted(glob.glob(os.path.join(p_copie(), "ore", "leads-????-??-??_??.json")))
+    for vecchia in orarie[:-ORE_DA_TENERE]:
+        try:
+            os.remove(vecchia)
+        except OSError:
+            pass
 
 
 def salva(corpo):
@@ -156,7 +172,9 @@ def salva(corpo):
         dati["count"] = n
         scrivi_atomico(p_leads(), json.dumps(dati, ensure_ascii=False).encode("utf-8"))
         scrivi_atomico(os.path.join(p_copie(), "leads-%s.json" % ora.strftime("%Y-%m-%d")), json.dumps(dati, ensure_ascii=False).encode("utf-8"))
+        scrivi_atomico(os.path.join(p_copie(), "ore", "leads-%s.json" % ora.strftime("%Y-%m-%d_%H")), json.dumps(dati, ensure_ascii=False).encode("utf-8"))
         pulisci_vecchie()
+        pulisci_orarie()
         stato.update(ultima_scrittura=ora.isoformat(timespec="seconds"), esito="ok")
         icloud["da_copiare"] = True
         if time.time() - icloud["ultimo_tentativo"] >= ICLOUD_INTERVALLO:
