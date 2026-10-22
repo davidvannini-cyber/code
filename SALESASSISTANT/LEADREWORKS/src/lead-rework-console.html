@@ -826,16 +826,16 @@ let crmInAttesa = null;   // lead arrivato dal CRM prima della fine dell'avvio (
 function mostraBloccoProfilo(){
   const d = document.createElement("div");
   d.id = "blocco-profilo";
-  d.style.cssText = "position:fixed;inset:0;z-index:99999;background:#fff;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;";
-  d.innerHTML = '<div style="max-width:460px;border:2px solid #b91c1c;padding:22px 24px;">' +
-    '<div style="font-size:18px;font-weight:800;color:#b91c1c;margin-bottom:10px;">⚠ Archivio vuoto: profilo Chrome sbagliato?</div>' +
+  d.style.cssText = "position:fixed;inset:0;z-index:99999;background:#fff;box-shadow:inset 0 0 0 16px #b91c1c;display:flex;align-items:center;justify-content:center;padding:36px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;";
+  d.innerHTML = '<div style="max-width:480px;border:6px solid #b91c1c;background:#fff;box-shadow:0 0 0 4px #fff, 0 8px 28px rgba(185,28,28,.35);">' +
+    '<div style="background:#b91c1c;color:#fff;font-size:20px;font-weight:800;padding:14px 22px;">⚠ Archivio vuoto: profilo Chrome sbagliato?</div><div style="padding:20px 24px 22px;">' +
     '<div style="font-size:14px;line-height:1.5;color:#1c2228;">Questa pagina non trova nessun lead, nessuna copia di sicurezza e non è mai stata confermata in questo profilo di Chrome. Probabilmente sei in un <b>altro profilo</b> rispetto a quello dove hai i tuoi lead.<br><br>' +
     '<b>Cosa fare:</b> chiudi questa finestra, passa al profilo giusto (icona del profilo in alto a destra in Chrome) e riapri la Console da lì.<br><br>' +
     'Finché questo avviso è aperto non viene salvato né letto nulla.</div>' +
     '<div id="bp-crm" style="display:none;margin-top:12px;padding:8px 10px;background:#e6eef6;border:1px solid #1f4e79;font-size:13px;color:#1b2a3d;">📥 Un lead è arrivato dal CRM, ma questo è il profilo sbagliato: non è stato aperto. Cambia profilo e rimandalo dal CRM.</div>' +
     '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">' +
-    '<button id="bp-chiudi" style="flex:1;min-width:160px;height:38px;border:0;background:#1f4e79;color:#fff;font-weight:700;cursor:pointer;">Chiudi questa finestra</button>' +
-    '</div></div>';
+    '<button id="bp-chiudi" style="flex:1;min-width:160px;height:40px;border:0;background:#b91c1c;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">Chiudi questa finestra</button>' +
+    '</div></div></div>';
   document.body.appendChild(d);
   document.getElementById("bp-chiudi").onclick = () => { window.close(); };
 }
