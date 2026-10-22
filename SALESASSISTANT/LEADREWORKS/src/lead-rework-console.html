@@ -166,7 +166,7 @@
   /* Storico lead: righe compatte */
   .tbl-storico th,.tbl-storico td{padding:3px 8px;white-space:nowrap;vertical-align:middle;}
   .tbl-storico td,.tbl-storico th{line-height:1.2;}
-  .tbl-storico .ck{text-align:center;width:36px;min-width:36px;max-width:36px;padding-left:0 !important;padding-right:0 !important;}
+  .tbl-storico .ck{text-align:center;width:var(--ckw,36px);min-width:var(--ckw,36px);max-width:var(--ckw,36px);padding-left:0 !important;padding-right:0 !important;}
   .tbl-storico th.ck{font-size:8.5px;letter-spacing:-.2px;}
   .tbl-storico .acts{white-space:nowrap;width:1%;}
   .tbl-storico .acts .btn-ghost{padding:2px 4px;}
@@ -2770,7 +2770,7 @@ function renderHistoryTab(){
           <th class="ck" title="Email inviata">${MAC_MAIL_LOGO_SVG}</th>
           <th class="ck" title="Lavorato">Lav.</th>
           <th class="ck" title="Follow up (si attiva dopo Lav.)">F.U.</th>
-          <th class="ck" title="Chiuso: nessun altro intervento (si attiva dopo Lav.)">Chiuso</th><th></th>
+          <th class="ck" title="Chiuso: nessun altro intervento (si attiva dopo Lav.)">Fine</th><th></th>
         </tr></thead>
         <tbody>
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
