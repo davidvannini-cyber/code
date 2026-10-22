@@ -1,6 +1,6 @@
 #!/bin/bash
-# Installa il servizio di backup automatico dei lead: parte da solo con il Mac.
-# Lo si lancia con un doppio clic (anche per aggiornarlo). Non cancella nessun backup.
+# Installa il servizio DATI dei lead: la cartella ~/DATI-LEAD dove la Console legge e salva i lead.
+# Parte da solo con il Mac. Lo si lancia con un doppio clic (anche per aggiornarlo). Non cancella nessun dato.
 cd "$(dirname "$0")" || exit 1
 SRC="$(pwd)/servizio_backup.py"
 DEST_DIR="$HOME/Library/Application Support/LeadReworkBackup"
@@ -14,7 +14,7 @@ if [ -z "$PY" ] || ! "$PY" --version >/dev/null 2>&1; then
   read -r -p "Premi Invio per chiudere…" _; exit 1
 fi
 
-mkdir -p "$DEST_DIR" "$HOME/Library/LaunchAgents" "$HOME/BACKUP-LEAD"
+mkdir -p "$DEST_DIR" "$HOME/Library/LaunchAgents" "$HOME/DATI-LEAD"
 cp "$SRC" "$DEST_DIR/servizio_backup.py" || { echo "Copia non riuscita"; read -r -p "Premi Invio…" _; exit 1; }
 
 cat > "$PLIST" <<EOF
@@ -39,11 +39,12 @@ launchctl bootstrap "gui/$UID_NUM" "$PLIST" 2>/dev/null || launchctl load -w "$P
 launchctl kickstart -k "gui/$UID_NUM/$ETICHETTA" >/dev/null 2>&1
 sleep 2
 
-if curl -s --max-time 5 http://127.0.0.1:8769/stato | grep -q '"cartella"'; then
+if curl -s --max-time 5 http://127.0.0.1:8769/stato | grep -q '"dati-v2"'; then
   echo ""
-  echo "✅ Servizio di backup installato e attivo."
-  echo "   Le copie dei lead finiranno in: $HOME/BACKUP-LEAD"
+  echo "✅ Servizio dati installato e attivo."
+  echo "   I lead vivono in: $HOME/DATI-LEAD (file leads.json, copie giornaliere in copie/)"
   echo "   Riparte da solo ad ogni accensione del Mac."
+  echo "   Ora ricarica la Console: al primo avvio sposta lì i lead che ha in Chrome."
 else
   echo ""
   echo "⚠️  Il servizio non risponde. Guarda: $DEST_DIR/errori.log"

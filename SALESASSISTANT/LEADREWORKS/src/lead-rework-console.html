@@ -374,7 +374,11 @@ function readLocalLeadsCopy(name){
 }
 
 async function dbSet(key, value){
-  if (key === "leads"){ mirrorLeadsBackup(value); svBackupProgramma(); }
+  if (key === "leads"){
+    if (state.archivio && state.archivio.soloLettura){ svArchivioAvviso("SOLA LETTURA: modifica NON salvata"); return; }
+    mirrorLeadsBackup(value);
+    svArchivioProgramma();   // scrittura nella cartella dati (servizio sul Mac)
+  }
   if (window.claude && window.claude.db && typeof window.claude.db.set === "function"){
     try { await window.claude.db.set(key, value); RUNTIME.db = true; return; }
     catch(e){ console.warn("db.set fallita, uso fallback locale", e); }
@@ -849,7 +853,41 @@ async function archivioDaBloccare(){
 }
 
 async function init(){
-  if (await archivioDaBloccare()){
+  // Archivio nella cartella dati del Mac (servizio): i lead non dipendono dal profilo di Chrome.
+  state.archivio = state.archivio || { servizio: false, rev: 0, soloLettura: !!window.__soloLettura, errore: "", inCorso: 0, ultimo: "", lead: 0, raggiungibile: null };
+  const usaServizio = !(window.claude && window.claude.db);
+  let sv = null;
+  if (usaServizio && !state.archivio.soloLettura){
+    sv = await svCaricaLeads();
+    if (sv === null){
+      state.bloccoProfilo = true;           // ferma anche la lettura delle note dal pannello
+      state.bloccoServizio = true;
+      mostraBloccoServizio();
+      return;
+    }
+    state.archivio.servizio = true;
+    state.archivio.rev = sv.rev;
+  }
+  if (sv && sv.presente){
+    // la cartella dati è la verità: sovrascrive la copia di appoggio di Chrome
+    try { localStorage.setItem(LOCAL_PREFIX + "leads", JSON.stringify(sv.leads)); localStorage.setItem(FLAG_ARCHIVIO_OK, "1"); } catch(e){}
+  } else if (sv && !sv.presente){
+    // cartella dati ancora vuota: se Chrome ha dei lead (primo avvio), vengono spostati nella cartella
+    const locale = await dbGet("leads", null);
+    if (locale && typeof locale === "object" && Object.keys(locale).length){
+      const r = await svScriviSubito(locale, null);
+      if (r && r.ok){
+        state.archivio.rev = r.rev;
+        setTimeout(() => alert("Archivio spostato nella cartella dati: " + Object.keys(locale).length + " lead al sicuro in ~/DATI-LEAD."), 400);
+      } else {
+        state.bloccoProfilo = true;
+        state.bloccoServizio = true;
+        mostraBloccoServizio("Non riesco a scrivere i lead nella cartella dati: " + ((r && r.motivo) || "errore sconosciuto"));
+        return;
+      }
+    }
+  }
+  if ((!sv || !sv.presente) && await archivioDaBloccare()){
     state.bloccoProfilo = true;
     state.leadsHistory = {};
     const eraInAttesa = !!crmInAttesa;
@@ -1841,6 +1879,10 @@ window.addEventListener("message", (ev) => {
   if (ev.data && ev.data.source === "lrw-crm-extension" && ev.data.type === "crmLeadData"){
     // Finché la pagina non ha finito l'avvio, o se è ferma per "profilo sbagliato", il lead dal CRM viene
     // tenuto da parte (e anche su disco, perché l'estensione lo cancella dopo la consegna) e applicato dopo.
+    if (state.bloccoServizio){   // servizio dati spento: il lead dal CRM si tiene da parte e si applica al prossimo avvio riuscito
+      try { localStorage.setItem(LOCAL_PREFIX + "crm_in_attesa", JSON.stringify(ev.data.payload)); } catch(e){}
+      return;
+    }
     if (state.bloccoProfilo){
       const n = document.getElementById("bp-crm"); if (n) n.style.display = "block";
       return;   // profilo sbagliato: niente viene salvato
@@ -2897,63 +2939,123 @@ async function svPoll(){
 setTimeout(() => setInterval(svPoll, 2000), 3000);
 
 /* =========================================================
-   BACKUP AUTOMATICO SU FILE (servizio sul Mac, ~/BACKUP-LEAD)
-   Il servizio (backup-servizio/servizio_backup.py, installato con «Installa Backup Lead.command»)
-   ascolta su 127.0.0.1:8769. A ogni modifica dei lead (max una volta ogni 5 s) gli si manda tutto
-   l'archivio; lui tiene ultimo + una copia al giorno. Non parte se la pagina è bloccata o i lead sono 0.
+   ARCHIVIO NELLA CARTELLA DATI DEL MAC (~/DATI-LEAD)
+   I lead vivono in un file gestito dal servizio sul Mac (backup-servizio/servizio_backup.py, 127.0.0.1:8769),
+   fuori da Chrome: aprendo la Console in qualsiasi profilo si vedono gli stessi lead.
+   - All'apertura la Console LEGGE da lì (GET /leads); la copia in localStorage è solo d'appoggio.
+   - A ogni modifica SCRIVE lì (POST /leads) con il numero di versione (rev): se un'altra finestra ha
+     cambiato l'archivio nel frattempo il salvataggio è rifiutato (409) e non si rovina niente.
+   - Servizio spento all'apertura: schermata rossa; si può solo aprire in SOLA LETTURA (nulla viene salvato).
+   - Mai sovrascritto con archivio vuoto o in forte calo (lo decide il servizio).
    ========================================================= */
 const BK_URL = "http://127.0.0.1:8769";
-state.backup = { raggiungibile: null, testo: "", ok: false, ultima: "", lead: 0, avviso: "" };
-let bkTimer = null;
-function svBackupProgramma(){
-  if (state.bloccoProfilo) return;
-  clearTimeout(bkTimer);
-  bkTimer = setTimeout(svBackupInvia, 5000);
-}
-async function svBackupInvia(){
-  const leads = state.leadsHistory || {};
-  if (state.bloccoProfilo || !Object.keys(leads).length) return;
+state.archivio = { servizio: false, rev: 0, soloLettura: false, errore: "", inCorso: 0, ultimo: "", lead: 0, raggiungibile: null };
+let arcTimer = null, arcRiprova = null, arcInVolo = false;
+
+async function svCaricaLeads(){
   try {
-    const corpo = JSON.stringify({ format: LEADS_BACKUP_FORMAT, version: 1, exported_at: new Date().toISOString(), count: Object.keys(leads).length, leads });
-    const r = await fetch(BK_URL + "/backup", { method: "POST", headers: { "Content-Type": "text/plain" }, body: corpo });
+    const r = await fetch(BK_URL + "/leads", { cache: "no-store" });
     const j = await r.json();
-    state.backup.raggiungibile = true;
-    state.backup.avviso = j.ok ? "" : (j.motivo || "copia non salvata");
-  } catch(e){
-    state.backup.raggiungibile = false;
-  }
-  await svBackupStato();
+    if (!j || typeof j.leads !== "object") return null;
+    return j;           // { presente, rev, leads }
+  } catch(e){ return null; }
 }
+function corpoArchivio(leads, baseRev){
+  const o = { format: LEADS_BACKUP_FORMAT, version: 1, exported_at: new Date().toISOString(), count: Object.keys(leads).length, leads };
+  if (baseRev !== null && baseRev !== undefined) o.base_rev = baseRev;
+  return JSON.stringify(o);
+}
+async function svScriviSubito(leads, baseRev){
+  try {
+    const r = await fetch(BK_URL + "/leads", { method: "POST", headers: { "Content-Type": "text/plain" }, body: corpoArchivio(leads, baseRev) });
+    return await r.json().then(j => Object.assign({ http: r.status }, j));
+  } catch(e){ return null; }
+}
+function svArchivioProgramma(){
+  const a = state.archivio;
+  if (!a.servizio || a.soloLettura || a.conflitto) return;
+  a.inCorso = 1;
+  svBackupAggiornaDom();
+  clearTimeout(arcTimer);
+  arcTimer = setTimeout(svArchivioSalva, 900);
+}
+async function svArchivioSalva(){
+  const a = state.archivio;
+  if (arcInVolo){ arcTimer = setTimeout(svArchivioSalva, 700); return; }
+  arcInVolo = true;
+  const leads = state.leadsHistory || {};
+  const r = await svScriviSubito(leads, a.rev);
+  arcInVolo = false;
+  if (r === null){                                  // servizio non raggiungibile: si riprova
+    a.raggiungibile = false; a.errore = "SERVIZIO DATI NON RAGGIUNGIBILE: le modifiche NON sono ancora nella cartella";
+    clearTimeout(arcRiprova); arcRiprova = setTimeout(svArchivioSalva, 8000);
+  } else if (r.conflitto){
+    a.conflitto = true; a.inCorso = 0; a.errore = "ARCHIVIO MODIFICATO DA UN'ALTRA FINESTRA: ricarica la Console. Le modifiche di questa finestra NON sono state salvate";
+    alert(a.errore);
+  } else if (!r.ok){
+    a.inCorso = 0; a.errore = "NON SALVATO nella cartella dati: " + (r.motivo || "errore");
+    if (r.rev !== undefined) a.rev = r.rev;
+  } else {
+    a.rev = r.rev; a.errore = ""; a.raggiungibile = true; a.inCorso = 0; a.ultimo = r.salvato_il || new Date().toISOString(); a.lead = r.lead;
+  }
+  svBackupAggiornaDom();
+}
+function svArchivioAvviso(t){ state.archivio.errore = t; svBackupAggiornaDom(); }
 async function svBackupStato(){
+  const a = state.archivio;
+  if (!a.servizio) return;
   try {
     const r = await fetch(BK_URL + "/stato", { cache: "no-store" });
     const j = await r.json();
-    state.backup.raggiungibile = true;
-    state.backup.ultima = j.ultima_su_disco || "";
-    state.backup.lead = j.lead_su_disco || 0;
-    if (/^(ATTENZIONE|RIFIUTATO)/.test(j.esito || "")) state.backup.avviso = j.esito;
+    a.raggiungibile = true;
+    if (!a.inCorso){ a.ultimo = j.salvato_il || a.ultimo; a.lead = j.lead; if (/^errore: SERVIZIO/.test(a.errore || "")) a.errore = ""; }
+    if (a.errore && a.errore.indexOf("NON RAGGIUNGIBILE") >= 0) a.errore = "";
   } catch(e){
-    state.backup.raggiungibile = false;
+    a.raggiungibile = false;
+    a.errore = "SERVIZIO DATI NON RAGGIUNGIBILE: le modifiche NON vengono salvate nella cartella";
   }
   svBackupAggiornaDom();
 }
 function svBackupHtml(esteso){
-  const b = state.backup;
+  const a = state.archivio || {};
+  if (!a.servizio && !a.soloLettura) return "";
   let testo, colore;
-  if (b.raggiungibile === false){ testo = "⚠ BACKUP AUTOMATICO NON ATTIVO (servizio non raggiungibile)"; colore = "#b91c1c"; }
-  else if (b.avviso){ testo = "⚠ Backup: " + b.avviso; colore = "#b91c1c"; }
-  else if (b.ultima){
-    const o = new Date(b.ultima);
-    testo = "✓ Backup automatico: ultima copia " + o.toLocaleString("it-IT", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) + " (" + b.lead + " lead)";
+  if (a.soloLettura){ testo = "⚠ SOLA LETTURA: le modifiche NON vengono salvate"; colore = "#b91c1c"; }
+  else if (a.errore){ testo = "⚠ " + a.errore; colore = "#b91c1c"; }
+  else if (a.inCorso){ testo = "Salvataggio nella cartella dati…"; colore = "#5b6b7f"; }
+  else if (a.ultimo){
+    const o = new Date(a.ultimo);
+    testo = "✓ Dati nella cartella ~/DATI-LEAD: salvati " + o.toLocaleString("it-IT", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) + " (" + a.lead + " lead)";
     colore = "#0f766e";
-  } else { testo = "Backup automatico: in verifica…"; colore = "#5b6b7f"; }
+  } else { testo = "Cartella dati: in verifica…"; colore = "#5b6b7f"; }
   const forte = colore === "#b91c1c" ? "font-weight:800;" : "";
   return '<span class="sv-backup" style="' + (esteso ? "" : "margin-right:10px;") + 'font-size:11px;color:' + colore + ';' + forte + '">' + testo + '</span>';
 }
 function svBackupAggiornaDom(){
   document.querySelectorAll(".sv-backup").forEach(e => { e.outerHTML = svBackupHtml(e.parentElement && e.parentElement.style.flexBasis === "100%"); });
 }
-setTimeout(() => { svBackupStato(); setTimeout(svBackupInvia, 1500); setInterval(svBackupStato, 30000); }, 6000);
+function mostraBloccoServizio(motivo){
+  const d = document.createElement("div");
+  d.id = "blocco-servizio";
+  d.style.cssText = "position:fixed;inset:0;z-index:99999;background:#fff;box-shadow:inset 0 0 0 16px #b91c1c;display:flex;align-items:center;justify-content:center;padding:36px;font-family:-apple-system,'Segoe UI',Arial,sans-serif;";
+  d.innerHTML = '<div style="max-width:500px;border:6px solid #b91c1c;background:#fff;">' +
+    '<div style="background:#b91c1c;color:#fff;font-size:20px;font-weight:800;padding:14px 22px;">⚠ Cartella dati non raggiungibile</div><div style="padding:20px 24px 22px;font-size:14px;line-height:1.5;color:#1c2228;">' +
+    (motivo ? '<b>' + motivo + '</b><br><br>' : '') +
+    'I tuoi lead vivono nella cartella <b>~/DATI-LEAD</b> sul Mac, gestita da un piccolo servizio. Il servizio non risponde, quindi la Console non può leggere né salvare i lead.<br><br>' +
+    '<b>Cosa fare:</b> fai doppio clic su <b>«Installa Backup Lead.command»</b> (cartella LEADREWORKS/backup-servizio) per avviarlo, poi premi «Ricarica».<br><br>' +
+    'Se hai bisogno di guardare i lead subito, puoi aprire in <b>sola lettura</b> (dati di Chrome): <b>nulla viene salvato</b>.' +
+    '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">' +
+    '<button id="bs-ricarica" style="flex:1;min-width:150px;height:40px;border:0;background:#b91c1c;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">Ricarica</button>' +
+    '<button id="bs-lettura" style="flex:1;min-width:150px;height:40px;border:1px solid #c5cdd8;background:#f4f6f9;color:#1c2228;font-weight:600;cursor:pointer;">Apri in sola lettura</button></div></div></div>';
+  document.body.appendChild(d);
+  document.getElementById("bs-ricarica").onclick = () => location.reload();
+  document.getElementById("bs-lettura").onclick = () => {
+    window.__soloLettura = true; state.archivio.soloLettura = true; state.bloccoProfilo = false; state.bloccoServizio = false;
+    d.remove(); init();
+  };
+}
+window.addEventListener("beforeunload", (e) => { if (state.archivio && state.archivio.inCorso){ e.preventDefault(); e.returnValue = ""; } });
+setTimeout(() => { svBackupStato(); setInterval(svBackupStato, 30000); }, 4000);
 
 /* =========================================================
    BOOT
