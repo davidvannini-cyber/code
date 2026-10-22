@@ -819,8 +819,8 @@ function placeLauncherWindow(){
 
 /* Protezione "profilo Chrome sbagliato": i lead stanno nell'archivio del profilo Chrome con cui si apre
    questa pagina. Se la pagina si apre in un altro profilo trova tutto vuoto. Se l'archivio è vuoto, senza
-   copie di sicurezza e mai confermato in questo profilo, ci si ferma con un avviso (si ripristina solo
-   scegliendo a mano «avvia da vuoto»). Un profilo che ha almeno un lead viene segnato "confermato" da solo. */
+   copie di sicurezza e mai confermato in questo profilo, ci si ferma con un avviso (nessun modo di
+   proseguire: si cambia profilo). Un profilo che ha almeno un lead viene segnato "confermato" da solo. */
 const FLAG_ARCHIVIO_OK = LOCAL_PREFIX + "archivio_confermato";
 let crmInAttesa = null;   // lead arrivato dal CRM prima della fine dell'avvio (o mentre la pagina è bloccata)
 function mostraBloccoProfilo(){
@@ -832,17 +832,12 @@ function mostraBloccoProfilo(){
     '<div style="font-size:14px;line-height:1.5;color:#1c2228;">Questa pagina non trova nessun lead, nessuna copia di sicurezza e non è mai stata confermata in questo profilo di Chrome. Probabilmente sei in un <b>altro profilo</b> rispetto a quello dove hai i tuoi lead.<br><br>' +
     '<b>Cosa fare:</b> chiudi questa finestra, passa al profilo giusto (icona del profilo in alto a destra in Chrome) e riapri la Console da lì.<br><br>' +
     'Finché questo avviso è aperto non viene salvato né letto nulla.</div>' +
-    '<div id="bp-crm" style="display:' + (crmInAttesa || localStorage.getItem(LOCAL_PREFIX + "crm_in_attesa") ? 'block' : 'none') + ';margin-top:12px;padding:8px 10px;background:#e6eef6;border:1px solid #1f4e79;font-size:13px;color:#1b2a3d;">📥 Un lead dal CRM è in attesa in questo profilo: si apre solo se confermi qui «parti da vuoto». Se cambi profilo, rimandalo dal CRM.</div>' +
+    '<div id="bp-crm" style="display:none;margin-top:12px;padding:8px 10px;background:#e6eef6;border:1px solid #1f4e79;font-size:13px;color:#1b2a3d;">📥 Un lead è arrivato dal CRM, ma questo è il profilo sbagliato: non è stato aperto. Cambia profilo e rimandalo dal CRM.</div>' +
     '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">' +
     '<button id="bp-chiudi" style="flex:1;min-width:160px;height:38px;border:0;background:#1f4e79;color:#fff;font-weight:700;cursor:pointer;">Chiudi questa finestra</button>' +
-    '<button id="bp-avvia" style="flex:1;min-width:160px;height:38px;border:1px solid #c5cdd8;background:#f4f6f9;color:#1c2228;font-weight:600;cursor:pointer;">È il profilo giusto: parti da vuoto</button></div></div>';
+    '</div></div>';
   document.body.appendChild(d);
   document.getElementById("bp-chiudi").onclick = () => { window.close(); };
-  document.getElementById("bp-avvia").onclick = () => {
-    if (!confirm("Confermi che questo è il profilo giusto e che vuoi iniziare con lo Storico vuoto?")) return;
-    try { localStorage.setItem(FLAG_ARCHIVIO_OK, "1"); } catch(e){}
-    location.reload();
-  };
 }
 async function archivioDaBloccare(){
   if (window.claude && window.claude.db) return false;               // ambiente Claude: archivio non legato al profilo
@@ -857,7 +852,11 @@ async function init(){
   if (await archivioDaBloccare()){
     state.bloccoProfilo = true;
     state.leadsHistory = {};
+    const eraInAttesa = !!crmInAttesa;
+    crmInAttesa = null;
+    try { localStorage.removeItem(LOCAL_PREFIX + "crm_in_attesa"); } catch(e){}
     mostraBloccoProfilo();
+    if (eraInAttesa){ const n = document.getElementById("bp-crm"); if (n) n.style.display = "block"; }
     return;
   }
   placeLauncherWindow();
@@ -1841,10 +1840,13 @@ window.addEventListener("message", (ev) => {
   if (ev.data && ev.data.source === "lrw-crm-extension" && ev.data.type === "crmLeadData"){
     // Finché la pagina non ha finito l'avvio, o se è ferma per "profilo sbagliato", il lead dal CRM viene
     // tenuto da parte (e anche su disco, perché l'estensione lo cancella dopo la consegna) e applicato dopo.
+    if (state.bloccoProfilo){
+      const n = document.getElementById("bp-crm"); if (n) n.style.display = "block";
+      return;   // profilo sbagliato: niente viene salvato
+    }
     if (!state.avvioFinito){
       crmInAttesa = ev.data.payload;
       try { localStorage.setItem(LOCAL_PREFIX + "crm_in_attesa", JSON.stringify(crmInAttesa)); } catch(e){}
-      const n = document.getElementById("bp-crm"); if (n) n.style.display = "block";
       return;
     }
     applyCrmImport(ev.data.payload);
