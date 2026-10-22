@@ -127,6 +127,10 @@
   .hm-card.hm-off{opacity:.45;}
   .hm-ch{display:flex;align-items:center;gap:6px;background:#eef2f7;padding:5px 10px;font-family:var(--font-head);font-weight:700;font-size:10px;color:#12324f;border-left:4px solid #2bb3a6;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .hm-ch .hm-sp{margin-left:auto;font-weight:400;font-size:9px;color:#6b7a8c;}
+  .hm-regen{margin-left:auto;display:flex;gap:4px;}
+  .hm-regen button{border:1px solid #9fb3c8;background:#fff;color:#12324f;font:600 10px var(--font-head);padding:2px 8px;border-radius:3px;cursor:pointer;}
+  .hm-regen button.nr{background:#12324f;color:#fff;border-color:#12324f;}
+  .hm-regen button:disabled{opacity:.5;cursor:wait;}
   .hm-cb{padding:8px 10px;font-size:11px;line-height:1.5;color:#1b1f27;}
   .hm-ai{background:rgba(43,179,166,.08);}
   .hm-lab{font-weight:700;font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#6b7a8c;margin:6px 0 2px;}
@@ -265,7 +269,7 @@ const COMPANY_PROFILE_DEFAULT = {
 const HARD_COMPLIANCE_RULES = [
   "Il cliente va SEMPRE chiamato per COGNOME preceduto da 'Sig.' (uomo) o 'Sig.ra' (donna), es. 'Sig. Rossi' / 'Sig.ra Verdi' (nel campo DATI LEAD trovi 'appellativo_cliente' già calcolato: usalo, correggendolo solo se dal nome è evidente che l'ordine nome/cognome o il genere è sbagliato). MAI il solo nome di battesimo, MAI nome e cognome insieme, MAI 'signor'/'signora' per esteso. Se il nome del cliente non è noto, non inventarlo e usa una formula neutra ('Buongiorno,').",
   "Negli script WhatsApp NON usare MAI emoji, emoticon o smiley (nemmeno 🙂, 📅, 📍 o simili): solo testo semplice.",
-  "YesMobility non ha MAI parlato con questo cliente prima d'ora, in nessun canale. Frasi come 'la ricontatto', 'la richiamo', 'ricordo che l'ultima volta...', 'come detto la volta scorsa' riferite a un contatto YesMobility precedente sono VIETATE sempre — anche se lo stato del lead nel CRM si chiama 'trattativa persa' o 'ultimo richiamo': sono nomi interni di fase, non prove di una telefonata YesMobility già avvenuta. Unica eccezione: riferirsi a una chiamata/messaggio fatto pochi minuti prima nello STESSO giro di rework (es. un'email di riepilogo dopo la telefonata di oggi).",
+  "YesMobility non ha MAI parlato con questo cliente prima d'ora, in nessun canale. Frasi come 'la ricontatto', 'la richiamo', 'ricordo che l'ultima volta...', 'come detto la volta scorsa' riferite a un contatto YesMobility precedente sono VIETATE sempre — anche se lo stato del lead nel CRM si chiama 'trattativa persa' o 'ultimo richiamo': sono nomi interni di fase, non prove di una telefonata YesMobility già avvenuta. Unica eccezione: riferirsi a una chiamata/messaggio fatto pochi minuti prima nello STESSO giro di rework (es. un'email di riepilogo dopo la telefonata di oggi) e, solo se la richiesta lo indica esplicitamente (modalità NR), il tentativo di chiamata senza risposta fatto dal nostro operatore in questo giro: fa parte della lavorazione in corso, non è un contatto precedente.",
   "Non inventare MAI un comportamento, uno stato d'animo o una frase passata attribuita al cliente che non è scritta esplicitamente nei dati del lead forniti nel prompt (note, storico, motivazione). Esempio REALE VIETATO, generato per errore e da non ripetere mai più: 'ricordo che l'ultima volta era stato sommerso di chiamate e aveva preferito prendersi un po' di tempo prima di valutare'. Se un motivo o un contesto non è nei dati forniti, lo script resta generico — non va mai inventata una spiegazione plausibile per riempire il vuoto.",
   "Non rivelare MAI, nemmeno indirettamente, informazioni interne che il cliente non ha detto in QUESTA telefonata: per chi è il prodotto (es. 'per suo suocero', 'per sua madre'), condizioni di salute/mobilità, o qualunque dato che risulta da note/CRM/sopralluoghi ma non dalla richiesta iniziale esplicita o da ciò che il cliente dice durante la chiamata stessa. Esempio REALE VIETATO: 'La ricontatto per la richiesta di montascale per suo suocero' e 'conoscendo la situazione di suo suocero' — anche se il dato è vero ed è nelle note interne, dirlo al telefono rivela che lo sappiamo già e brucia il lead.",
   "Il Lead Rework lavora SEMPRE E SOLO su PRIMI CONTATTI: il cliente non conosce YesMobility. Non scrivere MAI messaggi o frasi di CONFERMA o di PROMEMORIA/REMINDER di un appuntamento (nemmeno se lo stato del lead è 'Cliente interessato — organizzare sopralluogo': quello stato significa cercare di OTTENERE un appuntamento, non confermarlo né ricordarlo; conferma e promemoria appartengono a una fase successiva). Non inventare MAI una data, un orario o un appuntamento già fissato che non sia scritto esplicitamente nei dati del lead.",
@@ -2277,6 +2281,125 @@ function exportHistoryItemToSuggerimentiVendita(id){
 }
 
 /* =========================================================
+   RIGENERA / RIGENERA NR dalla finestra «Vedi» (WhatsApp ed email)
+   «Rigenera»  = nuova variante dello stesso script (come nella scheda Lead).
+   «Rigenera NR» = come sopra, ma il cliente NON ha risposto alla telefonata di questo giro: nel testo compare la
+   frase «Abbiamo provato a contattarla senza successo» (alla seconda volta: «…più volte…»).
+   Il testo precedente non si perde (r.script_precedenti). Il flag NR si vede nella colonna «NR» dello Storico.
+   ========================================================= */
+const NR_FRASE = "Abbiamo provato a contattarla senza successo";
+const NR_FRASE_PIU = "Abbiamo provato più volte a contattarla senza successo";
+const NR_FINESTRA_MIN = 30;   // un NR su un altro canale entro 30 minuti conta come lo stesso tentativo
+function nrTentativo(r){
+  const nr = r.nr || { count: 0, ultima: "" };
+  const recente = nr.ultima && (Date.now() - new Date(nr.ultima).getTime()) < NR_FINESTRA_MIN * 60000;
+  return recente && nr.count > 0 ? nr.count : (nr.count || 0) + 1;
+}
+function nrBloccoPrompt(n){
+  const frase = n >= 2 ? NR_FRASE_PIU : NR_FRASE;
+  return "\n\nNESSUNA RISPOSTA (NR): il nostro operatore ha appena provato a telefonare al cliente senza ricevere risposta (tentativo di QUESTO giro di lavorazione: non è un contatto precedente e NON viola la regola sui contatti precedenti). " +
+    "Nel testo inserisci UNA SOLA VOLTA, in modo naturale (di norma subito dopo il saluto e la presentazione), la frase esatta «" + frase + "». " +
+    "Non aggiungere altro sulla telefonata (nessun orario, nessun numero di tentativi diverso da questo, nessun motivo) e non cambiare il resto delle regole.";
+}
+function nrInserisciFrase(testo, n){
+  const frase = n >= 2 ? NR_FRASE_PIU : NR_FRASE;
+  const t = String(testo || "");
+  if (/abbiamo provato[^.]{0,40}senza successo/i.test(t)) return t;          // già presente
+  // dopo la PRIMA frase vera: non ci si ferma dopo abbreviazioni come "Sig." / "Sig.ra" / "Dott."
+  const ABBR = /(^|[\s,(])(sig|sigg|sig\.ra|sra|dott|dr|dr\.ssa|ing|avv|prof|geom|arch|egr|gent)$/i;
+  const re = /[.!?](?=\s|$)|\n/g;
+  let m, i = -1;
+  while ((m = re.exec(t))){
+    if (m[0] === "\n"){ i = m.index; break; }
+    if (m[0] === "." && ABBR.test(t.slice(0, m.index))) continue;
+    i = m.index + 1; break;
+  }
+  if (i < 0) return frase + ". " + t;
+  const dopo = t.slice(i);
+  return t.slice(0, i) + (t[i - 1] === "\n" ? "" : " ") + frase + "." + (dopo.startsWith("\n") ? "" : " ") + dopo.replace(/^ +/, "");
+}
+async function historyRegenerate(id, chiave, nr){
+  const r = state.leadsHistory[id];
+  if (!r || state.hmBusy) return;
+  const v0 = (r.script_generati || {})[chiave];
+  const canale = (/^email/i.test(chiave) || (v0 && typeof v0 === "object" && v0.oggetto !== undefined)) ? "email" : "whatsapp";
+  state.hmBusy = id + ":" + chiave + ":" + (nr ? "nr" : "std");
+  render();
+  const bozzaPrec = state.draft;
+  let system, user, sl, fallback = null;
+  try {
+    // bozza ricostruita dal lead, solo per costruire il prompt di questo canale
+    const d = emptyDraft();
+    Object.assign(d, r.dati_lead_input);
+    d.stato_lead = r.stato_lead;
+    d.canali_attivi = { telefono: false, whatsapp: false, email: false };
+    d.canali_attivi[canale] = true;
+    d.obiezioni_attive = (r.obiezioni_toggle || []).slice();
+    state.draft = d;
+    const slots = activeSlots();
+    sl = slots.find(x => x.key === chiave) || slots.find(x => x.canale === canale);
+    if (!sl) throw new Error("nessuno script di riferimento per questo canale nello stato del lead");
+    system = buildSystemPrompt();
+    user = buildUserPrompt() + `\n\nRigenera SOLO la chiave "${sl.key}" con una variante alternativa, stesso formato JSON con questa singola chiave.` + (nr ? nrBloccoPrompt(nrTentativo(r)) : "");
+    const ref = scriptById(sl.scripts[0]);
+    if (ref) fallback = canale === "email"
+      ? { oggetto: substitutePlaceholders(ref.oggetto || ""), corpo: substitutePlaceholders(ref.corpo || "") }
+      : substitutePlaceholders(ref.testo || "");
+  } catch(e){
+    state.draft = bozzaPrec; state.hmBusy = null; render();
+    alert("Rigenerazione non riuscita: " + e.message);
+    return;
+  }
+  state.draft = bozzaPrec;
+  const n = nr ? nrTentativo(r) : 0;
+  try {
+    let val;
+    try {
+      const raw = await callSample({ system, user });
+      const parsed = parseGeneratedJson(raw);
+      val = signValue(canale, parsed[sl.key] !== undefined ? parsed[sl.key] : parsed);
+    } catch(e){
+      if (e.code !== "NO_AI_RUNTIME" || fallback === null) throw e;
+      val = signValue(canale, fallback);      // senza AI: si parte dallo script di libreria
+    }
+    if (nr){
+      val = canale === "email"
+        ? Object.assign({}, val, { corpo: nrInserisciFrase(val.corpo, n) })
+        : nrInserisciFrase(val, n);
+    }
+    r.script_generati = r.script_generati || {};
+    if (r.script_generati[sl.key] !== undefined){
+      r.script_precedenti = r.script_precedenti || [];
+      r.script_precedenti.push({ chiave: sl.key, valore: r.script_generati[sl.key], quando: new Date().toISOString(), motivo: nr ? "NR" : "rigenera" });
+      if (r.script_precedenti.length > 30) r.script_precedenti = r.script_precedenti.slice(-30);
+    }
+    r.script_generati[sl.key] = val;
+    if (!(r.canali_generati || []).includes(sl.key)) r.canali_generati = (r.canali_generati || []).concat([sl.key]);
+    if (nr){
+      const ora = new Date().toISOString();
+      r.nr = { count: n, ultima: ora, date: ((r.nr && r.nr.date) || []).concat([ora]) };
+    }
+    await dbSet("leads", state.leadsHistory);
+  } catch(e){
+    alert("Rigenerazione non riuscita: " + e.message);
+  }
+  state.hmBusy = null;
+  render();
+}
+function toggleNR(id, el){
+  const r = state.leadsHistory[id];
+  if (!r) return;
+  if (el.checked){            // il flag NR si imposta SOLO con «Rigenera NR» nella finestra Vedi
+    el.checked = false;
+    alert("Il flag NR si imposta con il tasto «Rigenera NR» nella finestra «Vedi» del lead.");
+    return;
+  }
+  if (!confirm("Togliere il flag NR (nessuna risposta) da questo lead?")){ el.checked = true; return; }
+  r.nr = { count: 0, ultima: "", date: (r.nr && r.nr.date) || [] };
+  dbSet("leads", state.leadsHistory).then(render);
+}
+
+/* =========================================================
    STORICO
    ========================================================= */
 
@@ -2449,6 +2572,7 @@ async function esportaStoricoExcel(){
     "Telefonata": (r.attivita && r.attivita.telefono) ? "Sì" : "No",
     "WhatsApp": (r.attivita && r.attivita.whatsapp) ? "Sì" : "No",
     "Email inviata": (r.attivita && r.attivita.email) ? "Sì" : "No",
+    "NR (nessuna risposta)": (r.nr && r.nr.count) ? ("Sì (" + r.nr.count + ")") : "No",
     "Lavorato": r.lavorato ? "Sì" : "No",
     "Follow up": r.followup ? "Sì" : "No",
     "Chiuso": r.chiuso ? "Sì" : "No"
@@ -2628,6 +2752,7 @@ function renderHistoryTab(){
           <th class="ck" title="Telefonata fatta">${icon('phone',{noMargin:true})}</th>
           <th class="ck" title="WhatsApp inviato">${WHATSAPP_LOGO_SVG}</th>
           <th class="ck" title="Email inviata">${MAC_MAIL_LOGO_SVG}</th>
+          <th class="ck" title="NR = nessuna risposta alla telefonata (si imposta con «Rigenera NR» nella finestra Vedi)">NR</th>
           <th class="ck" title="Lavorato">Lav.</th>
           <th class="ck" title="Follow up (si attiva dopo Lav.)">F.U.</th>
           <th class="ck" title="Chiuso: nessun altro intervento (si attiva dopo Lav.)">Chiuso</th><th></th>
@@ -2641,6 +2766,7 @@ function renderHistoryTab(){
               <td class="c-stato">${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
               <td class="c-gen">${r.canali_generati.length}</td>
               ${ck('telefono','Telefonata fatta')}${ck('whatsapp','WhatsApp inviato')}${ck('email','Email inviata')}
+              <td class="ck"><input type="checkbox" ${(r.nr && r.nr.count) ? 'checked' : ''} onchange="toggleNR('${r.id}',this)" title="${(r.nr && r.nr.count) ? 'Nessuna risposta: ' + r.nr.count + (r.nr.count > 1 ? ' tentativi' : ' tentativo') + ' (ultimo ' + new Date(r.nr.ultima).toLocaleString('it-IT') + ')' : 'NR: si imposta con «Rigenera NR» nella finestra Vedi'}"></td>
               <td class="ck"><input type="checkbox" ${r.lavorato?'checked':''} onchange="toggleLavorato('${r.id}')" title="Segna come lavorato"></td>
               <td class="ck"><input type="checkbox" ${r.followup?'checked':''} ${r.lavorato?'':'disabled'} onchange="toggleFollowup('${r.id}')" title="${r.lavorato ? 'Follow up: il lead ha dato un esito' : 'Prima segna il lead come lavorato'}"></td>
               <td class="ck"><input type="checkbox" ${r.chiuso?'checked':''} ${r.lavorato?'':'disabled'} onchange="toggleChiuso('${r.id}')" title="${r.lavorato ? 'Chiuso: nessun altro intervento necessario' : 'Prima segna il lead come lavorato'}"></td>
@@ -2763,7 +2889,10 @@ function renderHistoryModal(id){
       : (canale === "whatsapp" ? fieldRow("Testo", "text", k, "text", typeof v === "string" ? v : "")
         : `<div class="hm-fld">${ta(`saveHistoryScript('${r.id}','${escapeHtml(k)}','text',this.value,this)`, typeof v === "string" ? v : "")}</div>`);
     const on = historyPrintFlag(r, canale);
-    return `<div class="hm-card ${on ? '' : 'hm-off'}" data-canale="${canale}"><div class="hm-ch">${iconHtml}${escapeHtml(k)}</div><div class="hm-cb">${contactRow(canale, k)}${body}</div></div>`;
+    const occ = !!state.hmBusy;
+    const mio = (t) => state.hmBusy === r.id + ":" + k + ":" + t;
+    const bottoni = `<span class="hm-regen no-print"><button ${occ ? "disabled" : ""} title="Nuova variante dello stesso testo" onclick="historyRegenerate('${r.id}','${escapeHtml(k).replace(/'/g, "\\'")}',false)">${mio("std") ? "…" : "Rigenera"}</button><button class="nr" ${occ ? "disabled" : ""} title="Nuova variante con la frase «Abbiamo provato a contattarla senza successo» (il cliente non ha risposto alla telefonata)" onclick="historyRegenerate('${r.id}','${escapeHtml(k).replace(/'/g, "\\'")}',true)">${mio("nr") ? "…" : "Rigenera NR"}</button></span>`;
+    return `<div class="hm-card ${on ? '' : 'hm-off'}" data-canale="${canale}"><div class="hm-ch">${iconHtml}${escapeHtml(k)}${canale === "telefono" ? "" : bottoni}</div><div class="hm-cb">${contactRow(canale, k)}${body}</div></div>`;
   }).join("");
   const flag = (canale, label) => `<label><input type="checkbox" ${historyPrintFlag(r, canale) ? "checked" : ""} onchange="toggleHistoryPrint('${r.id}','${canale}',this.checked)"> ${label}</label>`;
   const noteYM = String(r.note_ym||"");
