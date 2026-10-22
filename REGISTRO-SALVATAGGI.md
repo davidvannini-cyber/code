@@ -261,3 +261,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-22 | `ee9923c` | Storico: caselle a distanza 24 px, intestazione «Fine» (SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html, docs/HANDOFF.md), REGISTRO-SALVATAGGI.md | `git checkout ee9923c` |
 | 2026-10-22 | `ca8609d` | Vedi: icona Suggerimenti Vendita accanto al telefono (SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html, docs/HANDOFF.md), REGISTRO-SALVATAGGI.md | `git checkout ca8609d` |
 | 2026-10-22 | `8f3fe6f` | Nuovo progetto BG-VIDEOCAL: app Android sfondo videocall (sfoca/immagine/video, foto), automazione di build (BG-VIDEOCAL/, .github/workflows/bg-videocal-apk.yml), REGISTRO-SALVATAGGI.md | `git checkout 8f3fe6f` |
+| 2026-10-22 | `b7b460e` | BG-VIDEOCAL v0.2: nuova grafica scura (chip a gradiente, tasto di scatto, pulsante gira) e REA/.gitignore (BG-VIDEOCAL/app/..., REA/.gitignore), REGISTRO-SALVATAGGI.md | `git checkout b7b460e` |

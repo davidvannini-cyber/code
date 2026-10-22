@@ -76,6 +76,7 @@ public class MainActivity extends ComponentActivity {
         segmenter = Segmentation.getClient(new SelfieSegmenterOptions.Builder()
                 .setDetectorMode(SelfieSegmenterOptions.STREAM_MODE).build());
 
+        findViewById(R.id.btnBlur).setSelected(true);
         findViewById(R.id.btnBlur).setOnClickListener(v -> setMode(BLUR));
         findViewById(R.id.btnImage).setOnClickListener(v -> pick("image/*", REQ_IMAGE));
         findViewById(R.id.btnVideo).setOnClickListener(v -> pick("video/*", REQ_VIDEO));
@@ -141,6 +142,9 @@ public class MainActivity extends ComponentActivity {
         if (m == IMAGE) bgImage.setImageBitmap(pickedImage);
         if (m == BLUR) bgImage.setImageBitmap(lastBlur);
         if (m == VIDEO) startVideo();
+        findViewById(R.id.btnBlur).setSelected(m == BLUR);
+        findViewById(R.id.btnImage).setSelected(m == IMAGE);
+        findViewById(R.id.btnVideo).setSelected(m == VIDEO);
     }
 
     private void startVideo() {
