@@ -1393,10 +1393,12 @@
         setTimeout(() => { if (!f.closed) f.close(); }, 800);
         return;
       }
-      // A destra del pannello, all'altezza della "Guida chiamata", 442x416 (340x320 +30%).
+      // A destra del pannello, 442x416 (340x320 +30%). Altezza FISSA (114 px dal bordo alto della pagina,
+      // dove stava la Guida con la vecchia testata): non seguire la posizione reale della guida, che
+      // con la testata a 3 righe è più in basso. Senza guida si apre a filo con l'alto della pagina.
       const L = 442, A = 416;
       const guida = document.getElementById("riquadro-canovaccio");
-      const alto = window.screenY + (window.outerHeight - window.innerHeight) + (guida.style.display !== "none" ? guida.getBoundingClientRect().top : 0);
+      const alto = window.screenY + (window.outerHeight - window.innerHeight) + (guida.style.display !== "none" ? 114 : 0);
       let sinistra = window.screenX + window.outerWidth + 8;
       const schermoDx = (window.screen.availLeft || 0) + window.screen.availWidth;
       if (sinistra + L > schermoDx) sinistra = Math.max(0, schermoDx - L); // poco spazio a destra: resta dentro lo schermo
