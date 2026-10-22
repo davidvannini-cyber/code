@@ -328,7 +328,7 @@
     background: linear-gradient(90deg, #fff59a, #ffee74); color: #6b4e00;
     box-shadow: -2px 2px 6px rgba(0,0,0,.3); cursor: pointer;
     writing-mode: vertical-rl; display: flex; align-items: center; justify-content: center; gap: 6px;
-    font: 800 16px "Bradley Hand", "Marker Felt", "Segoe Print", "Comic Sans MS", cursive; letter-spacing: .06em;
+    font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: .12em;
   }
   #pulsante-note.aperta { box-shadow: inset 3px 0 6px rgba(0,0,0,.25), -2px 2px 6px rgba(0,0,0,.3); }
   #pulsante-note:hover { background: linear-gradient(90deg, #fff176, #ffe94a); }
@@ -402,29 +402,20 @@
   #vela-fine .az button { height: 38px; border: 0; border-radius: var(--r); font-weight: 700; font-size: 13px; cursor: pointer; color: #fff; background: var(--gf); }
   #vela-fine .az button.ann { background: var(--bg1); color: var(--ink1); border: 1px solid var(--bd2); }
 
-  /* ===== Testata chiamata a 3 righe, stile "vetro liquido" (proposta A, 2026-10-22) =====
+  /* ===== Testata chiamata a 3 righe (proposta A, versione chiara scelta il 2026-10-22) =====
      riga 1: microfono + indicatori · riga 2: contatto · riga 3: tasti come l'app Telefono.
-     I tre pulsanti conservano gli id di prima (pulsante-telefono / -pausa / -termina). */
-  #testata-chiamata {
-    flex-shrink: 0; overflow: hidden; color: #fff; padding: 7px; border-radius: 22px;
-    background: radial-gradient(120% 90% at 10% 0%, #5b8dff 0%, transparent 55%),
-                radial-gradient(110% 90% at 100% 20%, #c06bff 0%, transparent 55%),
-                radial-gradient(120% 100% at 40% 110%, #ff8a5c 0%, transparent 55%), #2b3a67;
-    box-shadow: 0 4px 14px rgba(30,40,90,.3);
-  }
-  .vr {
-    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.38);
-    backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(255,255,255,.08), 0 4px 12px rgba(0,0,0,.18);
-    text-shadow: 0 1px 2px rgba(0,0,0,.3);
-  }
+     I tre pulsanti conservano gli id di prima (pulsante-telefono / -pausa / -termina).
+     Righe con fondo opaco e bordo pieno: niente backdrop-filter, con le barre che si aggiornano
+     di continuo faceva sparire a tratti la cornice arrotondata. */
+  #testata-chiamata { flex-shrink: 0; color: var(--ink1); }
+  .vr { background: #fafbfd; border: 1px solid var(--bd2); box-shadow: 0 2px 6px rgba(31,78,121,.12); }
   .vr + .vr { margin-top: 6px; }
 
   /* riga 1: microfono e indicatori del segnale */
   .vr1 { display: flex; align-items: center; gap: 10px; border-radius: 16px; padding: 5px 11px; font-size: 9.5px; font-weight: 600; }
   #pulsante-microfono {
     display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 0; border: 0; background: transparent;
-    color: #fff; font-family: inherit; font-size: 10.5px; font-weight: 700; white-space: nowrap; cursor: pointer; text-shadow: inherit;
+    color: var(--ink1); font-family: inherit; font-size: 10.5px; font-weight: 700; white-space: nowrap; cursor: pointer;
   }
   #pulsante-microfono::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #d0d4dc; }
   #pulsante-microfono.attivo::before { background: #34c759; animation: pulsa-mic 1.4s infinite; }
@@ -432,8 +423,8 @@
   @keyframes pulsa-mic { 50% { opacity: .35; } }
   .riquadro-livello { display: none; flex: 1; min-width: 0; flex-wrap: wrap; gap: 3px 10px; }
   .riquadro-livello .mini { flex: 1 1 70px; display: flex; align-items: center; gap: 5px; min-width: 0; }
-  .riquadro-livello .barra-livello-track { flex: 1; width: auto; height: 4px; background: rgba(255,255,255,.3); }
-  .avviso-audio { flex: 0 0 100%; text-shadow: none; }
+  .riquadro-livello .barra-livello-track { flex: 1; width: auto; height: 4px; background: #d5dbe4; }
+  .avviso-audio { flex: 0 0 100%; }
 
   /* riga 2: contatto */
   .vr2 { display: flex; align-items: baseline; gap: 8px; border-radius: 14px; padding: 6px 12px; font-size: 13px; white-space: nowrap; }
@@ -443,7 +434,7 @@
 
   /* riga 3: tasti rotondi con scritta sotto, come la schermata di chiamata dell'iPhone */
   .vr3 { display: flex; align-items: flex-start; justify-content: space-around; border-radius: 26px; padding: 8px 6px 6px; }
-  .tasto { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: #fff; font: inherit; cursor: pointer; text-shadow: inherit; }
+  .tasto { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: var(--ink1); font: inherit; cursor: pointer; }
   .tasto .cerchio {
     width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff;
     box-shadow: inset 0 1px 1px rgba(255,255,255,.7), inset 0 -6px 12px rgba(0,0,0,.12), 0 5px 12px rgba(0,0,0,.25);
@@ -456,11 +447,11 @@
   .tasto.verde .cerchio { background: linear-gradient(180deg, rgba(80,225,120,.95), rgba(30,170,80,.88)); }
   .tasto.rosso .cerchio { background: linear-gradient(180deg, rgba(255,105,95,.97), rgba(225,40,40,.9)); }
   .tasto.rosso svg { transform: rotate(135deg); }
-  .tasto.pausa .cerchio { width: 40px; height: 40px; margin: 7px 0; background: rgba(255,255,255,.9); color: #1c1c1e; text-shadow: none; }
+  .tasto.pausa .cerchio { width: 40px; height: 40px; margin: 7px 0; background: #fff; color: #1c1c1e; border: 1px solid var(--bd2); }
   .tasto.pausa svg { width: 18px; height: 18px; }
   .tasto.pausa .ic-play, .tasto.pausa.in-pausa .ic-pausa { display: none; }
   .tasto.pausa.in-pausa .ic-play { display: block; }
-  .tasto.pausa.in-pausa .cerchio { box-shadow: 0 0 0 3px rgba(255,214,10,.8), 0 5px 12px rgba(0,0,0,.25); }
+  .tasto.pausa.in-pausa .cerchio { box-shadow: 0 0 0 3px rgba(245,158,11,.85), 0 5px 12px rgba(0,0,0,.25); }
   #esito-telefono { font-size: 10.5px; text-align: center; margin-top: 4px; }
   #esito-telefono:empty { display: none; }
 </style>
@@ -537,7 +528,7 @@
     <div id="trascrizioni"></div>
   </div>
 
-  <button id="pulsante-note" title="Apri / chiudi le note della telefonata (tasto N)">📝 NOTE</button>
+  <button id="pulsante-note" title="Apri / chiudi le note della telefonata (tasto N)">NOTE</button>
 
   <div id="vela-misura"><div class="pop">
     <h3 id="misura-titolo"></h3>
@@ -1348,7 +1339,7 @@
       if (conGuida) {
         const r = g.getBoundingClientRect();
         linguetta.style.top = r.top + "px";
-        linguetta.style.height = Math.max(150, r.height) + "px";
+        linguetta.style.height = Math.round(r.height) + "px";
       } else {
         linguetta.style.top = Math.round(window.innerHeight * 0.4) + "px";
         linguetta.style.height = "150px";
@@ -1360,6 +1351,7 @@
     const osservatore = new ResizeObserver(posizionaLinguetta);
     osservatore.observe(document.body);
     osservatore.observe(document.getElementById("riquadro-canovaccio"));
+    osservatore.observe(document.getElementById("testata-chiamata")); // avvisi audio e messaggi cambiano l'altezza sopra la guida
     posizionaLinguetta();
     // Scorciatoia: tasto N (fuori dai campi di testo).
     document.addEventListener("keydown", (e) => {
