@@ -13,5 +13,5 @@ La foto si salva in Immagini/BG Videocal.
 ## Limiti noti
 - **Mai compilata né provata** (nel sandbox non c'è l'Android SDK): la prima build su GitHub può fallire e va corretta dai log.
 - Android **non permette** a un'app di diventare «webcam virtuale» per Zoom/Meet/Teams. Ora l'app mostra l'effetto e scatta foto;
-  per usarla dentro una videocall serve un passo successivo (es. condividere lo schermo, o una videocall integrata).
+  per usarla dentro una videocall serve un passo successivo (sostituire la fotocamera di WhatsApp: da decidere, vedi la prova con BlackBox).
 - Non registra ancora video.
