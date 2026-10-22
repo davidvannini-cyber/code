@@ -54,7 +54,7 @@ L'utente seleziona manualmente lo stato del lead (nessuna classificazione automa
 | 3 | Cliente già visitato da Facile Salire (offerta esistente) | Telefono + Email (se interessato) | Script 03, 21 | MAI anticipare di saperlo; far confermare al cliente |
 | 4 | Trattativa persa — recupero | Telefono + Email | Script 04, 24 | Nuova proposta migliorativa, leva prezzo |
 | 5 | Contatto non valido — ultimo richiamo | Telefono | Script 06 | Un solo tentativo, leva prezzo basso, poi chiusura definitiva |
-| 6 | Cliente interessato — organizzare sopralluogo | Telefono + WhatsApp (conferma) + WhatsApp (reminder) | Script 05, 19, 20 | Sopralluogo fatto da Facile Salire, non da YesMobility |
+| 6 | Cliente interessato — organizzare sopralluogo | Telefono + WhatsApp (primo contatto) | Script 05, 26 | Sopralluogo fatto da Facile Salire, non da YesMobility |
 | 7 | Cliente irraggiungibile | Telefono (segreteria) + WhatsApp (promemoria soft) | Script 11, 17 | Dopo 1-2 tentativi senza risposta |
 | 8 | Cliente accetta — chiusura vendita | Telefono + Email conferma | Script 07, 25 | Spiegare passaggio a Facile Salire per contratto |
 | 9 | Post-sopralluogo non chiuso — recupero | Telefono | Script 14 | Solo se Facile Salire non ha chiuso da sola |
@@ -136,3 +136,6 @@ leads/{leadId}            → {
 ---
 
 *Documento preparato come base per lo sviluppo in Claude Code della webapp "Lead Rework Console" di YesMobility.*
+
+> **Chiarimento (22/10/2026, David):** il Lead Rework lavora SEMPRE E SOLO su **primi contatti**. Lo stato 6 significa «cercare di OTTENERE un appuntamento»: non si conferma né si ricorda un appuntamento in questo giro. Gli script 19 (conferma) e 20 (reminder) appartengono a una **fase successiva** (appuntamento già fissato) e sono scollegati dallo stato 6 (`stati_correlati: ["fase_successiva"]`).
+
