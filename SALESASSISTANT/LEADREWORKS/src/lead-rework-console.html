@@ -2572,9 +2572,9 @@ async function esportaStoricoExcel(){
     "Stato": statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead,
     "Canali generati": (r.canali_generati||[]).join(", "),
     "Telefonata": (r.attivita && r.attivita.telefono) ? "Sì" : "No",
+    "NR (nessuna risposta)": (r.nr && r.nr.count) ? ("Sì (" + r.nr.count + ")") : "No",
     "WhatsApp": (r.attivita && r.attivita.whatsapp) ? "Sì" : "No",
     "Email inviata": (r.attivita && r.attivita.email) ? "Sì" : "No",
-    "NR (nessuna risposta)": (r.nr && r.nr.count) ? ("Sì (" + r.nr.count + ")") : "No",
     "Lavorato": r.lavorato ? "Sì" : "No",
     "Follow up": r.followup ? "Sì" : "No",
     "Chiuso": r.chiuso ? "Sì" : "No"
@@ -2752,9 +2752,9 @@ function renderHistoryTab(){
         <thead><tr>
           <th>Data</th><th>Cliente</th><th class="c-prod">Prodotto</th><th class="c-stato">Stato</th><th class="c-gen" title="Canali generati">Gen.</th>
           <th class="ck" title="Telefonata fatta">${icon('phone',{noMargin:true})}</th>
+          <th class="ck" title="NR = nessuna risposta alla telefonata (si imposta con «Rigenera NR» nella finestra Vedi)">NR</th>
           <th class="ck" title="WhatsApp inviato">${WHATSAPP_LOGO_SVG}</th>
           <th class="ck" title="Email inviata">${MAC_MAIL_LOGO_SVG}</th>
-          <th class="ck" title="NR = nessuna risposta alla telefonata (si imposta con «Rigenera NR» nella finestra Vedi)">NR</th>
           <th class="ck" title="Lavorato">Lav.</th>
           <th class="ck" title="Follow up (si attiva dopo Lav.)">F.U.</th>
           <th class="ck" title="Chiuso: nessun altro intervento (si attiva dopo Lav.)">Chiuso</th><th></th>
@@ -2767,8 +2767,7 @@ function renderHistoryTab(){
               <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
               <td class="c-stato">${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
               <td class="c-gen">${r.canali_generati.length}</td>
-              ${ck('telefono','Telefonata fatta')}${ck('whatsapp','WhatsApp inviato')}${ck('email','Email inviata')}
-              <td class="ck"><input type="checkbox" ${(r.nr && r.nr.count) ? 'checked' : ''} onchange="toggleNR('${r.id}',this)" title="${(r.nr && r.nr.count) ? 'Nessuna risposta: ' + r.nr.count + (r.nr.count > 1 ? ' tentativi' : ' tentativo') + ' (ultimo ' + new Date(r.nr.ultima).toLocaleString('it-IT') + ')' : 'NR: si imposta con «Rigenera NR» nella finestra Vedi'}"></td>
+              ${ck('telefono','Telefonata fatta')}<td class="ck"><input type="checkbox" ${(r.nr && r.nr.count) ? 'checked' : ''} onchange="toggleNR('${r.id}',this)" title="${(r.nr && r.nr.count) ? 'Nessuna risposta: ' + r.nr.count + (r.nr.count > 1 ? ' tentativi' : ' tentativo') + ' (ultimo ' + new Date(r.nr.ultima).toLocaleString('it-IT') + ')' : 'NR: si imposta con «Rigenera NR» nella finestra Vedi'}"></td>${ck('whatsapp','WhatsApp inviato')}${ck('email','Email inviata')}
               <td class="ck"><input type="checkbox" ${r.lavorato?'checked':''} onchange="toggleLavorato('${r.id}')" title="Segna come lavorato"></td>
               <td class="ck"><input type="checkbox" ${r.followup?'checked':''} ${r.lavorato?'':'disabled'} onchange="toggleFollowup('${r.id}')" title="${r.lavorato ? 'Follow up: il lead ha dato un esito' : 'Prima segna il lead come lavorato'}"></td>
               <td class="ck"><input type="checkbox" ${r.chiuso?'checked':''} ${r.lavorato?'':'disabled'} onchange="toggleChiuso('${r.id}')" title="${r.lavorato ? 'Chiuso: nessun altro intervento necessario' : 'Prima segna il lead come lavorato'}"></td>
