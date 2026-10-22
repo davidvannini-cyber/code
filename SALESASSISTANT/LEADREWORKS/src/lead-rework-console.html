@@ -166,7 +166,8 @@
   /* Storico lead: righe compatte */
   .tbl-storico th,.tbl-storico td{padding:3px 8px;white-space:nowrap;vertical-align:middle;}
   .tbl-storico td,.tbl-storico th{line-height:1.2;}
-  .tbl-storico .ck{text-align:center;width:1%;}
+  .tbl-storico .ck{text-align:center;width:34px;min-width:34px;max-width:34px;padding-left:0 !important;padding-right:0 !important;}
+  .tbl-storico th.ck{font-size:8.5px;letter-spacing:-.2px;}
   .tbl-storico .acts{white-space:nowrap;width:1%;}
   .tbl-storico .acts .btn-ghost{padding:2px 4px;}
   .tbl-storico input[type=checkbox]{margin:0;}
@@ -179,17 +180,19 @@
   .tbl-storico .nome-link:hover{text-decoration-color:currentColor;}
   /* finestra stretta (colonna 35% dello schermo): nascondi Prodotto, Stato e Gen. (lo stato resta nel tooltip del nome) per far stare tutte le colonne */
   @media (max-width:900px){ .tbl-storico .c-prod,.tbl-storico .c-gen,.tbl-storico .c-stato{display:none;} .tbl-storico th,.tbl-storico td{padding:3px 5px;} }
-  /* finestra stretta (es. la Console al 35% dello schermo): colonne compatte, così Tel/CRM/Vedi/Duplica/Elimina restano sempre visibili */
+  /* finestra stretta (es. la Console al 35% dello schermo): le colonne delle caselle restano tutte UGUALI (34 px);
+     se serve spazio lo cede la colonna del nome, che si accorcia. I pulsanti di azione restano sempre visibili. */
   @media (max-width:700px){
-    .tbl-storico th,.tbl-storico td{padding:3px 2px;}
+    .tbl-storico{width:auto;}
+    .tbl-storico .ora{display:none;}   /* l'ora resta nel suggerimento al passaggio del mouse */
+    .tbl-storico .ck{width:30px;min-width:30px;max-width:30px;}
+    .tbl-storico th,.tbl-storico td{padding:3px 4px;}
     .tbl-storico th:first-child,.tbl-storico td:first-child{padding-left:4px;}
-    .tbl-storico .acts .btn-ghost{padding:2px 1px;font-size:11px !important;}
-    .tbl-storico .nome-link{max-width:150px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;}
-    /* i pulsanti di azione (Tel, CRM, Vedi, Duplica, Elimina) restano sempre visibili, anche se la tabella scorre di lato */
+    .tbl-storico .acts .btn-ghost{padding:2px 2px;font-size:11px !important;}
+    .tbl-storico .nome-link{max-width:88px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;}
     .tbl-storico td.acts,.tbl-storico thead th:last-child{position:sticky;right:0;z-index:1;box-shadow:-6px 0 6px -6px rgba(0,0,0,.25);}
     .tbl-storico td.acts{background:var(--panel);}   /* grigio come le righe (non bianco) */
-    .tbl-storico thead th:last-child{background:var(--card,#fff);}   /* intestazione bianca come le altre */
-    .tbl-storico thead th:last-child{z-index:3;}
+    .tbl-storico thead th:last-child{background:var(--card,#fff);z-index:3;}   /* intestazione bianca come le altre */
     .tbl-storico tr.riga-sel td.acts{background:#dbeafe !important;}
   }
   tr:hover td{background:rgba(0,0,0,.02);}
@@ -2775,7 +2778,7 @@ function renderHistoryTab(){
         <tbody>
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
             <tr data-id="${r.id}" class="${state.historyHighlight === r.id ? 'riga-sel' : ''}">
-              <td>${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+              <td title="${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}">${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit'})}<span class="ora">, ${new Date(r.data_creazione).toLocaleString('it-IT', {hour:'2-digit',minute:'2-digit'})}</span></td>
               <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}"><span class="nome-link" onclick="openHistoryItem('${r.id}')">${escapeHtml(r.dati_lead_input.nome || '—')}</span></td>
               <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
               <td class="c-stato">${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
