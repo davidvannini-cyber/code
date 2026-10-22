@@ -186,7 +186,9 @@
     .tbl-storico .acts .btn-ghost{padding:2px 1px;font-size:11px !important;}
     .tbl-storico .nome-link{max-width:150px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;}
     /* i pulsanti di azione (Tel, CRM, Vedi, Duplica, Elimina) restano sempre visibili, anche se la tabella scorre di lato */
-    .tbl-storico td.acts,.tbl-storico thead th:last-child{position:sticky;right:0;z-index:1;background:var(--card,#fff);box-shadow:-6px 0 6px -6px rgba(0,0,0,.25);}
+    .tbl-storico td.acts,.tbl-storico thead th:last-child{position:sticky;right:0;z-index:1;box-shadow:-6px 0 6px -6px rgba(0,0,0,.25);}
+    .tbl-storico td.acts{background:var(--panel);}   /* grigio come le righe (non bianco) */
+    .tbl-storico thead th:last-child{background:var(--card,#fff);}   /* intestazione bianca come le altre */
     .tbl-storico thead th:last-child{z-index:3;}
     .tbl-storico tr.riga-sel td.acts{background:#dbeafe !important;}
   }
