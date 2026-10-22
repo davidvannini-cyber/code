@@ -281,3 +281,8 @@ Nella finestra «Vedi» ogni card **WhatsApp** e **email** ha due tasti: **Rigen
 - Regola 3 di `HARD_COMPLIANCE_RULES` ampliata: il tentativo senza risposta di questo giro (modalità NR) **non è un contatto precedente**, fa parte della lavorazione in corso; il resto della regola (nessun riferimento a contatti passati di altre aziende o fasi) resta com'era.
 - Provato con un'AI simulata (nessuna chiave qui): prompt NR presente solo con NR, frase inserita, «più volte» al secondo tentativo, testi precedenti conservati, colonna NR. **Non provato**: generazione vera con la chiave di David.
 
+## Regole di scrittura dei messaggi (2026-10-22, richieste da David dopo un WhatsApp reale)
+- **Etichetta** dello slot WhatsApp dello stato 6: solo «WhatsApp» (niente «primo contatto»: deve essere ovvio).
+- Nuove regole in `HARD_COMPLIANCE_RULES` (valgono sempre, hanno priorità su profilo e script): **(1) da remoto non si dà un prezzo «preciso/esatto/definitivo/su misura»**: solo valutazione di fattibilità e idea di prezzo di massima; **(2) chiusura dei messaggi scritti (WhatsApp ed email)**: ultima frase prima del saluto = «Se la proposta è di suo interesse, le spieghiamo come possiamo procedere.»; vietate chiusure audaci («posso procedere subito con la pratica», «Le va bene?», «Confermiamo?»). La regola «obiettivo = chiudere la trattativa» ora rimanda a questa per i canali scritti; **per il telefono nulla è cambiato**.
+- Provato: le regole compaiono nel prompt di sistema. **Non provato**: l'effetto sul testo generato dall'AI vera (da controllare con un lead reale; le regole vincono sugli script di riferimento ma l'AI può comunque sbagliare).
+
