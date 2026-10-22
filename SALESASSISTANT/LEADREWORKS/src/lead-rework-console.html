@@ -681,6 +681,7 @@ function contactLineFor(canale, data, hid, slotKey){
 function copyBtn(kind, key, hid){
   return `<button type="button" class="btn-ghost copy-btn" title="Copia negli appunti" aria-label="Copia negli appunti" onclick="copyOut(this,'${kind}','${key}','${hid||""}')">${icon('copy',{noMargin:true})}</button>`;
 }
+const SUGGERIMENTI_LOGO_SVG = '<svg width="20" height="20" viewBox="0 0 51 51" style="vertical-align:-5px;"><rect x="1" y="1" width="49" height="49" rx="11" fill="#161b22"></rect><path d="M17 14h17a5 5 0 0 1 5 5v11a5 5 0 0 1-5 5H24l-7 5 1-5.2A5 5 0 0 1 12 30V19a5 5 0 0 1 5-5z" fill="#f4f5f7"></path><path d="M27.5 11.5h6L29.8 21H35L23 37l2.6-12H19z" fill="#ff9227"></path></svg>';
 const WHATSAPP_LOGO_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" style="vertical-align:-5px;"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z" fill="#25D366"></path><g transform="translate(5.6 5.6) scale(0.53)" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></g></svg>';
 const MAC_MAIL_LOGO_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" style="vertical-align:-5px;"><defs><linearGradient id="macMailGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AC8FA"></stop><stop offset="1" stop-color="#1B6EF3"></stop></linearGradient></defs><rect x="1" y="1" width="22" height="22" rx="5.5" fill="url(#macMailGrad)"></rect><rect x="4.5" y="7" width="15" height="10.5" rx="1.6" fill="#fff"></rect><path d="M5 8l7 5.3L19 8" fill="none" stroke="#1B6EF3" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
 function openBtn(canale, key, hid){
@@ -2888,7 +2889,8 @@ function renderHistoryModal(id){
     const label = canale === "whatsapp" ? "Numero WhatsApp" : (canale === "email" ? "Indirizzo email" : "Numero di telefono");
     const value = canale === "email" ? String(d.email||"").trim()
       : (canale === "whatsapp" ? (mobileNumberOf(d) || String(d.telefono1||"").trim()) : String(d.telefono1||"").trim());
-    const send = (canale !== "telefono" && value) ? `<span class="no-print">${openBtn(canale, key, r.id)}</span>` : "";
+    const send = (canale !== "telefono" && value) ? `<span class="no-print">${openBtn(canale, key, r.id)}</span>`
+      : ((canale === "telefono" && value) ? `<span class="no-print"><button type="button" class="btn-ghost copy-btn brand-btn" title="Invia a Suggerimenti Vendita" aria-label="Invia a Suggerimenti Vendita" onclick="exportHistoryItemToSuggerimentiVendita('${r.id}')">${SUGGERIMENTI_LOGO_SVG}</button></span>` : "");
     const copy = (canale !== "telefono" && value) ? `<span class="no-print">${copyBtn("contact", canale, r.id)}</span>` : "";
     return `<div class="hm-contact"><span style="display:flex;align-items:center;gap:6px;"><span><b>${label}:</b> ${escapeHtml(value || "—")}</span>${send}</span>${copy}</div>`;
   };

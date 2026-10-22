@@ -295,3 +295,6 @@ Le colonne con le caselle (Tel, NR, WhatsApp, Mail, Lav., F.U., Chiuso) hanno **
 
 ### Storico finestra stretta: tabella a larghezza fissa (2026-10-22, sostituisce le due note sopra)
 Sotto i 900 px la tabella è `table-layout:fixed; width:100%`: caselle tutte 24 px (distanze uguali, scelto da David; intestazione «Fine» al posto di «Chiuso»), data 62 px (ora nascosta), pulsanti 126 px (grigi, non più sticky), Prodotto/Stato/Gen. nascosti; il nome cliente prende lo spazio che resta (puntini). Misurato a 520–1100 px: nessuno scorrimento orizzontale, «Chiuso» (scritta e casella) e cestino sempre visibili. Sotto i ~500 px la finestra è troppo stretta e compare lo scorrimento.
+
+### «Vedi»: icona Suggerimenti Vendita accanto al telefono (2026-10-22, richiesta di David)
+Nella card «telefono» della finestra Vedi, accanto a «Numero di telefono: …» (stessa posizione delle icone WhatsApp/email), c'è l'icona Suggerimenti Vendita (`SUGGERIMENTI_LOGO_SVG`, ridisegnata in SVG nitido: riquadro scuro, fumetto bianco, fulmine arancione). Fa la stessa cosa del tasto in alto «Invia a Suggerimenti Vendita» (`exportHistoryItemToSuggerimentiVendita`); compare solo se il lead ha un telefono. Provato: l'icona compare e la chiamata parte con i dati giusti.
