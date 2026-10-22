@@ -113,77 +113,6 @@
     opacity: .6;
   }
 
-  /* Sezione bottoni grandi */
-  .controls-section {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-  .btn-large {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 16px;
-    border-radius: 2px;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    transition: all .12s ease;
-  }
-  .btn-large svg {
-    width: 18px;
-    height: 18px;
-  }
-  #pulsante-microfono {
-    background: #14532d;
-    color: #ffffff;
-  }
-  #pulsante-microfono:hover {
-    background: #0f3d21;
-  }
-  #pulsante-microfono.attivo {
-    background: #14532d;
-    color: #ffffff;
-  }
-  #pulsante-microfono:disabled {
-    opacity: .6;
-    cursor: default;
-  }
-  #pulsante-pausa {
-    border: 1px solid rgba(0,0,0,.12);
-    background: #ffffff;
-    color: #1a1f2e;
-  }
-  #pulsante-pausa:hover {
-    background: #f9f9fb;
-  }
-  #pulsante-pausa.in-pausa {
-    background: #fefce8;
-    border-color: #f59e0b;
-    color: #1c1300;
-  }
-  #pulsante-telefono {
-    flex: none;
-    padding: 6px 10px;
-    border: 1px solid rgba(0,0,0,.12);
-    background: #ffffff;
-    color: #1a1f2e;
-  }
-  #pulsante-telefono:hover {
-    background: #f9f9fb;
-  }
-  #pulsante-termina {
-    border: 1px solid rgba(255,95,87,.35);
-    background: rgba(255,95,87,.12);
-    color: #c2392f;
-  }
-  #pulsante-termina:hover {
-    background: rgba(255,95,87,.2);
-  }
 
   .riquadro {
     background: #e8e8ec;
@@ -193,20 +122,6 @@
     box-shadow: 0 4px 12px rgba(0,0,0,.12);
   }
 
-  .riquadro-livello {
-    display: none;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px;
-    font-size: 10px;
-    color: #6b7280;
-    background: #e8e8ec;
-    border: 1px solid rgba(0,0,0,.08);
-    border-radius: 2px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.12);
-    margin: 0 0 10px 0;
-    width: 100%;
-  }
   .barra-livello-track {
     width: 100%;
     height: 5px;
@@ -226,7 +141,6 @@
   .barra-livello-fill.livello-medio { background: #f59e0b; }
   .barra-livello-fill.livello-alto { background: #ef4444; }
 
-  .etichetta-livello { display: flex; justify-content: space-between; }
   .avviso-audio {
     display: none;
     padding: 5px 7px;
@@ -237,17 +151,6 @@
   #avviso-clipping { color: #991b1b; background: #fee2e2; font-weight: 600; }
   #avviso-ingresso { color: #92400e; background: #fef3c7; }
 
-  #lead-info {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    gap: 8px;
-    font-size: 14px;
-    color: #6b7280;
-  }
-  #lead-info b { color: #1a1f2e; font-weight: 600; }
-  #lead-info .separatore { color: #d0d0d8; }
 
   /* Canovaccio "Rinforzo Facile Salire": riquadro a parte, sempre visibile
      per tutta la chiamata (non si sovrascrive con i suggerimenti dal vivo
@@ -380,16 +283,7 @@
   body { padding: 6px 8px; gap: 5px; }
   .navbar-overlay { padding: 3px 8px; margin-bottom: 0; border-radius: 3px; }
   #selettore-microfono { padding: 1px 4px; font-size: 10px; max-width: 150px; }
-  .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: center; }
-  .controls-section { margin: 0; gap: 4px; }
-  .btn-large { padding: 0 4px; height: 26px; font-size: 10px; gap: 3px; white-space: nowrap; border-radius: 3px; }
-  .btn-large svg { width: 12px; height: 12px; }
-  .riquadro-livello { margin: 0; padding: 0; border: 0; box-shadow: none; background: transparent; font-size: 8.5px; gap: 1px; line-height: 1.15; }
-  .riquadro-livello .barra-livello-track { margin-bottom: 2px; }
   .riquadro { padding: 3px 8px; box-shadow: none; border: 1px solid #d0d0d8; border-radius: 3px; }
-  #lead-info { justify-content: space-between; text-align: left; gap: 6px; font-size: 12px; flex-wrap: nowrap; }
-  #lead-info .separatore { display: none; }
-  #lead-info #pulsante-telefono { height: 22px; padding: 0 7px; font-size: 10px; flex: none; }
   #riquadro-canovaccio { padding: 6px 8px; box-shadow: none; }
   .guida-scheda { padding: 2px 9px; margin-bottom: 2px; }
   .guida-scheda.f { opacity: .4; }
@@ -455,11 +349,8 @@
   body { background: var(--bg1); color: var(--ink1); }
   .ic { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.14em; flex: none; }
   .navbar-overlay { background: var(--tint); border: 1px solid var(--bd2); border-radius: var(--r); }
-  .btn-large, #selettore-microfono { border-radius: var(--r) !important; }
-  #pulsante-pausa.in-pausa { background: var(--tint); border-color: var(--gf); color: var(--gf2); }
-  #pulsante-termina { border-color: rgba(159,29,29,.45); background: rgba(159,29,29,.08); color: #9f1d1d; }
+  #selettore-microfono { border-radius: var(--r) !important; }
   .riquadro { background: #fff; border: 1px solid var(--bd2); border-radius: var(--r); }
-  #lead-info { background: #fff; }
   #riquadro-canovaccio { background: #fff; border: 1px solid var(--bd2); border-radius: var(--r); }
   .etichetta-canovaccio, #guida-cont { color: var(--mu2); }
   #guida-barra { background: var(--bd2); border-radius: var(--r); height: 4px; }
@@ -510,6 +401,68 @@
   #vela-fine .az { display: flex; flex-direction: column; gap: 6px; }
   #vela-fine .az button { height: 38px; border: 0; border-radius: var(--r); font-weight: 700; font-size: 13px; cursor: pointer; color: #fff; background: var(--gf); }
   #vela-fine .az button.ann { background: var(--bg1); color: var(--ink1); border: 1px solid var(--bd2); }
+
+  /* ===== Testata chiamata a 3 righe, stile "vetro liquido" (proposta A, 2026-10-22) =====
+     riga 1: microfono + indicatori · riga 2: contatto · riga 3: tasti come l'app Telefono.
+     I tre pulsanti conservano gli id di prima (pulsante-telefono / -pausa / -termina). */
+  #testata-chiamata {
+    flex-shrink: 0; overflow: hidden; color: #fff; padding: 7px; border-radius: 22px;
+    background: radial-gradient(120% 90% at 10% 0%, #5b8dff 0%, transparent 55%),
+                radial-gradient(110% 90% at 100% 20%, #c06bff 0%, transparent 55%),
+                radial-gradient(120% 100% at 40% 110%, #ff8a5c 0%, transparent 55%), #2b3a67;
+    box-shadow: 0 4px 14px rgba(30,40,90,.3);
+  }
+  .vr {
+    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.38);
+    backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(255,255,255,.08), 0 4px 12px rgba(0,0,0,.18);
+    text-shadow: 0 1px 2px rgba(0,0,0,.3);
+  }
+  .vr + .vr { margin-top: 6px; }
+
+  /* riga 1: microfono e indicatori del segnale */
+  .vr1 { display: flex; align-items: center; gap: 10px; border-radius: 16px; padding: 5px 11px; font-size: 9.5px; font-weight: 600; }
+  #pulsante-microfono {
+    display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 0; border: 0; background: transparent;
+    color: #fff; font-family: inherit; font-size: 10.5px; font-weight: 700; white-space: nowrap; cursor: pointer; text-shadow: inherit;
+  }
+  #pulsante-microfono::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #d0d4dc; }
+  #pulsante-microfono.attivo::before { background: #34c759; animation: pulsa-mic 1.4s infinite; }
+  #pulsante-microfono:disabled { opacity: .7; cursor: default; }
+  @keyframes pulsa-mic { 50% { opacity: .35; } }
+  .riquadro-livello { display: none; flex: 1; min-width: 0; flex-wrap: wrap; gap: 3px 10px; }
+  .riquadro-livello .mini { flex: 1 1 70px; display: flex; align-items: center; gap: 5px; min-width: 0; }
+  .riquadro-livello .barra-livello-track { flex: 1; width: auto; height: 4px; background: rgba(255,255,255,.3); }
+  .avviso-audio { flex: 0 0 100%; text-shadow: none; }
+
+  /* riga 2: contatto */
+  .vr2 { display: flex; align-items: baseline; gap: 8px; border-radius: 14px; padding: 6px 12px; font-size: 13px; white-space: nowrap; }
+  .vr2 .etich { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; opacity: .8; }
+  #lead-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+  #lead-telefono { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* riga 3: tasti rotondi con scritta sotto, come la schermata di chiamata dell'iPhone */
+  .vr3 { display: flex; align-items: flex-start; justify-content: space-around; border-radius: 26px; padding: 8px 6px 6px; }
+  .tasto { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: #fff; font: inherit; cursor: pointer; text-shadow: inherit; }
+  .tasto .cerchio {
+    width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.7), inset 0 -6px 12px rgba(0,0,0,.12), 0 5px 12px rgba(0,0,0,.25);
+    transition: transform .1s;
+  }
+  .tasto:active .cerchio { transform: scale(.93); }
+  .tasto svg { width: 26px; height: 26px; fill: currentColor; }
+  .tasto small { font-size: 10px; font-weight: 700; letter-spacing: .04em; min-height: 12px; }
+  .tasto:disabled { opacity: .5; cursor: default; }
+  .tasto.verde .cerchio { background: linear-gradient(180deg, rgba(80,225,120,.95), rgba(30,170,80,.88)); }
+  .tasto.rosso .cerchio { background: linear-gradient(180deg, rgba(255,105,95,.97), rgba(225,40,40,.9)); }
+  .tasto.rosso svg { transform: rotate(135deg); }
+  .tasto.pausa .cerchio { width: 40px; height: 40px; margin: 7px 0; background: rgba(255,255,255,.9); color: #1c1c1e; text-shadow: none; }
+  .tasto.pausa svg { width: 18px; height: 18px; }
+  .tasto.pausa .ic-play, .tasto.pausa.in-pausa .ic-pausa { display: none; }
+  .tasto.pausa.in-pausa .ic-play { display: block; }
+  .tasto.pausa.in-pausa .cerchio { box-shadow: 0 0 0 3px rgba(255,214,10,.8), 0 5px 12px rgba(0,0,0,.25); }
+  #esito-telefono { font-size: 10.5px; text-align: center; margin-top: 4px; }
+  #esito-telefono:empty { display: none; }
 </style>
 </head>
 <body>
@@ -528,48 +481,41 @@
     </div>
   </div>
 
-  <div class="meta">
-  <div class="controls-section">
-    <button id="pulsante-microfono" class="btn-large" title="Avvia microfono">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2c-1.1 0-2 .9-2 2v7c0 1.1.9 2 2 2s2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V22h2v-4.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-      </svg>
-      Microfono
-    </button>
-    <button id="pulsante-pausa" class="btn-large" style="display:none;" title="Pausa">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="6" y="4" width="3" height="16" rx="0.5"/>
-        <rect x="15" y="4" width="3" height="16" rx="0.5"/>
-      </svg>
-      Pausa
-    </button>
-    <button id="pulsante-termina" class="btn-large" style="display:none;" title="Termina chiamata">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-        <line x1="3" y1="3" x2="21" y2="21"/>
-      </svg>
-      Termina
-    </button>
-  </div>
+  <div id="testata-chiamata">
+    <div class="vr vr1">
+      <button id="pulsante-microfono" title="Avvia microfono">Avvia microfono</button>
+      <div class="riquadro-livello" id="riquadro-livello">
+        <div class="mini" title="Segnale in ingresso, prima del limiter">ingresso<div class="barra-livello-track"><div class="barra-livello-fill" id="livello-pre-fill"></div></div></div>
+        <div class="mini" title="Segnale trascritto, dopo il limiter">ascolto<div class="barra-livello-track"><div class="barra-livello-fill" id="livello-fill"></div></div></div>
+        <div class="avviso-audio" id="avviso-clipping">Segnale saturo (clipping): abbassa il volume media del telefono o il livello di ingresso del Mac.</div>
+        <div class="avviso-audio" id="avviso-ingresso"></div>
+      </div>
+    </div>
 
-  <div class="riquadro-livello" id="riquadro-livello">
-    <span class="etichetta-livello"><span>Segnale in ingresso (prima del limiter)</span></span>
-    <div class="barra-livello-track"><div class="barra-livello-fill" id="livello-pre-fill"></div></div>
-    <span>Segnale trascritto (dopo il limiter)</span>
-    <div class="barra-livello-track"><div class="barra-livello-fill" id="livello-fill"></div></div>
-    <div class="avviso-audio" id="avviso-clipping">Segnale saturo (clipping): abbassa il volume media del telefono o il livello di ingresso del Mac.</div>
-    <div class="avviso-audio" id="avviso-ingresso"></div>
-  </div>
+    <div class="vr vr2" id="lead-info">
+      <span class="etich">Contatto</span>
+      <b id="lead-nome">—</b>
+      <b id="lead-telefono">—</b>
+    </div>
 
-  </div>
-
-  <div class="riquadro" id="lead-info">
-    <span title="Nome">👤 <b id="lead-nome">—</b></span>
-    <span class="separatore">·</span>
-    <span title="Numero di telefono">📞 <b id="lead-telefono">—</b></span>
-    <button id="pulsante-telefono" class="btn-large" title="Invia nome, numero ed email al telefono Android">Invia a telefono</button>
-    <span id="esito-telefono" style="font-size:11px;"></span>
+    <div class="vr vr3">
+      <button id="pulsante-telefono" class="tasto verde" title="Invia nome, numero ed email al telefono Android">
+        <span class="cerchio"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg></span>
+        <small>→ TELEFONO</small>
+      </button>
+      <button id="pulsante-pausa" class="tasto pausa" style="visibility:hidden;" title="Pausa">
+        <span class="cerchio">
+          <svg class="ic-pausa" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.2"/><rect x="14" y="4" width="4" height="16" rx="1.2"/></svg>
+          <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
+        </span>
+        <small>&nbsp;</small>
+      </button>
+      <button id="pulsante-termina" class="tasto rosso" style="visibility:hidden;" title="Termina chiamata">
+        <span class="cerchio"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg></span>
+        <small>TERMINA</small>
+      </button>
+    </div>
+    <div id="esito-telefono"></div>
   </div>
 
   <div class="riquadro" id="riquadro-canovaccio" style="display:none;">
@@ -1042,8 +988,8 @@
       elRiquadroLivello.style.display = "flex";
       elBottoneMic.textContent = "Microfono attivo";
       elBottoneMic.classList.add("attivo");
-      elBottonePausa.style.display = "inline-flex";
-      elBottoneTermina.style.display = "inline-flex";
+      elBottonePausa.style.visibility = "visible";
+      elBottoneTermina.style.visibility = "visible";
     } catch (errore) {
       elBottoneMic.disabled = false;
       elBottoneMic.textContent = "Avvia microfono";
@@ -1067,7 +1013,7 @@
 
   function togglePausa() {
     microfonoInPausa = !microfonoInPausa;
-    elBottonePausa.textContent = microfonoInPausa ? "Riprendi" : "Pausa";
+    elBottonePausa.title = microfonoInPausa ? "Riprendi" : "Pausa";
     elBottonePausa.classList.toggle("in-pausa", microfonoInPausa);
   }
 
@@ -1090,8 +1036,8 @@
     fermaMicrofono();
     elSelettoreMic.disabled = true;
     elBottoneMic.textContent = "Chiamata terminata";
-    elBottonePausa.style.display = "none";
-    elBottoneTermina.style.display = "none";
+    elBottonePausa.style.visibility = "hidden";
+    elBottoneTermina.style.visibility = "hidden";
     elPrincipale.textContent = "Chiamata terminata.";
     elAlternativo.style.display = "none";
     mostraPopupFine();
