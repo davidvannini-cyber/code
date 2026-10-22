@@ -76,8 +76,12 @@ def copia_icloud():
     icloud["ultimo_tentativo"] = time.time()
     icloud["da_copiare"] = False
     try:
-        if not os.path.isdir(ICLOUD_BASE):
-            raise FileNotFoundError("iCloud Drive non attivo su questo Mac")
+        try:
+            os.stat(ICLOUD_BASE)
+        except FileNotFoundError:
+            raise FileNotFoundError("iCloud Drive non trovato (manca la cartella com~apple~CloudDocs)")
+        except PermissionError:
+            raise PermissionError("macOS NEGA al servizio l'accesso a iCloud Drive: serve \"Accesso completo al disco\" per python3 (%s)" % os.path.realpath(sys.executable))
         with open(p_leads(), "rb") as f:
             dati = f.read()
         scrivi_atomico(os.path.join(ICLOUD_CARTELLA, "leads-ultimo.json"), dati)
@@ -204,6 +208,7 @@ class Gestore(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     os.makedirs(p_copie(), exist_ok=True)
+    icloud["da_copiare"] = os.path.exists(p_leads())   # prima copia in iCloud subito dopo l'avvio
     threading.Thread(target=ciclo_icloud, daemon=True).start()
     srv = ThreadingHTTPServer(("127.0.0.1", PORTA), Gestore)
     print("Dati lead attivi su 127.0.0.1:%d -> %s" % (PORTA, CARTELLA), flush=True)

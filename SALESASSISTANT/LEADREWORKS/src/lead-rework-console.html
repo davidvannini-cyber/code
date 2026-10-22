@@ -3033,7 +3033,7 @@ function svBackupHtml(esteso){
   const ic = a.icloud;
   if (ic && !a.errore && !a.soloLettura){
     if (ic.ok === false){
-      testo += " · ⚠ COPIA iCLOUD NON RIUSCITA (" + String(ic.errore || "").replace(/^[A-Za-z]+Error: /, "").slice(0, 70) + ")";
+      testo += " · ⚠ COPIA iCLOUD NON RIUSCITA (" + String(ic.errore || "").replace(/^[A-Za-z]+Error: /, "").slice(0, 160) + ")";
       colore = "#b91c1c";
     } else if (ic.ok){
       testo += " · ☁ iCloud ✓ " + new Date(ic.ultima).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
