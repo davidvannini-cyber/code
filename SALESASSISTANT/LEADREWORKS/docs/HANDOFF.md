@@ -292,3 +292,6 @@ Con la colonna NR in più, a Console stretta (35% dello schermo) Duplica ed Elim
 ### Storico: colonne delle caselle tutte uguali (2026-10-22, richiesta di David)
 Le colonne con le caselle (Tel, NR, WhatsApp, Mail, Lav., F.U., Chiuso) hanno **larghezza fissa uguale** (34 px; 30 px sotto i 700 px di finestra) → distanze identiche tra una e l'altra. Se serve spazio lo cede la colonna del nome (max 88 px con puntini sotto i 700 px) e l'**ora della data** (nascosta sotto i 700 px, resta nel suggerimento al mouse), mai le caselle. La tabella è `width:auto` sotto i 700 px (niente vuoto in mezzo); la colonna dei pulsanti è sticky a destra e grigia. Misurato: a 560 px e oltre tutte e 7 le caselle sono visibili; a 480 px l'ultima o le ultime due si raggiungono scorrendo.
 
+
+### Storico finestra stretta: tabella a larghezza fissa (2026-10-22, sostituisce le due note sopra)
+Sotto i 900 px la tabella è `table-layout:fixed; width:100%`: caselle tutte 36 px (distanze uguali), data 62 px (ora nascosta), pulsanti 126 px (grigi, non più sticky), Prodotto/Stato/Gen. nascosti; il nome cliente prende lo spazio che resta (puntini). Misurato a 520–1100 px: nessuno scorrimento orizzontale, «Chiuso» (scritta e casella) e cestino sempre visibili. Sotto i ~500 px la finestra è troppo stretta e compare lo scorrimento.

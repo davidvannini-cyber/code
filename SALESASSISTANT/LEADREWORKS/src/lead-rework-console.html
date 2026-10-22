@@ -166,7 +166,7 @@
   /* Storico lead: righe compatte */
   .tbl-storico th,.tbl-storico td{padding:3px 8px;white-space:nowrap;vertical-align:middle;}
   .tbl-storico td,.tbl-storico th{line-height:1.2;}
-  .tbl-storico .ck{text-align:center;width:34px;min-width:34px;max-width:34px;padding-left:0 !important;padding-right:0 !important;}
+  .tbl-storico .ck{text-align:center;width:36px;min-width:36px;max-width:36px;padding-left:0 !important;padding-right:0 !important;}
   .tbl-storico th.ck{font-size:8.5px;letter-spacing:-.2px;}
   .tbl-storico .acts{white-space:nowrap;width:1%;}
   .tbl-storico .acts .btn-ghost{padding:2px 4px;}
@@ -180,20 +180,17 @@
   .tbl-storico .nome-link:hover{text-decoration-color:currentColor;}
   /* finestra stretta (colonna 35% dello schermo): nascondi Prodotto, Stato e Gen. (lo stato resta nel tooltip del nome) per far stare tutte le colonne */
   @media (max-width:900px){ .tbl-storico .c-prod,.tbl-storico .c-gen,.tbl-storico .c-stato{display:none;} .tbl-storico th,.tbl-storico td{padding:3px 5px;} }
-  /* finestra stretta (es. la Console al 35% dello schermo): le colonne delle caselle restano tutte UGUALI (34 px);
-     se serve spazio lo cede la colonna del nome, che si accorcia. I pulsanti di azione restano sempre visibili. */
-  @media (max-width:700px){
-    .tbl-storico{width:auto;}
-    .tbl-storico .ora{display:none;}   /* l'ora resta nel suggerimento al passaggio del mouse */
-    .tbl-storico .ck{width:30px;min-width:30px;max-width:30px;}
-    .tbl-storico th,.tbl-storico td{padding:3px 4px;}
-    .tbl-storico th:first-child,.tbl-storico td:first-child{padding-left:4px;}
-    .tbl-storico .acts .btn-ghost{padding:2px 2px;font-size:11px !important;}
-    .tbl-storico .nome-link{max-width:88px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;}
-    .tbl-storico td.acts,.tbl-storico thead th:last-child{position:sticky;right:0;z-index:1;box-shadow:-6px 0 6px -6px rgba(0,0,0,.25);}
-    .tbl-storico td.acts{background:var(--panel);}   /* grigio come le righe (non bianco) */
-    .tbl-storico thead th:last-child{background:var(--card,#fff);z-index:3;}   /* intestazione bianca come le altre */
-    .tbl-storico tr.riga-sel td.acts{background:#dbeafe !important;}
+  /* finestra stretta (es. la Console al 35% dello schermo): layout a colonne FISSE. Data, caselle (tutte 36 px, quindi
+     distanze uguali) e pulsanti hanno larghezza fissa e restano SEMPRE interi e visibili; cede spazio SOLO il nome
+     del cliente (con i puntini; il nome intero è nel suggerimento al mouse). */
+  @media (max-width:900px){
+    .tbl-storico{table-layout:fixed;width:100%;}
+    .tbl-storico th:first-child,.tbl-storico td:first-child{width:62px;padding-left:4px;padding-right:2px;}
+    .tbl-storico .ora{display:none;}
+    .tbl-storico th:nth-child(2),.tbl-storico td:nth-child(2){overflow:hidden;text-overflow:ellipsis;}
+    .tbl-storico .nome-link{display:block;overflow:hidden;text-overflow:ellipsis;}
+    .tbl-storico th:last-child,.tbl-storico td.acts{width:126px;padding-left:2px;padding-right:2px;}
+    .tbl-storico .acts .btn-ghost{padding:2px 2px;}
   }
   tr:hover td{background:rgba(0,0,0,.02);}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:50;overflow:auto;}
