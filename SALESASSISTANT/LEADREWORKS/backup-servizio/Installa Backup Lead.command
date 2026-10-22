@@ -16,6 +16,8 @@ fi
 
 mkdir -p "$DEST_DIR" "$HOME/Library/LaunchAgents" "$HOME/DATI-LEAD"
 cp "$SRC" "$DEST_DIR/servizio_backup.py" || { echo "Copia non riuscita"; read -r -p "Premi Invio…" _; exit 1; }
+# Descrizione dei salvataggi, accanto ai dati (si aggiorna a ogni installazione)
+[ -f "$(dirname "$SRC")/README.txt" ] && cp "$(dirname "$SRC")/README.txt" "$HOME/DATI-LEAD/README.txt"
 
 cat > "$PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>

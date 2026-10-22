@@ -264,3 +264,6 @@ Su un Mac con iCloud Drive spento la copia falliva («manca la cartella com~appl
 ### Copie locali automatiche (2026-10-22)
 Decisione di David: niente cloud (iCloud Drive spento, Google Drive per computer non installabile su quel Mac): **copia automatica su file locale**. Il servizio scrive a ogni salvataggio: `~/DATI-LEAD/leads.json`, `copie/leads-AAAA-MM-GG.json` (30 giorni) e **`copie/ore/leads-AAAA-MM-GG_HH.json` (una per ora, 48 ore)** per annullare errori recenti. La **copia esterna** resta facoltativa e silenziosa: senza `copia-esterna.txt` e senza iCloud Drive non genera né errori né avvisi. Limite onesto: le copie locali proteggono da Chrome/profili/errori, **non da un guasto del disco del MacBook**; per quello serve una copia fuori dal Mac (chiavetta, Mac mini, Drive dal browser).
 
+### README.txt del servizio dati (2026-10-22)
+`backup-servizio/README.txt` descrive per David cartelle, frequenza, protezioni, ripristino, limiti, installazione. L'installatore lo copia in `~/DATI-LEAD/README.txt` (si aggiorna a ogni installazione). Se cambiano frequenze/cartelle/regole del servizio, aggiornare anche quel file.
+
