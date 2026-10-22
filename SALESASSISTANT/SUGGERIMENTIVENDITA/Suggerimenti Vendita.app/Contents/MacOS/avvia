@@ -1,4 +1,8 @@
 #!/bin/bash
+# Profilo Chrome da usare SEMPRE per il pannello chiamata (nome della CARTELLA del profilo, da chrome://version -> "Percorso profilo").
+# Deve essere lo stesso della Lead Rework Console: l'estensione che porta nome, telefono e canovaccio del lead al pannello
+# esiste solo in quel profilo. Cambiarlo solo qui (e in LEADREWORKS/apri-console.command e Lead Rework.app).
+PROFILO_CHROME="Profile 1"
 # ============================================================================
 # Eseguibile dell'app "Suggerimenti Vendita.app".
 #
@@ -884,10 +888,10 @@ avvia_chiamata_comune() {
     col_x=$(( screen_w * 50 / 100 ))
     col_h=$(( screen_h * 60 / 100 ))
 
-    open -na "Google Chrome" --args --app="$url" --window-position=${col_x},0 --window-size=${col_w},${col_h}
+    open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url" --window-position=${col_x},0 --window-size=${col_w},${col_h}
   else
     # Fallback se osascript non è disponibile per qualche motivo: comportamento precedente.
-    open -na "Google Chrome" --args --app="$url"
+    open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url"
   fi
 
   # Da qui in poi tutto avviene nella pagina: il microfono si attiva da

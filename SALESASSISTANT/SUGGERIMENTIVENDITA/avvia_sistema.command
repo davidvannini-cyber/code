@@ -1,4 +1,8 @@
 #!/bin/bash
+# Profilo Chrome da usare SEMPRE per il pannello chiamata (nome della CARTELLA del profilo, da chrome://version -> "Percorso profilo").
+# Deve essere lo stesso della Lead Rework Console: l'estensione che porta nome, telefono e canovaccio del lead al pannello
+# esiste solo in quel profilo. Cambiarlo solo qui (e in LEADREWORKS/apri-console.command e Lead Rework.app).
+PROFILO_CHROME="Profile 1"
 # ============================================================================
 # avvia_sistema.command
 #
@@ -284,11 +288,11 @@ avvia_sistema_completo() {
     if [ -n "$bounds" ]; then
       screen_w=$(echo "$bounds" | awk -F', ' '{print $3}')
       screen_h=$(echo "$bounds" | awk -F', ' '{print $4}')
-      open -na "Google Chrome" --args --app="$url" \
+      open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url" \
         --window-position=$(( screen_w * 50 / 100 )),0 \
         --window-size=$(( screen_w * 25 / 100 )),$(( screen_h * 60 / 100 ))
     else
-      open -na "Google Chrome" --args --app="$url"
+      open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url"
     fi
   ) &
   PID_APRI=$!
