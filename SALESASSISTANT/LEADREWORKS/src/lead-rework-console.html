@@ -179,6 +179,17 @@
   .tbl-storico .nome-link:hover{text-decoration-color:currentColor;}
   /* finestra stretta (colonna 35% dello schermo): nascondi Prodotto, Stato e Gen. (lo stato resta nel tooltip del nome) per far stare tutte le colonne */
   @media (max-width:900px){ .tbl-storico .c-prod,.tbl-storico .c-gen,.tbl-storico .c-stato{display:none;} .tbl-storico th,.tbl-storico td{padding:3px 5px;} }
+  /* finestra stretta (es. la Console al 35% dello schermo): colonne compatte, così Tel/CRM/Vedi/Duplica/Elimina restano sempre visibili */
+  @media (max-width:700px){
+    .tbl-storico th,.tbl-storico td{padding:3px 2px;}
+    .tbl-storico th:first-child,.tbl-storico td:first-child{padding-left:4px;}
+    .tbl-storico .acts .btn-ghost{padding:2px 1px;font-size:11px !important;}
+    .tbl-storico .nome-link{max-width:150px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;}
+    /* i pulsanti di azione (Tel, CRM, Vedi, Duplica, Elimina) restano sempre visibili, anche se la tabella scorre di lato */
+    .tbl-storico td.acts,.tbl-storico thead th:last-child{position:sticky;right:0;z-index:1;background:var(--card,#fff);box-shadow:-6px 0 6px -6px rgba(0,0,0,.25);}
+    .tbl-storico thead th:last-child{z-index:3;}
+    .tbl-storico tr.riga-sel td.acts{background:#dbeafe !important;}
+  }
   tr:hover td{background:rgba(0,0,0,.02);}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:50;overflow:auto;}
   .modal{background:#ffffff;color:var(--text);border:1px solid var(--border);border-radius:2px;max-width:720px;width:100%;padding:26px;max-height:90vh;overflow:auto;}
