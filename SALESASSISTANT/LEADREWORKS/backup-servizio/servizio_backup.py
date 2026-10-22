@@ -6,6 +6,8 @@ I lead vivono in una cartella sul Mac, fuori da Chrome:  ~/DATI-LEAD
   leads.json                    l'archivio vero (la Console lo legge all'apertura e lo riscrive a ogni modifica)
   copie/leads-AAAA-MM-GG.json   una copia per giorno (ultime 30)
   copie/leads-ANOMALO-<data>.json   copie di sicurezza di salvataggi sospetti (calo forte di lead)
+Seconda copia automatica in iCloud Drive (cartella BACKUP-LEAD-YesMobility, ultimo + una per giorno, 30 giorni),
+al massimo una volta al minuto; se iCloud non risponde l'errore si vede nello /stato e nella Console.
 Resta in ascolto SOLO su questo Mac (127.0.0.1:8769). Solo libreria standard di Python 3.
 
 Protezioni:
@@ -16,7 +18,7 @@ Protezioni:
     cambiato (es. due finestre della Console aperte) il salvataggio è RIFIUTATO (409) e non rovina niente.
 API:  GET /leads   GET /stato   POST /leads   POST /backup (come /leads, vecchia Console)
 """
-import json, os, sys, glob, hashlib, threading, shutil
+import json, os, sys, glob, hashlib, threading, time
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -27,6 +29,10 @@ GIORNI_DA_TENERE = 30
 MAX_BYTE = 200 * 1024 * 1024
 BLOCCO = threading.Lock()
 FORMATO = "leadrework-leads-backup"
+ICLOUD_BASE = os.environ.get("LEADBACKUP_ICLOUD_BASE", os.path.expanduser("~/Library/Mobile Documents/com~apple~CloudDocs"))
+ICLOUD_CARTELLA = os.path.join(ICLOUD_BASE, "BACKUP-LEAD-YesMobility")
+ICLOUD_INTERVALLO = int(os.environ.get("LEADBACKUP_ICLOUD_SECONDI", "60"))
+icloud = {"attivo": True, "ok": None, "ultima": "", "errore": "", "cartella": ICLOUD_CARTELLA, "da_copiare": False, "ultimo_tentativo": 0.0}
 stato = {"ultima_scrittura": "", "esito": "nessun salvataggio da quando il servizio è partito"}
 
 
@@ -65,6 +71,36 @@ def pulisci_vecchie():
             pass
 
 
+def copia_icloud():
+    """Copia leads.json (ultimo + copia del giorno) in iCloud Drive. Non solleva mai: l'esito sta in `icloud`."""
+    icloud["ultimo_tentativo"] = time.time()
+    icloud["da_copiare"] = False
+    try:
+        if not os.path.isdir(ICLOUD_BASE):
+            raise FileNotFoundError("iCloud Drive non attivo su questo Mac")
+        with open(p_leads(), "rb") as f:
+            dati = f.read()
+        scrivi_atomico(os.path.join(ICLOUD_CARTELLA, "leads-ultimo.json"), dati)
+        scrivi_atomico(os.path.join(ICLOUD_CARTELLA, "leads-%s.json" % datetime.now().strftime("%Y-%m-%d")), dati)
+        giornaliere = sorted(glob.glob(os.path.join(ICLOUD_CARTELLA, "leads-????-??-??.json")))
+        for vecchia in giornaliere[:-GIORNI_DA_TENERE]:
+            try:
+                os.remove(vecchia)
+            except OSError:
+                pass
+        icloud.update(ok=True, errore="", ultima=datetime.now().isoformat(timespec="seconds"))
+    except Exception as e:
+        icloud.update(ok=False, errore="%s: %s" % (type(e).__name__, e))
+
+
+def ciclo_icloud():
+    while True:
+        time.sleep(15)
+        with BLOCCO:
+            if icloud["da_copiare"] and time.time() - icloud["ultimo_tentativo"] >= ICLOUD_INTERVALLO:
+                copia_icloud()
+
+
 def salva(corpo):
     """Ritorna (http_status, dict_risposta)."""
     try:
@@ -101,6 +137,9 @@ def salva(corpo):
         scrivi_atomico(os.path.join(p_copie(), "leads-%s.json" % ora.strftime("%Y-%m-%d")), json.dumps(dati, ensure_ascii=False).encode("utf-8"))
         pulisci_vecchie()
         stato.update(ultima_scrittura=ora.isoformat(timespec="seconds"), esito="ok")
+        icloud["da_copiare"] = True
+        if time.time() - icloud["ultimo_tentativo"] >= ICLOUD_INTERVALLO:
+            copia_icloud()
         return 200, {"ok": True, "rev": nuova_rev, "lead": n, "salvato_il": dati["salvato_il"]}
 
 
@@ -138,7 +177,8 @@ class Gestore(BaseHTTPRequestHandler):
         elif path == "/stato":
             with BLOCCO:
                 a = leggi_archivio()
-            self._json(200, dict(stato, cartella=CARTELLA, servizio="dati-v2", presente=a is not None,
+            self._json(200, dict(stato, cartella=CARTELLA, servizio="dati-v2",
+                                 icloud={k: icloud[k] for k in ("ok", "ultima", "errore", "cartella")}, presente=a is not None,
                                  rev=(a.get("rev", 0) if a else 0), lead=(len(a["leads"]) if a else 0),
                                  salvato_il=(a.get("salvato_il", "") if a else "")))
         else:
@@ -164,6 +204,7 @@ class Gestore(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     os.makedirs(p_copie(), exist_ok=True)
+    threading.Thread(target=ciclo_icloud, daemon=True).start()
     srv = ThreadingHTTPServer(("127.0.0.1", PORTA), Gestore)
     print("Dati lead attivi su 127.0.0.1:%d -> %s" % (PORTA, CARTELLA), flush=True)
     try:

@@ -3008,6 +3008,7 @@ async function svBackupStato(){
     const r = await fetch(BK_URL + "/stato", { cache: "no-store" });
     const j = await r.json();
     a.raggiungibile = true;
+    a.icloud = j.icloud || null;
     if (!a.inCorso){ a.ultimo = j.salvato_il || a.ultimo; a.lead = j.lead; if (/^errore: SERVIZIO/.test(a.errore || "")) a.errore = ""; }
     if (a.errore && a.errore.indexOf("NON RAGGIUNGIBILE") >= 0) a.errore = "";
   } catch(e){
@@ -3028,6 +3029,16 @@ function svBackupHtml(esteso){
     testo = "✓ Dati nella cartella ~/DATI-LEAD: salvati " + o.toLocaleString("it-IT", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) + " (" + a.lead + " lead)";
     colore = "#0f766e";
   } else { testo = "Cartella dati: in verifica…"; colore = "#5b6b7f"; }
+  // seconda copia in iCloud Drive (fatta dal servizio)
+  const ic = a.icloud;
+  if (ic && !a.errore && !a.soloLettura){
+    if (ic.ok === false){
+      testo += " · ⚠ COPIA iCLOUD NON RIUSCITA (" + String(ic.errore || "").replace(/^[A-Za-z]+Error: /, "").slice(0, 70) + ")";
+      colore = "#b91c1c";
+    } else if (ic.ok){
+      testo += " · ☁ iCloud ✓ " + new Date(ic.ultima).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+    }
+  }
   const forte = colore === "#b91c1c" ? "font-weight:800;" : "";
   return '<span class="sv-backup" style="' + (esteso ? "" : "margin-right:10px;") + 'font-size:11px;color:' + colore + ';' + forte + '">' + testo + '</span>';
 }
