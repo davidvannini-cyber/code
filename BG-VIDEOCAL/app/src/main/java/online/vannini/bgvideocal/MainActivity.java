@@ -1,21 +1,20 @@
 package online.vannini.bgvideocal;
 
 import android.Manifest;
-import android.content.ContentValues;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
+
 import android.graphics.Matrix;
-import android.graphics.Paint;
+
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
+
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
+
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
@@ -36,10 +35,8 @@ import com.google.mlkit.vision.segmentation.SegmentationMask;
 import com.google.mlkit.vision.segmentation.Segmenter;
 import com.google.mlkit.vision.segmentation.selfie.SelfieSegmenterOptions;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
+
 import java.nio.FloatBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -85,7 +82,6 @@ public class MainActivity extends ComponentActivity {
                     ? CameraSelector.LENS_FACING_BACK : CameraSelector.LENS_FACING_FRONT;
             bindCamera();
         });
-        findViewById(R.id.btnShot).setOnClickListener(v -> takePhoto());
 
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             startCamera();
@@ -257,54 +253,6 @@ public class MainActivity extends ComponentActivity {
             // un fotogramma perso non è un problema: arriva il successivo
         } finally {
             proxy.close();
-        }
-    }
-
-    // ---- foto ----
-
-    private void takePhoto() {
-        Bitmap p = lastPerson;
-        if (p == null) return;
-        Bitmap bg = mode == IMAGE ? pickedImage : mode == VIDEO ? bgVideo.getBitmap() : lastBlur;
-        Bitmap out = Bitmap.createBitmap(p.getWidth(), p.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(out);
-        c.drawColor(0xFF000000);
-        if (bg != null) {
-            float s = Math.max((float) out.getWidth() / bg.getWidth(), (float) out.getHeight() / bg.getHeight());
-            Matrix m = new Matrix();
-            m.postScale(s, s);
-            m.postTranslate((out.getWidth() - bg.getWidth() * s) / 2f, (out.getHeight() - bg.getHeight() * s) / 2f);
-            c.drawBitmap(bg, m, new Paint(Paint.FILTER_BITMAP_FLAG));
-        }
-        c.drawBitmap(p, 0, 0, null);
-        worker.execute(() -> save(out));
-    }
-
-    private void save(Bitmap bmp) {
-        String name = "BG-" + System.currentTimeMillis() + ".jpg";
-        try {
-            OutputStream os;
-            String where;
-            if (Build.VERSION.SDK_INT >= 29) {
-                ContentValues v = new ContentValues();
-                v.put(MediaStore.Images.Media.DISPLAY_NAME, name);
-                v.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-                v.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/BG Videocal");
-                Uri u = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
-                os = getContentResolver().openOutputStream(u);
-                where = "Foto salvata in Immagini/BG Videocal";
-            } else {
-                File f = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), name);
-                os = new FileOutputStream(f);
-                where = "Foto salvata in " + f.getAbsolutePath();
-            }
-            try (OutputStream o = os) {
-                bmp.compress(Bitmap.CompressFormat.JPEG, 92, o);
-            }
-            final String msg = where;
-            runOnUiThread(() -> Toast.makeText(this, msg, Toast.LENGTH_LONG).show());
-        } catch (Exception e) {
-            runOnUiThread(() -> Toast.makeText(this, "Non sono riuscito a salvare la foto", Toast.LENGTH_LONG).show());
         }
     }
 
