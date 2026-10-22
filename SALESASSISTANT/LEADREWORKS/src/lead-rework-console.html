@@ -374,7 +374,7 @@ function readLocalLeadsCopy(name){
 }
 
 async function dbSet(key, value){
-  if (key === "leads") mirrorLeadsBackup(value);
+  if (key === "leads"){ mirrorLeadsBackup(value); svBackupProgramma(); }
   if (window.claude && window.claude.db && typeof window.claude.db.set === "function"){
     try { await window.claude.db.set(key, value); RUNTIME.db = true; return; }
     catch(e){ console.warn("db.set fallita, uso fallback locale", e); }
@@ -919,6 +919,7 @@ function render(){
       </div>
       <div class="topnav-right">
         <div class="topnav-status" title="Sistema attivo"><span class="dot ${RUNTIME.db?'ok':'ko'}"></span>Sistema attivo</div>
+        ${svBackupHtml()}
         <div class="topnav-copy">© momandis</div>
       </div>
     </div>
@@ -2568,6 +2569,7 @@ function renderHistoryTab(){
         <span class="hp-link" onclick="recoverFromAutoCopy()" title="Riaggiunge lead presenti nelle copie automatiche ma non più nello storico (es. eliminati per errore)">Recupera copia automatica</span>
         <input type="file" id="leads_backup_import_input" accept="application/json,.json" style="display:none" onchange="importLeadsBackup(event)">
         <span style="margin-left:auto;">${autoBackupInfo()}</span>
+        <span style="flex-basis:100%;">${svBackupHtml(true)}</span>
         <span id="history_backup_msg" style="flex-basis:100%;"></span>
       </div>
     </div>
@@ -2893,6 +2895,65 @@ async function svPoll(){
   svInPolling = false;
 }
 setTimeout(() => setInterval(svPoll, 2000), 3000);
+
+/* =========================================================
+   BACKUP AUTOMATICO SU FILE (servizio sul Mac, ~/BACKUP-LEAD)
+   Il servizio (backup-servizio/servizio_backup.py, installato con «Installa Backup Lead.command»)
+   ascolta su 127.0.0.1:8769. A ogni modifica dei lead (max una volta ogni 5 s) gli si manda tutto
+   l'archivio; lui tiene ultimo + una copia al giorno. Non parte se la pagina è bloccata o i lead sono 0.
+   ========================================================= */
+const BK_URL = "http://127.0.0.1:8769";
+state.backup = { raggiungibile: null, testo: "", ok: false, ultima: "", lead: 0, avviso: "" };
+let bkTimer = null;
+function svBackupProgramma(){
+  if (state.bloccoProfilo) return;
+  clearTimeout(bkTimer);
+  bkTimer = setTimeout(svBackupInvia, 5000);
+}
+async function svBackupInvia(){
+  const leads = state.leadsHistory || {};
+  if (state.bloccoProfilo || !Object.keys(leads).length) return;
+  try {
+    const corpo = JSON.stringify({ format: LEADS_BACKUP_FORMAT, version: 1, exported_at: new Date().toISOString(), count: Object.keys(leads).length, leads });
+    const r = await fetch(BK_URL + "/backup", { method: "POST", headers: { "Content-Type": "text/plain" }, body: corpo });
+    const j = await r.json();
+    state.backup.raggiungibile = true;
+    state.backup.avviso = j.ok ? "" : (j.motivo || "copia non salvata");
+  } catch(e){
+    state.backup.raggiungibile = false;
+  }
+  await svBackupStato();
+}
+async function svBackupStato(){
+  try {
+    const r = await fetch(BK_URL + "/stato", { cache: "no-store" });
+    const j = await r.json();
+    state.backup.raggiungibile = true;
+    state.backup.ultima = j.ultima_su_disco || "";
+    state.backup.lead = j.lead_su_disco || 0;
+    if (/^(ATTENZIONE|RIFIUTATO)/.test(j.esito || "")) state.backup.avviso = j.esito;
+  } catch(e){
+    state.backup.raggiungibile = false;
+  }
+  svBackupAggiornaDom();
+}
+function svBackupHtml(esteso){
+  const b = state.backup;
+  let testo, colore;
+  if (b.raggiungibile === false){ testo = "⚠ BACKUP AUTOMATICO NON ATTIVO (servizio non raggiungibile)"; colore = "#b91c1c"; }
+  else if (b.avviso){ testo = "⚠ Backup: " + b.avviso; colore = "#b91c1c"; }
+  else if (b.ultima){
+    const o = new Date(b.ultima);
+    testo = "✓ Backup automatico: ultima copia " + o.toLocaleString("it-IT", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) + " (" + b.lead + " lead)";
+    colore = "#0f766e";
+  } else { testo = "Backup automatico: in verifica…"; colore = "#5b6b7f"; }
+  const forte = colore === "#b91c1c" ? "font-weight:800;" : "";
+  return '<span class="sv-backup" style="' + (esteso ? "" : "margin-right:10px;") + 'font-size:11px;color:' + colore + ';' + forte + '">' + testo + '</span>';
+}
+function svBackupAggiornaDom(){
+  document.querySelectorAll(".sv-backup").forEach(e => { e.outerHTML = svBackupHtml(e.parentElement && e.parentElement.style.flexBasis === "100%"); });
+}
+setTimeout(() => { svBackupStato(); setTimeout(svBackupInvia, 1500); setInterval(svBackupStato, 30000); }, 6000);
 
 /* =========================================================
    BOOT

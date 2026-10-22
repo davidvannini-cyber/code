@@ -10,7 +10,7 @@ Protezioni: un archivio VUOTO non sovrascrive mai nulla; un calo improvviso (men
 dell'ultima copia) non sostituisce "ultimo": viene salvato a parte come leadrework-ANOMALO-<data>.json.
 Solo libreria standard di Python 3.
 """
-import json, os, sys, glob, threading
+import json, os, sys, glob, hashlib, threading
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -19,6 +19,7 @@ CARTELLA = os.environ.get("LEADBACKUP_DIR", os.path.expanduser("~/BACKUP-LEAD"))
 GIORNI_DA_TENERE = 30
 MAX_BYTE = 200 * 1024 * 1024
 BLOCCO = threading.Lock()
+ULTIMA_IMPRONTA = {"v": ""}
 stato = {"ultima": "", "lead": 0, "esito": "nessuna copia ricevuta da quando il servizio è partito"}
 
 
@@ -70,8 +71,13 @@ def salva(corpo):
             scrivi_atomico(os.path.join(CARTELLA, "leadrework-ANOMALO-%s.json" % ora.strftime("%Y-%m-%d_%H%M%S")), corpo)
             stato["esito"] = "ATTENZIONE: calo anomalo di lead (da %d a %d), copia precedente conservata" % (prima, n)
             return 200, {"ok": False, "motivo": "calo anomalo di lead (da %d a %d): copia precedente conservata" % (prima, n)}
+        impronta = hashlib.sha256(json.dumps(leads, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+        if impronta == ULTIMA_IMPRONTA["v"] and os.path.exists(ultimo):
+            stato.update(ultima=ora.isoformat(timespec="seconds"), lead=n, esito="ok (invariato)")
+            return 200, {"ok": True, "lead": n, "ultima": stato["ultima"], "invariato": True}
         scrivi_atomico(ultimo, corpo)
         scrivi_atomico(os.path.join(CARTELLA, "leadrework-%s.json" % ora.strftime("%Y-%m-%d")), corpo)
+        ULTIMA_IMPRONTA["v"] = impronta
         pulisci_vecchie()
         stato.update(ultima=ora.isoformat(timespec="seconds"), lead=n, esito="ok")
         return 200, {"ok": True, "lead": n, "ultima": stato["ultima"]}
