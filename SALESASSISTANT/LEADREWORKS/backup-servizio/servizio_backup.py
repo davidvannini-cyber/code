@@ -6,8 +6,10 @@ I lead vivono in una cartella sul Mac, fuori da Chrome:  ~/DATI-LEAD
   leads.json                    l'archivio vero (la Console lo legge all'apertura e lo riscrive a ogni modifica)
   copie/leads-AAAA-MM-GG.json   una copia per giorno (ultime 30)
   copie/leads-ANOMALO-<data>.json   copie di sicurezza di salvataggi sospetti (calo forte di lead)
-Seconda copia automatica in iCloud Drive (cartella BACKUP-LEAD-YesMobility, ultimo + una per giorno, 30 giorni),
-al massimo una volta al minuto; se iCloud non risponde l'errore si vede nello /stato e nella Console.
+Seconda copia automatica ("copia esterna": ultimo + una per giorno, 30 giorni), al massimo una volta al minuto.
+Dove: se esiste il file ~/DATI-LEAD/copia-esterna.txt, la cartella scritta nella sua prima riga (es. una cartella di
+Google Drive per computer o di iCloud Drive); altrimenti iCloud Drive (.../com~apple~CloudDocs/BACKUP-LEAD-YesMobility).
+Se la copia non riesce l'errore si vede nello /stato e nella Console; il salvataggio principale non ne risente.
 Resta in ascolto SOLO su questo Mac (127.0.0.1:8769). Solo libreria standard di Python 3.
 
 Protezioni:
@@ -31,6 +33,19 @@ BLOCCO = threading.Lock()
 FORMATO = "leadrework-leads-backup"
 ICLOUD_BASE = os.environ.get("LEADBACKUP_ICLOUD_BASE", os.path.expanduser("~/Library/Mobile Documents/com~apple~CloudDocs"))
 ICLOUD_CARTELLA = os.path.join(ICLOUD_BASE, "BACKUP-LEAD-YesMobility")
+
+
+def destinazione_copia():
+    """(cartella_base_che_deve_esistere, cartella_di_destinazione). Letta a ogni copia: si cambia senza riavviare."""
+    try:
+        with open(os.path.join(CARTELLA, "copia-esterna.txt"), encoding="utf-8") as f:
+            riga = f.readline().strip().strip('"')
+        if riga:
+            dest = os.path.expanduser(riga)
+            return os.path.dirname(dest.rstrip("/")) or dest, dest
+    except OSError:
+        pass
+    return ICLOUD_BASE, ICLOUD_CARTELLA
 ICLOUD_INTERVALLO = int(os.environ.get("LEADBACKUP_ICLOUD_SECONDI", "60"))
 icloud = {"attivo": True, "ok": None, "ultima": "", "errore": "", "cartella": ICLOUD_CARTELLA, "da_copiare": False, "ultimo_tentativo": 0.0}
 stato = {"ultima_scrittura": "", "esito": "nessun salvataggio da quando il servizio è partito"}
@@ -72,21 +87,23 @@ def pulisci_vecchie():
 
 
 def copia_icloud():
-    """Copia leads.json (ultimo + copia del giorno) in iCloud Drive. Non solleva mai: l'esito sta in `icloud`."""
+    """Copia leads.json (ultimo + copia del giorno) nella cartella esterna. Non solleva mai: l'esito sta in `icloud`."""
     icloud["ultimo_tentativo"] = time.time()
     icloud["da_copiare"] = False
+    base, dest = destinazione_copia()
+    icloud["cartella"] = dest
     try:
         try:
-            os.stat(ICLOUD_BASE)
+            os.stat(base)
         except FileNotFoundError:
-            raise FileNotFoundError("iCloud Drive non trovato (manca la cartella com~apple~CloudDocs)")
+            raise FileNotFoundError("cartella della copia esterna non trovata (%s): il servizio (Google Drive/iCloud) è attivo?" % base)
         except PermissionError:
-            raise PermissionError("macOS NEGA al servizio l'accesso a iCloud Drive: serve \"Accesso completo al disco\" per python3 (%s)" % os.path.realpath(sys.executable))
+            raise PermissionError("macOS NEGA al servizio l'accesso a questa cartella: serve \"Accesso completo al disco\" per python3 (%s)" % os.path.realpath(sys.executable))
         with open(p_leads(), "rb") as f:
             dati = f.read()
-        scrivi_atomico(os.path.join(ICLOUD_CARTELLA, "leads-ultimo.json"), dati)
-        scrivi_atomico(os.path.join(ICLOUD_CARTELLA, "leads-%s.json" % datetime.now().strftime("%Y-%m-%d")), dati)
-        giornaliere = sorted(glob.glob(os.path.join(ICLOUD_CARTELLA, "leads-????-??-??.json")))
+        scrivi_atomico(os.path.join(dest, "leads-ultimo.json"), dati)
+        scrivi_atomico(os.path.join(dest, "leads-%s.json" % datetime.now().strftime("%Y-%m-%d")), dati)
+        giornaliere = sorted(glob.glob(os.path.join(dest, "leads-????-??-??.json")))
         for vecchia in giornaliere[:-GIORNI_DA_TENERE]:
             try:
                 os.remove(vecchia)
