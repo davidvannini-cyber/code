@@ -264,3 +264,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-22 | `b7b460e` | BG-VIDEOCAL v0.2: nuova grafica scura (chip a gradiente, tasto di scatto, pulsante gira) e REA/.gitignore (BG-VIDEOCAL/app/..., REA/.gitignore), REGISTRO-SALVATAGGI.md | `git checkout b7b460e` |
 | 2026-10-22 | `0a5c6eb` | BG-VIDEOCAL: tolto dal README il riferimento alla condivisione schermo (BG-VIDEOCAL/README.md), REGISTRO-SALVATAGGI.md | `git checkout 0a5c6eb` |
 | 2026-10-22 | `c94b29d` | BG-VIDEOCAL v0.3: tolto lo scatto della foto (BG-VIDEOCAL/app/..., README.md), REGISTRO-SALVATAGGI.md | `git checkout c94b29d` |
+| 2026-10-22 | `96de51b` | Prova BlackBox: automazione che costruisce l'app dimostrativa di BlackBox 2.1.0 (.github/workflows/blackbox-prova.yml), REGISTRO-SALVATAGGI.md | `git checkout 96de51b` |

@@ -1,0 +1,57 @@
+name: BlackBox prova
+
+# Prova: costruisce l'app dimostrativa di BlackBox 2.1.0 (Apache-2.0) per vedere se parte su Android 16.
+# Il codice sta nella release "blackbox-sorgenti" (non e' copiato nel repository).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/blackbox-prova.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+
+      - name: Scarica il codice di BlackBox
+        run: |
+          curl -sSL -o bb.zip https://github.com/davidvannini-cyber/code/releases/download/blackbox-sorgenti/BlackBox-2.1.0.zip
+          unzip -q bb.zip
+          ls
+
+      - name: Accetta le licenze Android
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Costruisci
+        working-directory: BlackBox-2.1.0
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleBlackBox64Debug --no-daemon --stacktrace
+
+      - name: Raccogli l'APK
+        run: |
+          find BlackBox-2.1.0 -name "*.apk" | head
+          cp "$(find BlackBox-2.1.0 -name '*BlackBox64*debug*.apk' | head -1)" blackbox-prova.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blackbox-prova-apk
+          path: blackbox-prova.apk
+
+      - name: Pubblica il file scaricabile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete blackbox-prova-latest --cleanup-tag --yes -R "$GITHUB_REPOSITORY" || true
+          gh release create blackbox-prova-latest blackbox-prova.apk -R "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "BlackBox prova" \
+            --notes "Prova di BlackBox 2.1.0 (Apache-2.0), costruita da $GITHUB_SHA."
