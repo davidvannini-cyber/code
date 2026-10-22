@@ -35,6 +35,9 @@ jobs:
           sed -i "/include ':app'/d" settings.gradle
           echo "include ':prova'" >> settings.gradle
           cp -r ../BLACKBOX-PROVA/prova ./prova
+          # la libreria free_reflection non e' piu' sull'archivio vecchio: ora sta su JitPack
+          sed -i "s#me.weishu:free_reflection:3.0.1#com.github.tiann:FreeReflection:3.0.1#" Bcore/build.gradle
+          grep -n "FreeReflection\|free_reflection" -r --include=build.gradle .
           cat settings.gradle
 
       - name: Accetta le licenze Android
