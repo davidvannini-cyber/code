@@ -294,4 +294,4 @@ Le colonne con le caselle (Tel, NR, WhatsApp, Mail, Lav., F.U., Chiuso) hanno **
 
 
 ### Storico finestra stretta: tabella a larghezza fissa (2026-10-22, sostituisce le due note sopra)
-Sotto i 900 px la tabella è `table-layout:fixed; width:100%`: caselle tutte 36 px (distanze uguali), data 62 px (ora nascosta), pulsanti 126 px (grigi, non più sticky), Prodotto/Stato/Gen. nascosti; il nome cliente prende lo spazio che resta (puntini). Misurato a 520–1100 px: nessuno scorrimento orizzontale, «Chiuso» (scritta e casella) e cestino sempre visibili. Sotto i ~500 px la finestra è troppo stretta e compare lo scorrimento.
+Sotto i 900 px la tabella è `table-layout:fixed; width:100%`: caselle tutte 24 px (distanze uguali, scelto da David; intestazione «Fine» al posto di «Chiuso»), data 62 px (ora nascosta), pulsanti 126 px (grigi, non più sticky), Prodotto/Stato/Gen. nascosti; il nome cliente prende lo spazio che resta (puntini). Misurato a 520–1100 px: nessuno scorrimento orizzontale, «Chiuso» (scritta e casella) e cestino sempre visibili. Sotto i ~500 px la finestra è troppo stretta e compare lo scorrimento.
