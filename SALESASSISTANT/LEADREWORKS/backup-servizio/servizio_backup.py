@@ -129,6 +129,20 @@ def ciclo_icloud():
                 copia_icloud()
 
 
+def info_copie():
+    """Quante copie ci sono e quando è stata fatta l'ultima (per l'indicatore della Console)."""
+    ore = sorted(glob.glob(os.path.join(p_copie(), "ore", "leads-????-??-??_??.json")))
+    giorni = sorted(glob.glob(os.path.join(p_copie(), "leads-????-??-??.json")))
+    ultima = ""
+    for f in (ore[-1:] + giorni[-1:]):
+        try:
+            t = datetime.fromtimestamp(os.path.getmtime(f)).isoformat(timespec="seconds")
+            ultima = max(ultima, t)
+        except OSError:
+            pass
+    return {"orarie": len(ore), "giornaliere": len(giorni), "ultima": ultima}
+
+
 def pulisci_orarie():
     orarie = sorted(glob.glob(os.path.join(p_copie(), "ore", "leads-????-??-??_??.json")))
     for vecchia in orarie[:-ORE_DA_TENERE]:
@@ -217,7 +231,8 @@ class Gestore(BaseHTTPRequestHandler):
             with BLOCCO:
                 a = leggi_archivio()
             self._json(200, dict(stato, cartella=CARTELLA, servizio="dati-v2",
-                                 icloud={k: icloud[k] for k in ("ok", "ultima", "errore", "cartella")}, presente=a is not None,
+                                 icloud={k: icloud[k] for k in ("ok", "ultima", "errore", "cartella")},
+                                 copie=info_copie(), presente=a is not None,
                                  rev=(a.get("rev", 0) if a else 0), lead=(len(a["leads"]) if a else 0),
                                  salvato_il=(a.get("salvato_il", "") if a else "")))
         else:

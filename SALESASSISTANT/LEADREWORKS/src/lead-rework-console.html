@@ -2611,7 +2611,6 @@ function renderHistoryTab(){
         <span class="hp-link" onclick="recoverFromAutoCopy()" title="Riaggiunge lead presenti nelle copie automatiche ma non più nello storico (es. eliminati per errore)">Recupera copia automatica</span>
         <input type="file" id="leads_backup_import_input" accept="application/json,.json" style="display:none" onchange="importLeadsBackup(event)">
         <span style="margin-left:auto;">${autoBackupInfo()}</span>
-        <span style="flex-basis:100%;">${svBackupHtml(true)}</span>
         <span id="history_backup_msg" style="flex-basis:100%;"></span>
       </div>
     </div>
@@ -3009,6 +3008,7 @@ async function svBackupStato(){
     const j = await r.json();
     a.raggiungibile = true;
     a.icloud = j.icloud || null;
+    a.copie = j.copie || null;
     if (!a.inCorso){ a.ultimo = j.salvato_il || a.ultimo; a.lead = j.lead; if (/^errore: SERVIZIO/.test(a.errore || "")) a.errore = ""; }
     if (a.errore && a.errore.indexOf("NON RAGGIUNGIBILE") >= 0) a.errore = "";
   } catch(e){
@@ -3017,31 +3017,53 @@ async function svBackupStato(){
   }
   svBackupAggiornaDom();
 }
+function svOra(iso){ return iso ? new Date(iso).toLocaleString("it-IT", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) : ""; }
+/* Due led: DATI (servizio raggiungibile e ultimo salvataggio riuscito) e BACKUP (copie automatiche, ed eventuale copia
+   esterna). Verde = tutto ok, rosso = problema, grigio = in corso/in verifica. Il messaggio compare cliccando il led. */
+function svLedStati(){
+  const a = state.archivio || {};
+  const dati = { colore: "grigio", testo: "Cartella dati: in verifica…" };
+  if (a.soloLettura){ dati.colore = "rosso"; dati.testo = "SOLA LETTURA: le modifiche NON vengono salvate."; }
+  else if (a.errore){ dati.colore = "rosso"; dati.testo = a.errore; }
+  else if (a.inCorso){ dati.testo = "Salvataggio nella cartella dati in corso…"; }
+  else if (a.ultimo){ dati.colore = "verde"; dati.testo = "✓ Dati nella cartella ~/DATI-LEAD: salvati " + svOra(a.ultimo) + " (" + a.lead + " lead)."; }
+  const bk = { colore: "grigio", testo: "Copie automatiche: in verifica…" };
+  const c = a.copie, ic = a.icloud;
+  if (a.soloLettura || a.raggiungibile === false){ bk.colore = "rosso"; bk.testo = "Copie automatiche NON attive: il servizio dati non risponde."; }
+  else if (c && (c.orarie || c.giornaliere)){
+    bk.colore = "verde";
+    bk.testo = "✓ Copie automatiche: ultima " + svOra(c.ultima) + " · " + c.orarie + " orarie (ultime 48 ore) · " + c.giornaliere + " giornaliere (ultimi 30 giorni), in ~/DATI-LEAD/copie.";
+  } else if (c){ bk.testo = "Ancora nessuna copia fatta: la prima parte al prossimo salvataggio."; }
+  else if (!c && a.ultimo){ bk.colore = "verde"; bk.testo = "✓ Copie automatiche attive (rilancia «Installa Backup Lead.command» per vederne i dettagli)."; }
+  if (ic && ic.ok === false && bk.colore !== "rosso"){
+    bk.colore = "rosso";
+    bk.testo = "COPIA ESTERNA NON RIUSCITA: " + String(ic.errore || "").replace(/^[A-Za-z]+Error: /, "") + " (le copie locali sono comunque ok).";
+  } else if (ic && ic.ok && bk.colore === "verde"){ bk.testo += " ☁ Copia esterna ✓ " + svOra(ic.ultima) + "."; }
+  return { dati, bk };
+}
 function svBackupHtml(esteso){
   const a = state.archivio || {};
   if (!a.servizio && !a.soloLettura) return "";
-  let testo, colore;
-  if (a.soloLettura){ testo = "⚠ SOLA LETTURA: le modifiche NON vengono salvate"; colore = "#b91c1c"; }
-  else if (a.errore){ testo = "⚠ " + a.errore; colore = "#b91c1c"; }
-  else if (a.inCorso){ testo = "Salvataggio nella cartella dati…"; colore = "#5b6b7f"; }
-  else if (a.ultimo){
-    const o = new Date(a.ultimo);
-    testo = "✓ Dati nella cartella ~/DATI-LEAD: salvati " + o.toLocaleString("it-IT", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) + " (" + a.lead + " lead)";
-    colore = "#0f766e";
-  } else { testo = "Cartella dati: in verifica…"; colore = "#5b6b7f"; }
-  // seconda copia in iCloud Drive (fatta dal servizio)
-  const ic = a.icloud;
-  if (ic && !a.errore && !a.soloLettura){
-    if (ic.ok === false){
-      testo += " · ⚠ COPIA ESTERNA NON RIUSCITA (" + String(ic.errore || "").replace(/^[A-Za-z]+Error: /, "").slice(0, 160) + ")";
-      colore = "#b91c1c";
-    } else if (ic.ok){
-      testo += " · ☁ copia esterna ✓ " + new Date(ic.ultima).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-    }
-  }
-  const forte = colore === "#b91c1c" ? "font-weight:800;" : "";
-  return '<span class="sv-backup" style="' + (esteso ? "" : "margin-right:10px;") + 'font-size:11px;color:' + colore + ';' + forte + '">' + testo + '</span>';
+  const st = svLedStati();
+  const led = (k, nome) => '<span class="sv-ledbox" data-led="' + k + '" title="' + nome + ': clicca per il messaggio" style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;margin-right:' + (esteso ? '14px' : '10px') + ';font-size:10px;color:#5b6b7f;font-weight:700;">' +
+    '<span class="sv-led sv-led-' + st[k === "dati" ? "dati" : "bk"].colore + '" style="width:11px;height:11px;border-radius:50%;display:inline-block;background:' +
+    ({ verde: "#16a34a", rosso: "#dc2626", grigio: "#9ca3af" })[st[k === "dati" ? "dati" : "bk"].colore] +
+    ';box-shadow:0 0 0 1px rgba(0,0,0,.25), 0 0 5px ' + ({ verde: "rgba(22,163,74,.7)", rosso: "rgba(220,38,38,.7)", grigio: "transparent" })[st[k === "dati" ? "dati" : "bk"].colore] + ';"></span>' + nome + '</span>';
+  return '<span class="sv-backup" style="white-space:nowrap;">' + led("dati", "Dati") + led("bk", "Backup") + '</span>';
 }
+document.addEventListener("click", (ev) => {
+  const vecchio = document.getElementById("sv-led-msg"); if (vecchio) vecchio.remove();
+  const b = ev.target.closest && ev.target.closest(".sv-ledbox");
+  if (!b) return;
+  const st = svLedStati()[b.dataset.led === "dati" ? "dati" : "bk"];
+  const r = b.getBoundingClientRect();
+  const m = document.createElement("div");
+  m.id = "sv-led-msg";
+  const col = ({ verde: "#16a34a", rosso: "#dc2626", grigio: "#9ca3af" })[st.colore];
+  m.style.cssText = "position:fixed;z-index:99998;max-width:340px;background:#fff;border:1px solid #c5cdd8;border-left:5px solid " + col + ";padding:8px 10px;font-size:12px;line-height:1.4;color:#1b2a3d;box-shadow:0 4px 14px rgba(0,0,0,.25);top:" + Math.round(r.bottom + 6) + "px;left:" + Math.max(6, Math.min(Math.round(r.left), window.innerWidth - 350)) + "px;";
+  m.textContent = st.testo;
+  document.body.appendChild(m);
+});
 function svBackupAggiornaDom(){
   document.querySelectorAll(".sv-backup").forEach(e => { e.outerHTML = svBackupHtml(e.parentElement && e.parentElement.style.flexBasis === "100%"); });
 }

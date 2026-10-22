@@ -267,3 +267,6 @@ Decisione di David: niente cloud (iCloud Drive spento, Google Drive per computer
 ### README.txt del servizio dati (2026-10-22)
 `backup-servizio/README.txt` descrive per David cartelle, frequenza, protezioni, ripristino, limiti, installazione. L'installatore lo copia in `~/DATI-LEAD/README.txt` (si aggiorna a ogni installazione). Se cambiano frequenze/cartelle/regole del servizio, aggiornare anche quel file.
 
+### Indicatore a due led (2026-10-22)
+In alto a destra della Console (`svBackupHtml`, `svLedStati`, `.sv-ledbox`): **led DATI** (servizio raggiungibile, ultimo salvataggio ok, non in sola lettura, nessun conflitto) e **led BACKUP** (copie locali presenti da `/stato.copie`; rosso anche se la copia esterna configurata fallisce). Verde/rosso/grigio (in corso o in verifica); cliccando un led compare il messaggio (`#sv-led-msg`), si chiude con un altro clic. `/stato` ora include `copie {orarie, giornaliere, ultima}`: con un servizio più vecchio il led BACKUP mostra «rilancia l'installatore per i dettagli».
+

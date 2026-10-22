@@ -59,9 +59,12 @@ PROTEZIONI
 
 COME CONTROLLARE CHE FUNZIONI
 -----------------------------
-In alto a destra nella Console compare, in verde:
-  "✓ Dati nella cartella ~/DATI-LEAD: salvati gg/mm, hh:mm (N lead)"
-Se è rosso, la Console dice il motivo. Dal Terminale puoi anche vedere lo stato con:
+In alto a destra nella Console ci sono due led:
+  DATI    verde = il servizio risponde e l'ultimo salvataggio è riuscito
+  BACKUP  verde = le copie automatiche (orarie e giornaliere) sono attive
+Rosso = problema, grigio = in corso o in verifica. CLICCANDO un led compare il messaggio
+completo (per esempio "Dati nella cartella ~/DATI-LEAD: salvati 22/10, 13:01 (81 lead)").
+Dal Terminale puoi anche vedere lo stato con:
   curl http://127.0.0.1:8769/stato
 
 COME RIPRISTINARE LEAD DA UNA COPIA
