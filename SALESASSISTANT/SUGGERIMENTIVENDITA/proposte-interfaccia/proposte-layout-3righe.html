@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3 layout a tre righe</title>
+<style>
+  :root{--verde:#34c759;--rosso:#ff3b30;--testo:#1c1c1e;--grigio:#8e8e93}
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9ebf1;color:var(--testo);font-family:-apple-system,"SF Pro Text","Segoe UI",Arial,sans-serif;padding:20px}
+  h1{font-size:20px;margin:0 0 4px}
+  .intro{color:#6b7280;font-size:14px;margin:0 0 18px;max-width:780px;line-height:1.45}
+  .griglia{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+  .proposta{display:flex;flex-direction:column;gap:8px;width:380px;max-width:100%}
+  .titolo{font-weight:700;font-size:15px}
+  .titolo span{display:inline-block;background:#1c1c1e;color:#fff;border-radius:50%;width:22px;height:22px;text-align:center;line-height:22px;font-size:13px;margin-right:6px}
+  .descr{font-size:12.5px;color:#6b7280;line-height:1.4;min-height:54px}
+  .corpo-finto{margin-top:10px;border:1px dashed rgba(128,128,128,.45);border-radius:10px;padding:8px;color:#9aa1b0;font-size:11px;text-align:center}
+  button{font:inherit;cursor:pointer;border:0}
+  .ico{width:22px;height:22px;fill:currentColor;flex-shrink:0}
+  .ico.linea{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+  /* ---- righe comuni ---- */
+  .r1{display:flex;align-items:center;gap:10px;font-size:11.5px;font-weight:600}
+  .r1 .mic{display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .r1 .pallino{width:8px;height:8px;border-radius:50%;background:var(--verde);animation:pulsa 1.4s infinite}
+  @keyframes pulsa{50%{opacity:.35}}
+  .r1 .mini{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+  .r1 .mini .barra{flex:1;height:4px;border-radius:3px;overflow:hidden;background:rgba(128,128,128,.25)}
+  .r1 .mini .barra i{display:block;height:100%;width:50%;border-radius:3px;background:var(--verde);transition:width .25s}
+  .r2{display:flex;align-items:baseline;gap:8px;margin-top:12px;white-space:nowrap}
+  .r2 .nome{font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis}
+  .r2 .num{margin-left:auto;font-variant-numeric:tabular-nums;font-size:14px}
+  .r3{display:flex;align-items:flex-start;justify-content:space-around;margin-top:14px}
+
+  /* tasto "telefono-app": cerchio + scritta sotto */
+  .tasto{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;padding:0}
+  .tasto .cerchio{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;transition:transform .1s}
+  .tasto:active .cerchio{transform:scale(.93)}
+  .tasto small{font-size:11px;font-weight:600;letter-spacing:.04em}
+  .tasto.pausa .cerchio{width:46px;height:46px;margin:9px 0}
+  .tasto .cornetta-giu{transform:rotate(135deg)}
+
+  /* ================= LAYOUT A — app telefono + liquid glass ================= */
+  .A{position:relative;border-radius:26px;padding:14px 16px 16px;color:#fff;overflow:hidden;
+     background:radial-gradient(120% 90% at 10% 0%,#5b8dff 0%,transparent 55%),radial-gradient(110% 90% at 100% 20%,#c06bff 0%,transparent 55%),radial-gradient(120% 100% at 40% 110%,#ff8a5c 0%,transparent 55%),#2b3a67;
+     box-shadow:0 8px 28px rgba(30,40,90,.35)}
+  .A .vetro{background:rgba(255,255,255,.16);backdrop-filter:blur(22px) saturate(1.6);-webkit-backdrop-filter:blur(22px) saturate(1.6);
+     border:1px solid rgba(255,255,255,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.18)}
+  .A .r1{border-radius:999px;padding:7px 12px}
+  .A .r2{border-radius:18px;padding:10px 14px;margin-top:10px}
+  .A .r2 .nome{text-shadow:0 1px 2px rgba(0,0,0,.25)}
+  .A .r3{border-radius:30px;padding:14px 10px 10px;margin-top:10px}
+  .A .tasto .cerchio{box-shadow:inset 0 1px 1px rgba(255,255,255,.7),inset 0 -6px 12px rgba(0,0,0,.12),0 6px 14px rgba(0,0,0,.25)}
+  .A .tasto.verde .cerchio{background:linear-gradient(180deg,rgba(80,225,120,.95),rgba(30,170,80,.88))}
+  .A .tasto.rosso .cerchio{background:linear-gradient(180deg,rgba(255,105,95,.97),rgba(225,40,40,.9))}
+  .A .tasto.pausa .cerchio{background:rgba(255,255,255,.88);color:#1c1c1e}
+  .A .tasto{color:#fff}
+  .A .tasto small{text-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .A .corpo-finto{border-color:rgba(255,255,255,.45);color:rgba(255,255,255,.85)}
+
+  /* ================= LAYOUT B — pulito, tasti rettangolari piatti ================= */
+  .B{background:#fff;border:1px solid #d9dde6;border-radius:12px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .B .r1{background:#f3f4f7;border-radius:8px;padding:6px 10px;color:#3a3a3c}
+  .B .r2{padding:0 2px}
+  .B .r3{gap:8px;justify-content:stretch;align-items:stretch}
+  .B .tasto{flex:1;border-radius:10px;padding:10px 0 8px;color:#fff;gap:3px}
+  .B .tasto .cerchio{width:auto;height:auto;background:none;color:inherit}
+  .B .tasto.verde{background:var(--verde)}
+  .B .tasto.rosso{background:var(--rosso)}
+  .B .tasto.pausa{flex:0 0 64px;background:#fff;border:1px solid #d1d5db;color:#1c1c1e;justify-content:center;gap:0;padding:0}
+  .B .tasto.pausa .cerchio{width:auto;height:auto;margin:0}
+  .B .tasto.pausa small{display:none}
+
+  /* ================= LAYOUT C — vetro chiaro, striscia unica ================= */
+  .C{border-radius:22px;padding:14px;background:linear-gradient(135deg,#dfe9ff,#f2e6ff 55%,#ffe9dc);border:1px solid rgba(255,255,255,.8);box-shadow:0 8px 24px rgba(80,90,140,.2)}
+  .C .vetro{background:rgba(255,255,255,.55);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 4px 14px rgba(80,90,140,.15)}
+  .C .r1{border-radius:999px;padding:6px 12px;color:#3a3a3c}
+  .C .r2{margin-top:10px;border-radius:14px;padding:9px 14px}
+  .C .r3{margin-top:10px;gap:8px;justify-content:stretch;align-items:stretch;border-radius:20px;padding:8px}
+  .C .tasto{flex:1;border-radius:14px;padding:9px 0 7px;gap:2px;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 3px 8px rgba(0,0,0,.15)}
+  .C .tasto .cerchio{width:auto;height:auto;background:none;color:inherit;box-shadow:none}
+  .C .tasto.verde{background:linear-gradient(180deg,#5fe08a,#2fb85b)}
+  .C .tasto.rosso{background:linear-gradient(180deg,#ff7a6f,#ee3a30)}
+  .C .tasto.pausa{flex:0 0 58px;background:rgba(255,255,255,.95);color:#1c1c1e;justify-content:center;padding:0}
+  .C .tasto.pausa small{display:none}
+  .C .tasto.pausa .cerchio{margin:0}
+
+  .nota{margin-top:20px;font-size:13px;color:#6b7280;max-width:780px;line-height:1.5}
+</style>
+</head>
+<body>
+<h1>Pannello chiamata: 3 layout con la composizione a tre righe</h1>
+<p class="intro">Riga 1: indicatori del microfono in miniatura, sulla stessa riga. Riga 2: nome, cognome e numero del contatto. Riga 3: cornetta verde «TELEFONO», pausa piccola con fondo bianco, cornetta rossa «TERMINA». Sono disegni di prova, con nome e numero inventati. Il pannello vero non è cambiato.</p>
+
+<div class="griglia">
+
+<!-- SIMBOLI RIUSATI -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="corn" viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></symbol>
+    <symbol id="paus" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.2"/><rect x="14" y="4" width="4" height="16" rx="1.2"/></symbol>
+  </defs>
+</svg>
+
+<!-- A -->
+<div class="proposta">
+  <div class="titolo"><span>A</span>Come l'app Telefono + vetro liquido</div>
+  <div class="descr">Tasti rotondi come nella schermata di chiamata dell'iPhone, con la scritta sotto. Tutte le righe sono pannelli di «vetro liquido» semitrasparente su uno sfondo colorato.</div>
+  <div class="A">
+    <div class="r1 vetro">
+      <span class="mic"><span class="pallino"></span>Mic</span>
+      <span class="mini">ingresso<span class="barra"><i class="live"></i></span></span>
+      <span class="mini">ascolto<span class="barra"><i class="live2"></i></span></span>
+    </div>
+    <div class="r2 vetro"><span class="nome">Mario Rossi</span><span class="num">348 331 2650</span></div>
+    <div class="r3 vetro">
+      <button class="tasto verde"><span class="cerchio"><svg class="ico" style="width:30px;height:30px"><use href="#corn"/></svg></span><small>TELEFONO</small></button>
+      <button class="tasto pausa"><span class="cerchio"><svg class="ico"><use href="#paus"/></svg></span><small>&nbsp;</small></button>
+      <button class="tasto rosso"><span class="cerchio"><svg class="ico cornetta-giu" style="width:30px;height:30px"><use href="#corn"/></svg></span><small>TERMINA</small></button>
+    </div>
+    <div class="corpo-finto">guida · suggerimenti · frasi del cliente</div>
+  </div>
+</div>
+
+<!-- B -->
+<div class="proposta">
+  <div class="titolo"><span>B</span>Pulito e piatto, tasti rettangolari</div>
+  <div class="descr">Il più semplice e il più vicino al pannello attuale: fondo bianco, nessun effetto. I due tasti cornetta sono rettangoli colorati con la scritta sotto; la pausa è un tasto piccolo bianco.</div>
+  <div class="B">
+    <div class="r1">
+      <span class="mic"><span class="pallino"></span>Mic</span>
+      <span class="mini">ingresso<span class="barra"><i class="live"></i></span></span>
+      <span class="mini">ascolto<span class="barra"><i class="live2"></i></span></span>
+    </div>
+    <div class="r2"><span class="nome">Mario Rossi</span><span class="num">348 331 2650</span></div>
+    <div class="r3">
+      <button class="tasto verde"><span class="cerchio"><svg class="ico"><use href="#corn"/></svg></span><small>TELEFONO</small></button>
+      <button class="tasto pausa"><span class="cerchio"><svg class="ico"><use href="#paus"/></svg></span></button>
+      <button class="tasto rosso"><span class="cerchio"><svg class="ico cornetta-giu"><use href="#corn"/></svg></span><small>TERMINA</small></button>
+    </div>
+    <div class="corpo-finto">guida · suggerimenti · frasi del cliente</div>
+  </div>
+</div>
+
+<!-- C -->
+<div class="proposta">
+  <div class="titolo"><span>C</span>Vetro chiaro, tasti larghi</div>
+  <div class="descr">Vetro liquido in versione chiara, adatto a un pannello luminoso. I tasti sono larghi e arrotondati in un'unica striscia: cornetta verde, pausa bianca piccola, cornetta rossa.</div>
+  <div class="C">
+    <div class="r1 vetro">
+      <span class="mic"><span class="pallino"></span>Mic</span>
+      <span class="mini">ingresso<span class="barra"><i class="live"></i></span></span>
+      <span class="mini">ascolto<span class="barra"><i class="live2"></i></span></span>
+    </div>
+    <div class="r2 vetro"><span class="nome">Mario Rossi</span><span class="num">348 331 2650</span></div>
+    <div class="r3 vetro">
+      <button class="tasto verde"><span class="cerchio"><svg class="ico"><use href="#corn"/></svg></span><small>TELEFONO</small></button>
+      <button class="tasto pausa"><span class="cerchio"><svg class="ico"><use href="#paus"/></svg></span></button>
+      <button class="tasto rosso"><span class="cerchio"><svg class="ico cornetta-giu"><use href="#corn"/></svg></span><small>TERMINA</small></button>
+    </div>
+    <div class="corpo-finto">guida · suggerimenti · frasi del cliente</div>
+  </div>
+</div>
+
+</div>
+
+<p class="nota"><b>Nota:</b> l'effetto vetro (sfocatura dello sfondo) funziona bene in Chrome. Per vederlo il pannello deve avere dietro uno sfondo colorato: su fondo bianco puro il vetro si nota poco. Dimmi la lettera che preferisci, anche mescolata (per esempio «A ma con i tasti di B»).</p>
+
+<script>
+  const live=document.querySelectorAll('.live'),live2=document.querySelectorAll('.live2');
+  setInterval(()=>{const v=28+Math.random()*40;live.forEach(e=>e.style.width=v+'%');live2.forEach(e=>e.style.width=Math.max(10,v-8)+'%')},350);
+</script>
+</body>
+</html>

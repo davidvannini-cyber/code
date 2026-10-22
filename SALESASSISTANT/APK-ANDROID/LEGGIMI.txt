@@ -1,0 +1,12 @@
+Copia dell'APK «Rubrica YesMobility» (Android), per averla anche in locale dopo il Sync.
+
+File:        RubricaYesMobility.apk
+Versione:    1.5 (versionCode 6)
+Costruito:   22/10/2026 da GitHub (esecuzione n. 15)
+Impronta (SHA-256): c02b6cf57b622bb48afc5d4c4286d7d945a48f620a9fb0b2551054aa41c0a2ca
+
+Questa è una COPIA a mano: la versione sempre aggiornata sta nella release
+https://github.com/davidvannini-cyber/code/releases/tag/rubrica-android
+Quando l'app cambia, la copia qui va rifatta (chiedilo a Claude).
+Per installarla: porta il file sul telefono (AirDrop, cavo o Drive) e aprilo.
+Si aggiorna sopra la versione precedente senza disinstallare.

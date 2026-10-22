@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proposte controlli pannello chiamata</title>
+<style>
+  :root{
+    --blu:#2563eb; --blu-chiaro:#eaf1ff; --verde:#16a34a; --verde-chiaro:#e7f7ec;
+    --rosso:#dc2626; --rosso-chiaro:#fdecec; --giallo:#f59e0b;
+    --testo:#1a1f2e; --grigio:#6b7280; --bordo:#d9dde6; --sfondo:#eef0f5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--sfondo);color:var(--testo);font-family:-apple-system,"Segoe UI",Arial,sans-serif;padding:20px}
+  h1{font-size:20px;margin:0 0 4px}
+  .intro{color:var(--grigio);font-size:14px;margin:0 0 18px;max-width:760px;line-height:1.45}
+  .griglia{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:22px;align-items:start}
+  .proposta{display:flex;flex-direction:column;gap:8px}
+  .titolo{font-weight:700;font-size:15px}
+  .titolo span{display:inline-block;background:var(--testo);color:#fff;border-radius:50%;width:22px;height:22px;text-align:center;line-height:22px;font-size:13px;margin-right:6px}
+  .descr{font-size:12.5px;color:var(--grigio);line-height:1.4;min-height:50px}
+  .pannello{width:380px;max-width:100%;background:#fff;border:1px solid var(--bordo);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .corpo-finto{margin-top:10px;border:1px dashed var(--bordo);border-radius:6px;padding:8px;color:#9aa1b0;font-size:11px;text-align:center}
+
+  /* elementi comuni */
+  button{font:inherit;cursor:pointer}
+  .ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico.pieno{fill:currentColor;stroke:none}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 12px;border-radius:6px;border:1px solid var(--bordo);background:#fff;color:var(--testo);font-size:13px;font-weight:600}
+  .btn:hover{background:#f4f6fa}
+  .btn.blu{background:var(--blu);border-color:var(--blu);color:#fff}
+  .btn.blu:hover{background:#1d4fd0}
+  .btn.rosso{background:var(--rosso);border-color:var(--rosso);color:#fff}
+  .btn.rosso:hover{background:#b91c1c}
+  .btn.rosso-leggero{background:var(--rosso-chiaro);border-color:#f3b9b9;color:var(--rosso)}
+  .btn.verde{background:var(--verde);border-color:var(--verde);color:#fff}
+  .btn.icona{width:34px;padding:0}
+  .barra{height:7px;border-radius:4px;background:#e4e7ee;overflow:hidden;position:relative}
+  .barra i{display:block;height:100%;width:50%;border-radius:4px;background:var(--verde);transition:width .25s}
+  .pallino{width:9px;height:9px;border-radius:50%;background:var(--verde);display:inline-block;animation:pulsa 1.4s infinite}
+  @keyframes pulsa{50%{opacity:.35}}
+  .lead-nome{font-weight:700}
+  .lead-tel{color:var(--grigio);font-variant-numeric:tabular-nums}
+
+  /* 1 – barra compatta a una riga */
+  .p1 .riga1{display:flex;align-items:center;gap:8px}
+  .p1 .mic{flex:1;display:flex;flex-direction:column;gap:5px;background:var(--verde-chiaro);border:1px solid #b8e3c6;border-radius:6px;padding:6px 10px;min-width:0}
+  .p1 .mic b{font-size:12.5px;display:flex;align-items:center;gap:6px;color:#166534}
+  .p1 .riga2{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--bordo)}
+  .p1 .riga2 .info{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+
+  /* 2 – scheda lead in alto, comandi grandi sotto */
+  .p2 .scheda{display:flex;align-items:center;gap:10px;background:var(--blu-chiaro);border-radius:8px;padding:10px 12px}
+  .p2 .scheda .avatar{width:38px;height:38px;border-radius:50%;background:var(--blu);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .p2 .scheda .info{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+  .p2 .scheda .lead-tel{font-size:16px;font-weight:700;color:var(--testo)}
+  .p2 .comandi{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-top:10px}
+  .p2 .comandi .btn{height:40px}
+
+  /* 3 – semaforo */
+  .p3 .semaforo{display:flex;align-items:center;gap:10px;border-radius:8px;padding:10px 12px;background:var(--verde-chiaro);border:1px solid #b8e3c6}
+  .p3 .semaforo .grande{width:16px;height:16px;border-radius:50%;background:var(--verde);box-shadow:0 0 0 4px rgba(22,163,74,.2)}
+  .p3 .semaforo .testi{flex:1;display:flex;flex-direction:column;line-height:1.25}
+  .p3 .semaforo .testi b{font-size:14px;color:#166534}
+  .p3 .semaforo .testi small{color:var(--grigio);font-size:11.5px}
+  .p3 .semaforo.basso{background:#fff7e6;border-color:#f6d78f}.p3 .semaforo.basso .grande{background:var(--giallo);box-shadow:0 0 0 4px rgba(245,158,11,.2)}.p3 .semaforo.basso .testi b{color:#92580a}
+  .p3 .semaforo.alto{background:var(--rosso-chiaro);border-color:#f3b9b9}.p3 .semaforo.alto .grande{background:var(--rosso);box-shadow:0 0 0 4px rgba(220,38,38,.2)}.p3 .semaforo.alto .testi b{color:#991b1b}
+  .p3 .prova{display:flex;gap:6px;margin:6px 0 0;font-size:11px;color:var(--grigio);align-items:center}
+  .p3 .prova button{border:1px solid var(--bordo);background:#fff;border-radius:4px;padding:1px 7px;font-size:11px}
+  .p3 .tre{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .p3 .lead{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px}
+  .p3 .lead .btn{margin-left:auto;height:30px;font-size:12px}
+
+  /* 4 – barra comandi in fondo */
+  .p4 .lead{display:flex;flex-direction:column;gap:2px;padding:2px 2px 10px;border-bottom:1px solid var(--bordo)}
+  .p4 .lead .nome{font-size:17px;font-weight:700}
+  .p4 .lead .tel{font-size:14px;color:var(--grigio);display:flex;align-items:center;gap:6px}
+  .p4 .vuoto{height:62px;display:flex;align-items:center;justify-content:center;color:#9aa1b0;font-size:11px;border:1px dashed var(--bordo);border-radius:6px;margin:10px 0}
+  .p4 .fondo{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#f4f6fa;border-radius:8px;padding:6px}
+  .p4 .fondo button{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:transparent;border-radius:6px;padding:7px 2px;font-size:11px;font-weight:600;color:var(--testo)}
+  .p4 .fondo button:hover{background:#e6e9f1}
+  .p4 .fondo .on{color:var(--verde)}
+  .p4 .fondo .fine{color:var(--rosso)}
+  .p4 .fondo .ico{width:20px;height:20px}
+  .p4 .livello-mic{height:3px;border-radius:2px;background:#e4e7ee;margin-top:2px;width:70%;overflow:hidden}
+  .p4 .livello-mic i{display:block;height:100%;width:50%;background:var(--verde);transition:width .25s}
+
+  /* 5 – timer + dettagli a scomparsa */
+  .p5 .testata{display:flex;align-items:center;gap:8px}
+  .p5 .stato{flex:1;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;min-width:0}
+  .p5 .stato small{font-weight:600;color:var(--grigio);font-variant-numeric:tabular-nums;font-size:13px}
+  .p5 .lead{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;background:#f4f6fa;border-radius:6px;padding:7px 10px}
+  .p5 .lead .btn{margin-left:auto;height:28px;font-size:12px}
+  .p5 .dettagli{display:none;margin-top:8px;border:1px solid var(--bordo);border-radius:6px;padding:8px 10px;gap:6px;flex-direction:column;font-size:12px;color:var(--grigio)}
+  .p5 .dettagli.aperto{display:flex}
+  .p5 .dettagli .barra{height:6px}
+
+  .nota{margin-top:20px;font-size:13px;color:var(--grigio);max-width:760px;line-height:1.5}
+</style>
+</head>
+<body>
+<h1>Pannello chiamata: 5 proposte per i controlli</h1>
+<p class="intro">Sono disegni di prova: i tasti non fanno niente di vero (a parte alcune piccole animazioni). Ogni proposta sostituisce solo la parte in alto del pannello, cioè microfono, Pausa, Termina, le due barre del segnale e la riga con nome e telefono. Tutto il resto del pannello (guida, suggerimenti, frasi del cliente) resta uguale. In tutte le proposte le parole tecniche («limiter», «prima/dopo») spariscono dalla schermata principale.</p>
+
+<div class="griglia">
+
+  <!-- 1 -->
+  <div class="proposta">
+    <div class="titolo"><span>1</span>Tutto compatto in due righe</div>
+    <div class="descr">Prima riga: microfono con una sola barra e due tasti piccoli (Pausa e Termina). Seconda riga: nome, telefono e «Invia a telefono». Cambia poco rispetto ad ora ma è molto più ordinata.</div>
+    <div class="pannello p1">
+      <div class="riga1">
+        <div class="mic">
+          <b><span class="pallino"></span>Microfono attivo</b>
+          <div class="barra"><i class="live"></i></div>
+        </div>
+        <button class="btn icona" title="Pausa"><svg class="ico" viewBox="0 0 24 24"><rect x="6" y="4" width="3.5" height="16" rx="1"/><rect x="14.5" y="4" width="3.5" height="16" rx="1"/></svg></button>
+        <button class="btn rosso-leggero" title="Termina"><svg class="ico" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="3" y1="3" x2="21" y2="21"/></svg>Termina</button>
+      </div>
+      <div class="riga2">
+        <div class="info"><span class="lead-nome">David</span><span class="lead-tel">348 331 2650</span></div>
+        <button class="btn blu"><svg class="ico" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Invia a telefono</button>
+      </div>
+      <div class="corpo-finto">guida · suggerimenti · frasi del cliente</div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="proposta">
+    <div class="titolo"><span>2</span>Prima il cliente, poi i comandi</div>
+    <div class="descr">In alto una scheda azzurra con il cliente e il numero ben leggibile. Sotto i comandi in un'unica fila: un grande tasto microfono (con la barra dentro), Pausa e Termina.</div>
+    <div class="pannello p2">
+      <div class="scheda">
+        <div class="avatar">D</div>
+        <div class="info"><span class="lead-nome">David</span><span class="lead-tel">348 331 2650</span></div>
+        <button class="btn blu">Invia a telefono</button>
+      </div>
+      <div class="comandi">
+        <button class="btn verde" style="flex-direction:column;gap:3px;height:48px;align-items:stretch;justify-content:center;padding:0 12px">
+          <span style="display:flex;align-items:center;gap:6px;justify-content:center"><svg class="ico pieno" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 0-2 2v7a2 2 0 0 0 4 0V4a2 2 0 0 0-2-2z"/><path d="M17 11a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-4.08A7 7 0 0 0 19 11z"/></svg>Microfono attivo</span>
+          <span class="barra" style="background:rgba(255,255,255,.3)"><i class="live" style="background:#fff"></i></span>
+        </button>
+        <button class="btn" style="height:48px" title="Pausa"><svg class="ico" viewBox="0 0 24 24"><rect x="6" y="4" width="3.5" height="16" rx="1"/><rect x="14.5" y="4" width="3.5" height="16" rx="1"/></svg>Pausa</button>
+        <button class="btn rosso" style="height:48px" title="Termina"><svg class="ico" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="3" y1="3" x2="21" y2="21"/></svg>Termina</button>
+      </div>
+      <div class="corpo-finto">guida · suggerimenti · frasi del cliente</div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="proposta">
+    <div class="titolo"><span>3</span>Un semaforo al posto delle barre</div>
+    <div class="descr">Le due barre diventano una frase semplice con un colore: verde «Ti sento bene», giallo «Voce troppo bassa», rosso «Voce troppo forte». Sotto, i tre tasti tutti uguali e la riga del cliente. (Prova i tre colori con i tasti qui sotto.)</div>
+    <div class="pannello p3">
+      <div class="semaforo" id="sem3">
+        <div class="grande"></div>
+        <div class="testi"><b id="sem3-t">Ti sento bene</b><small id="sem3-s">Il microfono sta ascoltando il cliente</small></div>
+      </div>
+      <div class="prova">prova: <button data-s="ok">verde</button><button data-s="basso">giallo</button><button data-s="alto">rosso</button></div>
+      <div class="tre">
+        <button class="btn"><svg class="ico pieno" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 0-2 2v7a2 2 0 0 0 4 0V4a2 2 0 0 0-2-2z"/><path d="M17 11a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-4.08A7 7 0 0 0 19 11z"/></svg>Muto</button>
+        <button class="btn"><svg class="ico" viewBox="0 0 24 24"><rect x="6" y="4" width="3.5" height="16" rx="1"/><rect x="14.5" y="4" width="3.5" height="16" rx="1"/></svg>Pausa</button>
+        <button class="btn rosso"><svg class="ico" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="3" y1="3" x2="21" y2="21"/></svg>Termina</button>
+      </div>
+      <div class="lead"><b>David</b><span class="lead-tel">348 331 2650</span><button class="btn">Invia a telefono</button></div>
+      <div class="corpo-finto">guida · suggerimenti · frasi del cliente</div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="proposta">
+    <div class="titolo"><span>4</span>Barra dei comandi in basso, cliente in alto</div>
+    <div class="descr">Nome e telefono come titolo del pannello. I comandi stanno tutti insieme in una barra con icone e scritte sotto, come in un'app del telefono: Microfono, Pausa, Telefono (invia al cellulare), Termina.</div>
+    <div class="pannello p4">
+      <div class="lead">
+        <span class="nome">David</span>
+        <span class="tel"><svg class="ico" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>348 331 2650</span>
+      </div>
+      <div class="vuoto">guida · suggerimenti · frasi del cliente</div>
+      <div class="fondo">
+        <button class="on"><svg class="ico pieno" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 0-2 2v7a2 2 0 0 0 4 0V4a2 2 0 0 0-2-2z"/><path d="M17 11a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-4.08A7 7 0 0 0 19 11z"/></svg>Microfono<span class="livello-mic"><i class="live"></i></span></button>
+        <button><svg class="ico" viewBox="0 0 24 24"><rect x="6" y="4" width="3.5" height="16" rx="1"/><rect x="14.5" y="4" width="3.5" height="16" rx="1"/></svg>Pausa</button>
+        <button><svg class="ico" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Al telefono</button>
+        <button class="fine"><svg class="ico" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="3" y1="3" x2="21" y2="21"/></svg>Termina</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="proposta">
+    <div class="titolo"><span>5</span>Solo l'essenziale, dettagli a scomparsa</div>
+    <div class="descr">Una sola riga: stato, durata della chiamata, Pausa e Termina. Le barre del segnale restano nascoste e si aprono solo con l'ingranaggio (con scritte semplici). Se qualcosa non va, l'ingranaggio si colora di giallo/rosso da solo.</div>
+    <div class="pannello p5">
+      <div class="testata">
+        <div class="stato"><span class="pallino"></span>Ascolto attivo <small id="timer5">00:00</small></div>
+        <button class="btn icona" id="ing5" title="Dettagli audio"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+        <button class="btn icona" title="Pausa"><svg class="ico" viewBox="0 0 24 24"><rect x="6" y="4" width="3.5" height="16" rx="1"/><rect x="14.5" y="4" width="3.5" height="16" rx="1"/></svg></button>
+        <button class="btn rosso" title="Termina"><svg class="ico" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="3" y1="3" x2="21" y2="21"/></svg>Termina</button>
+      </div>
+      <div class="dettagli" id="det5">
+        <div>Voce del cliente in ingresso</div><div class="barra"><i class="live"></i></div>
+        <div>Voce inviata al riconoscimento</div><div class="barra"><i class="live2"></i></div>
+        <div style="color:#9aa1b0">Microfono: External Microphone (Built-in)</div>
+      </div>
+      <div class="lead"><b>David</b><span class="lead-tel">348 331 2650</span><button class="btn">Invia a telefono</button></div>
+      <div class="corpo-finto">guida · suggerimenti · frasi del cliente</div>
+    </div>
+  </div>
+
+</div>
+
+<p class="nota"><b>Come scegliere:</b> dimmi il numero della proposta che preferisci (anche «la 2 ma con il semaforo della 3»). Poi la realizzo nel pannello vero, la provo e ti dico come aggiornare. L'app Android non cambia.</p>
+
+<script>
+  // piccole animazioni di prova
+  const live = document.querySelectorAll('.live'), live2 = document.querySelectorAll('.live2');
+  setInterval(() => {
+    const v = 28 + Math.random() * 40;
+    live.forEach(e => e.style.width = v + '%');
+    live2.forEach(e => e.style.width = Math.max(10, v - 8) + '%');
+  }, 350);
+  // proposta 3: semaforo
+  const sem = document.getElementById('sem3');
+  const frasi = {
+    ok:    ['Ti sento bene', 'Il microfono sta ascoltando il cliente'],
+    basso: ['Voce troppo bassa', 'Alza il livello di ingresso del Mac o il volume del telefono'],
+    alto:  ['Voce troppo forte', 'Abbassa il volume del telefono o il livello di ingresso']
+  };
+  document.querySelectorAll('.p3 .prova button').forEach(b => b.onclick = () => {
+    const k = b.dataset.s;
+    sem.className = 'semaforo ' + (k === 'ok' ? '' : k);
+    document.getElementById('sem3-t').textContent = frasi[k][0];
+    document.getElementById('sem3-s').textContent = frasi[k][1];
+  });
+  // proposta 5: timer e dettagli
+  let sec = 0;
+  setInterval(() => { sec++; document.getElementById('timer5').textContent =
+    String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }, 1000);
+  document.getElementById('ing5').onclick = () => document.getElementById('det5').classList.toggle('aperto');
+</script>
+</body>
+</html>
