@@ -4,6 +4,9 @@
 # schermo intero — stessa idea dell'app "Suggerimenti Vendita".
 # Doppio clic su questo file per avviare (la prima volta macOS potrebbe chiedere
 # conferma: tasto destro sul file -> Apri).
+# Profilo Chrome da usare SEMPRE (nome della CARTELLA del profilo, da chrome://version -> "Percorso profilo").
+# Senza questa indicazione Chrome sceglie l'ultimo profilo usato, anche uno vuoto, e la Console si apre senza lead.
+PROFILO="Profile 1"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Uno spazio "crudo" in un indirizzo file:// (es. una cartella chiamata "HD REM")
 # manda in confusione Chrome, che apre la finestra ma senza caricare nulla:
@@ -24,8 +27,8 @@ if [ -n "$BOUNDS" ]; then
   SCREEN_H=$(echo "$BOUNDS" | awk -F', ' '{print $4}')
   COL_W=$(( SCREEN_W * 35 / 100 ))
   COL_H=$(( SCREEN_H * 60 / 100 ))
-  open -na "Google Chrome" --args --app="file://$DIR_URL/src/lead-rework-console.html" --window-position=0,0 --window-size=${COL_W},${COL_H}
+  open -na "Google Chrome" --args --profile-directory="$PROFILO" --app="file://$DIR_URL/src/lead-rework-console.html" --window-position=0,0 --window-size=${COL_W},${COL_H}
 else
   # Fallback se osascript non è disponibile per qualche motivo: comportamento precedente.
-  open -na "Google Chrome" --args --app="file://$DIR_URL/src/lead-rework-console.html" --start-maximized
+  open -na "Google Chrome" --args --profile-directory="$PROFILO" --app="file://$DIR_URL/src/lead-rework-console.html" --start-maximized
 fi

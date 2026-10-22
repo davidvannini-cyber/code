@@ -2,7 +2,10 @@
 # Apre la Lead Rework Console come fa il pulsante dell'estensione Chrome (finestra senza schede,
 # in alto a sinistra, 35% della larghezza e 60% dell'altezza dell'area di lavoro dello schermo
 # principale), ma senza passare dati: i campi partono vuoti.
-# Usa il profilo Chrome normale, così lo storico dei lead (che vive nel browser) è lo stesso dell'estensione.
+# Usa SEMPRE il profilo Chrome indicato qui sotto (PROFILO): i lead vivono nei dati di quel profilo e senza
+# l'indicazione Chrome sceglie l'ultimo profilo usato, anche uno vuoto. Il nome è quello della CARTELLA del profilo
+# (si legge in chrome://version -> "Percorso profilo"), non il nome mostrato da Chrome. Cambiarlo solo qui.
+PROFILO="Profile 1"
 
 avviso() { osascript -e "display notification \"$1\" with title \"Lead Rework\"" >/dev/null 2>&1; }
 
@@ -30,7 +33,7 @@ else
 fi
 
 # 3) -n: nuova istanza, altrimenti "open" riporta in primo piano Chrome e ignora gli argomenti.
-open -na "Google Chrome" --args --app="$URL" --window-position=$X,$Y --window-size=$W,$H
+open -na "Google Chrome" --args --profile-directory="$PROFILO" --app="$URL" --window-position=$X,$Y --window-size=$W,$H
 
 # 4) Chrome si ricorda la dimensione dell'ultima finestra "app" e ignora quella richiesta all'avvio:
 #    appena la finestra compare, posizione e dimensione si impongono direttamente (come fa l'estensione).
