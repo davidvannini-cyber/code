@@ -238,3 +238,9 @@ Il pannello di Suggerimenti Vendita manda a `http://localhost:8766/api/chiamata`
 - Aprendo «Vedi» (`openHistoryItem`) il lead diventa `state.historyHighlight`; alla chiusura (`closeHistoryModal`) la riga (`tr[data-id]`, classe `riga-sel`: sfondo azzurro + barra blu a sinistra) viene portata in vista una sola volta (`state.historyScrollTo`). L'evidenziazione resta finché non si cambia scheda (`switchTab`) o si apre un altro lead.
 - Provato in Chromium con 60 lead finti; non con lo storico reale di David.
 
+## Protezione «profilo Chrome sbagliato» (2026-10-22)
+I lead, la chiave AI e le impostazioni stanno in `localStorage` del **profilo Chrome** con cui si apre la pagina (`file://`): in un altro profilo la Console si apre vuota. Incidente reale del 22/10: Console vuota in tutti i profili finché non è stato chiuso/riaperto Chrome (causa non verificata).
+- `init()` chiama `archivioDaBloccare()`: se archivio vuoto + nessuna copia (`leads_backup`/`leads_prev`) + nessun flag `leadrework:archivio_confermato` → schermo di avviso a tutta pagina (`#blocco-profilo`), nessun salvataggio, `svPoll` fermo (non svuota la coda delle note dal pannello). Un profilo con almeno un lead viene marcato confermato da solo; «È il profilo giusto: parti da vuoto» lo conferma a mano. Non si applica nell'ambiente Claude (`window.claude.db`).
+- Vale anche per l'avvio da estensione (il controllo è nella pagina). Un lead dal CRM che arriva prima della fine dell'avvio o mentre la pagina è bloccata viene tenuto in `crmInAttesa` e in `leadrework:crm_in_attesa`, e applicato (`applyCrmImport`) a fine avvio. Se si cambia profilo, va rimandato dal CRM. L'estensione non è stata modificata.
+- Recupero dati: backup `leadrework-lead-*.json` e `storico_lead_*.xlsx` in Download; script di ricostruzione fornito in chat (non nel repository: contiene solo logica, nessun dato).
+
