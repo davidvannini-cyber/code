@@ -1,0 +1,48 @@
+name: BG Videocal APK
+
+# Costruisce l'app Android per lo sfondo delle videocall (BG-VIDEOCAL) e la pubblica come file scaricabile.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'BG-VIDEOCAL/**'
+      - '.github/workflows/bg-videocal-apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Costruisci l'APK
+        working-directory: BG-VIDEOCAL
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Rinomina il file
+        run: cp BG-VIDEOCAL/app/build/outputs/apk/release/app-release.apk bg-videocal.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bg-videocal-apk
+          path: bg-videocal.apk
+
+      - name: Pubblica il file scaricabile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete bg-videocal-latest --cleanup-tag --yes || true
+          gh release create bg-videocal-latest bg-videocal.apk \
+            --target "$GITHUB_SHA" \
+            --title "BG Videocal" \
+            --notes "Ultima versione dell'app sfondo videocall (costruita da $GITHUB_SHA)."
