@@ -266,3 +266,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-22 | `c94b29d` | BG-VIDEOCAL v0.3: tolto lo scatto della foto (BG-VIDEOCAL/app/..., README.md), REGISTRO-SALVATAGGI.md | `git checkout c94b29d` |
 | 2026-10-22 | `96de51b` | Prova BlackBox: automazione che costruisce l'app dimostrativa di BlackBox 2.1.0 (.github/workflows/blackbox-prova.yml), REGISTRO-SALVATAGGI.md | `git checkout 96de51b` |
 | 2026-10-22 | `c070fd8` | Prova BlackBox: mini app che mette WhatsApp nel contenitore (BLACKBOX-PROVA/, .github/workflows/blackbox-prova.yml), REGISTRO-SALVATAGGI.md | `git checkout c070fd8` |
+| 2026-10-24 | `faf59a8` | HOMEASSISTANT (nuovo progetto: CONTEXT.md, README.md, .gitignore, config/, docs/), REGISTRO-SALVATAGGI.md | `git checkout faf59a8` |
