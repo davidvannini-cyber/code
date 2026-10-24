@@ -1,0 +1,17 @@
+# Segreti e dati runtime di Home Assistant
+secrets.yaml
+.storage/
+.cloud/
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.log.*
+.HA_VERSION
+known_devices.yaml
+# Token e chiavi
+*.pem
+*.key
+.env
+# macOS
+.DS_Store

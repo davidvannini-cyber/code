@@ -1,0 +1,117 @@
+# Configurazione di default di Home Assistant (Non rimuovere)
+default_config:
+
+# Caricamento dei temi grafici
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+homeassistant:
+  packages: !include_dir_named packages
+
+# Integrazione SmartIR per il controllo dei dispositivi remoti
+smartir:
+
+# Condizionatore Comfee e termostati caldaie
+climate:
+  - platform: smartir
+    name: "Condizionatore Comfee"
+    unique_id: condizionatore_comfee
+    device_code: 1125
+    controller_data: remote.universal_remote
+
+  - platform: climate_template
+    name: "Caldaia Montagna"
+    unique_id: caldaia_montagna_termostato
+    modes:
+      - "off"
+      - "heat"
+    min_temp: 5
+    max_temp: 35
+    temp_step: 0.5
+    current_temperature_template: "{{ state_attr('climate.montagna_caldaia', 'current_temperature') }}"
+    target_temperature_template: "{{ state_attr('climate.montagna_caldaia', 'temperature') }}"
+    hvac_mode_template: "{{ 'off' if is_state('climate.montagna_caldaia', 'off') else 'heat' }}"
+    set_temperature:
+      - action: climate.set_temperature
+        data:
+          entity_id: climate.montagna_caldaia
+          temperature: "{{ temperature }}"
+    set_hvac_mode:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ hvac_mode == 'off' }}"
+            sequence:
+              - action: scene.turn_on
+                target:
+                  entity_id: scene.montagna_caldaia_montagna_off
+        default:
+          - action: scene.turn_on
+            target:
+              entity_id: scene.montagna_caldaia_montagna_on
+
+  - platform: climate_template
+    name: "Caldaia Pepi Termostato"
+    unique_id: caldaia_pepi_termostato
+    modes:
+      - "off"
+      - "heat"
+    min_temp: 5
+    max_temp: 30
+    temp_step: 0.5
+    current_temperature_template: "{{ state_attr('climate.caldaia_pepi', 'current_temperature') }}"
+    target_temperature_template: "{{ state_attr('climate.caldaia_pepi', 'temperature') }}"
+    hvac_mode_template: "{{ 'off' if is_state('climate.caldaia_pepi', 'off') else 'heat' }}"
+    set_temperature:
+      - action: climate.set_temperature
+        data:
+          entity_id: climate.caldaia_pepi
+          temperature: "{{ temperature }}"
+    set_hvac_mode:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ hvac_mode == 'off' }}"
+            sequence:
+              - action: scene.turn_on
+                target:
+                  entity_id: scene.montagna_caldaia_pepi_off
+        default:
+          - action: scene.turn_on
+            target:
+              entity_id: scene.montagna_caldaia_pepi_on
+
+  - platform: climate_template
+    name: "Caldaia Vapi Termostato"
+    unique_id: caldaia_vapi_termostato
+    modes:
+      - "off"
+      - "heat"
+    min_temp: 5
+    max_temp: 30
+    temp_step: 0.5
+    current_temperature_template: "{{ state_attr('climate.caldaia_vapi', 'current_temperature') }}"
+    target_temperature_template: "{{ state_attr('climate.caldaia_vapi', 'temperature') }}"
+    hvac_mode_template: "{{ 'off' if is_state('climate.caldaia_vapi', 'off') else 'heat' }}"
+    set_temperature:
+      - action: climate.set_temperature
+        data:
+          entity_id: climate.caldaia_vapi
+          temperature: "{{ temperature }}"
+    set_hvac_mode:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ hvac_mode == 'off' }}"
+            sequence:
+              - action: scene.turn_on
+                target:
+                  entity_id: scene.montagna_caldaia_vapi_off
+        default:
+          - action: scene.turn_on
+            target:
+              entity_id: scene.montagna_caldaia_vapi_on
