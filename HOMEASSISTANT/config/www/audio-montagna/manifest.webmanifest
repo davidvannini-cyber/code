@@ -1,0 +1,15 @@
+{
+  "name": "Audio Montagna",
+  "short_name": "Montagna",
+  "description": "Controllo audio Montagna (Home Assistant)",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111111",
+  "theme_color": "#18bcf2",
+  "icons": [
+    { "src": "/local/config/audio/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/local/config/audio/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

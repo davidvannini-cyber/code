@@ -57,8 +57,9 @@ Solo le decisioni in vigore, aggiornate al 24/10/2026. Nessuno storico.
 
 ### Volume
 - CASA comanda CAMERA, STUDIO, BAGNO e BIG ECHO; CAMERA le 3 casse camera; STUDIO le 6 studio; BIG ECHO comanda Echo camera e Studio DX/SX.
-- Toccare uno slider singolo lo stacca dal gruppo.
-- Ogni cassa riceve un comando di volume separato.
+- **Regola (24-25 ott)**: lo slider più alto (CASA / MONTAGNA) muove SOLO gli slider di gruppo; gli slider di gruppo comandano le loro casse CHIUNQUE li muova; lo slider più alto non tocca mai le casse singole né il gruppo Alexa; un solo comando per cassa. BIG ECHO mosso da CASA si sposta solo in grafica (le sue casse sono già in CAMERA e STUDIO).
+- Invio volume: automazione `queued`, max 100, salta i comandi superati, salta le casse non disponibili, valore sempre `round(2)` (evita residui tipo 1.38e-17).
+- Dettagli: `docs/audio-volumi-gruppi.md`.
 - Tocco sul nome: salva il volume e porta a 0, oppure ripristina.
 
 ### File
@@ -80,6 +81,16 @@ Solo le decisioni in vigore, aggiornate al 24/10/2026. Nessuno storico.
 - Barra di stato iPhone `default`, sfondo `#fafafa`, larghezza 100%, zoom bloccato (`user-scalable=no`).
 - Pulsante di emergenza "Apri Audio Casa" dopo 8 s senza dashboard.
 - Installazione su iPhone: Safari → Condividi → Aggiungi a schermata Home.
+
+### Blocchi della webapp (casa e Montagna)
+- Scorrimento verticale bloccato (`overflow hidden`, iframe `scrolling="no"`, script `schermata-ferma`) e rotazione bloccata con trucco CSS (script `rotazione-verticale`; iOS non permette il blocco vero da webapp).
+- `sw.js` ricarica sempre la pagina dell'app dal server (HA la tiene in cache 31 giorni).
+- Icona iPhone: se si aggiunge la dashboard invece della webapp, si apre la dashboard diretta: aggiungere da `/local/config/audio/index.html`.
+
+## 4b. Audio Montagna (dashboard + webapp)
+- Solo radio (niente Spotify). Il gruppo Alexa MONTAGNA serve solo per avviare la radio, tramite routine «avvia radio <codice> montagna».
+- Dashboard `audio-montagna` (AUDIO MONTAGNA), webapp `www/audio-montagna/` (`/local/config/audio-montagna/index.html`).
+- Dettagli, oggetti creati e cose non provate: `docs/audio-montagna.md`.
 
 ## 5. Caldaie Tuya (Montagna, Pepi, Vapi)
 

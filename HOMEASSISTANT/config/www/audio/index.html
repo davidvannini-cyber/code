@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Audio Casa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#fafafa">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Audio">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; background: #fafafa; overflow: hidden; position: fixed; inset: 0; }
+  iframe { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; border: 0; background: #fafafa; }
+  #fallback {
+    position: fixed; inset: 0; display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    color: #222; font: 16px/1.4 system-ui, sans-serif; text-align: center; padding: 24px;
+  }
+  #fallback a {
+    background: #18bcf2; color: #fff; text-decoration: none;
+    padding: 14px 24px; border-radius: 12px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<!-- Percorso relativo alla radice: funziona perché questa pagina è servita dallo stesso dominio di Home Assistant -->
+<iframe id="app" scrolling="no" src="/audio2-1/1" allow="autoplay; fullscreen"></iframe>
+
+<div id="fallback">
+  <div>Se la dashboard non compare, aprila direttamente.</div>
+  <a href="/audio2-1/1">Apri Audio Casa</a>
+</div>
+
+<script>
+  // Se dopo qualche secondo la pagina non è visibile, mostra il pulsante di emergenza
+  setTimeout(function () {
+    document.getElementById('fallback').style.display = 'flex';
+    document.getElementById('app').style.zIndex = '1';
+    document.getElementById('fallback').style.zIndex = '0';
+  }, 8000);
+  document.getElementById('app').addEventListener('load', function () {
+    document.getElementById('fallback').style.display = 'none';
+  });
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+</script>
+<script>
+  // rotazione-verticale: la plancia resta in verticale anche se l'iPhone viene girato
+  (function () {
+    var f = document.getElementById('app');
+    function fix() {
+      var a = (typeof window.orientation === 'number') ? window.orientation : 0;
+      var land = window.innerWidth > window.innerHeight;
+      if (land && a !== 0) {
+        f.style.cssText = 'position:absolute;left:50%;top:50%;width:' + window.innerHeight + 'px;height:' + window.innerWidth + 'px;transform:translate(-50%,-50%) rotate(' + (a === 90 ? 90 : -90) + 'deg);';
+      } else {
+        f.style.cssText = '';
+      }
+    }
+    window.addEventListener('orientationchange', function () { setTimeout(fix, 150); });
+    window.addEventListener('resize', fix);
+    fix();
+  })();
+</script>
+<script>
+  // schermata-ferma: blocca ogni scorrimento e rimbalzo dentro la dashboard (tranne il trascinamento degli slider)
+  (function () {
+    var f = document.getElementById('app');
+    function lock() {
+      try {
+        var d = f.contentDocument;
+        if (!d || !d.head || d.__fermo) return;
+        d.__fermo = true;
+        var s = d.createElement('style');
+        s.textContent = 'html,body{overflow:hidden!important;overscroll-behavior:none!important;}';
+        d.head.appendChild(s);
+        d.addEventListener('touchmove', function (e) {
+          var p = e.composedPath ? e.composedPath() : [];
+          for (var i = 0; i < p.length; i++) {
+            if (p[i] && p[i].tagName === 'HA-CONTROL-SLIDER') return;
+          }
+          if (e.cancelable) e.preventDefault();
+        }, { passive: false, capture: true });
+      } catch (err) {}
+    }
+    f.addEventListener('load', lock);
+    setInterval(lock, 1000);
+    lock();
+  })();
+</script>
+</body>
+</html>

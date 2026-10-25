@@ -1,0 +1,315 @@
+input_number:
+  audio2_camera_echo:
+    name: Audio2 vol Echo camera
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_camera_echo:
+    name: Audio2 prev Echo camera
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_camera_echo_show_5:
+    name: Audio2 vol Echo Show 5
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_camera_echo_show_5:
+    name: Audio2 prev Echo Show 5
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_camera_echo_dot:
+    name: Audio2 vol Echo Dot camera
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_camera_echo_dot:
+    name: Audio2 prev Echo Dot camera
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_echo_pop_scr_dx:
+    name: Audio2 vol Pop scrivania DX
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_echo_pop_scr_dx:
+    name: Audio2 prev Pop scrivania DX
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_echo_pop_scr_sx:
+    name: Audio2 vol Pop scrivania SX
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_echo_pop_scr_sx:
+    name: Audio2 prev Pop scrivania SX
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_echo_scrivania_dx:
+    name: Audio2 vol Dot scrivania DX
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_echo_scrivania_dx:
+    name: Audio2 prev Dot scrivania DX
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_echo_scrivania_sx:
+    name: Audio2 vol Dot scrivania SX
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_echo_scrivania_sx:
+    name: Audio2 prev Dot scrivania SX
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_echo_studio_dx:
+    name: Audio2 vol Echo Studio DX
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_echo_studio_dx:
+    name: Audio2 prev Echo Studio DX
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_echo_studio_sx:
+    name: Audio2 vol Echo Studio SX
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_echo_studio_sx:
+    name: Audio2 prev Echo Studio SX
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_bagno:
+    name: Audio2 vol Bagno
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_bagno:
+    name: Audio2 prev Bagno
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_casa:
+    name: Audio2 vol CASA
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_casa:
+    name: Audio2 prev CASA
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_camera:
+    name: Audio2 vol CAMERA
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_camera:
+    name: Audio2 prev CAMERA
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_studio:
+    name: Audio2 vol STUDIO
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_studio:
+    name: Audio2 prev STUDIO
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+  audio2_bigecho:
+    name: Audio2 vol BIG ECHO
+    min: 0
+    max: 1
+    step: 0.05
+    mode: slider
+    icon: mdi:volume-high
+  audio2_prev_bigecho:
+    name: Audio2 prev BIG ECHO
+    min: 0
+    max: 1
+    step: 0.01
+    mode: box
+    icon: mdi:volume-high
+
+script:
+  audio2_tocca:
+    alias: Audio 2.0 - Abbassa/Ripristina volume
+    mode: parallel
+    max: 20
+    fields:
+      slider:
+        description: entity id dello slider
+    sequence:
+      - variables:
+          prev: "{{ slider | replace('audio2_','audio2_prev_') }}"
+          cur: "{{ states(slider) | float(0) }}"
+      - choose:
+          - conditions: "{{ cur > 0 }}"
+            sequence:
+              - action: input_number.set_value
+                target:
+                  entity_id: "{{ prev }}"
+                data:
+                  value: "{{ cur }}"
+              - action: input_number.set_value
+                target:
+                  entity_id: "{{ slider }}"
+                data:
+                  value: 0
+        default:
+          - action: input_number.set_value
+            target:
+              entity_id: "{{ slider }}"
+            data:
+              value: "{{ states(prev) | float(0) if states(prev) | float(0) > 0 else 0.2 }}"
+
+automation:
+  - id: audio2_invia_volume
+    alias: Audio 2.0 - Slider singolo invia volume
+    mode: queued
+    max: 100
+    trigger:
+      - platform: state
+        entity_id:
+          - input_number.audio2_camera_echo
+          - input_number.audio2_camera_echo_show_5
+          - input_number.audio2_camera_echo_dot
+          - input_number.audio2_echo_pop_scr_dx
+          - input_number.audio2_echo_pop_scr_sx
+          - input_number.audio2_echo_scrivania_dx
+          - input_number.audio2_echo_scrivania_sx
+          - input_number.audio2_echo_studio_dx
+          - input_number.audio2_echo_studio_sx
+          - input_number.audio2_bagno
+        not_from: [unknown, unavailable]
+    condition:
+      - condition: template
+        value_template: "{{ trigger.from_state.state != trigger.to_state.state }}"
+      # salta i comandi superati: conta solo l'ultimo valore dello slider
+      - condition: template
+        value_template: "{{ trigger.to_state.state == states(trigger.entity_id) }}"
+    action:
+      - variables:
+          mp: "media_player.{{ trigger.entity_id.split('audio2_')[1] }}_2"
+      # ignora le casse non disponibili
+      - condition: template
+        value_template: "{{ states(mp) not in ['unavailable', 'unknown'] }}"
+      - action: media_player.volume_set
+        continue_on_error: true
+        target:
+          entity_id: "{{ mp }}"
+        data:
+          volume_level: "{{ (trigger.to_state.state | float(0)) | round(2) }}"
+  - id: audio2_gruppi
+    alias: Audio 2.0 - Slider gruppo comanda i membri
+    mode: parallel
+    max: 30
+    trigger:
+      - platform: state
+        entity_id:
+          - input_number.audio2_casa
+          - input_number.audio2_camera
+          - input_number.audio2_studio
+          - input_number.audio2_bigecho
+        not_from: [unknown, unavailable]
+    condition:
+      - condition: template
+        value_template: "{{ trigger.from_state.state != trigger.to_state.state }}"
+      # BIG ECHO mosso da CASA si sposta solo in grafica (le sue casse sono gia' in CAMERA e STUDIO)
+      - condition: template
+        value_template: "{{ trigger.entity_id != 'input_number.audio2_bigecho' or trigger.to_state.context.parent_id is none }}"
+    action:
+      - variables:
+          g: "{{ trigger.entity_id.split('audio2_')[1] }}"
+          val: "{{ (trigger.to_state.state | float(0)) | round(2) }}"
+          membri:
+            casa: ['camera', 'studio', 'bagno', 'bigecho']
+            camera: ['camera_echo', 'camera_echo_show_5', 'camera_echo_dot']
+            studio: ['echo_pop_scr_dx', 'echo_pop_scr_sx', 'echo_scrivania_dx', 'echo_scrivania_sx', 'echo_studio_dx', 'echo_studio_sx']
+            bigecho: ['camera_echo', 'echo_studio_dx', 'echo_studio_sx']
+      - repeat:
+          for_each: "{{ membri[g] }}"
+          sequence:
+            - action: input_number.set_value
+              target:
+                entity_id: "input_number.audio2_{{ repeat.item }}"
+              data:
+                value: "{{ val }}"
+  - id: audio2_radio_parte
+    alias: Audio 2.0 - Cambio radio avvia subito
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: input_select.audio_radio
+        not_from: [unknown, unavailable]
+    condition:
+      - condition: state
+        entity_id: input_select.audio_source
+        state: Radio
+    action:
+      - action: script.audio_riproduci
