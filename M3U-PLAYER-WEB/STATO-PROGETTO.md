@@ -229,6 +229,7 @@ Tutto il codice del lettore è un'unica funzione anonima in `app.js` (nessun mod
    **HLS nativo** su Safari/iOS; **dash.js** `{delay:{liveDelay:25}, liveCatchup:{enabled:false}, buffer:{fastSwitchEnabled:false, bufferTimeDefault:25, bufferTimeAtTopQuality:40, bufferTimeAtTopQualityLongForm:40, bufferToKeep:20}, gaps:{jumpGaps:true,jumpLargeGaps:true}, retryAttempts:{MPD:3,MediaSegment:4}}`;
    **mpegts.js** per TS grezzo (se `mseLivePlayback`); altrimenti `video.src` diretto. (Il margine dash.js a 25 s serve: con meno, Rete 4/Italia 1 si fermavano dopo pochi secondi.)
 5. **Failover**: `failFn` è chiamato su errore fatale o allo scadere di **`STARTUP_MS` = 20 s** senza `playing`; `failover()` passa all'alternativa successiva (`state.cur = {g, i}`), altrimenti `diagnose()` spiega il motivo (token `exp=` scaduto, 401/403/451, 404/410, non-HLS, DRM, CORS…). Il pulsante `#alt` (`cycleSource`) cambia fonte a mano.
+- **Cambio fonte per blocco in visione (sito, 25/10/2026, da provare con canali veri)**: oltre al timer di avvio, in `app.js` l'evento `waiting` del video arma (se il canale era già partito: `state.started`) un timer `STALL_MS = 20000`; `playing` lo annulla. Se scade (e il video non è in pausa) `stalled()` passa alla fonte successiva **con giro**: dopo l'ultima riparte dalla prima (a differenza di `failover()` che all'avvio si ferma all'ultima e mostra l'errore). Vale anche per `/auto`. Prova: `strumenti/prova-stallo.mjs` (orologio simulato).
 6. Quando parte (`playing`) si salva la fonte in `ALT_KEY` (è **per browser**: Chrome e Safari possono mostrare «fonte 1/3» e «2/3» per lo stesso canale; è normale).
 7. `<video>` ha `controls` (controlli nativi del browser) `autoplay playsinline`.
 - Tipi di flusso/limiti: DRM non riproducibile; flussi senza CORS non vanno con hls.js (Safari nativo sì); per questo l'app Fire TV legge canali che il browser non legge.
@@ -385,6 +386,7 @@ Dalla cartella `M3U-PLAYER-WEB/` (richiede Node ≥ 18; per il Worker anche `npm
 | `node test-server.js` | server Node end-to-end (avvia istanze temporanee su porta libera): login, sessioni, fonti multiple, `/auto`, `/api/epg`, `/api/hidden`, traversal, ecc. |
 | `cd cloudflare && node test-worker.mjs` | il **Worker** in Node con KV finto (stesse prove + 11.000 canali) |
 | `node test-epg.mjs` | `epg/build-epg.mjs`: orari, XMLTV, scelta fonti, chiavi |
+| `node strumenti/prova-stallo.mjs` | **browser vero**, orologio simulato: cambio fonte automatico se il canale si blocca in visione |
 | `node strumenti/prova-browser.mjs` | **browser vero** (Playwright/Chromium): pagina normale invariata + `/auto` (tappe, frecce, Indietro) |
 | `bash firetv/strumenti/verifica.sh [playlist.m3u]` | **app Java**: compila con `android.jar` + stub Media3 e confronta con il JS (gruppi, id, ordine) |
 - `npm test` (in `M3U-PLAYER-WEB/`) lancia solo i primi tre.

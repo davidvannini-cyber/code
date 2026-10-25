@@ -2,6 +2,7 @@
   'use strict';
   const PAGE = 300;                       // canali mostrati per volta
   const STARTUP_MS = 20000;               // se un canale non parte entro questo tempo si passa alla fonte successiva
+  const STALL_MS = 20000;                 // se un canale gia' partito resta fermo a caricare per tanto tempo, si cambia fonte da soli
   const ALT_KEY = 'm3u-player:alt';       // ultima fonte che ha funzionato per ogni canale
   const $ = id => document.getElementById(id);
   const video = $('video');
@@ -14,7 +15,7 @@
     it: false, channels: [], groups: [], filtered: [], shown: 0, hidden: new Set(), epg: null,
     cur: null,                            // { g: gruppo, i: indice della fonte in prova }
     current: -1,                          // id del canale (fonte) in riproduzione
-    hls: null, ts: null, dash: null, failFn: null, startTimer: 0,
+    hls: null, ts: null, dash: null, failFn: null, startTimer: 0, stallTimer: 0, started: false,
     type: null, playUrl: null, engine: null, fs: false, idleTimer: 0,
   };
 
@@ -389,6 +390,8 @@
 
   function stopPlayback() {
     clearTimeout(state.startTimer);
+    clearTimeout(state.stallTimer); state.stallTimer = 0;
+    state.started = false;
     state.failFn = null;
     if (state.hls) { state.hls.destroy(); state.hls = null; }
     if (state.ts) { state.ts.destroy(); state.ts = null; }
@@ -550,12 +553,25 @@
     video.play().catch(() => { /* l'utente puo' premere play */ });
   }
 
+  // Canale gia' partito che poi si blocca a caricare: dopo STALL_MS passa alla fonte successiva (dopo l'ultima riparte dalla prima).
+  function stalled() {
+    const cur = state.cur;
+    if (!cur || !state.failFn || video.paused || player.hidden) return;
+    cur.i = (cur.i + 1) % cur.g.alts.length;
+    start(cur.g.alts[cur.i]);
+  }
+
   video.addEventListener('playing', () => {
     clearTimeout(state.startTimer);
+    clearTimeout(state.stallTimer); state.stallTimer = 0;
+    state.started = true;
     setMsg('');
     if (state.cur) remember(state.cur.g, state.channels[state.current].url);
   });
-  video.addEventListener('waiting', () => { if (!$('msg').classList.contains('error')) setMsg('Buffering…'); });
+  video.addEventListener('waiting', () => {
+    if (!$('msg').classList.contains('error')) setMsg('Buffering…');
+    if (state.started && !state.stallTimer) state.stallTimer = setTimeout(() => { state.stallTimer = 0; stalled(); }, STALL_MS);
+  });
   video.addEventListener('error', () => {
     if (video.error && video.getAttribute('src') && state.failFn) state.failFn();
   });
