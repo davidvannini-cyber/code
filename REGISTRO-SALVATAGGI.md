@@ -269,3 +269,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-24 | `faf59a8` | HOMEASSISTANT (nuovo progetto: CONTEXT.md, README.md, .gitignore, config/, docs/), REGISTRO-SALVATAGGI.md | `git checkout faf59a8` |
 | 2026-10-25 | `067b12c` | HOMEASSISTANT: Audio Montagna, volumi di gruppo casa/Montagna, webapp (CONTEXT.md, docs/, config/packages/audio2.yaml, config/www/), REGISTRO-SALVATAGGI.md | `git checkout 067b12c` |
 | 2026-10-25 | `06ae81d` | App Fire TV 1.5: ultimo canale riaperto da solo, avvio all'accensione (firetv/app/build.gradle, AndroidManifest.xml, MainActivity.java, BootReceiver.java, FIRETV.md), M3U-PLAYER-WEB/STATO-PROGETTO.md, REGISTRO-SALVATAGGI.md. Punto di ripristino: ramo `punto-stabile-2026-10-25-firetv14` | `git checkout 06ae81d` |
+| 2026-10-25 | `5c946c5` | STATO-PROGETTO.md (provata la stessa APK Fire TV su TV Xiaomi Android 11: funziona), REGISTRO-SALVATAGGI.md | `git checkout 5c946c5` |
