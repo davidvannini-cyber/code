@@ -2,7 +2,7 @@
 
 > **Leggi questo file PER INTERO prima di toccare qualsiasi cosa.** È scritto perché una sessione nuova (senza memoria di quelle precedenti)
 > possa riprendere il progetto senza dover analizzare di nuovo il codice né chiedere cose già decise.
-> Ultimo aggiornamento completo: **19 ottobre 2026** (stato del repository: dopo il commit `de61086` e successivi; app Fire TV 1.4).
+> Ultimo aggiornamento completo: **19 ottobre 2026** (stato del repository: dopo il commit `de61086` e successivi; app Fire TV 1.5 — 25 ottobre: ripresa dell'ultimo canale e avvio all'accensione, ancora da provare su Fire TV vera).
 > Se cambi qualcosa di importante, **aggiorna questo file nello stesso commit** (vedi §19 «Regole per mantenerlo vero»).
 
 Indice: 1 Cos'è · 2 Come lavora l'utente (REGOLE) · 3 Ambiente di lavoro della sessione · 4 Architettura · 5 Mappa dei file · 6 Formati e regole dei dati ·
@@ -20,7 +20,7 @@ Indice: 1 Cos'è · 2 Come lavora l'utente (REGOLE) · 3 Ambiente di lavoro dell
 | Modo | Dove | Cosa è |
 |---|---|---|
 | **Sito web** | `https://tv.vannini.online` | Elenco canali (ordine digitale terrestre), lettore a tutto schermo, 5 temi, PWA iPhone, finestra flottante (PiP), guida programmi |
-| **App Fire TV** | APK «TV Vannini» (`online.vannini.tv`), versione **1.4** | Stessa lista/ordine, lettore nativo ExoPlayer, comandi del telecomando |
+| **App Fire TV** | APK «TV Vannini» (`online.vannini.tv`), versione **1.5** | Stessa lista/ordine, lettore nativo ExoPlayer, comandi del telecomando |
 | **Modo auto** | `https://tv.vannini.online/auto` | Stessa pagina con comandi per manopola/frecce dell'auto (browser di APTV dentro CarPlay) |
 
 Più: **area admin** (`/admin`, protetta da password) per scegliere le liste (fonti), il loro ordine di priorità e i **canali nascosti**;
@@ -284,15 +284,16 @@ Tutto il codice del lettore è un'unica funzione anonima in `app.js` (nessun mod
 
 ## 9. App Fire TV (`firetv/`)
 
-- **Pacchetto** `online.vannini.tv`, nome «TV Vannini», `versionCode 5`, `versionName '1.4'` (in `app/build.gradle`), `minSdk 22`, `targetSdk/compileSdk 34`, Java 17, AGP 8.5.2, Gradle wrapper 8.9, **Media3 1.3.1** (`media3-exoplayer`, `-exoplayer-hls`, `-exoplayer-dash`). Release **minificata** (R8 + shrinkResources) e **firmata** con `app/tv-vannini.keystore` (alias/password `tv-vannini`, solo per gli aggiornamenti).
+- **Pacchetto** `online.vannini.tv`, nome «TV Vannini», `versionCode 6`, `versionName '1.5'` (in `app/build.gradle`), `minSdk 22`, `targetSdk/compileSdk 34`, Java 17, AGP 8.5.2, Gradle wrapper 8.9, **Media3 1.3.1** (`media3-exoplayer`, `-exoplayer-hls`, `-exoplayer-dash`). Release **minificata** (R8 + shrinkResources) e **firmata** con `app/tv-vannini.keystore` (alias/password `tv-vannini`, solo per gli aggiornamenti).
 - **Aumentare la versione a ogni modifica dell'app** (`versionCode` +1, `versionName`), perché l'APK si installa sopra il precedente e l'intestazione dell'elenco mostra `v<versionName>`.
-- **Manifest**: `INTERNET`; `touchscreen` e `leanback` non obbligatori; `LAUNCHER` + `LEANBACK_LAUNCHER`; `usesCleartextTraffic=true` (molti flussi sono `http`); `banner` 640×360 per la Home; `screenOrientation=landscape`; tema Material senza barra.
+- **Manifest**: `INTERNET`, `RECEIVE_BOOT_COMPLETED` (+ `BootReceiver` per `BOOT_COMPLETED`/`QUICKBOOT_POWERON`); `touchscreen` e `leanback` non obbligatori; `LAUNCHER` + `LEANBACK_LAUNCHER`; `usesCleartextTraffic=true` (molti flussi sono `http`); `banner` 640×360 per la Home; `screenOrientation=landscape`; tema Material senza barra.
 - **Interfaccia** costruita **in codice** (nessun XML di layout): `ListView` (righe: numero, nome + riga programma, gruppo), `SurfaceView` per il video, `TextView` di sovrapposizione (banner canale, messaggi, info). Colori: sfondo `#0A0B1E`, accento `#7B5CFF`.
 - **Dati**: `PLAYLIST_URL = https://tv.vannini.online/playlist.m3u`, `EPG_URL = …/api/epg`, `HIDDEN_URL = …/api/hidden`. User-Agent da browser Android. Timeout 10 s connessione / 20 s lettura; file max 24 MB. Copia della playlist in `filesDir/playlist.m3u` (parte subito da quella, poi scarica la nuova) e dei nascosti in `hidden.json`.
 - **Classi**: `M3u` (parser = `m3u.js`), `Dtt` (= `dtt-it.js`: stessa tabella LCN, stesse regole; `Dtt.Group` ha `id, alts, head, lcn, labels, firstIndex`), `Epg` (parsa `epg.json` con `org.json`; chiavi per gruppo = `key(cleanName)` e `idKey(tvgId)` di ogni alternativa + `canonicalKey(lcn)`; `nowNext(g)`, `text(g)`), `Channel`, `MainActivity` (tutto il resto).
 - **Elenco**: filtro «Italiani (DTT)» (preferenza `it` in SharedPreferences `tv`), gruppo scelto, canali nascosti tolti (`base()`); intestazione = «TV · filtro · N canali (M nascosti dall'admin) · vX.Y» o il messaggio di stato (che dice a che punto è il caricamento o l'errore: «Scarico la lista…», «Scaricati N KB…», «Impossibile caricare…», «Letti N canali, nessuno con questo filtro»).
-- **Telecomando**: elenco ▲▼ scorre, OK guarda, **MENU** = dialogo filtri («Italiani», «Tutti i canali», «Aggiorna la lista», «Gruppo: …»). Video: ◄/▼/canale-giù/prev = precedente, ►/▲/canale-su/next = successivo (con attesa di 350 ms se si scorre in fretta), **OK** info (server, risoluzione, fonte), **MENU** cambia fonte, Play/Pausa pausa, **Indietro** torna all'elenco (il rilascio del tasto viene «inghiottito» con `swallowUp` per non uscire dall'app).
+- **Telecomando**: elenco ▲▼ scorre, OK guarda, **MENU** = dialogo filtri («Italiani», «Tutti i canali», «Aggiorna la lista», «Avvio automatico all'accensione», «Gruppo: …»). Video: ◄/▼/canale-giù/prev = precedente, ►/▲/canale-su/next = successivo (con attesa di 350 ms se si scorre in fretta), **OK** info (server, risoluzione, fonte), **MENU** cambia fonte, Play/Pausa pausa, **Indietro** torna all'elenco (il rilascio del tasto viene «inghiottito» con `swallowUp` per non uscire dall'app).
 - **Riproduzione**: ExoPlayer con `DefaultHttpDataSource` (UA da browser, redirect cross-protocol, timeout 10/15 s), `DefaultLoadControl(15000, 30000, 2500, 5000)` (poco buffer per il Lite). MIME dedotto dall'indirizzo (`.m3u8`/`.mpd`); se sconosciuto e l'errore è `PARSING_CONTAINER_UNSUPPORTED` si riprova **come HLS**. `BEHIND_LIVE_WINDOW` → `seekToDefaultPosition()`+`prepare()`.
+- **Ripresa e avvio automatico (1.5, 25/10/2026, NON ancora provati su Fire TV vera)**: l'ultimo canale visto è in `SharedPreferences` `tv` chiave `last` (id del gruppo, scritta in `playGroup`). All'apertura dell'app, appena la lista (anche dalla copia salvata) è pronta, `resumeLast()` apre quel canale (se non nascosto). `onStop` (riposo/Home) chiude il lettore e ricorda `resumeOnStart`; `onStart` lo riapre da solo al risveglio. **Indietro** dal lettore imposta `userLeft=true`: finché non si apre un canale a mano non riparte da solo. `BootReceiver` apre `MainActivity` al riavvio della Fire TV (preferenza `boot`, predefinita attiva, si spegne da MENU → «Avvio automatico all'accensione»). Limiti: **non parte** quando si risveglia dal riposo (nessun riavvio); su Fire OS 8+ (Android 10+) Android blocca l'apertura dallo sfondo; al riavvio la rete può non essere ancora pronta (primo tentativo può fallire, poi failover/riprovare).
 - **Failover**: timer 20 s (avvio e ogni `BUFFERING`); errore o timeout → alternativa successiva, altrimenti messaggio «Questo canale non parte (…)». Fonte che parte salvata in SharedPreferences (`alt|<group.id>`).
 - **Cicli**: all'avvio `refresh()` (cache → hidden → playlist), `epgReload` ogni 10 min (scarica EPG **e** nascosti), `epgTick` ogni 60 s ridisegna l'elenco. `onStop` chiude il lettore e libera ExoPlayer.
 - **Build e consegna**: automazione «Fire TV APK» (§12) → release **`firetv-latest`**, file **`tv-vannini.apk`**. Installazione sulla Fire TV con l'app **Downloader** all'indirizzo `https://github.com/davidvannini-cyber/code/releases/download/firetv-latest/tv-vannini.apk` (istruzioni in `FIRETV.md` e nella guida PDF). Si installa **sopra** la versione precedente.
@@ -425,6 +426,7 @@ Le immagini in `guida/img/*.jpg` sono **schermate vere** prese con Playwright da
 - **Punti di ripristino stabili** (rami, **non modificarli mai**):
   - `punto-stabile-2026-10-19` (`bcc9756`): sito + app 1.1 + `extra.m3u` + icona Mac + cambio canale da PiP, **prima della guida programmi**;
   - `punto-stabile-2026-10-19-epg` (`b7feb21`): + guida programmi, app 1.2;
+  - `punto-stabile-2026-10-25-firetv14` (`06ae81d`): stato prima dell'app 1.5 (include `/auto`, guida PDF, questo file).
   - `punto-stabile-2026-10-19-admin` (`45a58fd`): + canali nascosti, Free-TV, app 1.4 — **il più completo** (precede modo auto `/auto`, guida PDF e questo file).
   Ne va creato uno nuovo **quando l'utente dice che è soddisfatto di un livello** («non voglio perdere questo livello»): `git push origin <sha>:refs/heads/punto-stabile-<data>-<nome>` + riga nel registro. Nome ramo del tipo `punto-stabile-AAAA-MM-GG-<parola>`.
 - **Tag**: `git push` di tag **non funziona** nel sandbox (proxy). Usare rami.
@@ -483,7 +485,7 @@ Le immagini in `guida/img/*.jpg` sono **schermate vere** prese con Playwright da
 
 **Provato dall'utente**: sito su PC (Safari e Chrome), iPhone (tutto schermo), PiP e F7/F9 in Safari, liste multiple + Free-TV, Rai 3 Toscana e 50 Canale, admin (liste e canali visibili sul sito), guida programmi (sito e app «funziona alla grande»), app Fire TV (elenco/riproduzione, «velocissimo»), cambio fonte (Italia 1 fonte 2/3 su Safari).
 **Verificato solo da me (dati veri o browser di prova)**: canali nascosti nell'app 1.4, modo auto (browser di prova), parità Java↔JS, tema Vetrina corretto, guida PDF.
-**Da provare/confermare**: (1) **canali nascosti sull'app Fire TV 1.4** (prima di 1.4 l'utente li vedeva ancora: probabilmente versione vecchia installata; la 1.4 mostra «v1.4» e «N nascosti» in cima); (2) **`/auto` in auto** (BMW NBT + CarPlay + APTV): manopola, frecce, tasto Indietro.
+**Da provare/confermare**: (0) **app 1.5**: riapertura sull'ultimo canale (apertura, risveglio dal riposo) e avvio dopo riavvio della Fire TV (Fire OS 7.7.1.7); (1) **canali nascosti sull'app Fire TV 1.4** (prima di 1.4 l'utente li vedeva ancora: probabilmente versione vecchia installata; la 1.4 mostra «v1.4» e «N nascosti» in cima); (2) **`/auto` in auto** (BMW NBT + CarPlay + APTV): manopola, frecce, tasto Indietro.
 **Limiti noti** (non risolvibili dal sito): secondi neri con audio su Safari con fonti DASH; fascia scura nel PiP di Chrome (è del browser); manopola gestita a livello CarPlay; niente DRM; fonti morte di alcuni canali.
 
 ---

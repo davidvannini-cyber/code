@@ -75,6 +75,10 @@ public class MainActivity extends Activity {
 
     private final Handler ui = new Handler(Looper.getMainLooper());
     private SharedPreferences prefs;
+    // Ripresa dell'ultimo canale: all'apertura dell'app e al risveglio dal riposo, salvo che si sia tornati alla lista con Indietro.
+    private boolean resumePending = true;
+    private boolean resumeOnStart;
+    private boolean userLeft;
 
     // Dati
     private List<Dtt.Group> all = new ArrayList<>();
@@ -142,8 +146,15 @@ public class MainActivity extends Activity {
         ui.postDelayed(epgTick, 60 * 1000);
     }
 
+    @Override protected void onStart() {
+        super.onStart();
+        if (resumeOnStart && !userLeft) resumeLast();
+        resumeOnStart = false;
+    }
+
     @Override protected void onStop() {
         super.onStop();
+        resumeOnStart = inPlayer;
         if (inPlayer) closePlayer();
     }
 
@@ -445,7 +456,14 @@ public class MainActivity extends Activity {
     private void postApply(final List<Channel> channels) {
         final List<Dtt.Group> groups = Dtt.groupChannels(channels);
         ui.post(new Runnable() {
-            @Override public void run() { all = groups; applyFilter(); }
+            @Override public void run() {
+                all = groups;
+                applyFilter();
+                if (resumePending && !groups.isEmpty()) {
+                    resumePending = false;
+                    resumeLast();
+                }
+            }
         });
     }
 
@@ -502,6 +520,8 @@ public class MainActivity extends Activity {
         items.add("Italiani (ordine DTT)");
         items.add("Tutti i canali");
         items.add("Aggiorna la lista");
+        final boolean boot = prefs.getBoolean(BootReceiver.PREF, true);
+        items.add(boot ? "Avvio automatico all'accensione: attivo (premi per spegnerlo)" : "Avvio automatico all'accensione: spento (premi per attivarlo)");
         TreeSet<String> groupNames = new TreeSet<>();
         for (Dtt.Group g : base()) groupNames.addAll(g.labels);
         for (String l : groupNames) { items.add("Gruppo: " + l); labels.add(l); }
@@ -516,8 +536,10 @@ public class MainActivity extends Activity {
                         applyFilter();
                     } else if (which == 2) {
                         refresh();
+                    } else if (which == 3) {
+                        prefs.edit().putBoolean(BootReceiver.PREF, !boot).apply();
                     } else {
-                        label = labels.get(which - 3);
+                        label = labels.get(which - 4);
                         applyFilter();
                     }
                 }
@@ -567,7 +589,18 @@ public class MainActivity extends Activity {
         }
     }
 
+    // Riapre l'ultimo canale visto, se c'e' ancora e non e' nascosto.
+    private void resumeLast() {
+        if (inPlayer) return;
+        String id = prefs.getString("last", null);
+        if (id == null) return;
+        for (Dtt.Group g : all) {
+            if (g.id.equals(id) && !hidden.contains(id)) { openPlayer(g); return; }
+        }
+    }
+
     private void openPlayer(Dtt.Group g) {
+        userLeft = false;
         inPlayer = true;
         listScreen.setVisibility(View.GONE);
         playerScreen.setVisibility(View.VISIBLE);
@@ -596,6 +629,7 @@ public class MainActivity extends Activity {
     // Parte dalla fonte che ha funzionato l'ultima volta, se c'e'.
     private void playGroup(Dtt.Group g) {
         cur = g;
+        prefs.edit().putString("last", g.id).apply();
         String last = prefs.getString("alt|" + g.id, null);
         altIdx = 0;
         if (last != null) {
@@ -754,6 +788,7 @@ public class MainActivity extends Activity {
                 }
                 return true;
             case KeyEvent.KEYCODE_BACK:
+                userLeft = true;
                 closePlayer();
                 return true;
             default:
