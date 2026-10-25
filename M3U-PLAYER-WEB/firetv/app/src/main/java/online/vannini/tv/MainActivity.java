@@ -139,6 +139,8 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         prefs = getSharedPreferences("tv", Context.MODE_PRIVATE);
+        // Aperta nei primi 3 minuti dopo l'accensione della Fire TV: lo si vede nel riquadro «Avvio automatico» del MENU.
+        if (android.os.SystemClock.elapsedRealtime() < 3 * 60 * 1000) prefs.edit().putString("boot_open", BootReceiver.now()).apply();
         italianOnly = prefs.getBoolean("it", true);
         buildUi();
         refresh();
@@ -522,6 +524,7 @@ public class MainActivity extends Activity {
         items.add("Aggiorna la lista");
         final boolean boot = prefs.getBoolean(BootReceiver.PREF, true);
         items.add(boot ? "Avvio automatico all'accensione: attivo (premi per spegnerlo)" : "Avvio automatico all'accensione: spento (premi per attivarlo)");
+        items.add("Avvio automatico: com'è andato l'ultimo");
         TreeSet<String> groupNames = new TreeSet<>();
         for (Dtt.Group g : base()) groupNames.addAll(g.labels);
         for (String l : groupNames) { items.add("Gruppo: " + l); labels.add(l); }
@@ -538,8 +541,17 @@ public class MainActivity extends Activity {
                         refresh();
                     } else if (which == 3) {
                         prefs.edit().putBoolean(BootReceiver.PREF, !boot).apply();
+                    } else if (which == 4) {
+                        new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert)
+                            .setTitle("Avvio automatico")
+                            .setMessage("Avviso di accensione ricevuto: " + prefs.getString("boot_seen", "mai")
+                                + "\nTentativo: " + prefs.getString("boot_try", "nessuno")
+                                + "\nApp aperta dopo l'accensione: " + prefs.getString("boot_open", "mai")
+                                + "\n\nSe l'avviso risulta «mai», la Fire TV non lo manda all'app.")
+                            .setPositiveButton("OK", null)
+                            .show();
                     } else {
-                        label = labels.get(which - 4);
+                        label = labels.get(which - 5);
                         applyFilter();
                     }
                 }
