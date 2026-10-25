@@ -20,6 +20,12 @@ public class BootReceiver extends BroadcastReceiver {
     static final String PREF = "boot";
     private static final long DELAY_MS = 12 * 1000;
 
+    // Apre l'app davanti; se e' gia' aperta la riporta in primo piano e le dice di riprendere l'ultimo canale.
+    static Intent launchIntent(Context c) {
+        return new Intent(c, MainActivity.class).putExtra("auto", true)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    }
+
     static String now() { return new SimpleDateFormat("dd/MM HH:mm:ss", Locale.ITALY).format(new Date()); }
 
     @Override public void onReceive(Context c, Intent in) {
@@ -31,7 +37,8 @@ public class BootReceiver extends BroadcastReceiver {
             e.putString("boot_try", "funzione spenta dal MENU").apply();
             return;
         }
-        Intent go = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        WakeService.start(c);
+        Intent go = launchIntent(c);
         String r = "";
         try {
             c.startActivity(go);

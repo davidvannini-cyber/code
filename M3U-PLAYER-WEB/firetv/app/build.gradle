@@ -10,8 +10,8 @@ android {
         applicationId 'online.vannini.tv'
         minSdk 22
         targetSdk 34
-        versionCode 7
-        versionName '1.6'
+        versionCode 8
+        versionName '1.7'
     }
 
     // Chiave fissa (nel repository): ogni nuova versione si installa sopra la precedente senza cancellare l'app.
