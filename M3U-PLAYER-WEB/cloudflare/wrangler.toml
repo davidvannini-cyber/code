@@ -1,14 +1,11 @@
-# Cloudflare Workers: pagina + area admin su tv.vannini.online e (dal 26/10/2026, per provare) su tv.momandis.online (vedi ../DEPLOY-CLOUDFLARE.md)
+# Cloudflare Workers: pagina + area admin su tv.vannini.online (vedi ../DEPLOY-CLOUDFLARE.md)
 name = "tv-vannini"
 main = "src/worker.js"
 compatibility_date = "2025-10-01"
 
 # Collega il Worker al sottodominio (il dominio sta nel tuo account Cloudflare).
 # Va scritto PRIMA delle sezioni [..], altrimenti TOML lo assegna alla sezione precedente e wrangler lo ignora.
-routes = [
-  { pattern = "tv.vannini.online", custom_domain = true },
-  { pattern = "tv.momandis.online", custom_domain = true },
-]
+routes = [{ pattern = "tv.vannini.online", custom_domain = true }]
 
 # La pagina (cartella public/) e' servita dal Worker, che aggiunge intestazioni di sicurezza e le API.
 [assets]

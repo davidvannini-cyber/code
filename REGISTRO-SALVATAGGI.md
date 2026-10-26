@@ -282,4 +282,5 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-26 | `54ea19d` | TV-PLAYER spostato nel repository privato davidvannini-cyber/tv-player: tolta la cartella TV-PLAYER da questo repository pubblico (resta nella cronologia), CLAUDE.md, .gitignore, REGISTRO-SALVATAGGI.md | `git checkout 54ea19d` |
 | 2026-10-26 | `78ee30a` | Repository privato tv-player: tolti i riferimenti a Cloudflare dai documenti (nessun file di questo repository), REGISTRO-SALVATAGGI.md | `git checkout 78ee30a` |
 | 2026-10-26 | `1ab17ed` | Repository privato tv-player: segnato il dominio scelto nei documenti (nessun file di questo repository), REGISTRO-SALVATAGGI.md | `git checkout 1ab17ed` |
-| 2026-10-26 | `3a83dea` | Il Worker risponde anche su tv.momandis.online (M3U-PLAYER-WEB/cloudflare/wrangler.toml, STATO-PROGETTO.md), REGISTRO-SALVATAGGI.md | `git checkout 3a83dea` |
+| 2026-10-26 | `3a83dea` | Il Worker può rispondere anche su altri indirizzi aggiunti dal pannello Cloudflare (M3U-PLAYER-WEB/cloudflare/wrangler.toml, STATO-PROGETTO.md), REGISTRO-SALVATAGGI.md | `git checkout 3a83dea` |
+| 2026-10-26 | `938fcf6` | Tolto dal repository pubblico il nome del nuovo indirizzo (M3U-PLAYER-WEB/cloudflare/wrangler.toml, STATO-PROGETTO.md, REGISTRO-SALVATAGGI.md) | `git checkout 938fcf6` |
