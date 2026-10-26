@@ -284,3 +284,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-26 | `1ab17ed` | Repository privato tv-player: segnato il dominio scelto nei documenti (nessun file di questo repository), REGISTRO-SALVATAGGI.md | `git checkout 1ab17ed` |
 | 2026-10-26 | `3a83dea` | Il Worker può rispondere anche su altri indirizzi aggiunti dal pannello Cloudflare (M3U-PLAYER-WEB/cloudflare/wrangler.toml, STATO-PROGETTO.md), REGISTRO-SALVATAGGI.md | `git checkout 3a83dea` |
 | 2026-10-26 | `938fcf6` | Tolto dal repository pubblico il nome del nuovo indirizzo (M3U-PLAYER-WEB/cloudflare/wrangler.toml, STATO-PROGETTO.md, REGISTRO-SALVATAGGI.md) | `git checkout 938fcf6` |
+| 2026-10-26 | `9406159` | Sistema di promemoria via Gmail (AUTOMAZIONI/promemoria-gmail/promemoria.gs, COME-USARE.md), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout 9406159` |
