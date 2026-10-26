@@ -280,3 +280,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-26 | `5840a22` | Punto di ripristino `punto-stabile-2026-10-26-firetv19` (sito + app Fire TV 1.9, tutto provato), M3U-PLAYER-WEB/STATO-PROGETTO.md, REGISTRO-SALVATAGGI.md | `git checkout punto-stabile-2026-10-26-firetv19` |
 | 2026-10-26 | `2380ec5` | Nuovo progetto TV-PLAYER: documenti per la vendita (TV-PLAYER/README.md, CARATTERISTICHE.md, PRONTO-PER-LA-VENDITA.md), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout 2380ec5` |
 | 2026-10-26 | `54ea19d` | TV-PLAYER spostato nel repository privato davidvannini-cyber/tv-player: tolta la cartella TV-PLAYER da questo repository pubblico (resta nella cronologia), CLAUDE.md, .gitignore, REGISTRO-SALVATAGGI.md | `git checkout 54ea19d` |
+| 2026-10-26 | `78ee30a` | Repository privato tv-player: tolti i riferimenti a Cloudflare dai documenti (nessun file di questo repository), REGISTRO-SALVATAGGI.md | `git checkout 78ee30a` |
