@@ -26,7 +26,7 @@ Indice: 1 Cos'è · 2 Come lavora l'utente (REGOLE) · 3 Ambiente di lavoro dell
 Più: **area admin** (`/admin`, protetta da password) per scegliere le liste (fonti), il loro ordine di priorità e i **canali nascosti**;
 **guida programmi** («ora / poi») preparata ogni 2 ore da GitHub Actions; script Mac per un'icona sul Desktop; **guida PDF** (`GUIDA-TV-VANNINI.pdf`).
 
-Hosting: **Cloudflare Worker** (`tv-vannini`) + **KV** + dominio `tv.vannini.online`, piano **gratuito**. Alternativa pronta (non in uso): `server.js` (Node, Docker, Render).
+Hosting: **Cloudflare Worker** (`tv-vannini`) + **KV** + dominio `tv.vannini.online`, piano **gratuito**. Dal 26/10/2026 lo stesso Worker risponde **anche** su `tv.momandis.online` (secondo `routes` in `wrangler.toml`, dominio `momandis.online` dell'utente, registrato su Cloudflare): stessa pagina, stessi dati, stessa password admin; serve a far provare il prodotto da vendere (progetto privato `tv-player`) prima degli account. Alternativa pronta (non in uso): `server.js` (Node, Docker, Render).
 Repository: `https://github.com/davidvannini-cyber/code` (**PUBBLICO**; il progetto sta nella cartella `M3U-PLAYER-WEB`). Ramo di lavoro/pubblicazione: **`main`**.
 
 Documenti già presenti (più brevi, non sostituiscono questo): `README.md`, `DEPLOY-CLOUDFLARE.md`, `DEPLOY.md`, `firetv/FIRETV.md`, `GUIDA-TV-VANNINI.pdf` (guida per l'utente finale).
