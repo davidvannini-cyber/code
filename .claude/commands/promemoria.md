@@ -15,7 +15,7 @@ Il sistema è già installato (script Google «Promemoria» nell'account davan19
    - `subject`: `[PROM quando] Titolo` dove *quando* è uno di: `ogni giorno HH:MM` · `ogni lunedi HH:MM` (martedi, mercoledi, giovedi, venerdi, sabato, domenica) · `il AAAA-MM-GG HH:MM`; il *Titolo* è l'oggetto che David vedrà;
    - `body`: testo semplice, in italiano semplice, con i link richiesti (per «link al progetto» usa quello della conversazione di lavoro e il repository privato `https://github.com/davidvannini-cyber/tv-player` se pertinente). Niente password o dati riservati.
 4. **Mai** `send_message` (invia subito) e **mai** `create_trigger` (le routine non hanno Gmail). Non inviare la bozza.
-5. Rispondi con 3 righe: cosa riceverà, quando (e che può arrivare con 5 minuti di ritardo), come fermarlo («scrivimi /promemoria cancella …»).
+5. Rispondi con 3 righe: cosa riceverà, quando (e che può arrivare con 5 minuti di ritardo), come fermarlo («scrivimi /promemoria cancella …»). Se la email non arriva, ricorda a David che con iCloud può essere finita in un'altra cartella (cerca in «Tutte le caselle»); la prova del 26/10/2026 è andata così.
 
 Casi speciali:
 - `/promemoria elenco` → mostra con `list_drafts` le bozze il cui oggetto inizia con `[PROM`, una per riga: quando · titolo · destinatario.

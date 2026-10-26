@@ -22,8 +22,9 @@ Scrivi `/promemoria` e poi, con parole tue, cosa vuoi ricevere e quando. Se non 
 ## Cose da non fare
 - Non inviare e non modificare a mano le bozze con il titolo che inizia per `[PROM`.
 - Non cancellare il progetto «Promemoria» su script.google.com.
+- Non creare lo stesso promemoria anche in Google Calendar: arriverebbe due volte (l'evento che c'era è stato tolto).
 
 ## Se qualcosa non va
-- Controlla la cartella **Spam**.
+- Controlla la cartella **Spam** e, se usi iCloud Mail, cerca il titolo in **«Tutte le caselle»**: la prima volta la email di prova era finita in una cartella diversa dalla posta in arrivo (il 26 ottobre 2026). Una regola in iCloud Mail («se il mittente è davan1972@gmail.com, sposta in Posta in arrivo») evita il problema.
 - Scrivi a Claude «controlla il promemoria»: guarda se la bozza esiste e se il titolo è scritto bene.
 - Lo script gira nel progetto **Promemoria** su script.google.com (account davan1972@gmail.com), con un controllo ogni 5 minuti.

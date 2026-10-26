@@ -28,3 +28,5 @@ Il **Titolo** (dopo le parentesi quadre) diventa l'oggetto dell'email; destinata
 - Non c'è altro modo affidabile qui: le «routine» create dalle sessioni **non portano il collegamento a Gmail** (verificato il 26/10/2026 con un avviso di `create_trigger`).
 - Limiti Google (account gratuito): circa 100 destinatari al giorno via script; lo script è eseguito ogni 5 minuti, quindi l'email può arrivare con qualche minuto di ritardo.
 - Test del codice (senza Google): `node` con le funzioni `leggiQuando` ed `eDaInviare` esportate in fondo a `promemoria.gs`.
+- Provato il 26/10/2026: la bozza `[PROM il … ]` è stata inviata con 3 minuti di ritardo e cancellata. Con destinatario iCloud (`me.com`) la email può finire in una **cartella diversa dalla posta in arrivo**: se «non arriva», chiedere a David di cercarla in «Tutte le caselle». Gmail non segnala errori in questo caso (la email risulta in «Inviata»).
+- Il promemoria giornaliero delle 17:00 per TV-PLAYER è la bozza `[PROM ogni giorno 17:00] Promemoria: TV-PLAYER (momandis)`; l'evento Google Calendar equivalente è stato eliminato per evitare doppioni.
