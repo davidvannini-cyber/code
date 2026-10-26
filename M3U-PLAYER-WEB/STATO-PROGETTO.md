@@ -431,6 +431,7 @@ Le immagini in `guida/img/*.jpg` sono **schermate vere** prese con Playwright da
 - **Punti di ripristino stabili** (rami, **non modificarli mai**):
   - `punto-stabile-2026-10-19` (`bcc9756`): sito + app 1.1 + `extra.m3u` + icona Mac + cambio canale da PiP, **prima della guida programmi**;
   - `punto-stabile-2026-10-19-epg` (`b7feb21`): + guida programmi, app 1.2;
+  - `punto-stabile-2026-10-26-firetv19` (`5840a22`): **il più completo e provato**: sito con cambio fonte automatico, app Fire TV 1.9 (ultimo canale, avvio al riavvio, risveglio dal riposo con segnale HDMI), provata anche su TV Xiaomi Android 11; tutto confermato dall'utente.
   - `punto-stabile-2026-10-25-firetv14` (`06ae81d`): stato prima dell'app 1.5 (include `/auto`, guida PDF, questo file).
   - `punto-stabile-2026-10-19-admin` (`45a58fd`): + canali nascosti, Free-TV, app 1.4 — **il più completo** (precede modo auto `/auto`, guida PDF e questo file).
   Ne va creato uno nuovo **quando l'utente dice che è soddisfatto di un livello** («non voglio perdere questo livello»): `git push origin <sha>:refs/heads/punto-stabile-<data>-<nome>` + riga nel registro. Nome ramo del tipo `punto-stabile-AAAA-MM-GG-<parola>`.

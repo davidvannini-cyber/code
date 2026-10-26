@@ -277,3 +277,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-26 | `893d215` | Script per registrare cosa fa la Fire TV al risveglio con TiviMate (M3U-PLAYER-WEB/strumenti/registra-avvio-app.sh, STATO-PROGETTO.md), REGISTRO-SALVATAGGI.md | `git checkout 893d215` |
 | 2026-10-26 | `c2c9c22` | Script registra-avvio-app.sh: trova adb in ~/platform-tools senza Homebrew (M3U-PLAYER-WEB/strumenti/registra-avvio-app.sh), REGISTRO-SALVATAGGI.md | `git checkout c2c9c22` |
 | 2026-10-26 | `0cb257b` | App Fire TV 1.9: risveglio dal riposo tramite il segnale HDMI (firetv/app/build.gradle, WakeService.java), M3U-PLAYER-WEB/STATO-PROGETTO.md, REGISTRO-SALVATAGGI.md | `git checkout 0cb257b` |
+| 2026-10-26 | `5840a22` | Punto di ripristino `punto-stabile-2026-10-26-firetv19` (sito + app Fire TV 1.9, tutto provato), M3U-PLAYER-WEB/STATO-PROGETTO.md, REGISTRO-SALVATAGGI.md | `git checkout punto-stabile-2026-10-26-firetv19` |
