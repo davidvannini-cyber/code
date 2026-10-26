@@ -157,7 +157,7 @@ Italiano, riga breve e descrittiva (es. «M3U-PLAYER-WEB: guida completa in PDF 
 - `extra.m3u` — canali aggiunti a mano (Rai 3 Toscana n. 3, 50 Canale n. 18).
 - `anteprime/` — vecchie anteprime dei temi (storico). `README.md` — descrizione breve + sezioni per funzione.
 - Test: `test-m3u.js`, `test-dtt.js`, `test-server.js`, `test-epg.mjs`, `cloudflare/test-worker.mjs` (§14).
-- Strumenti di verifica: `strumenti/prova-browser.mjs` (prova nel browser: pagina normale invariata + `/auto`), `firetv/strumenti/` (`verifica.sh`, `IdCheck.java`, `idcheck.js`, `stub/` = finte API Media3 per compilare senza Android SDK).
+- Strumenti di verifica: `strumenti/prova-browser.mjs` (prova nel browser: pagina normale invariata + `/auto`), `strumenti/registra-avvio-app.sh` (sul Mac dell'utente: registra via adb il registro di sistema della Fire TV mentre un'app come TiviMate si apre da sola al risveglio; serve a vedere QUALE segnale la scatena; TiviMate è cifrato con DexProtector, **non si decompila**), `firetv/strumenti/` (`verifica.sh`, `IdCheck.java`, `idcheck.js`, `stub/` = finte API Media3 per compilare senza Android SDK).
 
 ---
 
