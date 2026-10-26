@@ -287,3 +287,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-26 | `9406159` | Sistema di promemoria via Gmail (AUTOMAZIONI/promemoria-gmail/promemoria.gs, COME-USARE.md), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout 9406159` |
 | 2026-10-26 | `b62629e` | Cartella COMANDI (comandi /promemoria e /restore, istruzioni, PDF unico, script costruisci.mjs), .claude/commands/, CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout b62629e` |
 | 2026-10-26 | `3a206b2` | COMANDI: istruzioni e comando /promemoria aggiornati (iCloud: cercare in Tutte le caselle), PDF rigenerato, AUTOMAZIONI/promemoria-gmail/COME-USARE.md, REGISTRO-SALVATAGGI.md | `git checkout 3a206b2` |
+| 2026-10-26 | `525f41e` | COMANDI: /promemoria con destinatario di default me.com e indirizzi aggiuntivi o diversi, istruzioni e PDF aggiornati, REGISTRO-SALVATAGGI.md | `git checkout 525f41e` |
