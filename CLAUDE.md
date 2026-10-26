@@ -5,7 +5,7 @@
 Contiene architettura, mappa dei file, formati dati, regole dell'utente, trucchi dell'ambiente (niente Android SDK, rete limitata, tag non pubblicabili),
 come provare e pubblicare, decisioni già prese, cose già tentate e fallite, stato (provato / da provare) e backlog. Non rianalizzare il codice da zero: parti da lì e aggiornalo.
 
-**Progetto TV-PLAYER** (idea di vendere TV Vannini come prodotto): documenti in `TV-PLAYER/` (`README.md`, `CARATTERISTICHE.md`, `PRONTO-PER-LA-VENDITA.md`); solo documenti, il codice resta in `M3U-PLAYER-WEB/`.
+Esiste anche un progetto in un repository **privato** separato (`tv-player`): non è in questo repository; se David lo nomina, il suo clone locale sta in `tv-player/` (ignorato da git).
 
 Promemoria minimi (dettagli nel file):
 - Rispondi **in italiano semplice**, senza gergo; istruzioni passo-passo con comandi completi; non chiedere né scrivere password.
