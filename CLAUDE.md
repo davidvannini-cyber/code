@@ -5,6 +5,8 @@
 Contiene architettura, mappa dei file, formati dati, regole dell'utente, trucchi dell'ambiente (niente Android SDK, rete limitata, tag non pubblicabili),
 come provare e pubblicare, decisioni già prese, cose già tentate e fallite, stato (provato / da provare) e backlog. Non rianalizzare il codice da zero: parti da lì e aggiornalo.
 
+**Progetto TV-PLAYER** (idea di vendere TV Vannini come prodotto): documenti in `TV-PLAYER/` (`README.md`, `CARATTERISTICHE.md`, `PRONTO-PER-LA-VENDITA.md`); solo documenti, il codice resta in `M3U-PLAYER-WEB/`.
+
 Promemoria minimi (dettagli nel file):
 - Rispondi **in italiano semplice**, senza gergo; istruzioni passo-passo con comandi completi; non chiedere né scrivere password.
 - Segui l'hook di avvio (`.claude/hooks/consensi-avvio.sh`): 4 domande iniziali con `AskUserQuestion`, lavoro solo dentro `/code`, a fine lavoro riga nel `REGISTRO-SALVATAGGI.md`, push fast-forward su `main` (mai force push), poi «Fai Sync» e il promemoria `/restore`.
