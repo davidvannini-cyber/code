@@ -156,13 +156,14 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         if (!intent.getBooleanExtra("auto", false)) return;
         userLeft = false;
-        prefs.edit().putString("wake_open", BootReceiver.now()).apply();
+        BootReceiver.log(this, "app riaperta dal servizio");
         if (started) resumeLast(); else resumeOnStart = true;
     }
 
     @Override protected void onStart() {
         super.onStart();
         started = true;
+        BootReceiver.log(this, "app visibile");
         if (resumeOnStart && !userLeft) resumeLast();
         resumeOnStart = false;
     }
@@ -562,10 +563,7 @@ public class MainActivity extends Activity {
                             .setMessage("Avviso di accensione ricevuto: " + prefs.getString("boot_seen", "mai")
                                 + "\nTentativo: " + prefs.getString("boot_try", "nessuno")
                                 + "\nApp aperta dopo l'accensione: " + prefs.getString("boot_open", "mai")
-                                + "\n\nRisveglio dal riposo visto: " + prefs.getString("wake_seen", "mai")
-                                + "\nTentativo al risveglio: " + prefs.getString("wake_try", "nessuno")
-                                + "\nApp riaperta al risveglio: " + prefs.getString("wake_open", "mai")
-                                + "\n\nSe l'avviso risulta «mai», la Fire TV non lo manda all'app.")
+                                + "\n\nRegistro (ultimi, il piu' recente in alto):\n" + prefs.getString("log", "vuoto"))
                             .setPositiveButton("OK", null)
                             .show();
                     } else {

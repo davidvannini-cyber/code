@@ -16,11 +16,13 @@ import java.util.Date;
 import java.util.Locale;
 
 // Apre l'app quando la Fire TV si accende (dopo un riavvio o la corrente tolta).
+// Ascolta sia «accensione bloccata» (LOCKED_BOOT_COMPLETED, piu' presto) sia «accensione finita» (BOOT_COMPLETED) e apre l'app col primo.
 // Ci prova subito e ancora dopo qualche secondo: la schermata Home della Fire TV compare dopo l'accensione e potrebbe coprirla.
-// Segna in "tv" cosa e' successo, per il riquadro «Avvio automatico» del MENU.
+// Scrive un registro (ultime righe) per il riquadro «Avvio automatico» del MENU.
 public class BootReceiver extends BroadcastReceiver {
     static final String PREF = "boot";
     private static final long DELAY_MS = 12 * 1000;
+    private static final int LOG_LINES = 8;
 
     // Apre l'app davanti; se e' gia' aperta la riporta in primo piano e le dice di riprendere l'ultimo canale.
     static Intent launchIntent(Context c) {
@@ -38,18 +40,39 @@ public class BootReceiver extends BroadcastReceiver {
 
     static String now() { return new SimpleDateFormat("dd/MM HH:mm:ss", Locale.ITALY).format(new Date()); }
 
+    // Aggiunge una riga in cima al registro (ora + cosa e' successo), tenendo le ultime LOG_LINES.
+    static synchronized void log(Context c, String what) {
+        try {
+            SharedPreferences p = c.getSharedPreferences("tv", Context.MODE_PRIVATE);
+            String time = new SimpleDateFormat("HH:mm:ss", Locale.ITALY).format(new Date());
+            String all = time + " " + what + "\n" + p.getString("log", "");
+            String[] lines = all.split("\n");
+            StringBuilder out = new StringBuilder();
+            for (int i = 0; i < lines.length && i < LOG_LINES; i++) out.append(lines[i]).append('\n');
+            p.edit().putString("log", out.toString().trim()).apply();
+        } catch (RuntimeException ignored) { /* memoria non ancora disponibile (accensione bloccata): niente registro */ }
+    }
+
     @Override public void onReceive(Context c, Intent in) {
         String a = in.getAction();
-        if (!Intent.ACTION_BOOT_COMPLETED.equals(a) && !"android.intent.action.QUICKBOOT_POWERON".equals(a)) return;
-        SharedPreferences p = c.getSharedPreferences("tv", Context.MODE_PRIVATE);
-        SharedPreferences.Editor e = p.edit().putString("boot_seen", now());
+        boolean locked = "android.intent.action.LOCKED_BOOT_COMPLETED".equals(a);
+        if (!locked && !Intent.ACTION_BOOT_COMPLETED.equals(a) && !"android.intent.action.QUICKBOOT_POWERON".equals(a)) return;
+        long sec = SystemClock.elapsedRealtime() / 1000;
+        log(c, (locked ? "accensione bloccata" : "accensione finita") + " (" + sec + " s dall'accensione)");
+        SharedPreferences p;
+        try {
+            p = c.getSharedPreferences("tv", Context.MODE_PRIVATE);
+        } catch (RuntimeException x) {
+            return;
+        }
+        SharedPreferences.Editor e = p.edit().putString("boot_seen", now() + " (" + sec + " s dopo l'accensione)");
         if (!p.getBoolean(PREF, true)) {
             e.putString("boot_try", "funzione spenta dal MENU").apply();
             return;
         }
         WakeService.start(c);
         Intent go = launchIntent(c);
-        String r = "";
+        String r;
         try {
             c.startActivity(go);
             r = "subito: richiesta inviata";
