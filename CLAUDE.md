@@ -7,6 +7,8 @@ come provare e pubblicare, decisioni già prese, cose già tentate e fallite, st
 
 Esiste anche un progetto in un repository **privato** separato (`tv-player`): non è in questo repository; se David lo nomina, il suo clone locale sta in `tv-player/` (ignorato da git).
 
+**Comandi di David** (`/promemoria`, `/restore`, e quelli futuri): vivono in `COMANDI/` (comando + `istruzioni/` + **un solo PDF** `COMANDI-ISTRUZIONI.pdf`). Quando crei o cambi un comando segui `COMANDI/README.md` (scrivi in `COMANDI/`, lancia `node COMANDI/costruisci.mjs`, committa anche il PDF).
+
 **Promemoria/email programmate**: se David chiede un promemoria via email (anche ripetuto), leggi `AUTOMAZIONI/promemoria-gmail/COME-USARE.md` (si crea una **bozza** Gmail con oggetto `[PROM quando] Titolo`; non usare `create_trigger`: le routine non hanno Gmail).
 
 Promemoria minimi (dettagli nel file):
