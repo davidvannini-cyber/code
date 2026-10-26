@@ -8,12 +8,14 @@
 set -e
 CMD="$1"; IP="$2"; PKG="${3:-ar.tvplayer.tv}"
 if [ -z "$CMD" ] || [ -z "$IP" ]; then echo "Uso: bash registra-avvio-app.sh inizia|fine <indirizzo-IP-Fire-TV> [pacchetto]"; exit 1; fi
-command -v adb >/dev/null || { echo "adb non trovato. Installalo con:  brew install --cask android-platform-tools"; exit 1; }
+ADB="$(command -v adb || true)"
+[ -z "$ADB" ] && [ -x "$HOME/platform-tools/adb" ] && ADB="$HOME/platform-tools/adb"
+[ -z "$ADB" ] && { echo "adb non trovato. Scaricalo da Google (vedi le istruzioni) in $HOME/platform-tools"; exit 1; }
 
-adb disconnect "$IP:5555" >/dev/null 2>&1 || true
-adb connect "$IP:5555" | tail -1
-adb -s "$IP:5555" get-state >/dev/null 2>&1 || { echo "Non riesco a parlare con la Fire TV. Controlla: Debug ADB acceso, indirizzo giusto, e accetta il riquadro sulla TV."; exit 1; }
-A="adb -s $IP:5555"
+"$ADB" disconnect "$IP:5555" >/dev/null 2>&1 || true
+"$ADB" connect "$IP:5555" | tail -1
+"$ADB" -s "$IP:5555" get-state >/dev/null 2>&1 || { echo "Non riesco a parlare con la Fire TV. Controlla: Debug ADB acceso, indirizzo giusto, e accetta il riquadro sulla TV."; exit 1; }
+A="$ADB -s $IP:5555"
 
 if [ "$CMD" = "inizia" ]; then
   $A logcat -G 16M || true          # registro piu' grande, cosi' non si perde niente durante il riposo
