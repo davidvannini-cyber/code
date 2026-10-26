@@ -35,7 +35,8 @@ Per aggiornare: stessa procedura, si installa sopra la versione precedente.
 - L'app riapre da sola l'**ultimo canale** visto (all'apertura e al risveglio dal riposo). Con **Indietro** torni alla lista e non riparte finche' non scegli un canale.
 - **Avvio all'accensione**: quando la Fire TV si riavvia (o togli la corrente) l'app si apre da sola. Si spegne da MENU → «Avvio automatico all'accensione».
   Se non parte, MENU → «Avvio automatico: com'è andato l'ultimo» dice se la Fire TV ha mandato l'avviso di accensione all'app.
-  Non parte al risveglio dal riposo (non c'e' riavvio); per quel caso assegna l'app a un tasto del telecomando.
+  Dalla 1.7 si apre anche al **risveglio dal riposo** (un piccolo servizio resta acceso). Dopo ogni aggiornamento apri l'app una volta.
+  Se rallenta la Fire TV: MENU → «Avvio automatico» per spegnerlo.
 
 ## Costruzione
 L'APK lo costruisce GitHub (`.github/workflows/firetv-apk.yml`) a ogni modifica della cartella `firetv/` e lo pubblica nella

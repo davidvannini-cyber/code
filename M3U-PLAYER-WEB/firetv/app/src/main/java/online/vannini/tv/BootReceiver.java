@@ -3,9 +3,11 @@ package online.vannini.tv;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.SystemClock;
 
@@ -24,6 +26,14 @@ public class BootReceiver extends BroadcastReceiver {
     static Intent launchIntent(Context c) {
         return new Intent(c, MainActivity.class).putExtra("auto", true)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    }
+
+    // Con «Avvio automatico» spento ricevitore e servizio restano spenti e non pesano; acceso, partono con la Fire TV.
+    static void apply(Context c, boolean on) {
+        c.getPackageManager().setComponentEnabledSetting(new ComponentName(c, BootReceiver.class),
+            on ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP);
+        if (on) WakeService.start(c); else WakeService.stop(c);
     }
 
     static String now() { return new SimpleDateFormat("dd/MM HH:mm:ss", Locale.ITALY).format(new Date()); }

@@ -144,7 +144,7 @@ public class MainActivity extends Activity {
         // Aperta nei primi 3 minuti dopo l'accensione della Fire TV: lo si vede nel riquadro «Avvio automatico» del MENU.
         if (android.os.SystemClock.elapsedRealtime() < 3 * 60 * 1000) prefs.edit().putString("boot_open", BootReceiver.now()).apply();
         italianOnly = prefs.getBoolean("it", true);
-        if (prefs.getBoolean(BootReceiver.PREF, true)) WakeService.start(this);
+        BootReceiver.apply(this, prefs.getBoolean(BootReceiver.PREF, true));
         buildUi();
         refresh();
         ui.post(epgReload);
@@ -555,7 +555,7 @@ public class MainActivity extends Activity {
                         refresh();
                     } else if (which == 3) {
                         prefs.edit().putBoolean(BootReceiver.PREF, !boot).apply();
-                        if (boot) WakeService.stop(MainActivity.this); else WakeService.start(MainActivity.this);
+                        BootReceiver.apply(MainActivity.this, !boot);
                     } else if (which == 4) {
                         new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert)
                             .setTitle("Avvio automatico")
