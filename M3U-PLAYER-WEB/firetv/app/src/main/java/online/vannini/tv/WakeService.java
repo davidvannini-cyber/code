@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.display.DisplayManager;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -17,20 +18,28 @@ import android.os.SystemClock;
 import android.view.Display;
 
 // Piccolo servizio sempre acceso: quando la Fire TV si risveglia dal riposo riapre l'app sull'ultimo canale.
-// Il risveglio non e' un riavvio, quindi BootReceiver da solo non basta. Ascolta piu' segnali (la Fire TV non manda per forza
-// quello classico di «schermo acceso») e li scrive nel registro del MENU → «Avvio automatico».
+// Il risveglio non e' un riavvio, quindi BootReceiver da solo non basta. Sulla Fire TV lo schermo per il sistema non si spegne mai
+// (provato con adb: displayState e isInteractive restano attivi): l'unico segnale che cambia e' il collegamento audio HDMI con la TV
+// (ACTION_HDMI_AUDIO_PLUG: 0 allo spegnimento, 1 al risveglio, con 5-10 s di «ballo» 1-0-1-0-1). Si ascolta quello; gli altri segnali
+// restano solo per il registro del MENU → «Avvio automatico».
 // Parte all'accensione (BootReceiver) e ogni volta che si apre l'app; si ferma se «Avvio automatico» e' spento.
 public class WakeService extends Service {
     private static final String CHANNEL = "avvio";
     private final Handler ui = new Handler(Looper.getMainLooper());
     private DisplayManager displays;
     private int lastDisplayState = Display.STATE_ON;
+    private int hdmi = 1;             // ultimo stato del collegamento HDMI (1 = TV collegata)
+    private boolean away;             // la TV e' rimasta spenta (HDMI scollegato) per almeno 5 secondi
 
     private final BroadcastReceiver signals = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent in) {
             String a = in.getAction() == null ? "?" : in.getAction();
             String name = a.substring(a.lastIndexOf('.') + 1);
-            BootReceiver.log(c, name);
+            if (!AudioManager.ACTION_HDMI_AUDIO_PLUG.equals(a)) BootReceiver.log(c, name);
+            if (AudioManager.ACTION_HDMI_AUDIO_PLUG.equals(a)) {
+                hdmi(in.getIntExtra(AudioManager.EXTRA_AUDIO_PLUG_STATE, 0));
+                return;
+            }
             if (Intent.ACTION_SCREEN_OFF.equals(a)) { ui.removeCallbacks(open); return; }
             if (Intent.ACTION_SCREEN_ON.equals(a) || Intent.ACTION_USER_PRESENT.equals(a) || a.endsWith("DREAMING_STOPPED")) schedule();
         }
@@ -49,12 +58,37 @@ public class WakeService extends Service {
         }
     };
 
-    private void schedule() {
+    // Apre l'app dopo ogni attesa indicata (ms); la Home puo' comparire dopo, quindi si riporta l'app davanti piu' volte.
+    private void schedule(long... delays) {
         if (!getSharedPreferences("tv", Context.MODE_PRIVATE).getBoolean(BootReceiver.PREF, true)) return;
         ui.removeCallbacks(open);
-        ui.postDelayed(open, 1500);
-        ui.postDelayed(open, 6000);   // la Home puo' comparire dopo: si riporta l'app davanti
+        for (long d : delays) ui.postDelayed(open, d);
     }
+
+    private void schedule() { schedule(1500, 6000); }
+
+    // HDMI scollegato per 5 secondi = TV spenta. Al ritorno a 1 si apre l'app, e si ripete finche' il segnale smette di ballare.
+    private final Runnable markAway = new Runnable() {
+        @Override public void run() {
+            if (hdmi == 0) { away = true; BootReceiver.log(WakeService.this, "TV spenta (HDMI scollegato da 5 s)"); }
+        }
+    };
+
+    private void hdmi(int state) {
+        hdmi = state;
+        BootReceiver.log(this, "HDMI " + (state == 1 ? "collegato" : "scollegato"));
+        ui.removeCallbacks(markAway);
+        if (state == 0) { ui.postDelayed(markAway, 5000); return; }
+        if (!away) return;
+        // away resta vero finche' il segnale non e' stabile: lo azzera l'apertura dell'ultima ripetizione
+        schedule(2000, 6000, 12000);
+        ui.removeCallbacks(clearAway);
+        ui.postDelayed(clearAway, 20000);
+    }
+
+    private final Runnable clearAway = new Runnable() {
+        @Override public void run() { if (hdmi == 1) away = false; }
+    };
 
     private final Runnable open = new Runnable() {
         @Override public void run() {
@@ -95,6 +129,7 @@ public class WakeService extends Service {
         f.addAction(Intent.ACTION_USER_PRESENT);
         f.addAction("android.intent.action.DREAMING_STARTED");
         f.addAction("android.intent.action.DREAMING_STOPPED");
+        f.addAction(AudioManager.ACTION_HDMI_AUDIO_PLUG);
         registerReceiver(signals, f);
         displays = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
         lastDisplayState = displays.getDisplay(Display.DEFAULT_DISPLAY).getState();
