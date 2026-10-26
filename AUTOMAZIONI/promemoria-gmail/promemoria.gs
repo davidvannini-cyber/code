@@ -10,7 +10,7 @@ var TZ = 'Europe/Rome';
 var FINESTRA_MIN = 360;   // se lo script e' stato fermo, invia comunque fino a 6 ore dopo l'ora prevista
 var GIORNI = { lunedi: 1, martedi: 2, mercoledi: 3, giovedi: 4, venerdi: 5, sabato: 6, domenica: 7 };
 
-function senzaAccenti(t) { return String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); }
+function senzaAccenti(t) { return String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
 
 // "ogni giorno 17:00" | "ogni lunedi 09:30" | "il 2026-11-05 17:00"  ->  {tipo, hh, mm, dow, data} oppure null
 function leggiQuando(testo) {
