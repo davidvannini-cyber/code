@@ -298,3 +298,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-27 | `5a4b1a7` | LEADREWORKS: colonna CRM dello Storico con cerchietto vuoto / con pallino al posto della casella (lead-rework-console.html); la riga precedente con lo stesso titolo era senza codice, vale questa | `git checkout 5a4b1a7` |
 | 2026-10-27 | `577676a` | LEADREWORKS: pallino della colonna CRM in grigio (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout 577676a` |
 | 2026-10-27 | `1725f28` | LEADREWORKS: «Rigenera NR» nella finestra Vedi rigenera insieme WhatsApp ed email (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout 1725f28` |
+| 2026-10-27 | `38f7169` | LEADREWORKS: regole di generazione script, niente più frasi su visita/conferma del tecnico dal vivo (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout 38f7169` |
