@@ -296,3 +296,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-27 | `d5be41d` | LEADREWORKS: annullata la modifica «flag CRM modificabile a mano»: la casella torna solo automatica (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout d5be41d` |
 | 2026-10-27 | `ef22c04` | LEADREWORKS: colonna CRM dello Storico con cerchietto vuoto / con pallino al posto della casella (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout ef22c04` |
 | 2026-10-27 | `5a4b1a7` | LEADREWORKS: colonna CRM dello Storico con cerchietto vuoto / con pallino al posto della casella (lead-rework-console.html); la riga precedente con lo stesso titolo era senza codice, vale questa | `git checkout 5a4b1a7` |
+| 2026-10-27 | `577676a` | LEADREWORKS: pallino della colonna CRM in grigio (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout 577676a` |
