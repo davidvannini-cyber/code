@@ -176,6 +176,8 @@
   .tbl-storico tr.riga-sel td{background:#dbeafe !important;}
   .tbl-storico tr.riga-sel td:first-child{box-shadow:inset 4px 0 0 #2563eb;}
   .tbl-storico thead th{position:sticky;top:0;z-index:2;background:var(--card,#fff);box-shadow:0 1px 0 var(--border);}
+  .tbl-storico .th-sort:hover{color:var(--topnav-active);}
+  .tbl-storico .th-arr{font-size:8px;margin-left:2px;vertical-align:middle;}
   .tbl-storico .nome-link{cursor:pointer;color:var(--topnav-active);text-decoration:underline;text-decoration-color:transparent;}
   .tbl-storico .nome-link:hover{text-decoration-color:currentColor;}
   /* finestra stretta (colonna 35% dello schermo): nascondi Prodotto, Stato e Gen. (lo stato resta nel tooltip del nome) per far stare tutte le colonne */
@@ -2480,12 +2482,41 @@ function setHistoryPref(key, value){
   try { localStorage.setItem(LOCAL_PREFIX+"history_prefs", JSON.stringify({ nascondiLavorati: !!state.historyFilter.nascondiLavorati, nascondiFollowup: !!state.historyFilter.nascondiFollowup, nascondiChiusi: !!state.historyFilter.nascondiChiusi, ordina: state.historyFilter.ordina })); } catch(e){}
   render();
 }
-const HISTORY_SORTS = {
-  data_desc: { label:"Data: più recenti prima", cmp:(a,b) => b.data_creazione.localeCompare(a.data_creazione) },
-  data_asc:  { label:"Data: meno recenti prima", cmp:(a,b) => a.data_creazione.localeCompare(b.data_creazione) },
-  nome_asc:  { label:"Cliente A→Z", cmp:(a,b) => String(a.dati_lead_input.nome||"").localeCompare(String(b.dati_lead_input.nome||""), "it") },
-  nome_desc: { label:"Cliente Z→A", cmp:(a,b) => String(b.dati_lead_input.nome||"").localeCompare(String(a.dati_lead_input.nome||""), "it") }
+/* Colonne ordinabili (clic sull'intestazione): first = direzione al primo clic (le spunte partono da «spuntati prima»). */
+const HISTORY_COLS = {
+  data:     { label:"Data",     first:"desc", val:r => r.data_creazione || "" },
+  nome:     { label:"Cliente",  first:"asc",  val:r => String(r.dati_lead_input.nome||"") },
+  prodotto: { label:"Prodotto", first:"asc",  val:r => String(r.dati_lead_input.prodotto||"") },
+  stato:    { label:"Stato",    first:"asc",  val:r => Number(r.stato_lead) || 0 },
+  gen:      { label:"Canali generati", first:"desc", val:r => (r.canali_generati||[]).length },
+  tel:      { label:"Telefonata", first:"desc", val:r => (r.attivita && r.attivita.telefono) ? 1 : 0 },
+  nr:       { label:"NR",       first:"desc", val:r => (r.nr && r.nr.count) || 0 },
+  wa:       { label:"WhatsApp", first:"desc", val:r => (r.attivita && r.attivita.whatsapp) ? 1 : 0 },
+  mail:     { label:"Email",    first:"desc", val:r => (r.attivita && r.attivita.email) ? 1 : 0 },
+  lav:      { label:"Lavorato", first:"desc", val:r => r.lavorato ? 1 : 0 },
+  fu:       { label:"Follow up", first:"desc", val:r => r.followup ? 1 : 0 },
+  fine:     { label:"Chiuso",   first:"desc", val:r => r.chiuso ? 1 : 0 }
 };
+const HISTORY_SORTS = {};
+Object.entries(HISTORY_COLS).forEach(([k,c]) => ["asc","desc"].forEach(d => {
+  const sign = d === "asc" ? 1 : -1;
+  HISTORY_SORTS[k+"_"+d] = { col:k, dir:d, cmp:(a,b) => {
+    const x = c.val(a), y = c.val(b);
+    const v = (typeof x === "number" && typeof y === "number") ? x - y : String(x).localeCompare(String(y), "it");
+    return v ? sign * v : b.data_creazione.localeCompare(a.data_creazione);
+  }};
+}));
+/* Clic sull'intestazione: stessa colonna = inverte la direzione, altra colonna = direzione iniziale. */
+function sortByColumn(col){
+  const cur = HISTORY_SORTS[state.historyFilter.ordina] || HISTORY_SORTS.data_desc;
+  const dir = cur.col === col ? (cur.dir === "asc" ? "desc" : "asc") : HISTORY_COLS[col].first;
+  setHistoryPref("ordina", col + "_" + dir);
+}
+function sortTh(col, inner, cls, title){
+  const cur = HISTORY_SORTS[state.historyFilter.ordina] || HISTORY_SORTS.data_desc;
+  const on = cur.col === col;
+  return `<th class="${cls||''} th-sort${on?' th-sort-on':''}" title="${title||HISTORY_COLS[col].label} — clic per ordinare" onclick="sortByColumn('${col}')" style="cursor:pointer;user-select:none;">${inner}${on ? `<span class="th-arr">${cur.dir==='asc'?'▲':'▼'}</span>` : ''}</th>`;
+}
 
 /* Ricerca testuale: nome, telefoni, email, zona. Ignora maiuscole e accenti; più parole = devono esserci tutte. */
 function searchNorm(s){ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
@@ -2696,7 +2727,7 @@ function renderHistoryTab(){
       <div class="hp-row" style="align-items:flex-end;">
         <div style="flex:1;min-width:0;"><span class="hp-lbl">Ordina per</span>
           <select onchange="setHistoryPref('ordina', this.value)">
-            ${Object.entries(HISTORY_SORTS).map(([k,v]) => `<option value="${k}" ${state.historyFilter.ordina===k?'selected':''}>${v.label}</option>`).join("")}
+            ${[['data_desc','Data: più recenti prima'],['data_asc','Data: meno recenti prima'],['nome_asc','Cliente A→Z'],['nome_desc','Cliente Z→A']].map(([k,l]) => `<option value="${k}" ${state.historyFilter.ordina===k?'selected':''}>${l}</option>`).join("")}${/^(data|nome)_/.test(state.historyFilter.ordina) ? '' : '<option value="" selected>Per colonna (clic sull\'intestazione)</option>'}
           </select></div>
         <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding-bottom:6px;white-space:nowrap;">
           <input type="checkbox" ${state.historyFilter.nascondiLavorati?'checked':''} onchange="setHistoryPref('nascondiLavorati', this.checked)"> Nascondi lavorati
@@ -2764,14 +2795,14 @@ function renderHistoryTab(){
       ${filtered.length === 0 ? `<div class="hint">Nessun lead trovato.</div>` : `
       <div class="tbl-scroll"><table class="tbl-storico">
         <thead><tr>
-          <th>Data</th><th>Cliente</th><th class="c-prod">Prodotto</th><th class="c-stato">Stato</th><th class="c-gen" title="Canali generati">Gen.</th>
-          <th class="ck" title="Telefonata fatta">${icon('phone',{noMargin:true})}</th>
-          <th class="ck" title="NR = nessuna risposta alla telefonata (si imposta con «Rigenera NR» nella finestra Vedi)">NR</th>
-          <th class="ck" title="WhatsApp inviato">${WHATSAPP_LOGO_SVG}</th>
-          <th class="ck" title="Email inviata">${MAC_MAIL_LOGO_SVG}</th>
-          <th class="ck" title="Lavorato">Lav.</th>
-          <th class="ck" title="Follow up (si attiva dopo Lav.)">F.U.</th>
-          <th class="ck" title="Chiuso: nessun altro intervento (si attiva dopo Lav.)">Fine</th><th></th>
+          ${sortTh('data','Data')}${sortTh('nome','Cliente')}${sortTh('prodotto','Prodotto','c-prod')}${sortTh('stato','Stato','c-stato')}${sortTh('gen','Gen.','c-gen','Canali generati')}
+          ${sortTh('tel',icon('phone',{noMargin:true}),'ck','Telefonata fatta')}
+          ${sortTh('nr','NR','ck','NR = nessuna risposta alla telefonata (si imposta con «Rigenera NR» nella finestra Vedi)')}
+          ${sortTh('wa',WHATSAPP_LOGO_SVG,'ck','WhatsApp inviato')}
+          ${sortTh('mail',MAC_MAIL_LOGO_SVG,'ck','Email inviata')}
+          ${sortTh('lav','Lav.','ck','Lavorato')}
+          ${sortTh('fu','F.U.','ck','Follow up (si attiva dopo Lav.)')}
+          ${sortTh('fine','Fine','ck','Chiuso: nessun altro intervento (si attiva dopo Lav.)')}<th></th>
         </tr></thead>
         <tbody>
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
