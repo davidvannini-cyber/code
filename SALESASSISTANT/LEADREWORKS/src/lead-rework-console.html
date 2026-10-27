@@ -2501,20 +2501,8 @@ const HISTORY_COLS = {
   fine:     { label:"Chiuso",   first:"desc", val:r => r.chiuso ? 1 : 0 }
 };
 /* Flag «CRM»: lead importato dal CRM (estensione Chrome o incolla dagli appunti, che portano crm_lead_id).
-   Di partenza resta spento per i lead scritti a mano e per quelli arrivati da Lead Collector.
-   Si può cambiare a mano con un clic: la scelta (r.crm_flag) vince sempre sul calcolo automatico. */
-function leadFromCrm(r){
-  if (r && typeof r.crm_flag === "boolean") return r.crm_flag;
-  const x = (r && r.dati_lead_input) || {};
-  return !!String(x.crm_lead_id||"").trim() && !String(x.lead_collector_id||"").trim();
-}
-async function toggleCrmFlag(id){
-  const r = state.leadsHistory[id];
-  if (!r) return;
-  r.crm_flag = !leadFromCrm(r);
-  await dbSet("leads", state.leadsHistory);
-  render();
-}
+   Resta spento per i lead scritti a mano e per quelli arrivati da Lead Collector. */
+function leadFromCrm(r){ const x = (r && r.dati_lead_input) || {}; return !!String(x.crm_lead_id||"").trim() && !String(x.lead_collector_id||"").trim(); }
 const HISTORY_SORTS = {};
 Object.entries(HISTORY_COLS).forEach(([k,c]) => ["asc","desc"].forEach(d => {
   const sign = d === "asc" ? 1 : -1;
@@ -2827,7 +2815,7 @@ function renderHistoryTab(){
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
             <tr data-id="${r.id}" class="${state.historyHighlight === r.id ? 'riga-sel' : ''}">
               <td title="${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}">${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit'})}<span class="ora">, ${new Date(r.data_creazione).toLocaleString('it-IT', {hour:'2-digit',minute:'2-digit'})}</span></td>
-              <td class="ck c-crm"><input type="checkbox" ${leadFromCrm(r)?'checked':''} onchange="toggleCrmFlag('${r.id}')" title="${leadFromCrm(r) ? 'Lead del CRM (clic per toglierlo)' : 'Non del CRM (clic per segnarlo come CRM)'}"></td>
+              <td class="ck c-crm"><input type="checkbox" disabled ${leadFromCrm(r)?'checked':''} title="${leadFromCrm(r) ? 'Importato dal CRM' : 'Non importato dal CRM'}"></td>
               <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}"><span class="nome-link" onclick="openHistoryItem('${r.id}')">${escapeHtml(r.dati_lead_input.nome || '—')}</span></td>
               <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
               <td class="c-stato">${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
