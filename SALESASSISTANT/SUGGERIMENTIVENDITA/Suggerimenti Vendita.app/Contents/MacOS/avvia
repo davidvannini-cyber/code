@@ -886,7 +886,7 @@ avvia_chiamata_comune() {
     screen_h=$(echo "$bounds" | awk -F', ' '{print $4}')
     col_w=$(( screen_w * 25 / 100 ))
     col_x=$(( screen_w * 50 / 100 ))
-    col_h=$(( screen_h * 60 / 100 ))
+    col_h=$(( screen_h * 88 / 100 ))  # circa 90% dell'area sotto la barra dei menu
 
     open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url" --window-position=${col_x},0 --window-size=${col_w},${col_h}
   else

@@ -18,7 +18,7 @@ const CONSOLE_FALLBACK_URL = "file:///Users/davidvannini_1/Documents/progetti/co
 // 30% invece di 40%: richiesta esplicita dell'utente il 2026-09-28 ("25% più stretta").
 const LARGHEZZA_FRAZIONE_LEAD_REWORK = 0.35;
 const OFFSET_FRAZIONE_LEAD_REWORK = 0;
-const ALTEZZA_FRAZIONE_LEAD_REWORK = 0.60;
+const ALTEZZA_FRAZIONE_LEAD_REWORK = 0.90; // alte come le altre due finestre (richiesta 2026-10-27)
 
 // "workArea" esclude già barra menu e Dock. Se l'API non è disponibile per
 // qualche motivo, un rettangolo fisso di fallback (i valori usati prima di

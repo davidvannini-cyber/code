@@ -278,7 +278,7 @@ avvia_sistema_completo() {
   [ -n "$parametro_avvio" ] && url="${url}?avvio=${parametro_avvio}"
 
   # Layout a 3 finestre (stesso dell'app): console 35% · menu 15% · pannello
-  # chiamata 25% (parte dal 50%), tutte alte il 60% dello schermo.
+  # chiamata 25% (parte dal 50%), tutte alte circa il 90% dell'area di lavoro.
   local bounds screen_w screen_h
   bounds=$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null)
 
@@ -290,7 +290,7 @@ avvia_sistema_completo() {
       screen_h=$(echo "$bounds" | awk -F', ' '{print $4}')
       open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url" \
         --window-position=$(( screen_w * 50 / 100 )),0 \
-        --window-size=$(( screen_w * 25 / 100 )),$(( screen_h * 60 / 100 ))
+        --window-size=$(( screen_w * 25 / 100 )),$(( screen_h * 88 / 100 ))
     else
       open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url"
     fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Apre la Lead Rework Console come fa il pulsante dell'estensione Chrome (finestra senza schede,
-# in alto a sinistra, 35% della larghezza e 60% dell'altezza dell'area di lavoro dello schermo
+# in alto a sinistra, 35% della larghezza e 90% dell'altezza dell'area di lavoro dello schermo
 # principale), ma senza passare dati: i campi partono vuoti.
 # Usa SEMPRE il profilo Chrome indicato qui sotto (PROFILO): i lead vivono nei dati di quel profilo e senza
 # l'indicazione Chrome sceglie l'ultimo profilo usato, anche uno vuoto. Il nome è quello della CARTELLA del profilo
@@ -24,12 +24,12 @@ URL="file://${FILE// /%20}#finestra=1"
 GEO="$(osascript -l JavaScript -e 'ObjC.import("AppKit"); var s=$.NSScreen.screens.objectAtIndex(0); var f=s.frame, v=s.visibleFrame; [v.origin.x, f.size.height-(v.origin.y+v.size.height), v.size.width, v.size.height].map(Math.round).join(" ")' 2>/dev/null)"
 set -- $GEO
 if [ $# -eq 4 ]; then
-  X=$1; Y=$2; W=$(( $3 * 35 / 100 )); H=$(( $4 * 60 / 100 ))
+  X=$1; Y=$2; W=$(( $3 * 35 / 100 )); H=$(( $4 * 90 / 100 ))
 else
   # Alternativa: bordi dell'intera scrivania.
   BOUNDS="$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null)"
   SW=$(echo "$BOUNDS" | awk -F', ' '{print $3}'); SH=$(echo "$BOUNDS" | awk -F', ' '{print $4}')
-  if [ -n "$SW" ] && [ -n "$SH" ]; then X=0; Y=25; W=$(( SW * 35 / 100 )); H=$(( SH * 60 / 100 )); else X=40; Y=40; W=900; H=700; fi
+  if [ -n "$SW" ] && [ -n "$SH" ]; then X=0; Y=25; W=$(( SW * 35 / 100 )); H=$(( SH * 88 / 100 )); else X=40; Y=40; W=900; H=700; fi
 fi
 
 # 3) -n: nuova istanza, altrimenti "open" riporta in primo piano Chrome e ignora gli argomenti.

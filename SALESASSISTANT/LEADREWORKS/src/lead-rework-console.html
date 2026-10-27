@@ -836,7 +836,7 @@ function placeLauncherWindow(){
     try {
       const sc = window.screen || {};
       const aw = sc.availWidth || window.innerWidth, ah = sc.availHeight || window.innerHeight;
-      window.resizeTo(Math.round(aw * 0.35), Math.round(ah * 0.60));
+      window.resizeTo(Math.round(aw * 0.35), Math.round(ah * 0.90));
       window.moveTo(sc.availLeft || 0, sc.availTop || 0);
     } catch(e){ console.warn("posizionamento finestra non riuscito", e); }
   };

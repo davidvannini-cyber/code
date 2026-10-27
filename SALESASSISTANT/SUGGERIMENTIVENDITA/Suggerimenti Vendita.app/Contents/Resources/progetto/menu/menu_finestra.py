@@ -60,7 +60,7 @@ ALTEZZA = 920
 # Lead Rework Console (20%).
 LARGHEZZA_FRAZIONE = 0.15
 OFFSET_FRAZIONE = 0.35
-ALTEZZA_FRAZIONE = 0.60
+ALTEZZA_FRAZIONE = 0.90  # area visibile (senza barra dei menu): come le altre due finestre
 
 
 def calcola_rettangolo_finestra():

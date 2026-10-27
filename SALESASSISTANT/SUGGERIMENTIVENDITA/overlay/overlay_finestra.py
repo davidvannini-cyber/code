@@ -43,7 +43,7 @@ from PyObjCTools import AppHelper
 from WebKit import WKWebView
 
 LARGHEZZA_FRAZIONE = 0.25
-ALTEZZA_FRAZIONE = 0.60
+ALTEZZA_FRAZIONE = 0.88  # schermo intero: circa 90% dell'area sotto la barra dei menu
 OFFSET_FRAZIONE = 0.50
 LARGHEZZA = 420
 ALTEZZA = 620

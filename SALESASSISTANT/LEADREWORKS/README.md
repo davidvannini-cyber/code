@@ -17,7 +17,7 @@ libreria script, flusso utente, struttura dati, capacità runtime.
 
 ## Icona sulla scrivania (macOS)
 `Lead Rework.app` (in questa cartella) apre la console come il pulsante dell'estensione Chrome — finestra senza
-schede, in alto a sinistra, 35% della larghezza e 60% dell'altezza dell'area di lavoro dello schermo principale —
+schede, in alto a sinistra, 35% della larghezza e 90% dell'altezza dell'area di lavoro dello schermo principale —
 ma **senza trasportare dati**: i campi partono vuoti. Usa il profilo Chrome normale, quindi lo storico lead è lo stesso.
 Per averla sulla scrivania: eseguire una volta `Crea icona scrivania.command` (doppio clic; la prima volta, se macOS lo blocca: tasto destro → Apri). L'icona sulla
 scrivania richiama l'app in questa cartella: dopo un Sync non va rifatta; se sposti la cartella, rieseguire quel file.
