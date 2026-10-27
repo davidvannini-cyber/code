@@ -2409,6 +2409,18 @@ async function historyRegenerate(id, chiave, nr){
   state.hmBusy = null;
   render();
 }
+/* «Rigenera NR» da una qualsiasi delle due schede (WhatsApp o email) rigenera TUTTI e due i testi, uno dopo l'altro.
+   Il secondo parte entro pochi secondi dal primo, quindi conta come lo stesso tentativo NR (vedi NR_FINESTRA_MIN).
+   Restano fuori i messaggi di conferma/promemoria appuntamento (whatsapp_conferma, whatsapp_reminder). */
+async function historyRegenerateNR(id, chiave){
+  const r = state.leadsHistory[id];
+  if (!r || state.hmBusy) return;
+  const sg = r.script_generati || {};
+  const eMail = (k) => /^email/i.test(k) || (sg[k] && typeof sg[k] === "object" && sg[k].oggetto !== undefined);
+  const altri = Object.keys(sg).filter(k => k !== chiave && (k === "whatsapp" || eMail(k)));
+  await historyRegenerate(id, chiave, true);
+  for (const k of altri) await historyRegenerate(id, k, true);
+}
 function toggleNR(id, el){
   const r = state.leadsHistory[id];
   if (!r) return;
@@ -2949,7 +2961,7 @@ function renderHistoryModal(id){
     const on = historyPrintFlag(r, canale);
     const occ = !!state.hmBusy;
     const mio = (t) => state.hmBusy === r.id + ":" + k + ":" + t;
-    const bottoni = `<span class="hm-regen no-print"><button ${occ ? "disabled" : ""} title="Nuova variante dello stesso testo" onclick="historyRegenerate('${r.id}','${escapeHtml(k).replace(/'/g, "\\'")}',false)">${mio("std") ? "…" : "Rigenera"}</button><button class="nr" ${occ ? "disabled" : ""} title="Nuova variante con la frase «Abbiamo provato a contattarla senza successo» (il cliente non ha risposto alla telefonata)" onclick="historyRegenerate('${r.id}','${escapeHtml(k).replace(/'/g, "\\'")}',true)">${mio("nr") ? "…" : "Rigenera NR"}</button></span>`;
+    const bottoni = `<span class="hm-regen no-print"><button ${occ ? "disabled" : ""} title="Nuova variante dello stesso testo" onclick="historyRegenerate('${r.id}','${escapeHtml(k).replace(/'/g, "\\'")}',false)">${mio("std") ? "…" : "Rigenera"}</button><button class="nr" ${occ ? "disabled" : ""} title="Nuova variante di WhatsApp ed email con la frase «Abbiamo provato a contattarla senza successo» (il cliente non ha risposto alla telefonata)" onclick="historyRegenerateNR('${r.id}','${escapeHtml(k).replace(/'/g, "\\'")}')">${mio("nr") ? "…" : "Rigenera NR"}</button></span>`;
     return `<div class="hm-card ${on ? '' : 'hm-off'}" data-canale="${canale}"><div class="hm-ch">${iconHtml}${escapeHtml(k)}${canale === "telefono" ? "" : bottoni}</div><div class="hm-cb">${contactRow(canale, k)}${body}</div></div>`;
   }).join("");
   const flag = (canale, label) => `<label><input type="checkbox" ${historyPrintFlag(r, canale) ? "checked" : ""} onchange="toggleHistoryPrint('${r.id}','${canale}',this.checked)"> ${label}</label>`;
