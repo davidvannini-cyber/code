@@ -176,6 +176,9 @@
   .tbl-storico tr.riga-sel td{background:#dbeafe !important;}
   .tbl-storico tr.riga-sel td:first-child{box-shadow:inset 4px 0 0 #2563eb;}
   .tbl-storico thead th{position:sticky;top:0;z-index:2;background:var(--card,#fff);box-shadow:0 1px 0 var(--border);}
+  .tbl-storico .crm-dot{display:inline-block;width:12px;height:12px;border:1.5px solid #6b7280;border-radius:50%;vertical-align:middle;box-sizing:border-box;position:relative;}
+  .tbl-storico .crm-dot.on{border-color:#2563eb;}
+  .tbl-storico .crm-dot.on::after{content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#2563eb;}
   .tbl-storico .th-sort:hover{color:var(--topnav-active);}
   .tbl-storico .th-arr{font-size:8px;margin-left:2px;vertical-align:middle;}
   .tbl-storico .nome-link{cursor:pointer;color:var(--topnav-active);text-decoration:underline;text-decoration-color:transparent;}
@@ -2802,7 +2805,7 @@ function renderHistoryTab(){
       ${filtered.length === 0 ? `<div class="hint">Nessun lead trovato.</div>` : `
       <div class="tbl-scroll"><table class="tbl-storico">
         <thead><tr>
-          ${sortTh('data','Data')}${sortTh('crm','CRM','ck c-crm','CRM: lead importato dal CRM (non scritto a mano, non da Lead Collector)')}${sortTh('nome','Cliente')}${sortTh('prodotto','Prodotto','c-prod')}${sortTh('stato','Stato','c-stato')}${sortTh('gen','Gen.','c-gen','Canali generati')}
+          ${sortTh('data','Data')}${sortTh('crm','CRM','ck','CRM: lead importato dal CRM (non scritto a mano, non da Lead Collector)')}${sortTh('nome','Cliente')}${sortTh('prodotto','Prodotto','c-prod')}${sortTh('stato','Stato','c-stato')}${sortTh('gen','Gen.','c-gen','Canali generati')}
           ${sortTh('tel',icon('phone',{noMargin:true}),'ck','Telefonata fatta')}
           ${sortTh('nr','NR','ck','NR = nessuna risposta alla telefonata (si imposta con «Rigenera NR» nella finestra Vedi)')}
           ${sortTh('wa',WHATSAPP_LOGO_SVG,'ck','WhatsApp inviato')}
@@ -2815,7 +2818,7 @@ function renderHistoryTab(){
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
             <tr data-id="${r.id}" class="${state.historyHighlight === r.id ? 'riga-sel' : ''}">
               <td title="${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}">${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit'})}<span class="ora">, ${new Date(r.data_creazione).toLocaleString('it-IT', {hour:'2-digit',minute:'2-digit'})}</span></td>
-              <td class="ck c-crm"><input type="checkbox" disabled ${leadFromCrm(r)?'checked':''} title="${leadFromCrm(r) ? 'Importato dal CRM' : 'Non importato dal CRM'}"></td>
+              <td class="ck"><span class="crm-dot${leadFromCrm(r)?' on':''}" role="img" aria-label="${leadFromCrm(r) ? 'Importato dal CRM' : 'Non importato dal CRM'}" title="${leadFromCrm(r) ? 'Importato dal CRM' : 'Non importato dal CRM'}"></span></td>
               <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}"><span class="nome-link" onclick="openHistoryItem('${r.id}')">${escapeHtml(r.dati_lead_input.nome || '—')}</span></td>
               <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
               <td class="c-stato">${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
