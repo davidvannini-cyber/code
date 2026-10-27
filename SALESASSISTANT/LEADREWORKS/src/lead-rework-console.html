@@ -189,7 +189,7 @@
     .tbl-storico{table-layout:fixed;width:100%;}
     .tbl-storico th:first-child,.tbl-storico td:first-child{width:62px;padding-left:4px;padding-right:2px;}
     .tbl-storico .ora{display:none;}
-    .tbl-storico th:nth-child(2),.tbl-storico td:nth-child(2){overflow:hidden;text-overflow:ellipsis;}
+    .tbl-storico th:nth-child(3),.tbl-storico td:nth-child(3){overflow:hidden;text-overflow:ellipsis;}
     .tbl-storico .nome-link{display:block;overflow:hidden;text-overflow:ellipsis;}
     .tbl-storico th:last-child,.tbl-storico td.acts{width:126px;padding-left:2px;padding-right:2px;}
     .tbl-storico .acts .btn-ghost{padding:2px 2px;}
@@ -2485,6 +2485,7 @@ function setHistoryPref(key, value){
 /* Colonne ordinabili (clic sull'intestazione): first = direzione al primo clic (le spunte partono da «spuntati prima»). */
 const HISTORY_COLS = {
   data:     { label:"Data",     first:"desc", val:r => r.data_creazione || "" },
+  crm:      { label:"CRM",      first:"desc", val:r => leadFromCrm(r) ? 1 : 0 },
   nome:     { label:"Cliente",  first:"asc",  val:r => String(r.dati_lead_input.nome||"") },
   prodotto: { label:"Prodotto", first:"asc",  val:r => String(r.dati_lead_input.prodotto||"") },
   stato:    { label:"Stato",    first:"asc",  val:r => Number(r.stato_lead) || 0 },
@@ -2497,6 +2498,9 @@ const HISTORY_COLS = {
   fu:       { label:"Follow up", first:"desc", val:r => r.followup ? 1 : 0 },
   fine:     { label:"Chiuso",   first:"desc", val:r => r.chiuso ? 1 : 0 }
 };
+/* Flag «CRM»: lead importato dal CRM (estensione Chrome o incolla dagli appunti, che portano crm_lead_id).
+   Resta spento per i lead scritti a mano e per quelli arrivati da Lead Collector. */
+function leadFromCrm(r){ const x = (r && r.dati_lead_input) || {}; return !!String(x.crm_lead_id||"").trim() && !String(x.lead_collector_id||"").trim(); }
 const HISTORY_SORTS = {};
 Object.entries(HISTORY_COLS).forEach(([k,c]) => ["asc","desc"].forEach(d => {
   const sign = d === "asc" ? 1 : -1;
@@ -2608,6 +2612,7 @@ async function esportaStoricoExcel(){
   await loadSheetJs();
   const righe = filteredHistoryList().map(r => ({
     "Data": new Date(r.data_creazione).toLocaleString('it-IT'),
+    "CRM": leadFromCrm(r) ? "Sì" : "No",
     "Cliente": r.dati_lead_input.nome || "",
     "Telefono": r.dati_lead_input.telefono1 || "",
     "Telefono (secondario)": r.dati_lead_input.telefono2 || "",
@@ -2795,7 +2800,7 @@ function renderHistoryTab(){
       ${filtered.length === 0 ? `<div class="hint">Nessun lead trovato.</div>` : `
       <div class="tbl-scroll"><table class="tbl-storico">
         <thead><tr>
-          ${sortTh('data','Data')}${sortTh('nome','Cliente')}${sortTh('prodotto','Prodotto','c-prod')}${sortTh('stato','Stato','c-stato')}${sortTh('gen','Gen.','c-gen','Canali generati')}
+          ${sortTh('data','Data')}${sortTh('crm','CRM','ck c-crm','CRM: lead importato dal CRM (non scritto a mano, non da Lead Collector)')}${sortTh('nome','Cliente')}${sortTh('prodotto','Prodotto','c-prod')}${sortTh('stato','Stato','c-stato')}${sortTh('gen','Gen.','c-gen','Canali generati')}
           ${sortTh('tel',icon('phone',{noMargin:true}),'ck','Telefonata fatta')}
           ${sortTh('nr','NR','ck','NR = nessuna risposta alla telefonata (si imposta con «Rigenera NR» nella finestra Vedi)')}
           ${sortTh('wa',WHATSAPP_LOGO_SVG,'ck','WhatsApp inviato')}
@@ -2808,6 +2813,7 @@ function renderHistoryTab(){
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
             <tr data-id="${r.id}" class="${state.historyHighlight === r.id ? 'riga-sel' : ''}">
               <td title="${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}">${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit'})}<span class="ora">, ${new Date(r.data_creazione).toLocaleString('it-IT', {hour:'2-digit',minute:'2-digit'})}</span></td>
+              <td class="ck c-crm"><input type="checkbox" disabled ${leadFromCrm(r)?'checked':''} title="${leadFromCrm(r) ? 'Importato dal CRM' : 'Non importato dal CRM'}"></td>
               <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}"><span class="nome-link" onclick="openHistoryItem('${r.id}')">${escapeHtml(r.dati_lead_input.nome || '—')}</span></td>
               <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
               <td class="c-stato">${escapeHtml(statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead)}</td>
