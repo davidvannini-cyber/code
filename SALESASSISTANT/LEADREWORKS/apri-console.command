@@ -20,14 +20,12 @@ DIR_URL="${DIR// /%20}"
 # stesso layout di background.js (browser-extension) e degli altri due pannelli
 # di Suggerimenti Vendita — menu 15% (menu_finestra.py, parte dal 35%) e
 # pannello chiamata 25% (Contents/MacOS/avvia, parte dal 50%). Layout approvato
-# dall'utente il 2026-09-29: tre finestre affiancate, tutte alte il 60%.
-BOUNDS=$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null)
-if [ -n "$BOUNDS" ]; then
-  SCREEN_W=$(echo "$BOUNDS" | awk -F', ' '{print $3}')
-  SCREEN_H=$(echo "$BOUNDS" | awk -F', ' '{print $4}')
-  COL_W=$(( SCREEN_W * 35 / 100 ))
-  COL_H=$(( SCREEN_H * 88 / 100 ))  # 88% dello schermo intero = circa 90% dell'area sotto la barra dei menu
-  open -na "Google Chrome" --args --profile-directory="$PROFILO" --app="file://$DIR_URL/src/lead-rework-console.html" --window-position=0,0 --window-size=${COL_W},${COL_H}
+# dall'utente il 2026-09-29: tre finestre affiancate; altezza portata al 90% il 2026-10-27.
+# Area libera dello schermo (senza barra dei menu e Dock), in percentuale: uguale su monitor esterno e portatile.
+GEO=$(osascript -l JavaScript -e 'ObjC.import("AppKit"); var s=$.NSScreen.screens.objectAtIndex(0); var f=s.frame, v=s.visibleFrame; [v.origin.x, f.size.height-(v.origin.y+v.size.height), v.size.width, v.size.height].map(Math.round).join(" ")' 2>/dev/null)
+set -- $GEO
+if [ $# -eq 4 ]; then
+  open -na "Google Chrome" --args --profile-directory="$PROFILO" --app="file://$DIR_URL/src/lead-rework-console.html" --window-position=$1,$2 --window-size=$(( $3 * 35 / 100 )),$(( $4 * 90 / 100 ))
 else
   # Fallback se osascript non è disponibile per qualche motivo: comportamento precedente.
   open -na "Google Chrome" --args --profile-directory="$PROFILO" --app="file://$DIR_URL/src/lead-rework-console.html" --start-maximized

@@ -551,11 +551,11 @@
   <div class="footer-copyright">© Designed and krafted by Momandis David Vannini</div>
 
 <script>
-// Posiziona la finestra accanto al menu: 25% larghezza, partenza al 50%, altezza 60%.
+// Posiziona la finestra accanto al menu: 25% larghezza, partenza al 50%, altezza 90% dell'area libera (come console e menu).
 (function () {
   function posiziona() {
     var l = screen.availLeft || 0, t = screen.availTop || 0;
-    var w = Math.round(screen.availWidth * 0.25), h = Math.round(screen.availHeight * 0.60);
+    var w = Math.round(screen.availWidth * 0.25), h = Math.round(screen.availHeight * 0.90);
     var x = l + Math.round(screen.availWidth * 0.50);
     try { window.resizeTo(w, h); window.moveTo(x, t); } catch (e) {}
   }

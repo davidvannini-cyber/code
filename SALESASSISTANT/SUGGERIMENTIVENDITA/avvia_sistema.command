@@ -279,18 +279,17 @@ avvia_sistema_completo() {
 
   # Layout a 3 finestre (stesso dell'app): console 35% · menu 15% · pannello
   # chiamata 25% (parte dal 50%), tutte alte circa il 90% dell'area di lavoro.
-  local bounds screen_w screen_h
-  bounds=$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null)
+  local geo
+  geo=$(osascript -l JavaScript -e 'ObjC.import("AppKit"); var s=$.NSScreen.screens.objectAtIndex(0); var f=s.frame, v=s.visibleFrame; [v.origin.x, f.size.height-(v.origin.y+v.size.height), v.size.width, v.size.height].map(Math.round).join(" ")' 2>/dev/null)
 
   # Apre Chrome in modalità app quando il server risponde.
   (
     until curl -s -o /dev/null "http://localhost:8766/"; do sleep 0.3; done
-    if [ -n "$bounds" ]; then
-      screen_w=$(echo "$bounds" | awk -F', ' '{print $3}')
-      screen_h=$(echo "$bounds" | awk -F', ' '{print $4}')
+    set -- $geo
+    if [ $# -eq 4 ]; then
       open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url" \
-        --window-position=$(( screen_w * 50 / 100 )),0 \
-        --window-size=$(( screen_w * 25 / 100 )),$(( screen_h * 88 / 100 ))
+        --window-position=$(( $1 + $3 * 50 / 100 )),$2 \
+        --window-size=$(( $3 * 25 / 100 )),$(( $4 * 90 / 100 ))
     else
       open -na "Google Chrome" --args --profile-directory="$PROFILO_CHROME" --app="$url"
     fi

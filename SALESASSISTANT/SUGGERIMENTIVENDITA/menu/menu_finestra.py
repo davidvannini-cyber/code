@@ -76,7 +76,8 @@ def calcola_rettangolo_finestra():
     x = area.origin.x + area.size.width * OFFSET_FRAZIONE
     larghezza = area.size.width * LARGHEZZA_FRAZIONE
     altezza = area.size.height * ALTEZZA_FRAZIONE
-    y = area.size.height - altezza
+    # in alto, subito sotto la barra dei menu (origine.y conta se il Dock è in basso, come sul portatile)
+    y = area.origin.y + area.size.height - altezza
     return NSMakeRect(x, y, larghezza, altezza)
 
 AZIONI_VALIDE = {
@@ -318,6 +319,9 @@ def crea_finestra(eseguibile, project_root):
         rettangolo, stile, NSBackingStoreBuffered, False
     )
     finestra.setTitle_("Suggerimenti Vendita")
+    # il rettangolo sopra è quello dell'INTERA finestra (barra del titolo compresa), non del solo contenuto:
+    # initWithContentRect lo allungava della barra del titolo (~28 px). Si imposta di nuovo come cornice.
+    finestra.setFrame_display_(rettangolo, False)
     # Niente più NSFloatingWindowLevel: con le 3 finestre affiancate in
     # colonne fisse (vedi calcola_rettangolo_finestra) non deve stare sempre
     # sopra le altre due, altrimenti le copre quando si sovrappongono.
