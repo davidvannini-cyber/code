@@ -291,3 +291,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-26 | `9c289e3` | LEAD-COLLECTOR: PDF di istruzioni con procedura di importazione in LEADREWORKS (LEAD-COLLECTOR/istruzioni/), REGISTRO-SALVATAGGI.md | `git checkout 9c289e3` |
 | 2026-10-27 | `360e764` | LEADREWORKS: intestazioni colonne dello Storico Lead cliccabili per ordinare (SALESASSISTANT/LEADREWORKS/src/lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout 360e764` |
 | 2026-10-27 | `d17cb87` | LEADREWORKS: colonna flag «CRM» nello Storico Lead (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout d17cb87` |
+| 2026-10-27 | `a6a3814` | LEADREWORKS: corretto «[object Object]» nel campo Motivazione rifiuto (estensione Chrome crm-content.js e importazione nella console), REGISTRO-SALVATAGGI.md | `git checkout a6a3814` |

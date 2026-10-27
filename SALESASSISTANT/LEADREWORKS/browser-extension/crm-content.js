@@ -16,6 +16,8 @@ function stripHtml(html) {
 // tenerne una copia qui, così restano allineate se il CRM cambia le etichette.
 function resolveEnumLabel(options, value) {
   if (!value) return "";
+  // il CRM può dare il valore già come oggetto {value, label}: si prende l'etichetta, mai l'oggetto intero
+  if (typeof value === "object") return String(value.label || value.name || value.value || "");
   const found = (options || []).find((o) => o.value === value);
   return found ? found.label : "";
 }
@@ -111,7 +113,7 @@ function readCrmPageData() {
   if (deals.length) {
     const deal = deals[0];
     if (deal.goal && deal.goal.formatted) prezzo_esistente = deal.goal.formatted;
-    if (deal.lost_reason) motivazione_rifiuto = resolveEnumLabel(dealLostReasons, deal.lost_reason) || deal.lost_reason;
+    if (deal.lost_reason) motivazione_rifiuto = resolveEnumLabel(dealLostReasons, deal.lost_reason) || (typeof deal.lost_reason === "string" ? deal.lost_reason : "");
     const dp = (deal.deal_products || [])[0];
     if (dp && dp.product && dp.product.name) prodottoNome = dp.product.name;
   }

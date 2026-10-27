@@ -1759,7 +1759,9 @@ function applyCrmImport(data){
   state.draft._extractionAttempted = true;
   state.draft._showAppt = true;
   const setIfPresent = (key) => {
-    if (data[key] !== undefined && String(data[key]).trim() !== "") state.draft[key] = String(data[key]).trim();
+    let v = data[key];
+    if (v && typeof v === "object") v = v.label || v.name || v.value || ""; // mai «[object Object]» nei campi
+    if (v !== undefined && String(v).trim() !== "") state.draft[key] = String(v).trim();
   };
   ["nome","zona","telefono1","email","note","storico","prezzo_esistente","motivazione_rifiuto","data_appuntamento","orario_appuntamento","indirizzo","crm_lead_id","data_attivita"].forEach(setIfPresent);
   if (data.prodotto && state.profile.prodotti_selezionabili.includes(data.prodotto)){
