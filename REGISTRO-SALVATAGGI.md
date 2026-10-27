@@ -294,3 +294,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-27 | `a6a3814` | LEADREWORKS: corretto «[object Object]» nel campo Motivazione rifiuto (estensione Chrome crm-content.js e importazione nella console), REGISTRO-SALVATAGGI.md | `git checkout a6a3814` |
 | 2026-10-27 | `a5ace61` | LEADREWORKS: flag CRM dello Storico modificabile a mano (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout a5ace61` |
 | 2026-10-27 | `d5be41d` | LEADREWORKS: annullata la modifica «flag CRM modificabile a mano»: la casella torna solo automatica (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout d5be41d` |
+| 2026-10-27 | `ef22c04` | LEADREWORKS: colonna CRM dello Storico con cerchietto vuoto / con pallino al posto della casella (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout ef22c04` |
