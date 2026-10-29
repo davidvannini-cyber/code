@@ -2645,7 +2645,7 @@ const EXPORT_COLS = [
   { k:"Lavorato",         w:10, pdf:1.4, flag:true, v:r => r.lavorato ? "Sì" : "No" },
   { k:"Follow up",        w:10, pdf:1.4, flag:true, v:r => r.followup ? "Sì" : "No" },
   { k:"Chiuso",           w:10, pdf:1.2, flag:true, v:r => r.chiuso ? "Sì" : "No" },
-  { k:"Note",             w:40, pdf:4,   v:r => r.dati_lead_input.note || "" }
+  { k:"Note",             w:40, pdf:4,   v:r => r.note_ym || "" }
 ];
 /* Scelta delle colonne da esportare (vale per Excel e PDF): salvata nel browser, comodità e basta. */
 const EXPORT_COLS_DEFAULT = ["Data","Cliente","Telefono","Email","Zona","Prodotto","Stato","CRM","ID CRM","Telefonata","NR","WhatsApp","Email inviata","Lavorato","Follow up","Chiuso","Note"];
