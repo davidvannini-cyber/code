@@ -2647,30 +2647,53 @@ const EXPORT_COLS = [
   { k:"Chiuso",           w:10, pdf:1.2, flag:true, v:r => r.chiuso ? "Sì" : "No" },
   { k:"Note",             w:40, pdf:4,   v:r => r.note_ym || "" }
 ];
-/* Scelta delle colonne da esportare (vale per Excel e PDF): salvata nel browser, comodità e basta. */
+/* Scelta delle colonne: si apre cliccando «Esporta Excel» / «Esporta PDF», una scelta salvata per ciascun formato (solo comodità, nel browser). */
 const EXPORT_COLS_DEFAULT = ["Data","Cliente","Telefono","Email","Zona","Prodotto","Stato","CRM","ID CRM","Telefonata","NR","WhatsApp","Email inviata","Lavorato","Follow up","Chiuso","Note"];
-function loadExportColsPref(){
-  try { const a = JSON.parse(localStorage.getItem(LOCAL_PREFIX+"export_cols") || "null"); if (Array.isArray(a) && a.length) return a; } catch(e){}
+function loadExportColsPref(fmt){
+  try { const a = JSON.parse(localStorage.getItem(LOCAL_PREFIX+"export_cols_"+fmt) || "null"); if (Array.isArray(a) && a.length) return a; } catch(e){}
   return EXPORT_COLS_DEFAULT.slice();
 }
-function activeExportCols(){
-  if (!state.exportCols) state.exportCols = loadExportColsPref();
-  return EXPORT_COLS.filter(c => state.exportCols.includes(c.k));
+function exportSelezionePicker(fmt){
+  const old = document.getElementById("export_picker"); if (old) old.remove();
+  const sel = new Set(loadExportColsPref(fmt));
+  const titolo = fmt === "xlsx" ? "Esporta in Excel" : "Esporta in PDF";
+  const ov = document.createElement("div");
+  ov.id = "export_picker"; ov.className = "modal-overlay";
+  ov.innerHTML = `<div class="modal" style="max-width:460px;">
+    <h2 style="margin:0 0 4px;">${titolo}</h2>
+    <div class="small" style="margin-bottom:10px;color:#6b7280;">Scegli i campi da includere (${filteredHistoryList().length} lead mostrati).</div>
+    <div style="display:flex;gap:14px;margin-bottom:8px;"><span class="hp-link" data-act="all">Seleziona tutti</span><span class="hp-link" data-act="none">Deseleziona tutti</span><span class="hp-link" data-act="def">Predefiniti</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;">
+      ${EXPORT_COLS.map(c => `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" data-k="${c.k}" ${sel.has(c.k)?'checked':''}> ${c.k}</label>`).join("")}
+    </div>
+    <div id="export_picker_msg" class="small" style="color:#b91c1c;min-height:16px;margin-top:8px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+      <button class="btn-ghost" data-act="cancel">Annulla</button>
+      <button class="btn-primary" data-act="go">${icon('download')}Esporta</button>
+    </div></div>`;
+  const boxes = () => Array.from(ov.querySelectorAll("input[data-k]"));
+  ov.addEventListener("click", ev => {
+    if (ev.target === ov) { ov.remove(); return; }
+    const act = ev.target.closest && ev.target.closest("[data-act]"); if (!act) return;
+    const a = act.getAttribute("data-act");
+    if (a === "cancel") ov.remove();
+    else if (a === "all") boxes().forEach(b => b.checked = true);
+    else if (a === "none") boxes().forEach(b => b.checked = false);
+    else if (a === "def") boxes().forEach(b => b.checked = EXPORT_COLS_DEFAULT.includes(b.getAttribute("data-k")));
+    else if (a === "go") {
+      const keys = boxes().filter(b => b.checked).map(b => b.getAttribute("data-k"));
+      if (!keys.length){ ov.querySelector("#export_picker_msg").textContent = "Seleziona almeno un campo."; return; }
+      try { localStorage.setItem(LOCAL_PREFIX+"export_cols_"+fmt, JSON.stringify(keys)); } catch(e){}
+      ov.remove();
+      const cols = EXPORT_COLS.filter(c => keys.includes(c.k));
+      (fmt === "xlsx" ? eseguiExcel : eseguiPdf)(cols);
+    }
+  });
+  document.body.appendChild(ov);
 }
-function toggleExportCol(k){
-  const cur = activeExportCols().map(c => c.k);
-  const next = cur.includes(k) ? cur.filter(x => x !== k) : EXPORT_COLS.map(c => c.k).filter(x => x === k || cur.includes(x));
-  if (!next.length) return;
-  state.exportCols = next;
-  try { localStorage.setItem(LOCAL_PREFIX+"export_cols", JSON.stringify(next)); } catch(e){}
-  render();
-}
-function setExportColsAll(all){
-  state.exportCols = all ? EXPORT_COLS.map(c => c.k) : EXPORT_COLS_DEFAULT.slice();
-  try { localStorage.setItem(LOCAL_PREFIX+"export_cols", JSON.stringify(state.exportCols)); } catch(e){}
-  render();
-}
-function exportRows(recs){ const cols = activeExportCols(); return (recs || filteredHistoryList()).map(r => cols.map(c => c.v(r))); }
+function esportaStoricoExcel(){ exportSelezionePicker("xlsx"); }
+function esportaStoricoPdf(){ exportSelezionePicker("pdf"); }
+function exportRows(recs, cols){ return (recs || filteredHistoryList()).map(r => cols.map(c => c.v(r))); }
 /* Colore riga nell'Excel secondo il punto del flusso: chiuso > follow up > lavorato > da lavorare. */
 function exportRowColor(r){ return r.chiuso ? "FFDBEAFE" : r.followup ? "FFFEF3C7" : r.lavorato ? "FFDCFCE7" : "FFFFFFFF"; }
 function exportFileName(ext){ return "storico_lead_" + new Date().toISOString().slice(0,10) + "." + ext; }
@@ -2709,14 +2732,14 @@ function loadScriptOnce(globalName, src, cacheKey){
   return p;
 }
 
-async function esportaStoricoExcel(){
-  const recs = filteredHistoryList(), righe = exportRows(recs);
+async function eseguiExcel(cols){
+  const recs = filteredHistoryList(), righe = exportRows(recs, cols);
   try {
     await loadScriptOnce("ExcelJS", "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js", "exceljs");
   } catch(e){ alert("Non riesco a caricare la libreria Excel (serve internet).\n" + e.message); return; }
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("Storico Lead", { views:[{ state:"frozen", ySplit:3 }], pageSetup:{ orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0 } });
-  const COLS = activeExportCols(), nc = COLS.length;
+  const COLS = cols, nc = COLS.length;
   ws.columns = COLS.map(c => ({ width:c.w }));
   ws.mergeCells(1, 1, 1, nc);
   const t = ws.getCell(1, 1);
@@ -2759,13 +2782,13 @@ async function esportaStoricoExcel(){
   downloadBlob(new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), exportFileName("xlsx"));
 }
 
-async function esportaStoricoPdf(){
-  const recs = filteredHistoryList(), righe = exportRows(recs);
+async function eseguiPdf(scelte){
+  const recs = filteredHistoryList(), righe = exportRows(recs, scelte);
   try {
     await loadScriptOnce("jspdf", "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
     await loadScriptOnce("__autotable", "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js", "autotable");
   } catch(e){ alert("Non riesco a caricare la libreria PDF (serve internet).\n" + e.message); return; }
-  const cols = activeExportCols().map((c, i) => ({ c: Object.assign({}, c, { pdf:c.pdf || 2 }), i }));
+  const cols = scelte.map((c, i) => ({ c: Object.assign({}, c, { pdf:c.pdf || 2 }), i }));
   const doc = new window.jspdf.jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
   const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), margin = 28, avail = W - margin * 2;
   const tot = cols.reduce((a, x) => a + x.c.pdf, 0);
@@ -2924,15 +2947,9 @@ function renderHistoryTab(){
       </div>
       <div class="hp-row" style="margin-top:7px;">
         <button class="btn-secondary" onclick="esportaStoricoExcel()" title="Esporta in Excel i lead mostrati (filtri e ricerca applicati)">${icon('download')}Esporta Excel</button>
-        <button class="btn-ghost" onclick="state.exportColsOpen=!state.exportColsOpen; render();" title="Scegli le colonne di Excel e PDF">Colonne (${activeExportCols().length}) ${state.exportColsOpen ? '▾' : '▸'}</button>
         <button class="btn-secondary" onclick="esportaStoricoPdf()" title="Esporta in PDF i lead mostrati (filtri e ricerca applicati)">${icon('download')}Esporta PDF</button>
         <button class="btn-ghost hp-filtri" style="margin-left:auto;" onclick="state.historyFiltersOpen=!state.historyFiltersOpen; render();">${icon('settings')}Filtri <span class="hp-badge">${activeHistoryFilters()}</span> ${state.historyFiltersOpen ? '▾' : '▸'}</button>
       </div>
-      ${state.exportColsOpen ? `
-      <div class="hp-row" style="margin-top:7px;flex-wrap:wrap;gap:4px 14px;">
-        ${EXPORT_COLS.map(c => `<label class="small" style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;"><input type="checkbox" ${activeExportCols().includes(c)?'checked':''} onchange="toggleExportCol('${c.k}')"> ${c.k}</label>`).join("")}
-        <span class="hp-link" onclick="setExportColsAll(true)">Tutte</span> <span class="hp-link" onclick="setExportColsAll(false)">Predefinite</span>
-      </div>` : ""}
       ${state.historyFiltersOpen ? `
       <div class="hp-grid">
         <div><span class="hp-lbl">Stato</span>
