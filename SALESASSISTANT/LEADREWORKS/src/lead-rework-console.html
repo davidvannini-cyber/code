@@ -601,7 +601,7 @@ let state = {
   tab: "nuovo",
   profile: null,
   leadsHistory: {},
-  historyFilter: Object.assign({ stato:"", da:"", a:"", lavorato:"", followup:"", chiuso:"", nascondiLavorati:false, nascondiFollowup:false, nascondiChiusi:false, ordina:"data_desc" }, loadHistoryPrefs()),
+  historyFilter: Object.assign({ stato:"", da:"", a:"", lavorato:"", followup:"", chiuso:"", crm:"", nascondiLavorati:false, nascondiFollowup:false, nascondiChiusi:false, ordina:"data_desc" }, loadHistoryPrefs()),
   historyOpen: null,
   historyFiltersOpen: false,
   historySearch: "",
@@ -2575,6 +2575,8 @@ function filteredHistoryList(){
     if (state.historyFilter.followup === "no" && r.followup) return false;
     if (state.historyFilter.chiuso === "si" && !r.chiuso) return false;
     if (state.historyFilter.chiuso === "no" && r.chiuso) return false;
+    if (state.historyFilter.crm === "si" && !leadFromCrm(r)) return false;
+    if (state.historyFilter.crm === "no" && leadFromCrm(r)) return false;
     return true;
   });
 }
@@ -2625,31 +2627,167 @@ function activeHistoryQuick(){
   return Object.keys(HISTORY_QUICK).find(k => { const q = HISTORY_QUICK[k].set; return f.lavorato===q.lavorato && f.followup===q.followup && f.chiuso===q.chiuso; }) || "";
 }
 
+/* Colonne dell'esportazione (Excel e PDF): stesse righe, stesso ordine. w = larghezza Excel, pdf = peso nel PDF, flag = colonna Sì/No colorata. */
+const EXPORT_COLS = [
+  { k:"Data",             w:17, pdf:2.2, v:r => new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) },
+  { k:"Cliente",          w:26, pdf:3,   v:r => r.dati_lead_input.nome || "" },
+  { k:"Telefono",         w:16, pdf:2.2, v:r => r.dati_lead_input.telefono1 || "" },
+  { k:"Email",            w:28, pdf:3.2, v:r => r.dati_lead_input.email || "" },
+  { k:"Zona",             w:18, pdf:2,   v:r => r.dati_lead_input.zona || "" },
+  { k:"Prodotto",         w:16, pdf:0,   v:r => r.dati_lead_input.prodotto || "" },
+  { k:"Stato",            w:30, pdf:3.4, v:r => statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead||"") },
+  { k:"CRM",              w:8,  pdf:1,   flag:true, v:r => leadFromCrm(r) ? "Sì" : "No" },
+  { k:"ID CRM",           w:10, pdf:0,   v:r => r.dati_lead_input.crm_lead_id || "" },
+  { k:"Telefonata",           w:8,  pdf:1,   flag:true, v:r => (r.attivita && r.attivita.telefono) ? "Sì" : "No" },
+  { k:"NR",               w:8,  pdf:1,   v:r => (r.nr && r.nr.count) ? String(r.nr.count) : "" },
+  { k:"WhatsApp",         w:10, pdf:1.3, flag:true, v:r => (r.attivita && r.attivita.whatsapp) ? "Sì" : "No" },
+  { k:"Email inviata",    w:10, pdf:1.3, flag:true, v:r => (r.attivita && r.attivita.email) ? "Sì" : "No" },
+  { k:"Lavorato",         w:10, pdf:1.4, flag:true, v:r => r.lavorato ? "Sì" : "No" },
+  { k:"Follow up",        w:10, pdf:1.4, flag:true, v:r => r.followup ? "Sì" : "No" },
+  { k:"Chiuso",           w:10, pdf:1.2, flag:true, v:r => r.chiuso ? "Sì" : "No" },
+  { k:"Note",             w:40, pdf:4,   v:r => r.dati_lead_input.note || "" }
+];
+/* Scelta delle colonne da esportare (vale per Excel e PDF): salvata nel browser, comodità e basta. */
+const EXPORT_COLS_DEFAULT = ["Data","Cliente","Telefono","Email","Zona","Prodotto","Stato","CRM","ID CRM","Telefonata","NR","WhatsApp","Email inviata","Lavorato","Follow up","Chiuso","Note"];
+function loadExportColsPref(){
+  try { const a = JSON.parse(localStorage.getItem(LOCAL_PREFIX+"export_cols") || "null"); if (Array.isArray(a) && a.length) return a; } catch(e){}
+  return EXPORT_COLS_DEFAULT.slice();
+}
+function activeExportCols(){
+  if (!state.exportCols) state.exportCols = loadExportColsPref();
+  return EXPORT_COLS.filter(c => state.exportCols.includes(c.k));
+}
+function toggleExportCol(k){
+  const cur = activeExportCols().map(c => c.k);
+  const next = cur.includes(k) ? cur.filter(x => x !== k) : EXPORT_COLS.map(c => c.k).filter(x => x === k || cur.includes(x));
+  if (!next.length) return;
+  state.exportCols = next;
+  try { localStorage.setItem(LOCAL_PREFIX+"export_cols", JSON.stringify(next)); } catch(e){}
+  render();
+}
+function setExportColsAll(all){
+  state.exportCols = all ? EXPORT_COLS.map(c => c.k) : EXPORT_COLS_DEFAULT.slice();
+  try { localStorage.setItem(LOCAL_PREFIX+"export_cols", JSON.stringify(state.exportCols)); } catch(e){}
+  render();
+}
+function exportRows(){ const cols = activeExportCols(); return filteredHistoryList().map(r => cols.map(c => c.v(r))); }
+function exportFileName(ext){ return "storico_lead_" + new Date().toISOString().slice(0,10) + "." + ext; }
+function exportFilterSummary(){
+  const f = state.historyFilter, out = [];
+  if (f.stato){ const st = LEAD_STATES.find(s => String(s.id) === String(f.stato)); out.push("Stato: " + (st ? st.label : f.stato)); }
+  if (f.crm) out.push(f.crm === "si" ? "Solo da CRM" : "Solo non da CRM");
+  if (f.lavorato) out.push(f.lavorato === "si" ? "Solo lavorati" : "Solo da lavorare");
+  if (f.followup) out.push(f.followup === "si" ? "Solo con follow up" : "Solo senza follow up");
+  if (f.chiuso) out.push(f.chiuso === "si" ? "Solo chiusi" : "Solo non chiusi");
+  if (f.da) out.push("Dal " + f.da);
+  if (f.a) out.push("Al " + f.a);
+  if (f.nascondiLavorati) out.push("Lavorati nascosti");
+  if (f.nascondiFollowup) out.push("Follow up nascosti");
+  if (f.nascondiChiusi) out.push("Chiusi nascosti");
+  if (state.historySearch) out.push("Ricerca: «" + state.historySearch + "»");
+  return out.length ? out.join(" · ") : "Nessun filtro";
+}
+function downloadBlob(blob, name){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function loadScriptOnce(globalName, src, cacheKey){
+  if (window[globalName]) return Promise.resolve();
+  if (!loadScriptOnce._p) loadScriptOnce._p = {};
+  if (loadScriptOnce._p[cacheKey]) return loadScriptOnce._p[cacheKey];
+  const p = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src; script.onload = resolve; script.onerror = () => { delete loadScriptOnce._p[cacheKey]; reject(new Error("Caricamento libreria non riuscito: " + src)); };
+    document.head.appendChild(script);
+  });
+  loadScriptOnce._p[cacheKey] = p;
+  return p;
+}
+
 async function esportaStoricoExcel(){
-  await loadSheetJs();
-  const righe = filteredHistoryList().map(r => ({
-    "Data": new Date(r.data_creazione).toLocaleString('it-IT'),
-    "CRM": leadFromCrm(r) ? "Sì" : "No",
-    "Cliente": r.dati_lead_input.nome || "",
-    "Telefono": r.dati_lead_input.telefono1 || "",
-    "Telefono (secondario)": r.dati_lead_input.telefono2 || "",
-    "Email": r.dati_lead_input.email || "",
-    "Prodotto": r.dati_lead_input.prodotto || "",
-    "Zona": r.dati_lead_input.zona || "",
-    "Stato": statoById(r.stato_lead) ? statoById(r.stato_lead).label : r.stato_lead,
-    "Canali generati": (r.canali_generati||[]).join(", "),
-    "Telefonata": (r.attivita && r.attivita.telefono) ? "Sì" : "No",
-    "NR (nessuna risposta)": (r.nr && r.nr.count) ? ("Sì (" + r.nr.count + ")") : "No",
-    "WhatsApp": (r.attivita && r.attivita.whatsapp) ? "Sì" : "No",
-    "Email inviata": (r.attivita && r.attivita.email) ? "Sì" : "No",
-    "Lavorato": r.lavorato ? "Sì" : "No",
-    "Follow up": r.followup ? "Sì" : "No",
-    "Chiuso": r.chiuso ? "Sì" : "No"
-  }));
-  const foglio = XLSX.utils.json_to_sheet(righe);
-  const cartella = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(cartella, foglio, "Storico Lead");
-  XLSX.writeFile(cartella, "storico_lead_" + new Date().toISOString().slice(0,10) + ".xlsx");
+  const righe = exportRows();
+  try {
+    await loadScriptOnce("ExcelJS", "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js", "exceljs");
+  } catch(e){ alert("Non riesco a caricare la libreria Excel (serve internet).\n" + e.message); return; }
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Storico Lead", { views:[{ state:"frozen", ySplit:3 }], pageSetup:{ orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0 } });
+  const COLS = activeExportCols(), nc = COLS.length;
+  ws.columns = COLS.map(c => ({ width:c.w }));
+  ws.mergeCells(1, 1, 1, nc);
+  const t = ws.getCell(1, 1);
+  t.value = "Storico Lead — YesMobility · " + new Date().toLocaleDateString('it-IT') + " · " + righe.length + " lead";
+  t.font = { bold:true, size:14, color:{ argb:"FF12324F" } };
+  t.alignment = { vertical:"middle" };
+  ws.getRow(1).height = 24;
+  ws.mergeCells(2, 1, 2, nc);
+  const f = ws.getCell(2, 1);
+  f.value = "Filtri: " + exportFilterSummary();
+  f.font = { italic:true, size:10, color:{ argb:"FF6B7280" } };
+  const head = ws.getRow(3);
+  COLS.forEach((c, i) => {
+    const cell = head.getCell(i + 1);
+    cell.value = c.k;
+    cell.font = { bold:true, color:{ argb:"FFFFFFFF" } };
+    cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:"FF12324F" } };
+    cell.alignment = { vertical:"middle", horizontal:c.flag ? "center" : "left", wrapText:true };
+  });
+  head.height = 22;
+  const thin = { style:"thin", color:{ argb:"FFE2E8F0" } };
+  righe.forEach((riga, ri) => {
+    const row = ws.getRow(4 + ri);
+    riga.forEach((val, i) => {
+      const c = COLS[i], cell = row.getCell(i + 1);
+      cell.value = val;
+      cell.border = { top:thin, bottom:thin, left:thin, right:thin };
+      cell.alignment = { vertical:"top", horizontal:c.flag ? "center" : "left", wrapText:(c.k === "Note" || c.k === "Stato") };
+      if (ri % 2) cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:"FFF5F8FB" } };
+      if (c.flag && val === "Sì"){ cell.font = { bold:true, color:{ argb:"FF166534" } }; cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:"FFDCFCE7" } }; }
+      else if (c.flag){ cell.font = { color:{ argb:"FF9CA3AF" } }; }
+    });
+  });
+  ws.autoFilter = { from:{ row:3, column:1 }, to:{ row:3 + Math.max(righe.length, 1), column:nc } };
+  const buf = await wb.xlsx.writeBuffer();
+  downloadBlob(new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), exportFileName("xlsx"));
+}
+
+async function esportaStoricoPdf(){
+  const righe = exportRows();
+  try {
+    await loadScriptOnce("jspdf", "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
+    await loadScriptOnce("__autotable", "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js", "autotable").catch(e => { throw e; });
+  } catch(e){ alert("Non riesco a caricare la libreria PDF (serve internet).\n" + e.message); return; }
+  const cols = activeExportCols().map((c, i) => ({ c: Object.assign({}, c, { pdf:c.pdf || 2 }), i }));
+  const doc = new window.jspdf.jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+  const W = doc.internal.pageSize.getWidth(), margin = 28, tot = cols.reduce((a, x) => a + x.c.pdf, 0), avail = W - margin * 2;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(18, 50, 79);
+  doc.text("Storico Lead — YesMobility", margin, 32);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(107, 114, 128);
+  doc.text(righe.length + " lead · " + new Date().toLocaleDateString('it-IT') + " · " + exportFilterSummary(), margin, 46, { maxWidth:avail });
+  const columnStyles = {};
+  cols.forEach((x, j) => { columnStyles[j] = { cellWidth:avail * x.c.pdf / tot, halign:x.c.flag ? "center" : "left" }; });
+  doc.autoTable({
+    startY: 56, margin:{ left:margin, right:margin, bottom:30 },
+    head: [cols.map(x => x.c.k)],
+    body: righe.map(r => cols.map(x => r[x.i])),
+    styles: { fontSize:7.5, cellPadding:3, overflow:"linebreak", lineColor:[226,232,240], lineWidth:0.4 },
+    headStyles: { fillColor:[18,50,79], textColor:255, fontStyle:"bold" },
+    alternateRowStyles: { fillColor:[245,248,251] },
+    columnStyles,
+    didParseCell: d => {
+      if (d.section === "body" && cols[d.column.index].c.flag){
+        if (d.cell.raw === "Sì"){ d.cell.styles.fillColor = [220,252,231]; d.cell.styles.textColor = [22,101,52]; d.cell.styles.fontStyle = "bold"; }
+        else d.cell.styles.textColor = [156,163,175];
+      }
+    },
+    didDrawPage: () => {
+      doc.setFontSize(8); doc.setTextColor(107, 114, 128);
+      doc.text("Pagina " + doc.internal.getNumberOfPages(), W - margin, doc.internal.pageSize.getHeight() - 14, { align:"right" });
+    }
+  });
+  doc.save(exportFileName("pdf"));
 }
 
 /* --- Backup lead: file JSON esterno al browser, indipendente da localStorage e dal sync Git.
@@ -2727,10 +2865,10 @@ async function recoverFromAutoCopy(){
 
 function activeHistoryFilters(){
   const f = state.historyFilter;
-  return (f.stato?1:0) + (f.lavorato?1:0) + (f.followup?1:0) + (f.chiuso?1:0) + (f.da?1:0) + (f.a?1:0);
+  return (f.stato?1:0) + (f.lavorato?1:0) + (f.followup?1:0) + (f.chiuso?1:0) + (f.crm?1:0) + (f.da?1:0) + (f.a?1:0);
 }
 function resetHistoryFilters(){
-  Object.assign(state.historyFilter, { stato:"", da:"", a:"", lavorato:"", followup:"", chiuso:"" });
+  Object.assign(state.historyFilter, { stato:"", da:"", a:"", lavorato:"", followup:"", chiuso:"", crm:"" });
   render();
 }
 
@@ -2765,9 +2903,16 @@ function renderHistoryTab(){
         ${Object.entries(HISTORY_QUICK).map(([k,q]) => `<button class="${activeHistoryQuick()===k?'btn-primary':'btn-secondary'}" onclick="setHistoryQuick('${k}')">${q.label} (${all.filter(q.count).length})</button>`).join("")}
       </div>
       <div class="hp-row" style="margin-top:7px;">
-        <button class="btn-secondary" onclick="esportaStoricoExcel()">${icon('download')}Esporta storico</button>
+        <button class="btn-secondary" onclick="esportaStoricoExcel()" title="Esporta in Excel i lead mostrati (filtri e ricerca applicati)">${icon('download')}Esporta Excel</button>
+        <button class="btn-ghost" onclick="state.exportColsOpen=!state.exportColsOpen; render();" title="Scegli le colonne di Excel e PDF">Colonne (${activeExportCols().length}) ${state.exportColsOpen ? '▾' : '▸'}</button>
+        <button class="btn-secondary" onclick="esportaStoricoPdf()" title="Esporta in PDF i lead mostrati (filtri e ricerca applicati)">${icon('download')}Esporta PDF</button>
         <button class="btn-ghost hp-filtri" style="margin-left:auto;" onclick="state.historyFiltersOpen=!state.historyFiltersOpen; render();">${icon('settings')}Filtri <span class="hp-badge">${activeHistoryFilters()}</span> ${state.historyFiltersOpen ? '▾' : '▸'}</button>
       </div>
+      ${state.exportColsOpen ? `
+      <div class="hp-row" style="margin-top:7px;flex-wrap:wrap;gap:4px 14px;">
+        ${EXPORT_COLS.map(c => `<label class="small" style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;"><input type="checkbox" ${activeExportCols().includes(c)?'checked':''} onchange="toggleExportCol('${c.k}')"> ${c.k}</label>`).join("")}
+        <span class="hp-link" onclick="setExportColsAll(true)">Tutte</span> <span class="hp-link" onclick="setExportColsAll(false)">Predefinite</span>
+      </div>` : ""}
       ${state.historyFiltersOpen ? `
       <div class="hp-grid">
         <div><span class="hp-lbl">Stato</span>
@@ -2792,6 +2937,12 @@ function renderHistoryTab(){
             <option value="" ${state.historyFilter.chiuso===''?'selected':''}>Tutti i lead</option>
             <option value="si" ${state.historyFilter.chiuso==='si'?'selected':''}>Solo chiusi</option>
             <option value="no" ${state.historyFilter.chiuso==='no'?'selected':''}>Solo non chiusi</option>
+          </select></div>
+        <div><span class="hp-lbl">CRM</span>
+          <select onchange="state.historyFilter.crm=this.value; render();">
+            <option value="" ${!state.historyFilter.crm?'selected':''}>Tutti i lead</option>
+            <option value="si" ${state.historyFilter.crm==='si'?'selected':''}>Solo da CRM</option>
+            <option value="no" ${state.historyFilter.crm==='no'?'selected':''}>Solo non da CRM</option>
           </select></div>
         <div><span class="hp-lbl">Dal</span><input type="date" onchange="state.historyFilter.da=this.value; render();" value="${state.historyFilter.da}"></div>
         <div><span class="hp-lbl">Al</span><input type="date" onchange="state.historyFilter.a=this.value; render();" value="${state.historyFilter.a}"></div>

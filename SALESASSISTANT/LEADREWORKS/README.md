@@ -102,6 +102,11 @@ Non provato dal vivo: serve Lead Collector acceso e un'AI (Artifact o API key) s
 Flusso: **Lav.** (telefono/WhatsApp/email fatti) → **F.U.** (il lead ha dato un esito, follow up) → **Chiuso** (nessun altro intervento). F.U. e Chiuso si possono spuntare solo se Lav. è acceso e non dipendono l'uno dall'altro; togliendo Lav. su un lead con F.U./Chiuso chiede conferma e spegne tutte e tre. Campi `followup` e `chiuso` nel record (assenti = spenti), presenti anche nell'export Excel e nel backup.
 Filtri: nel pannello «Filtri» i menu **Lavorati / Follow up / Chiusi** (Tutti-Sì-No); sopra la tabella le scorciatoie con conteggio **Tutti · Da lavorare · Follow up aperti · Chiusi**; tre caselle indipendenti **Nascondi lavorati / follow up / chiusi** (la scelta resta salvata nel browser). Nascondere i lavorati nasconde anche F.U. e Chiusi, che esistono solo sui lavorati.
 
+## Storico: filtro CRM ed esportazione
+Nel pannello «Filtri» c'è il menu **CRM** (Tutti / Solo da CRM / Solo non da CRM; campo `historyFilter.crm`, conta nel numero dei filtri e viene azzerato da «Azzera filtri»). «Da CRM» = `leadFromCrm()` (ha `crm_lead_id` e non `lead_collector_id`).
+**Esporta Excel** (ora con ExcelJS da cdnjs: intestazione colorata, riga bloccata, filtri automatici, righe alternate, Sì verdi) ed **Esporta PDF** (jsPDF + autotable da cdnjs, A4 orizzontale) esportano i lead mostrati (filtri e ricerca applicati). Pulsante **Colonne**: scelta delle colonne, valida per Excel e PDF, salvata nel browser. Colonne disponibili (`EXPORT_COLS`): Data, Cliente, Telefono, Email, Zona, Prodotto, Stato, CRM, ID CRM, Telefonata, NR, WhatsApp, Email inviata, Lavorato, Follow up, Chiuso, Note (scelte da David; tolti Telefono 2 e Motivazione rifiuto).
+Provato con jsdom (librerie vere ExcelJS in Node, jsPDF simulato); **non provato** in un browser vero (aspetto grafico, download, PDF reale).
+
 ## Origine della libreria script
 Il PDF `SCRIPT_YesMobility.pdf` citato nella specifica non era disponibile nel
 filesystem. La libreria in `src/data/script-library.json` è stata ricostruita
