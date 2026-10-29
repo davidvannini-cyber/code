@@ -2695,7 +2695,7 @@ function esportaStoricoExcel(){ exportSelezionePicker("xlsx"); }
 function esportaStoricoPdf(){ exportSelezionePicker("pdf"); }
 function exportRows(recs, cols){ return (recs || filteredHistoryList()).map(r => cols.map(c => c.v(r))); }
 /* Colore riga nell'Excel secondo il punto del flusso: chiuso > follow up > lavorato > da lavorare. */
-function exportRowColor(r){ return r.chiuso ? "FFDBEAFE" : r.followup ? "FFFEF3C7" : r.lavorato ? "FFDCFCE7" : "FFFFFFFF"; }
+function exportRowColor(r){ return r.chiuso ? "FFE5E7EB" : r.followup ? "FFDCFCE7" : r.lavorato ? "FFFEF9C3" : "FFFFFFFF"; }
 function exportFileName(ext){ return "storico_lead_" + new Date().toISOString().slice(0,10) + "." + ext; }
 function exportFilterSummary(){
   const f = state.historyFilter, out = [];
@@ -2753,7 +2753,7 @@ async function eseguiExcel(cols){
   f.font = { italic:true, size:10, color:{ argb:"FF6B7280" } };
   ws.mergeCells(4 + righe.length + 1, 1, 4 + righe.length + 1, nc);
   const lg = ws.getCell(4 + righe.length + 1, 1);
-  lg.value = "Legenda righe: verde = lavorato · giallo = follow up aperto · azzurro = chiuso · bianco = da lavorare";
+  lg.value = "Legenda righe: bianco = da lavorare · giallo = lavorato · verde = follow up aperto · grigio = chiuso";
   lg.font = { italic:true, size:9, color:{ argb:"FF6B7280" } };
   const head = ws.getRow(3);
   COLS.forEach((c, i) => {
