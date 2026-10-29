@@ -2670,7 +2670,9 @@ function setExportColsAll(all){
   try { localStorage.setItem(LOCAL_PREFIX+"export_cols", JSON.stringify(state.exportCols)); } catch(e){}
   render();
 }
-function exportRows(){ const cols = activeExportCols(); return filteredHistoryList().map(r => cols.map(c => c.v(r))); }
+function exportRows(recs){ const cols = activeExportCols(); return (recs || filteredHistoryList()).map(r => cols.map(c => c.v(r))); }
+/* Colore riga nell'Excel secondo il punto del flusso: chiuso > follow up > lavorato > da lavorare. */
+function exportRowColor(r){ return r.chiuso ? "FFDBEAFE" : r.followup ? "FFFEF3C7" : r.lavorato ? "FFDCFCE7" : "FFFFFFFF"; }
 function exportFileName(ext){ return "storico_lead_" + new Date().toISOString().slice(0,10) + "." + ext; }
 function exportFilterSummary(){
   const f = state.historyFilter, out = [];
@@ -2708,7 +2710,7 @@ function loadScriptOnce(globalName, src, cacheKey){
 }
 
 async function esportaStoricoExcel(){
-  const righe = exportRows();
+  const recs = filteredHistoryList(), righe = exportRows(recs);
   try {
     await loadScriptOnce("ExcelJS", "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js", "exceljs");
   } catch(e){ alert("Non riesco a caricare la libreria Excel (serve internet).\n" + e.message); return; }
@@ -2726,6 +2728,10 @@ async function esportaStoricoExcel(){
   const f = ws.getCell(2, 1);
   f.value = "Filtri: " + exportFilterSummary();
   f.font = { italic:true, size:10, color:{ argb:"FF6B7280" } };
+  ws.mergeCells(4 + righe.length + 1, 1, 4 + righe.length + 1, nc);
+  const lg = ws.getCell(4 + righe.length + 1, 1);
+  lg.value = "Legenda righe: verde = lavorato · giallo = follow up aperto · azzurro = chiuso · bianco = da lavorare";
+  lg.font = { italic:true, size:9, color:{ argb:"FF6B7280" } };
   const head = ws.getRow(3);
   COLS.forEach((c, i) => {
     const cell = head.getCell(i + 1);
@@ -2743,9 +2749,9 @@ async function esportaStoricoExcel(){
       cell.value = val;
       cell.border = { top:thin, bottom:thin, left:thin, right:thin };
       cell.alignment = { vertical:"top", horizontal:c.flag ? "center" : "left", wrapText:(c.k === "Note" || c.k === "Stato") };
-      if (ri % 2) cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:"FFF5F8FB" } };
-      if (c.flag && val === "Sì"){ cell.font = { bold:true, color:{ argb:"FF166534" } }; cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:"FFDCFCE7" } }; }
-      else if (c.flag){ cell.font = { color:{ argb:"FF9CA3AF" } }; }
+      cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:exportRowColor(recs[ri]) } };
+      if (c.flag && val === "Sì") cell.font = { bold:true, color:{ argb:"FF12324F" } };
+      else if (c.flag) cell.font = { color:{ argb:"FF9CA3AF" } };
     });
   });
   ws.autoFilter = { from:{ row:3, column:1 }, to:{ row:3 + Math.max(righe.length, 1), column:nc } };
@@ -2754,22 +2760,35 @@ async function esportaStoricoExcel(){
 }
 
 async function esportaStoricoPdf(){
-  const righe = exportRows();
+  const recs = filteredHistoryList(), righe = exportRows(recs);
   try {
     await loadScriptOnce("jspdf", "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
-    await loadScriptOnce("__autotable", "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js", "autotable").catch(e => { throw e; });
+    await loadScriptOnce("__autotable", "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js", "autotable");
   } catch(e){ alert("Non riesco a caricare la libreria PDF (serve internet).\n" + e.message); return; }
   const cols = activeExportCols().map((c, i) => ({ c: Object.assign({}, c, { pdf:c.pdf || 2 }), i }));
   const doc = new window.jspdf.jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
-  const W = doc.internal.pageSize.getWidth(), margin = 28, tot = cols.reduce((a, x) => a + x.c.pdf, 0), avail = W - margin * 2;
-  doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(18, 50, 79);
-  doc.text("Storico Lead — YesMobility", margin, 32);
-  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(107, 114, 128);
-  doc.text(righe.length + " lead · " + new Date().toLocaleDateString('it-IT') + " · " + exportFilterSummary(), margin, 46, { maxWidth:avail });
+  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), margin = 28, avail = W - margin * 2;
+  const tot = cols.reduce((a, x) => a + x.c.pdf, 0);
+  // fascia blu con titolo
+  doc.setFillColor(18, 50, 79); doc.rect(0, 0, W, 54, "F");
+  doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(255, 255, 255);
+  doc.text("Storico Lead — YesMobility", margin, 26);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+  doc.text(new Date().toLocaleDateString('it-IT') + " · " + exportFilterSummary(), margin, 43, { maxWidth:avail });
+  // riepilogo
+  const n = x => recs.filter(x).length;
+  const riep = [["Totale", recs.length], ["Lavorati", n(r => r.lavorato)], ["Follow up", n(r => r.followup)], ["Chiusi", n(r => r.chiuso)], ["Da CRM", n(leadFromCrm)]];
+  const bw = avail / riep.length;
+  riep.forEach(([lab, val], i) => {
+    const x = margin + i * bw;
+    doc.setFillColor(245, 248, 251); doc.setDrawColor(226, 232, 240); doc.roundedRect(x + 2, 64, bw - 4, 38, 4, 4, "FD");
+    doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(18, 50, 79); doc.text(String(val), x + bw / 2, 84, { align:"center" });
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(107, 114, 128); doc.text(lab, x + bw / 2, 96, { align:"center" });
+  });
   const columnStyles = {};
   cols.forEach((x, j) => { columnStyles[j] = { cellWidth:avail * x.c.pdf / tot, halign:x.c.flag ? "center" : "left" }; });
   doc.autoTable({
-    startY: 56, margin:{ left:margin, right:margin, bottom:30 },
+    startY: 114, margin:{ left:margin, right:margin, top:30, bottom:30 },
     head: [cols.map(x => x.c.k)],
     body: righe.map(r => cols.map(x => r[x.i])),
     styles: { fontSize:7.5, cellPadding:3, overflow:"linebreak", lineColor:[226,232,240], lineWidth:0.4 },
@@ -2778,15 +2797,16 @@ async function esportaStoricoPdf(){
     columnStyles,
     didParseCell: d => {
       if (d.section === "body" && cols[d.column.index].c.flag){
-        if (d.cell.raw === "Sì"){ d.cell.styles.fillColor = [220,252,231]; d.cell.styles.textColor = [22,101,52]; d.cell.styles.fontStyle = "bold"; }
+        if (d.cell.raw === "Sì"){ d.cell.styles.textColor = [18,50,79]; d.cell.styles.fontStyle = "bold"; }
         else d.cell.styles.textColor = [156,163,175];
       }
-    },
-    didDrawPage: () => {
-      doc.setFontSize(8); doc.setTextColor(107, 114, 128);
-      doc.text("Pagina " + doc.internal.getNumberOfPages(), W - margin, doc.internal.pageSize.getHeight() - 14, { align:"right" });
     }
   });
+  const pagine = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pagine; p++){
+    doc.setPage(p); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(107, 114, 128);
+    doc.text("Pagina " + p + " di " + pagine, W - margin, H - 14, { align:"right" });
+  }
   doc.save(exportFileName("pdf"));
 }
 
