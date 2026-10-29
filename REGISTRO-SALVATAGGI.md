@@ -306,3 +306,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-29 | `5adfdbb` | LEADREWORKS: colonna Note dell'esportazione ora prende il campo «Note YM» di Lead Rework (note_ym) invece delle note del CRM (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 5adfdbb` |
 | 2026-10-29 | `2a803c5` | LEADREWORKS: «Esporta Excel» e «Esporta PDF» aprono un selettore dei campi (tolto il pulsante Colonne) (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 2a803c5` |
 | 2026-10-29 | `825d310` | LEADREWORKS: colori righe Excel: bianco da lavorare, giallo lavorato, verde follow up, grigio chiuso (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 825d310` |
+| 2026-10-29 | `408ddb0` | LEADREWORKS: nel selettore di esportazione scelta lead Solo CRM / Solo NO CRM / Entrambi (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 408ddb0` |

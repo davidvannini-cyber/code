@@ -2557,7 +2557,8 @@ function setHistorySearch(v){
   if (el){ el.focus(); try { el.setSelectionRange(pos, pos); } catch(e){} }
 }
 
-function filteredHistoryList(){
+function filteredHistoryList(crmOverride){
+  const crmF = crmOverride === undefined ? state.historyFilter.crm : crmOverride;
   const sorter = (HISTORY_SORTS[state.historyFilter.ordina] || HISTORY_SORTS.data_desc).cmp;
   const tokens = searchNorm(state.historySearch).split(/\s+/).filter(Boolean);
   const all = Object.values(state.leadsHistory).sort(sorter);
@@ -2575,8 +2576,8 @@ function filteredHistoryList(){
     if (state.historyFilter.followup === "no" && r.followup) return false;
     if (state.historyFilter.chiuso === "si" && !r.chiuso) return false;
     if (state.historyFilter.chiuso === "no" && r.chiuso) return false;
-    if (state.historyFilter.crm === "si" && !leadFromCrm(r)) return false;
-    if (state.historyFilter.crm === "no" && leadFromCrm(r)) return false;
+    if (crmF === "si" && !leadFromCrm(r)) return false;
+    if (crmF === "no" && leadFromCrm(r)) return false;
     return true;
   });
 }
@@ -2661,7 +2662,11 @@ function exportSelezionePicker(fmt){
   ov.id = "export_picker"; ov.className = "modal-overlay";
   ov.innerHTML = `<div class="modal" style="max-width:460px;">
     <h2 style="margin:0 0 4px;">${titolo}</h2>
-    <div class="small" style="margin-bottom:10px;color:#6b7280;">Scegli i campi da includere (${filteredHistoryList().length} lead mostrati).</div>
+    <div class="small" style="margin-bottom:10px;color:#6b7280;">Scegli i campi da includere <span id="export_picker_cnt"></span></div>
+    <div style="margin-bottom:10px;"><b>Lead da esportare:</b>
+      <div style="display:flex;gap:16px;margin-top:4px;">
+        ${[["si","Solo CRM"],["no","Solo NO CRM"],["","Entrambi"]].map(([v,l]) => `<label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="export_crm" value="${v}" ${(state.historyFilter.crm||"")===v?"checked":""}> ${l}</label>`).join("")}
+      </div></div>
     <div style="display:flex;gap:14px;margin-bottom:8px;"><span class="hp-link" data-act="all">Seleziona tutti</span><span class="hp-link" data-act="none">Deseleziona tutti</span><span class="hp-link" data-act="def">Predefiniti</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;">
       ${EXPORT_COLS.map(c => `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" data-k="${c.k}" ${sel.has(c.k)?'checked':''}> ${c.k}</label>`).join("")}
@@ -2684,23 +2689,27 @@ function exportSelezionePicker(fmt){
       const keys = boxes().filter(b => b.checked).map(b => b.getAttribute("data-k"));
       if (!keys.length){ ov.querySelector("#export_picker_msg").textContent = "Seleziona almeno un campo."; return; }
       try { localStorage.setItem(LOCAL_PREFIX+"export_cols_"+fmt, JSON.stringify(keys)); } catch(e){}
-      ov.remove();
       const cols = EXPORT_COLS.filter(c => keys.includes(c.k));
-      (fmt === "xlsx" ? eseguiExcel : eseguiPdf)(cols);
+      const crm = (ov.querySelector("input[name=export_crm]:checked") || {}).value || "";
+      ov.remove();
+      (fmt === "xlsx" ? eseguiExcel : eseguiPdf)(cols, crm);
     }
   });
+  const aggiornaConteggio = () => { const v = (ov.querySelector("input[name=export_crm]:checked") || {}).value || ""; ov.querySelector("#export_picker_cnt").textContent = "(" + filteredHistoryList(v).length + " lead con i filtri attuali)"; };
+  ov.addEventListener("change", aggiornaConteggio);
   document.body.appendChild(ov);
+  aggiornaConteggio();
 }
 function esportaStoricoExcel(){ exportSelezionePicker("xlsx"); }
 function esportaStoricoPdf(){ exportSelezionePicker("pdf"); }
-function exportRows(recs, cols){ return (recs || filteredHistoryList()).map(r => cols.map(c => c.v(r))); }
+function exportRows(recs, cols){ return recs.map(r => cols.map(c => c.v(r))); }
 /* Colore riga nell'Excel secondo il punto del flusso: chiuso > follow up > lavorato > da lavorare. */
 function exportRowColor(r){ return r.chiuso ? "FFE5E7EB" : r.followup ? "FFDCFCE7" : r.lavorato ? "FFFEF9C3" : "FFFFFFFF"; }
 function exportFileName(ext){ return "storico_lead_" + new Date().toISOString().slice(0,10) + "." + ext; }
-function exportFilterSummary(){
+function exportFilterSummary(crm){
   const f = state.historyFilter, out = [];
   if (f.stato){ const st = LEAD_STATES.find(s => String(s.id) === String(f.stato)); out.push("Stato: " + (st ? st.label : f.stato)); }
-  if (f.crm) out.push(f.crm === "si" ? "Solo da CRM" : "Solo non da CRM");
+  if (crm) out.push(crm === "si" ? "Solo CRM" : "Solo NO CRM");
   if (f.lavorato) out.push(f.lavorato === "si" ? "Solo lavorati" : "Solo da lavorare");
   if (f.followup) out.push(f.followup === "si" ? "Solo con follow up" : "Solo senza follow up");
   if (f.chiuso) out.push(f.chiuso === "si" ? "Solo chiusi" : "Solo non chiusi");
@@ -2732,8 +2741,8 @@ function loadScriptOnce(globalName, src, cacheKey){
   return p;
 }
 
-async function eseguiExcel(cols){
-  const recs = filteredHistoryList(), righe = exportRows(recs, cols);
+async function eseguiExcel(cols, crm){
+  const recs = filteredHistoryList(crm), righe = exportRows(recs, cols);
   try {
     await loadScriptOnce("ExcelJS", "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js", "exceljs");
   } catch(e){ alert("Non riesco a caricare la libreria Excel (serve internet).\n" + e.message); return; }
@@ -2749,7 +2758,7 @@ async function eseguiExcel(cols){
   ws.getRow(1).height = 24;
   ws.mergeCells(2, 1, 2, nc);
   const f = ws.getCell(2, 1);
-  f.value = "Filtri: " + exportFilterSummary();
+  f.value = "Filtri: " + exportFilterSummary(crm);
   f.font = { italic:true, size:10, color:{ argb:"FF6B7280" } };
   ws.mergeCells(4 + righe.length + 1, 1, 4 + righe.length + 1, nc);
   const lg = ws.getCell(4 + righe.length + 1, 1);
@@ -2782,8 +2791,8 @@ async function eseguiExcel(cols){
   downloadBlob(new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), exportFileName("xlsx"));
 }
 
-async function eseguiPdf(scelte){
-  const recs = filteredHistoryList(), righe = exportRows(recs, scelte);
+async function eseguiPdf(scelte, crm){
+  const recs = filteredHistoryList(crm), righe = exportRows(recs, scelte);
   try {
     await loadScriptOnce("jspdf", "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf");
     await loadScriptOnce("__autotable", "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js", "autotable");
@@ -2797,7 +2806,7 @@ async function eseguiPdf(scelte){
   doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(255, 255, 255);
   doc.text("Storico Lead — YesMobility", margin, 26);
   doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-  doc.text(new Date().toLocaleDateString('it-IT') + " · " + exportFilterSummary(), margin, 43, { maxWidth:avail });
+  doc.text(new Date().toLocaleDateString('it-IT') + " · " + exportFilterSummary(crm), margin, 43, { maxWidth:avail });
   // riepilogo
   const n = x => recs.filter(x).length;
   const riep = [["Totale", recs.length], ["Lavorati", n(r => r.lavorato)], ["Follow up", n(r => r.followup)], ["Chiusi", n(r => r.chiuso)], ["Da CRM", n(leadFromCrm)]];
