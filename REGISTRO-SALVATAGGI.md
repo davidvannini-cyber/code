@@ -315,3 +315,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-01 | `fd6ad68` | Sync.command allinea anche code-priv; RILEVAZIONE-PREZZI copiato nel repository privato code-priv (lavoro li'), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout fd6ad68` |
 | 2026-11-01 | `3d80da5` | RILEVAZIONE-PREZZI (ora in code-priv): email dei prezzi attiva sul Mac mini, aggiornamento da code-priv, REGISTRO-SALVATAGGI.md | `git checkout 3d80da5` |
 | 2026-11-01 | `bf3907d` | RILEVAZIONE-PREZZI (code-priv): nuovo aspetto della mail dei prezzi (mail.py, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout bf3907d` |
+| 2026-11-01 | `6b64bfa` | RILEVAZIONE-PREZZI (code-priv): periodi scelti dalla pagina web, soggiorni da 5 notti (server.py, rileva.py, static/index.html, config.json, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 6b64bfa` |
