@@ -1,0 +1,22 @@
+{
+  "zona": {
+    "nome": "Pievepelago",
+    "lat": 44.2208,
+    "lng": 10.6153,
+    "raggio_km": 15
+  },
+  "ospiti": 6,
+  "solo_alloggi_interi": true,
+  "piattaforme": ["booking", "airbnb"],
+
+  "weekend_prossimi": 4,
+  "weekend_notti": 2,
+
+  "periodi": [
+    { "nome": "Natale",   "dal": "2026-12-24", "al": "2026-12-27" },
+    { "nome": "Capodanno", "dal": "2026-12-30", "al": "2027-01-02" },
+    { "nome": "Epifania", "dal": "2027-01-03", "al": "2027-01-06" }
+  ],
+
+  "pausa_secondi": [20, 45]
+}

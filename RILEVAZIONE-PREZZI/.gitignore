@@ -1,0 +1,10 @@
+prezzi.db
+prezzi.db-*
+venv/
+logs/
+.browser-profile/
+__pycache__/
+*.pyc
+debug_airbnb.*
+.DS_Store
+esempi/

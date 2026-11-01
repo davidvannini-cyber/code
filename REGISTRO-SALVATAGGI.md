@@ -307,3 +307,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-29 | `2a803c5` | LEADREWORKS: «Esporta Excel» e «Esporta PDF» aprono un selettore dei campi (tolto il pulsante Colonne) (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 2a803c5` |
 | 2026-10-29 | `825d310` | LEADREWORKS: colori righe Excel: bianco da lavorare, giallo lavorato, verde follow up, grigio chiuso (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 825d310` |
 | 2026-10-29 | `408ddb0` | LEADREWORKS: nel selettore di esportazione scelta lead Solo CRM / Solo NO CRM / Entrambi (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 408ddb0` |
+| 2026-11-01 | `affb901` | RILEVAZIONE-PREZZI/ (nuova cartella: server, Booking, Airbnb, rilevazione automatica, pagina, CLAUDE.md), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout affb901` |

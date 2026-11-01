@@ -5,6 +5,8 @@
 Contiene architettura, mappa dei file, formati dati, regole dell'utente, trucchi dell'ambiente (niente Android SDK, rete limitata, tag non pubblicabili),
 come provare e pubblicare, decisioni già prese, cose già tentate e fallite, stato (provato / da provare) e backlog. Non rianalizzare il codice da zero: parti da lì e aggiornalo.
 
+**Progetto RILEVAZIONE-PREZZI** (prezzi di Booking e Airbnb attorno a Pievepelago, pagina `prezziaffitti.vannini.online`): **prima di lavorarci leggi `RILEVAZIONE-PREZZI/CLAUDE.md`** (architettura, dove gira sull'M1, decisioni, limiti, lavoro da fare).
+
 Esiste anche un progetto in un repository **privato** separato (`tv-player`): non è in questo repository; se David lo nomina, il suo clone locale sta in `tv-player/` (ignorato da git).
 
 **Comandi di David** (`/promemoria`, `/restore`, e quelli futuri): vivono in `COMANDI/` (comando + `istruzioni/` + **un solo PDF** `COMANDI-ISTRUZIONI.pdf`). Quando crei o cambi un comando segui `COMANDI/README.md` (scrivi in `COMANDI/`, lancia `node COMANDI/costruisci.mjs`, committa anche il PDF).

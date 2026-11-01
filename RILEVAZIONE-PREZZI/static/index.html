@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rilevazione prezzi</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1c2430; --mute:#6b7585; --line:#e3e6eb;
+          --booking:#1f5fbf; --airbnb:#e0475b; --vrbo:#2a9d6f; --accent:#1c2430; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:14px 20px; background:var(--card); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0; }
+  .badge { font-size:12px; padding:2px 8px; border-radius:99px; background:#fff3cd; color:#7a5b00; }
+  main { display:grid; grid-template-columns:360px 1fr; gap:16px; padding:16px; max-width:1500px; margin:0 auto; }
+  @media (max-width:900px){ main{ grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .card h2 { font-size:13px; margin:0 0 10px; text-transform:uppercase; letter-spacing:.04em; color:var(--mute); }
+  label { display:block; font-size:13px; color:var(--mute); margin:10px 0 4px; }
+  input[type=text], input[type=date], input[type=number] { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font:inherit; }
+  input[type=range] { width:100%; }
+  .row { display:flex; gap:8px; } .row > * { flex:1; }
+  button { padding:9px 14px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; font:inherit; cursor:pointer; }
+  button.ghost { background:#fff; color:var(--accent); }
+  button:disabled { opacity:.5; cursor:wait; }
+  .full { width:100%; margin-top:12px; }
+  .checks label { display:inline-flex; align-items:center; gap:6px; margin:6px 12px 0 0; color:var(--ink); }
+  #results { list-style:none; margin:6px 0 0; padding:0; border:1px solid var(--line); border-radius:8px; }
+  #results li { padding:8px 10px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--line); }
+  #results li:last-child{ border-bottom:0; } #results li:hover{ background:var(--bg); }
+  #map { height:420px; border-radius:12px; border:1px solid var(--line); }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:16px; }
+  .stat { border-left:4px solid var(--c); padding:8px 12px; background:var(--card); border:1px solid var(--line); border-left-width:4px; border-radius:10px; }
+  .stat b { font-size:22px; } .stat small { color:var(--mute); display:block; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--mute); font-weight:600; cursor:pointer; user-select:none; font-size:12px; text-transform:uppercase; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; background:var(--c); }
+  .err { color:#b3261e; font-size:13px; margin-top:8px; }
+  .delta-up{ color:#b3261e; } .delta-down{ color:#1b7f4b; }
+  .pin { background:var(--c); color:#fff; border-radius:12px; padding:1px 6px; font-size:11px; font-weight:600; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.4); white-space:nowrap; }
+  svg text { font:11px system-ui; fill:var(--mute); }
+  .scroll { max-height:380px; overflow:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Rilevazione prezzi</h1>
+  <span class="badge" id="demoBadge"></span>
+  <span style="color:var(--mute);font-size:13px">Booking · Airbnb · VRBO</span>
+</header>
+
+<main>
+  <aside>
+    <div class="card">
+      <h2>Zona di rilevazione</h2>
+      <div class="row">
+        <input type="text" id="q" placeholder="Cerca località (es. Pievepelago)">
+        <button class="ghost" id="btnGeo" style="flex:0 0 auto">Cerca</button>
+      </div>
+      <ul id="results" hidden></ul>
+      <div id="zoneLabel" style="font-size:13px;color:var(--mute);margin-top:8px"></div>
+
+      <label>Raggio: <b id="radiusVal">15</b> km</label>
+      <input type="range" id="radius" min="1" max="50" value="15">
+
+      <div class="row">
+        <div><label>Arrivo</label><input type="date" id="ci"></div>
+        <div><label>Partenza</label><input type="date" id="co"></div>
+      </div>
+      <label>Date già monitorate</label>
+      <select id="tracked" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit"><option value="">— scegli —</option></select>
+      <div class="row">
+        <div><label>Ospiti (minimo)</label><input type="number" id="guests" min="1" max="20" value="6"></div>
+        <div><label>Il mio prezzo/notte (€)</label><input type="number" id="mine" min="0" placeholder="es. 140"></div>
+      </div>
+
+      <label style="color:var(--ink)"><input type="checkbox" id="entire" checked> Solo appartamenti/case intere</label>
+      <label>Piattaforme</label>
+      <div class="checks" id="platforms"></div>
+
+      <button class="full" id="btnRun">Rileva prezzi ora</button>
+      <div class="err" id="err"></div>
+    </div>
+  </aside>
+
+  <section>
+    <div id="map"></div>
+    <div class="stats" id="stats"></div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Andamento nel tempo (media €/notte per rilevazione)</h2>
+      <div id="chart"></div>
+      <div style="font-size:12px;color:var(--mute)">Ogni "Rileva prezzi ora" aggiunge un punto. Lo storico si riferisce alla stessa zona e alle stesse date di arrivo.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Annunci rilevati <span id="count" style="text-transform:none"></span></h2>
+      <div class="scroll">
+        <table>
+          <thead><tr>
+            <th data-k="platform">Piattaforma</th><th data-k="name">Struttura</th>
+            <th data-k="distance_km">Km</th><th data-k="guests">Ospiti</th>
+            <th data-k="rating">Voto</th><th data-k="price_night">€/notte</th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const COLORS = { booking:'#1f5fbf', airbnb:'#e0475b', vrbo:'#2a9d6f' };
+const LABEL  = { booking:'Booking', airbnb:'Airbnb', vrbo:'VRBO' };
+const $ = id => document.getElementById(id);
+
+// Pievepelago (MO) come zona iniziale
+let zone = { lat:44.2208, lng:10.6153, name:'Pievepelago (MO)', place:'Pievepelago' };
+let listings = [], sortKey = 'price_night', sortDir = 1;
+
+const map = L.map('map', { zoomSnap:0.25 }).setView([zone.lat, zone.lng], 11);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap' }).addTo(map);
+let circle = L.circle([zone.lat, zone.lng], { radius:15000, color:'#1c2430', weight:2, fillOpacity:.06 }).addTo(map);
+let center = L.marker([zone.lat, zone.lng], { draggable:true }).addTo(map);
+let pins = L.layerGroup().addTo(map);
+
+center.on('dragend', () => { const p = center.getLatLng(); setZone(p.lat, p.lng, 'Punto scelto sulla mappa', false); });
+map.on('click', e => setZone(e.latlng.lat, e.latlng.lng, 'Punto scelto sulla mappa', false));
+
+function setZone(lat, lng, name, fly=true, place='') {
+  zone = { lat, lng, name, place };
+  center.setLatLng([lat, lng]); circle.setLatLng([lat, lng]);
+  $('zoneLabel').textContent = `${name} — ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  if (fly) map.fitBounds(circle.getBounds());
+  loadHistory(); loadTracked();
+}
+function setRadius(km) {
+  $('radiusVal').textContent = km; circle.setRadius(km*1000);
+  map.fitBounds(circle.getBounds());
+}
+$('radius').addEventListener('input', e => setRadius(+e.target.value));
+
+// date iniziali: prossimo sabato, 2 notti
+(function(){
+  const d = new Date(); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7));
+  const f = x => x.toISOString().slice(0,10);
+  $('ci').value = f(d); const o = new Date(d); o.setDate(o.getDate()+2); $('co').value = f(o);
+})();
+$('ci').addEventListener('change', loadHistory);
+$('radius').addEventListener('change', loadHistory);
+async function loadLatest() {
+  try {
+    const r = await fetch(`/api/latest?lat=${zone.lat}&lng=${zone.lng}&check_in=${$('ci').value}&radius=${$('radius').value}`);
+    listings = await r.json(); render();
+  } catch(e) {}
+}
+async function loadTracked() {
+  try {
+    const r = await (await fetch(`/api/tracked?lat=${zone.lat}&lng=${zone.lng}`)).json();
+    const fmt = s => new Date(s+'T12:00').toLocaleDateString('it-IT', {day:'numeric', month:'short'});
+    $('tracked').innerHTML = '<option value="">— scegli —</option>' + r.map(x =>
+      `<option value="${x.check_in}|${x.check_out}|${x.radius_km}">${fmt(x.check_in)} → ${fmt(x.check_out)} · ${x.radius_km} km (${x.n} rilevazioni)</option>`).join('');
+  } catch(e) {}
+}
+$('tracked').addEventListener('change', e => {
+  if (!e.target.value) return; const [a,b,r] = e.target.value.split('|'); $('ci').value = a; $('co').value = b; $('radius').value = r; setRadius(+r); loadHistory(); loadLatest();
+});
+
+// piattaforme
+fetch('/api/config').then(r=>r.json()).then(c => {
+  $('platforms').innerHTML = c.platforms.map(p =>
+    `<label><input type="checkbox" value="${p}" checked><span class="dot" style="--c:${COLORS[p]}"></span>${LABEL[p]}</label>`).join('');
+  const demo = c.platforms.filter(p => !c.real.includes(p)).map(p => LABEL[p]);
+  $('demoBadge').textContent = (c.real.length ? 'dati reali: ' + c.real.map(p => LABEL[p]).join(', ') + ' · ' : '') + (demo.length ? 'dati dimostrativi: ' + demo.join(', ') : '');
+});
+
+// ricerca località
+$('btnGeo').onclick = async () => {
+  const q = $('q').value.trim(); if (!q) return;
+  const ul = $('results'); ul.hidden = false; ul.innerHTML = '<li>Cerco…</li>';
+  try {
+    const r = await (await fetch('/api/geocode?q=' + encodeURIComponent(q))).json();
+    if (r.error) throw new Error(r.error);
+    ul.innerHTML = r.length ? '' : '<li>Nessun risultato</li>';
+    r.forEach(x => { const li = document.createElement('li'); li.textContent = x.name;
+      li.onclick = () => { setZone(x.lat, x.lng, x.name.split(',').slice(0,2).join(','), true, x.name.split(',')[0].trim());
+                           ul.hidden = true; }; ul.appendChild(li); });
+  } catch(e) { ul.innerHTML = `<li>Errore ricerca: ${e.message}</li>`; }
+};
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnGeo').click(); });
+
+// rilevazione
+$('btnRun').onclick = async () => {
+  $('err').textContent = ''; $('btnRun').disabled = true;
+  try {
+    const platforms = [...document.querySelectorAll('#platforms input:checked')].map(i => i.value);
+    const body = { lat:zone.lat, lng:zone.lng, radius_km:+$('radius').value, check_in:$('ci').value,
+                   check_out:$('co').value, guests:+$('guests').value, platforms,
+                   place:zone.place||'', entire_only:$('entire').checked };
+    const r = await fetch('/api/search', { method:'POST', body:JSON.stringify(body) });
+    const j = await r.json(); if (j.error) throw new Error(j.error);
+    listings = j.listings;
+    const e = Object.entries(j.errors||{}).map(([k,v]) => `${LABEL[k]}: ${v}`).join(' · ');
+    if (e) $('err').textContent = 'Problemi: ' + e;
+    render(); loadHistory(); loadTracked();
+  } catch(e) { $('err').textContent = e.message; }
+  $('btnRun').disabled = false;
+};
+
+function render() {
+  // pin sulla mappa
+  pins.clearLayers();
+  listings.forEach(l => L.marker([l.lat, l.lng], { icon:L.divIcon({ className:'',
+      html:`<span class="pin" style="--c:${COLORS[l.platform]}">${l.price_night}€</span>` }) })
+    .bindPopup(`<b>${l.name}</b><br>${LABEL[l.platform]} · ${l.guests} ospiti · voto ${l.rating}<br>${l.price_night} €/notte`)
+    .addTo(pins));
+
+  // statistiche per piattaforma
+  const mine = +$('mine').value || 0;
+  $('stats').innerHTML = Object.keys(COLORS).map(p => {
+    const a = listings.filter(l => l.platform === p).map(l => l.price_night);
+    if (!a.length) return '';
+    const avg = a.reduce((x,y)=>x+y,0)/a.length;
+    const med = [...a].sort((x,y)=>x-y)[Math.floor(a.length/2)];
+    let d = '';
+    if (mine) { const pc = ((mine-avg)/avg*100); d = `<small class="${pc>0?'delta-up':'delta-down'}">tu: ${pc>0?'+':''}${pc.toFixed(0)}% vs media</small>`; }
+    return `<div class="stat" style="--c:${COLORS[p]}"><small>${LABEL[p]} · ${a.length} annunci</small>
+      <b>${avg.toFixed(0)} €</b> <small style="display:inline">media/notte</small>
+      <small>min ${Math.min(...a)} · mediana ${med} · max ${Math.max(...a)}</small>${d}</div>`;
+  }).join('');
+
+  // tabella
+  $('count').textContent = `(${listings.length})`;
+  const rows = [...listings].sort((a,b) => (a[sortKey] > b[sortKey] ? 1 : -1) * sortDir);
+  $('rows').innerHTML = rows.map(l => `<tr>
+    <td><span class="dot" style="--c:${COLORS[l.platform]}"></span>${LABEL[l.platform]}</td>
+    <td>${l.url ? `<a href="${l.url}" target="_blank">${l.name}</a>` : l.name}</td>
+    <td>${l.distance_km}</td><td>${l.guests}</td><td>${l.rating}</td><td><b>${l.price_night} €</b></td></tr>`).join('');
+}
+$('mine').addEventListener('input', render);
+document.querySelectorAll('th').forEach(th => th.onclick = () => {
+  const k = th.dataset.k; sortDir = (sortKey === k) ? -sortDir : 1; sortKey = k; render(); });
+
+// storico (grafico SVG a linee)
+async function loadHistory() {
+  try {
+    const r = await fetch(`/api/history?lat=${zone.lat}&lng=${zone.lng}&check_in=${$('ci').value}&radius=${$('radius').value}`);
+    drawChart(await r.json());
+  } catch(e) {}
+}
+function drawChart(rows) {
+  const el = $('chart');
+  if (!rows.length) { el.innerHTML = '<div style="color:var(--mute);padding:20px 0">Ancora nessuna rilevazione per questa zona e queste date.</div>'; return; }
+  const times = [...new Set(rows.map(r => r.ts))];
+  const W = 760, H = 220, pl = 44, pr = 12, pt = 10, pb = 28;
+  const ys = rows.map(r => r.avg), lo = Math.floor(Math.min(...ys)*0.95), hi = Math.ceil(Math.max(...ys)*1.05);
+  const x = i => pl + (times.length === 1 ? (W-pl-pr)/2 : i*(W-pl-pr)/(times.length-1));
+  const y = v => pt + (H-pt-pb) * (1 - (v-lo)/((hi-lo)||1));
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%">`;
+  for (let k=0;k<=4;k++){ const v = lo+(hi-lo)*k/4; s += `<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="#e3e6eb"/><text x="4" y="${y(v)+4}">${v.toFixed(0)}€</text>`; }
+  times.forEach((t,i) => { if (times.length < 9 || i % Math.ceil(times.length/8) === 0) s += `<text x="${x(i)}" y="${H-8}" text-anchor="middle">${t.slice(5,16).replace('T',' ')}</text>`; });
+  Object.keys(COLORS).forEach(p => {
+    const pts = times.map((t,i) => { const r = rows.find(r => r.ts===t && r.platform===p); return r ? [x(i), y(r.avg)] : null; }).filter(Boolean);
+    if (!pts.length) return;
+    s += `<polyline fill="none" stroke="${COLORS[p]}" stroke-width="2.5" points="${pts.map(q=>q.join(',')).join(' ')}"/>`;
+    pts.forEach(q => s += `<circle cx="${q[0]}" cy="${q[1]}" r="3.5" fill="${COLORS[p]}"/>`);
+  });
+  el.innerHTML = s + '</svg>';
+}
+
+setZone(zone.lat, zone.lng, zone.name, true, zone.place);
+setRadius(15);
+</script>
+</body>
+</html>
