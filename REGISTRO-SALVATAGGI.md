@@ -311,3 +311,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-01 | `4a25f09` | RILEVAZIONE-PREZZI: pulizia doppioni/prezzi anomali, riprova automatica, variazioni di prezzo (server.py, rileva.py, config.json, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 4a25f09` |
 | 2026-11-01 | `bdb8b58` | RILEVAZIONE-PREZZI: aggiornamento automatico M1 da GitHub (aggiorna_da_github.sh, installa_aggiornamento.sh, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout bdb8b58` |
 | 2026-11-01 | `fd60621` | RILEVAZIONE-PREZZI: aggiornamento M1 solo su modifica GitHub (.github/workflows/aggiorna-m1.yml, aggiorna_da_github.sh, tolto installa_aggiornamento.sh, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout fd60621` |
+| 2026-11-01 | `e8fffdb` | RILEVAZIONE-PREZZI: aggiorna_da_github.sh copia sempre alla prima esecuzione, REGISTRO-SALVATAGGI.md | `git checkout e8fffdb` |
