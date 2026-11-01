@@ -316,3 +316,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-01 | `3d80da5` | RILEVAZIONE-PREZZI (ora in code-priv): email dei prezzi attiva sul Mac mini, aggiornamento da code-priv, REGISTRO-SALVATAGGI.md | `git checkout 3d80da5` |
 | 2026-11-01 | `bf3907d` | RILEVAZIONE-PREZZI (code-priv): nuovo aspetto della mail dei prezzi (mail.py, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout bf3907d` |
 | 2026-11-01 | `6b64bfa` | RILEVAZIONE-PREZZI (code-priv): periodi scelti dalla pagina web, soggiorni da 5 notti (server.py, rileva.py, static/index.html, config.json, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 6b64bfa` |
+| 2026-11-01 | `c717662` | RILEVAZIONE-PREZZI (code-priv): in verde gli annunci da 6 ospiti (mail e pagina), ospiti 4, tetto 180 notti, REGISTRO-SALVATAGGI.md | `git checkout c717662` |
