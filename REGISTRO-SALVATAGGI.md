@@ -324,3 +324,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-01 | `4f44e0f` | RILEVAZIONE-PREZZI (code-priv): corretto errore browser «sessione esistente» (browser.py, mail.py), REGISTRO-SALVATAGGI.md | `git checkout 4f44e0f` |
 | 2026-11-01 | `2d7c3bb` | RILEVAZIONE-PREZZI (code-priv): confronto «il mio prezzo» ben visibile nella pagina (static/index.html), REGISTRO-SALVATAGGI.md | `git checkout 2d7c3bb` |
 | 2026-11-01 | `f96a5e5` | RILEVAZIONE-PREZZI (code-priv): variazioni senza soglia (giallo a ogni cambio di prezzo) (server.py, mail.py, config.json, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout f96a5e5` |
+| 2026-11-01 | `15921db` | RILEVAZIONE-PREZZI (code-priv): tabelle mail e pagina con bianco (4) e verde (6) nella stessa cella, prezzo consigliato (mail.py, static/index.html, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 15921db` |
