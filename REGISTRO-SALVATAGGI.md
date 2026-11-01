@@ -309,3 +309,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-10-29 | `408ddb0` | LEADREWORKS: nel selettore di esportazione scelta lead Solo CRM / Solo NO CRM / Entrambi (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 408ddb0` |
 | 2026-11-01 | `affb901` | RILEVAZIONE-PREZZI/ (nuova cartella: server, Booking, Airbnb, rilevazione automatica, pagina, CLAUDE.md), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout affb901` |
 | 2026-11-01 | `4a25f09` | RILEVAZIONE-PREZZI: pulizia doppioni/prezzi anomali, riprova automatica, variazioni di prezzo (server.py, rileva.py, config.json, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 4a25f09` |
+| 2026-11-01 | `bdb8b58` | RILEVAZIONE-PREZZI: aggiornamento automatico M1 da GitHub (aggiorna_da_github.sh, installa_aggiornamento.sh, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout bdb8b58` |
