@@ -9,14 +9,16 @@ LOG="$DEST/logs/aggiorna.log"
 mkdir -p "$DEST/logs"
 log() { echo "$(date '+%Y-%m-%d %H:%M:%S')  $*" >> "$LOG"; }
 
+PRIMA_VOLTA=0
 if [ ! -d "$CLONE/.git" ]; then
+  PRIMA_VOLTA=1
   git clone --quiet --depth 1 --filter=blob:none --sparse \
     https://github.com/davidvannini-cyber/code.git "$CLONE" || { log "ERRORE: clone non riuscito"; exit 1; }
   git -C "$CLONE" sparse-checkout set RILEVAZIONE-PREZZI
 fi
 
 git -C "$CLONE" fetch --quiet --depth 1 origin main || { log "rete non disponibile, riprovo al prossimo giro"; exit 0; }
-if git -C "$CLONE" diff --quiet HEAD FETCH_HEAD -- RILEVAZIONE-PREZZI; then
+if [ "$PRIMA_VOLTA" = 0 ] && git -C "$CLONE" diff --quiet HEAD FETCH_HEAD -- RILEVAZIONE-PREZZI; then
   exit 0   # nessuna novita'
 fi
 git -C "$CLONE" reset --quiet --hard FETCH_HEAD
