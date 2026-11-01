@@ -5,7 +5,7 @@
 Contiene architettura, mappa dei file, formati dati, regole dell'utente, trucchi dell'ambiente (niente Android SDK, rete limitata, tag non pubblicabili),
 come provare e pubblicare, decisioni già prese, cose già tentate e fallite, stato (provato / da provare) e backlog. Non rianalizzare il codice da zero: parti da lì e aggiornalo.
 
-**Progetto RILEVAZIONE-PREZZI** (prezzi di Booking e Airbnb attorno a Pievepelago, pagina `prezziaffitti.vannini.online`): **prima di lavorarci leggi `RILEVAZIONE-PREZZI/CLAUDE.md`** (architettura, dove gira sull'M1, decisioni, limiti, lavoro da fare).
+**Progetto RILEVAZIONE-PREZZI** (da novembre 2026 si lavora nel repository **privato `code-priv`**, cartella `RILEVAZIONE-PREZZI/`; qui resta una copia ferma; prezzi di Booking e Airbnb attorno a Pievepelago, pagina `prezziaffitti.vannini.online`): **prima di lavorarci leggi `RILEVAZIONE-PREZZI/CLAUDE.md`** (architettura, dove gira sull'M1, decisioni, limiti, lavoro da fare).
 
 Esiste anche un progetto in un repository **privato** separato (`tv-player`): non è in questo repository; se David lo nomina, il suo clone locale sta in `tv-player/` (ignorato da git).
 
@@ -19,6 +19,6 @@ Promemoria minimi (dettagli nel file):
 - Se David scrive «aspetta il mio Procedi», **non modificare nulla** finché non scrive «Procedi».
 - La pagina web normale **non deve cambiare** quando si aggiungono funzioni per altri dispositivi (isolale: `/auto`, app separata).
 - Prima di pubblicare lancia le prove (`M3U-PLAYER-WEB/STATO-PROGETTO.md` §14); dichiara sempre cosa non hai potuto provare (Fire TV vera, auto, siti esterni).
-- Il «Sync» di David = icona sulla scrivania che lancia `Sync.command` (`git pull --ff-only` di tutto il repo): digli «Fai Sync», non comandi git a mano.
+- Il «Sync» di David = icona sulla scrivania che lancia `Sync.command` (`git pull --ff-only` di tutto il repo **e anche del repository privato `code-priv`**, cartella accanto a `code`): digli «Fai Sync», non comandi git a mano.
 - Pubblicare il sito = `git pull` + `npx wrangler deploy` **dal Mac dell'utente** (due cose diverse: spiegalo sempre).
 - Repository **pubblico**: mai segreti, email o ID di account nei file.

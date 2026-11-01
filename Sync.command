@@ -1,5 +1,5 @@
 #!/bin/bash
-# Allinea questo Mac con GitHub. Funziona su qualsiasi Mac: trova da solo la cartella "code".
+# Allinea questo Mac con GitHub (repository "code" e repository privato "code-priv"). Funziona su qualsiasi Mac: trova da solo la cartella "code".
 # Se va tutto bene: mostra "Fatto", aspetta 3 secondi e chiude la finestra.
 # Se c'è un errore: la finestra resta aperta così puoi leggere il messaggio.
 
@@ -23,11 +23,23 @@ cd "$CARTELLA" || errore "non riesco ad aprire $CARTELLA"
 echo "Cartella: $CARTELLA"
 git pull --ff-only || errore "il sync non è riuscito. Non è stato cambiato nulla."
 
+# 3) Allinea anche il repository PRIVATO "code-priv" (cartella accanto a "code"; se manca la scarica).
+PRIV="$(dirname "$CARTELLA")/code-priv"
+echo ""
+if [ -d "$PRIV/.git" ]; then
+  echo "Cartella privata: $PRIV"
+  (cd "$PRIV" && git pull --ff-only) || errore "il sync di code-priv non è riuscito. Non è stato cambiato nulla."
+else
+  echo "Scarico code-priv (prima volta) in: $PRIV"
+  git clone https://github.com/davidvannini-cyber/code-priv "$PRIV" \
+    || errore "non riesco a scaricare code-priv. Serve l'accesso a GitHub da questo Mac (stesso account del repository privato)."
+fi
+
 echo ""
 echo "Fatto. Tutto allineato. Chiudo tra 3 secondi..."
 sleep 3
 
-# 3) Chiude la finestra dopo che lo script è terminato, così il Terminale non chiede conferma.
+# 4) Chiude la finestra dopo che lo script è terminato, così il Terminale non chiede conferma.
 # La prima volta macOS può chiedere di consentire il controllo di "Terminale": scegli OK.
 (sleep 1; osascript -e 'tell application "Terminal" to close (every window whose frontmost is true)' >/dev/null 2>&1) &
 exit 0
