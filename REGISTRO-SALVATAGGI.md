@@ -320,3 +320,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-01 | `f79995c` | RILEVAZIONE-PREZZI (code-priv): verde chiaro a righe per gli annunci da 6 ospiti (mail.py, static/index.html), REGISTRO-SALVATAGGI.md | `git checkout f79995c` |
 | 2026-11-01 | `37e3cb3` | RILEVAZIONE-PREZZI (code-priv): verde chiaro pieno senza righe (mail.py, static/index.html), REGISTRO-SALVATAGGI.md | `git checkout 37e3cb3` |
 | 2026-11-01 | `ff74755` | RILEVAZIONE-PREZZI (code-priv): nuove regole dei soggiorni e divisori (rileva.py, server.py, mail.py, config.json, pagina, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout ff74755` |
+| 2026-11-01 | `5d2d198` | RILEVAZIONE-PREZZI (code-priv): mail con una sola tabella giorno per giorno, scelta Booking/Airbnb per periodo (mail.py, rileva.py, server.py, pagina, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 5d2d198` |
