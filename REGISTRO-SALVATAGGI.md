@@ -313,3 +313,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-01 | `fd60621` | RILEVAZIONE-PREZZI: aggiornamento M1 solo su modifica GitHub (.github/workflows/aggiorna-m1.yml, aggiorna_da_github.sh, tolto installa_aggiornamento.sh, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout fd60621` |
 | 2026-11-01 | `e8fffdb` | RILEVAZIONE-PREZZI: aggiorna_da_github.sh copia sempre alla prima esecuzione, REGISTRO-SALVATAGGI.md | `git checkout e8fffdb` |
 | 2026-11-01 | `fd6ad68` | Sync.command allinea anche code-priv; RILEVAZIONE-PREZZI copiato nel repository privato code-priv (lavoro li'), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout fd6ad68` |
+| 2026-11-01 | `3d80da5` | RILEVAZIONE-PREZZI (ora in code-priv): email dei prezzi attiva sul Mac mini, aggiornamento da code-priv, REGISTRO-SALVATAGGI.md | `git checkout 3d80da5` |
