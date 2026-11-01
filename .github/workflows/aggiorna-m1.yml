@@ -1,0 +1,17 @@
+# Aggiorna il Mac mini M1 (progetto RILEVAZIONE-PREZZI) SOLO quando su main cambia qualcosa
+# dentro RILEVAZIONE-PREZZI/. Gira su un "runner" installato sul Mac mini: il Mac si collega
+# lui a GitHub (nessuna porta aperta). Niente altri eventi: non parte per pull request di altri.
+name: Aggiorna Mac mini (rilevazione prezzi)
+on:
+  push:
+    branches: [main]
+    paths: ["RILEVAZIONE-PREZZI/**"]
+  workflow_dispatch:
+concurrency: aggiorna-m1
+jobs:
+  aggiorna:
+    if: github.repository == 'davidvannini-cyber/code'
+    runs-on: [self-hosted, prezzi-m1]
+    timeout-minutes: 10
+    steps:
+      - run: bash "$HOME/rilevazione-prezzi/aggiorna_da_github.sh"

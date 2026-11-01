@@ -1,5 +1,5 @@
 #!/bin/bash
-# Gira SUL MAC MINI M1. Scarica da GitHub solo la cartella RILEVAZIONE-PREZZI e,
+# Gira SUL MAC MINI M1, lanciato dal workflow GitHub (non da un timer). Scarica da GitHub solo la cartella RILEVAZIONE-PREZZI e,
 # se e' cambiato qualcosa, aggiorna ~/rilevazione-prezzi e riavvia il server.
 # Non tocca mai: prezzi.db, venv, logs, .browser-profile.
 export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:$PATH"
