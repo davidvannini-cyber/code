@@ -318,3 +318,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-01 | `6b64bfa` | RILEVAZIONE-PREZZI (code-priv): periodi scelti dalla pagina web, soggiorni da 5 notti (server.py, rileva.py, static/index.html, config.json, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 6b64bfa` |
 | 2026-11-01 | `c717662` | RILEVAZIONE-PREZZI (code-priv): in verde gli annunci da 6 ospiti (mail e pagina), ospiti 4, tetto 180 notti, REGISTRO-SALVATAGGI.md | `git checkout c717662` |
 | 2026-11-01 | `f79995c` | RILEVAZIONE-PREZZI (code-priv): verde chiaro a righe per gli annunci da 6 ospiti (mail.py, static/index.html), REGISTRO-SALVATAGGI.md | `git checkout f79995c` |
+| 2026-11-01 | `37e3cb3` | RILEVAZIONE-PREZZI (code-priv): verde chiaro pieno senza righe (mail.py, static/index.html), REGISTRO-SALVATAGGI.md | `git checkout 37e3cb3` |
