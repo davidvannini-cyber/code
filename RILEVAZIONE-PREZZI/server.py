@@ -49,6 +49,23 @@ def geocode(q):
     return [{"name": d["display_name"], "lat": float(d["lat"]), "lng": float(d["lon"])} for d in data]
 
 
+PREZZO_MIN, PREZZO_MAX = 15, 2500   # euro a notte: fuori da qui il dato e' quasi sicuramente un errore di lettura
+
+
+def pulisci_annunci(listings):
+    """Toglie i doppioni (stesso annuncio letto due volte, es. su due pagine) e i prezzi non plausibili."""
+    visti, out, scartati = set(), [], 0
+    for l in listings:
+        chiave = (l["platform"], l["listing_id"])
+        p = l.get("price_night")
+        if chiave in visti or not p or not (PREZZO_MIN <= p <= PREZZO_MAX):
+            scartati += 1
+            continue
+        visti.add(chiave)
+        out.append(l)
+    return out, scartati
+
+
 def run_search(p):
     lat, lng = float(p["lat"]), float(p["lng"])
     radius = float(p["radius_km"])
@@ -70,6 +87,8 @@ def run_search(p):
         except Exception as e:  # una piattaforma che fallisce non blocca le altre
             errors[pl] = str(e)
 
+    listings, scartati = pulisci_annunci(listings)
+
     with db() as con:
         con.executemany(
             "INSERT INTO snapshots (ts,zone_lat,zone_lng,radius_km,check_in,check_out,guests,"
@@ -80,7 +99,8 @@ def run_search(p):
                 for l in listings
             ],
         )
-    return {"ts": ts, "listings": listings, "errors": errors, "nights": (co - ci).days}
+    return {"ts": ts, "listings": listings, "errors": errors, "nights": (co - ci).days,
+            "scartati": scartati}
 
 
 def history(q):
@@ -118,6 +138,38 @@ def latest(q):
     return out
 
 
+def changes(lat, lng, ci, radius, soglia_pct=10.0):
+    """Confronta le ultime due rilevazioni (stessa zona, data, raggio) e dice quali annunci
+    hanno cambiato prezzo di almeno `soglia_pct` per cento, quali sono nuovi e quali spariti."""
+    with db() as con:
+        tss = [r[0] for r in con.execute(
+            "SELECT DISTINCT ts FROM snapshots WHERE ROUND(zone_lat,3)=ROUND(?,3) AND ROUND(zone_lng,3)=ROUND(?,3) "
+            "AND check_in=? AND ROUND(radius_km)=ROUND(?) ORDER BY ts DESC LIMIT 2", (lat, lng, ci, radius))]
+        if len(tss) < 2:
+            return {"da": None, "a": tss[0] if tss else None, "variati": [], "nuovi": [], "spariti": []}
+
+        def carica(ts):
+            rows = con.execute(
+                "SELECT platform, listing_id, name, price_night, url FROM snapshots WHERE ts=? "
+                "AND ROUND(zone_lat,3)=ROUND(?,3) AND ROUND(zone_lng,3)=ROUND(?,3) AND check_in=? "
+                "AND ROUND(radius_km)=ROUND(?)", (ts, lat, lng, ci, radius)).fetchall()
+            return {(r["platform"], r["listing_id"]): dict(r) for r in rows}
+        nuovo, vecchio = carica(tss[0]), carica(tss[1])
+    variati = []
+    for k, n in nuovo.items():
+        o = vecchio.get(k)
+        if o and o["price_night"]:
+            pct = (n["price_night"] - o["price_night"]) / o["price_night"] * 100
+            if abs(pct) >= soglia_pct:
+                variati.append({"platform": k[0], "name": n["name"], "url": n["url"] or "",
+                                "prima": o["price_night"], "ora": n["price_night"], "pct": round(pct, 1)})
+    variati.sort(key=lambda x: -abs(x["pct"]))
+    pl = lambda d, keys: [{"platform": k[0], "name": d[k]["name"], "price_night": d[k]["price_night"]} for k in keys]
+    return {"da": tss[1], "a": tss[0], "variati": variati,
+            "nuovi": pl(nuovo, [k for k in nuovo if k not in vecchio]),
+            "spariti": pl(vecchio, [k for k in vecchio if k not in nuovo])}
+
+
 def tracked(q):
     """Date gia' rilevate per la zona (per il menu 'Date monitorate')."""
     lat, lng = float(q["lat"][0]), float(q["lng"][0])
@@ -153,6 +205,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, history(q))
             if u.path == "/api/latest":
                 return self._send(200, latest(q))
+            if u.path == "/api/changes":
+                return self._send(200, changes(float(q["lat"][0]), float(q["lng"][0]), q["check_in"][0],
+                                               float(q["radius"][0]), float(q.get("soglia", ["10"])[0])))
             if u.path == "/api/tracked":
                 return self._send(200, tracked(q))
             if u.path == "/api/config":

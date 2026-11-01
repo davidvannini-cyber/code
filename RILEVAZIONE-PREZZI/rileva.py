@@ -46,6 +46,40 @@ def date_da_seguire(cfg, oggi=None):
     return sorted(out)
 
 
+def rileva_periodo(z, cfg, ci, co, tentativi=2):
+    """Una ricerca; se una piattaforma da' errore o zero annunci riprova una volta dopo una pausa lunga."""
+    piattaforme = list(cfg.get("piattaforme", ["booking", "airbnb"]))
+    raccolti, errori = {}, {}
+    for t in range(tentativi):
+        if not piattaforme:
+            break
+        res = server.run_search({
+            "lat": z["lat"], "lng": z["lng"], "radius_km": z["raggio_km"],
+            "check_in": ci.isoformat(), "check_out": co.isoformat(),
+            "guests": cfg.get("ospiti", 6), "platforms": piattaforme,
+            "place": z["nome"], "entire_only": cfg.get("solo_alloggi_interi", True),
+        })
+        errori = res["errors"]
+        for l in res["listings"]:
+            raccolti[l["platform"]] = raccolti.get(l["platform"], 0) + 1
+        piattaforme = [p for p in piattaforme if p in errori or not raccolti.get(p)]
+        if piattaforme and t + 1 < tentativi:
+            log(f"{ci}: nessun dato da {piattaforme}, riprovo tra un po'")
+            time.sleep(random.uniform(*cfg.get("pausa_riprova_secondi", [90, 150])))
+    return raccolti, errori, piattaforme
+
+
+def segnala_variazioni(z, cfg, ci):
+    soglia = float(cfg.get("soglia_variazione_pct", 10))
+    c = server.changes(z["lat"], z["lng"], ci.isoformat(), z["raggio_km"], soglia)
+    if not c["da"]:
+        return
+    for v in c["variati"][:10]:
+        log(f"  VARIAZIONE {v['platform']} {v['name']}: {v['prima']:.0f} -> {v['ora']:.0f} euro ({v['pct']:+.0f}%)")
+    if c["nuovi"] or c["spariti"]:
+        log(f"  annunci nuovi: {len(c['nuovi'])}, spariti: {len(c['spariti'])}")
+
+
 def main():
     cfg = json.load(open(os.path.join(BASE, "config.json"), encoding="utf-8"))
     date_list = date_da_seguire(cfg)
@@ -59,16 +93,12 @@ def main():
     log(f"Inizio rilevazione: {len(date_list)} periodi, zona {z['nome']} (raggio {z['raggio_km']} km)")
     for i, (ci, co) in enumerate(date_list):
         try:
-            res = server.run_search({
-                "lat": z["lat"], "lng": z["lng"], "radius_km": z["raggio_km"],
-                "check_in": ci.isoformat(), "check_out": co.isoformat(),
-                "guests": cfg.get("ospiti", 6), "platforms": cfg.get("piattaforme", ["booking", "airbnb"]),
-                "place": z["nome"], "entire_only": cfg.get("solo_alloggi_interi", True),
-            })
-            per = {}
-            for l in res["listings"]:
-                per[l["platform"]] = per.get(l["platform"], 0) + 1
-            log(f"{ci} -> {co}: {per or 'nessun annuncio'}" + (f"  ERRORI: {res['errors']}" if res["errors"] else ""))
+            per, errori, vuote = rileva_periodo(z, cfg, ci, co)
+            log(f"{ci} -> {co}: {per or 'nessun annuncio'}" + (f"  ERRORI: {errori}" if errori else ""))
+            if vuote:
+                log(f"  ATTENZIONE: nessun dato da {vuote} (possibile blocco del sito)")
+            else:
+                segnala_variazioni(z, cfg, ci)
         except Exception as e:
             log(f"{ci} -> {co}: ERRORE {e}")
         if i + 1 < len(date_list):

@@ -18,5 +18,7 @@
     { "nome": "Epifania", "dal": "2027-01-03", "al": "2027-01-06" }
   ],
 
-  "pausa_secondi": [20, 45]
+  "pausa_secondi": [20, 45],
+  "pausa_riprova_secondi": [90, 150],
+  "soglia_variazione_pct": 10
 }

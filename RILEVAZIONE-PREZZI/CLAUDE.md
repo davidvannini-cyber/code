@@ -22,7 +22,9 @@ Solo libreria standard di Python (server HTTP + SQLite) più Playwright per il b
 | `installa_automatico.sh`, `disinstalla_automatico.sh` | launchd (macOS): server sempre attivo + rilevazione giornaliera 6:15 |
 | `esempi/` | NON nel repository (è una copia di una pagina Booking): per provare il parser salva a mano una pagina dei risultati Booking in `esempi/` |
 
-API: `GET /api/config`, `/api/geocode?q=`, `/api/history`, `/api/tracked`, `/api/latest`; `POST /api/search`.
+API: `GET /api/config`, `/api/geocode?q=`, `/api/history`, `/api/tracked`, `/api/latest`, `/api/changes?lat&lng&check_in&radius&soglia=10`; `POST /api/search`.
+
+Perfezionamenti (1 nov 2026): `pulisci_annunci` in `server.py` toglie doppioni e prezzi fuori da 15–2500 €/notte prima di salvare; `changes()` confronta le ultime due rilevazioni (variazioni oltre `soglia_variazione_pct`, nuovi, spariti); `rileva.py` riprova una volta (dopo `pausa_riprova_secondi`) le piattaforme senza dati, scrive `ATTENZIONE` nel log se restano vuote e `VARIAZIONE` per i prezzi cambiati. Provato solo con dati demo, non su Booking/Airbnb veri.
 
 ## Come si lancia
 ```
@@ -54,7 +56,7 @@ Python 3.9 compatibile (usato sul MacBook e sull'M1). Playwright: `pip install p
 1. Airbnb legge solo la prima pagina (circa 18-27 annunci); Booking 25 per pagina (`BOOKING_PAGES` per leggerne di più).
 2. Capienza non letta da Booking/Airbnb: si assume che la ricerca per 6 ospiti già filtri.
 3. I propri annunci (Casa Pepi, Casa Vapi) non sono ancora nel sistema: aggiungere i prezzi reali per il confronto e il "tu vs media".
-4. Avvisi quando un concorrente cambia prezzo oltre una soglia (anche verso Home Assistant, che gira sullo stesso network).
+4. Variazioni di prezzo: fatto il rilevamento (log + `/api/changes`). Mancano: mostrarle nella pagina e inviare avvisi (anche verso Home Assistant).
 5. Selettori di Booking/Airbnb possono cambiare: rifare il parser con una pagina salvata in `esempi/`. Airbnb non ha ancora un file di esempio.
 6. Storico: `history` e `latest` filtrano per zona, data di arrivo e **raggio arrotondato**; il menu "Date già monitorate" imposta anche il raggio.
 7. VRBO: ripensarci solo se serve davvero.
