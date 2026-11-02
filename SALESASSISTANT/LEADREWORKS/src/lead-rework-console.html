@@ -3177,6 +3177,7 @@ function renderHistoryModal(id){
             <span class="hm-ib" title="${d.crm_lead_id ? 'Apri questo lead nel CRM' : 'Apri l\'elenco lead del CRM (ID non ancora collegato)'}" onclick="openCrmFromHistory('${r.id}')">${icon('external',{size:13,noMargin:true})}</span>
             <span class="hm-ib" title="Invia a telefono" onclick="sendHistoryToPhone('${r.id}')">${icon('phone',{size:13,noMargin:true})}</span>
             <span class="hm-ib hm-pri" title="Invia a Suggerimenti Vendita" onclick="exportHistoryItemToSuggerimentiVendita('${r.id}')">${icon('upload',{size:13,noMargin:true})}</span>
+            <span class="hm-ib" title="Compila moduli (Quotazione indicativa / Preventivo)" onclick="apriModuli('${r.id}')">${icon('clipboard',{size:13,noMargin:true})}</span>
             <span class="hm-ib" title="Stampa" onclick="printHistoryModal()">${icon('print',{size:13,noMargin:true})}</span>
             <span class="hm-ib" title="Chiudi" onclick="closeHistoryModal()">${icon('close',{size:13,noMargin:true})}</span>
           </div>
@@ -3516,5 +3517,6 @@ init();
   ["mouseleave", "scroll", "click", "keydown"].forEach(e => document.addEventListener(e, nascondi, true));
 })();
 </script>
+<script src="moduli/moduli.js"></script>
 </body>
 </html>

@@ -172,3 +172,11 @@ solo in `localStorage` del browser e non viene mai inviata altrove.
 negli strumenti sviluppatore del browser — va trattata come credenziale
 personale, non va condivisa insieme al file HTML, e va rimossa con il tasto
 "Rimuovi chiave" se il file viene passato ad altri o pubblicato.
+
+## Compilazione moduli (Quotazione Indicativa YM / Preventivo YM)
+Nella finestra «Vedi» di un lead, il pulsante **Moduli** (icona blocco appunti, in alto a destra) apre la **scelta** «Quotazione Indicativa YM» / «Preventivo YM».
+Il modulo si apre già compilato con i dati del lead (nome, telefono/cellulare, email, indirizzo → via + civico, zona → località, prodotto, note); il resto (CF, CAP, prezzo, scheda tecnica, optional…) si scrive a mano. **Scarica PDF** riempie il PDF originale (campi compilabili, layout identico). Ciò che scrivi resta nel lead (`r.moduli`); «← Scelta modulo» torna alla scelta, «Ricarica dal lead» rimette i dati del lead.
+- Codice: `src/moduli/moduli.js` (campi, precompilazione, finestra). Il PDF si compila con pdf-lib da cdnjs (serve internet al momento del download).
+- PDF vuoti: `src/moduli/*.pdf`; copia incorporata in `src/moduli/moduli-modelli.js` (la console gira da `file://`, dove `fetch()` non legge i PDF). **Se cambi un PDF** (stessi nomi dei campi) lancia `python3 src/moduli/costruisci-modelli.py`.
+- Dopo la modifica: aggiorna la pagina della console (Cmd+R); l'estensione Chrome non cambia.
+- Provato in Chromium: precompilazione, scelta, salvataggio nel lead, due PDF scaricati con i campi giusti. **Non provato** sulla console vera sul Mac (la prova usa dati finti e pdf-lib da npm).
