@@ -77,17 +77,32 @@
     const m = String(ind||"").trim().match(/^(.*?)[,\s]+(\d+\s*[A-Za-z]?)$/);
     return m ? [m[1].trim().replace(/,$/,""), m[2].trim()] : [String(ind||"").trim(), ""];
   }
+  // "Rosalba Berdicchia" -> {cognome:"Berdicchia", nome:"Rosalba"}. Ordine dei lead: nome poi cognome.
+  // Il cognome è l'ultima parola più le particelle che la precedono (De Luca, Di Stefano, Dal Pozzo…); il resto è il nome (anche doppio).
+  // Ragioni sociali (srl, spa, snc, condominio…) restano intere nel primo campo, senza nome.
+  const PARTICELLE = ["de","di","da","del","dei","degli","della","delle","dello","dal","dai","dalla","dalle","dallo","dall","d","la","lo","le","li","van","von","mc","mac","san","santa","ben","el","al"];
+  const RAGIONE = /(\bs\.?\s?r\.?\s?l\b|\bs\.?\s?p\.?\s?a\b|\bs\.?\s?n\.?\s?c\b|\bs\.?\s?a\.?\s?s\b|\bsoc\.|\bsocieta|\bsocietà|\bditta\b|\bstudio\b|\bcondominio\b|\bcooperativa\b|\bassociazione\b|\bimpresa\b|&)/i;
+  function spezzaNome(completo){
+    const t = String(completo || "").trim().replace(/\s+/g, " ");
+    if (!t) return { cognome: "", nome: "" };
+    if (RAGIONE.test(t)) return { cognome: t, nome: "" };
+    const w = t.split(" ");
+    if (w.length === 1) return { cognome: t, nome: "" };
+    let i = w.length - 1;                                   // inizio del cognome
+    while (i > 1 && PARTICELLE.includes(w[i - 1].toLowerCase().replace(/['’]$/, ""))) i--;
+    return { cognome: w.slice(i).join(" "), nome: w.slice(0, i).join(" ") };
+  }
   function daLead(chiave, d){
     const [via, civ] = splitVia(d.indirizzo);
     const tel = String(d.telefono1||"").trim(), tel2 = String(d.telefono2||"").trim();
     const mobile = [tel, tel2].find(t => /^(\+?39)?\s*3\d{2}/.test(t.replace(/\s/g,""))) || "";
     const fisso = [tel, tel2].find(t => t && t !== mobile) || "";
     const base = {
-      data: oggi(), luogo: d.zona || "", spettabile: d.nome || "", nome: d.nome || "",
+      data: oggi(), luogo: d.zona || "", spettabile: spezzaNome(d.nome).cognome, nome: spezzaNome(d.nome).nome,
       via, civico: civ, localita: d.zona || "", telefono: fisso, cellulare: mobile, email: d.email || "",
       prodotto: d.prodotto || "", note: d.note || ""
     };
-    const p1 = { data: base.data, luogo: base.luogo, spettabile: base.nome, nome: base.nome, via, civico: civ, localita: base.localita,
+    const p1 = { data: base.data, luogo: base.luogo, spettabile: base.spettabile, nome: base.nome, via, civico: civ, localita: base.localita,
       tel: fisso, cell: mobile, email: base.email, i_via: via, i_civico: civ, i_localita: base.localita, note: base.note };
     return chiave === "quotazione" ? base : (function(){ const o = {}; Object.keys(p1).forEach(k => o["p1_" + k] = p1[k]); o.p2_data_firma = ""; return o; })();
   }
@@ -140,6 +155,7 @@
     const r = state.leadsHistory[ctx.id], lead = daLead(ctx.tipo, (r && r.dati_lead_input) || {}), out = [];
     Object.keys(lead).forEach(k => {
       if (k === "data" || k === "p1_data" || !(k in ctx.base)) return;
+      if (/(^|_)(spettabile|nome)$/.test(k) && String(ctx.base[k] || "") === String((r.dati_lead_input || {}).nome || "").trim()) return;   // salvataggi vecchi: nome intero in entrambi i campi
       if (String(lead[k] || "") !== String(ctx.base[k] || "")) out.push({ k, lab: etichetta(k), vecchio: ctx.base[k], nuovo: lead[k], toccato: String(ctx.valori[k] || "") !== String(ctx.base[k] || "") });
     });
     return out;
@@ -261,5 +277,5 @@
     });
     if (tipo && MODULI[tipo]) apriTipo(tipo); else disegnaScelta();
   };
-  window.__moduliSchema = MODULI;   // usato dalle prove
+  window.__moduliSchema = MODULI; window.__spezzaNome = spezzaNome;   // usato dalle prove
 })();
