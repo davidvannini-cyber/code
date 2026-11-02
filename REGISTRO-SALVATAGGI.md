@@ -344,3 +344,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-02 | `3114e50` | SALESASSISTANT/LEADREWORKS: tasti Vedi quadrati 40x40 (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout 3114e50` |
 | 2026-11-02 | `90628ba` | SALESASSISTANT/LEADREWORKS: colonne Quotazione/Preventivo nello Storico Lead, moduli con salvataggio automatico e avviso dati cambiati (lead-rework-console.html, src/moduli/moduli.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout 90628ba` |
 | 2026-11-02 | `743b848` | SALESASSISTANT/LEADREWORKS: moduli, cognome nel primo campo e nome nel secondo (src/moduli/moduli.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout 743b848` |
+| 2026-11-02 | `4489573` | SALESASSISTANT/LEADREWORKS: più moduli per lead con numero automatico 4 cifre + 2 lettere, titolo, elenco/duplica/elimina (src/moduli/moduli.js, lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 4489573` |
