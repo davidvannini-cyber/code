@@ -2530,6 +2530,8 @@ const HISTORY_COLS = {
   mail:     { label:"Email",    first:"desc", val:r => (r.attivita && r.attivita.email) ? 1 : 0 },
   lav:      { label:"Lavorato", first:"desc", val:r => r.lavorato ? 1 : 0 },
   fu:       { label:"Follow up", first:"desc", val:r => r.followup ? 1 : 0 },
+  quot:     { label:"Quotazione indicativa", first:"desc", val:r => (typeof moduliConta === "function") ? moduliConta(r, "quotazione") : 0 },
+  prev:     { label:"Preventivo", first:"desc", val:r => (typeof moduliConta === "function") ? moduliConta(r, "preventivo") : 0 },
   fine:     { label:"Chiuso",   first:"desc", val:r => r.chiuso ? 1 : 0 }
 };
 /* Flag «CRM»: lead importato dal CRM (estensione Chrome o incolla dagli appunti, che portano crm_lead_id).
@@ -3043,8 +3045,8 @@ function renderHistoryTab(){
           ${sortTh('mail',MAC_MAIL_LOGO_SVG,'ck','Email inviata')}
           ${sortTh('lav','Lav.','ck','Lavorato')}
           ${sortTh('fu','F.U.','ck','Follow up (si attiva dopo Lav.)')}
-          <th class="ck" title="Quotazione indicativa (si colora quando è compilata: clic per aprirla)">${icon('docInfo',{size:14,noMargin:true})}</th>
-          <th class="ck" title="Preventivo (si colora quando è compilato: clic per aprirlo)">${icon('docFilled',{size:14,noMargin:true})}</th>
+          ${sortTh('quot',icon('docInfo',{size:14,noMargin:true}),'ck','Quotazione indicativa: quadratino verde = ne esiste almeno una (il numero dice quante)')}
+          ${sortTh('prev',icon('docFilled',{size:14,noMargin:true}),'ck','Preventivo: quadratino verde = ne esiste almeno uno (il numero dice quanti)')}
           ${sortTh('fine','Fine','ck','Chiuso: nessun altro intervento (si attiva dopo Lav.)')}<th></th>
         </tr></thead>
         <tbody>
