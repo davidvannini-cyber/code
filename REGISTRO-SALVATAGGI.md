@@ -337,3 +337,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-02 | `712eb0e` | RILEVAZIONE-PREZZI (code-priv): prezzo consigliato regola tassativa (-10% su tutti i 6 ospiti, senza 2 piu' bassi e il piu' alto, media) (mail.py, static/index.html, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 712eb0e` |
 | 2026-11-02 | `fb14ba6` | RILEVAZIONE-PREZZI (code-priv): periodi dal passato partono da oggi (rileva.py, server.py, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout fb14ba6` |
 | 2026-11-02 | `cdea5af` | RILEVAZIONE-PREZZI (code-priv): i flag Booking/Airbnb filtrano cio' che si vede nella pagina (static/index.html, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout cdea5af` |
+| 2026-11-02 | `2dd6fc7` | RILEVAZIONE-PREZZI (code-priv): legenda verde «ospita anche N persone» (static/index.html), REGISTRO-SALVATAGGI.md | `git checkout 2dd6fc7` |
