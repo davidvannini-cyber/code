@@ -331,3 +331,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-02 | `98866c1` | RILEVAZIONE-PREZZI (code-priv): prezzo diviso per le notti (dom-gio /4, gio-dom /3) (soggiorni.py, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 98866c1` |
 | 2026-11-02 | `9f4ced9` | RILEVAZIONE-PREZZI (code-priv): prezzo pieno (barrato) invece dello scontato (airbnb.py, booking_parser.py, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 9f4ced9` |
 | 2026-11-02 | `5579f26` | RILEVAZIONE-PREZZI (code-priv): correzioni calcoli (consigliato, mediana, variazioni per stesso soggiorno e ospiti) (server.py, rileva.py, mail.py, static/index.html), REGISTRO-SALVATAGGI.md | `git checkout 5579f26` |
+| 2026-11-02 | `17e5bdb` | RILEVAZIONE-PREZZI (code-priv): Booking prezzo pieno sulle schede scontate, verificato su pagina vera (booking_parser.py, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 17e5bdb` |
