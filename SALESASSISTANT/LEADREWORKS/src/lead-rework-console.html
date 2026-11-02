@@ -177,10 +177,11 @@
   .tbl-storico .acts .btn-ghost{padding:2px 4px;}
   .tbl-storico input[type=checkbox]{margin:0;}
   /* colonne Quotazione indicativa / Preventivo: stessa casella delle altre (stesso elemento = stesso allineamento), non modificabile; verde = compilato e cliccabile */
-  .tbl-storico input.mq{-webkit-appearance:none;appearance:none;width:13px;height:13px;box-sizing:border-box;background:#fff;border:1px solid #767676;border-radius:2px;cursor:default;}
+  .tbl-storico input.mq{-webkit-appearance:none;appearance:none;width:13px;height:13px;box-sizing:border-box;background:#fff;border:1px solid #767676;border-radius:2px;cursor:pointer;}
   .tbl-storico input.mq.on{background:#d7f3f0;cursor:pointer;}
   .tbl-storico input.mq[data-n]{position:relative;}
   .tbl-storico input.mq[data-n]::after{content:attr(data-n);position:absolute;left:0;top:0;width:11px;height:11px;line-height:11px;text-align:center;font-size:9px;font-weight:800;color:#0f5f57;}
+  .tbl-storico input.mq:hover{box-shadow:0 0 0 2px rgba(118,118,118,.3);}
   .tbl-storico input.mq.on:hover{box-shadow:0 0 0 2px rgba(43,179,166,.45);}
   /* intestazioni sempre visibili durante lo scorrimento: la lista scorre dentro il suo riquadro */
   .tbl-scroll{overflow:auto;max-height:calc(100vh - 150px);}
@@ -2948,7 +2949,7 @@ function autoBackupInfo(){
 function mq(r, tipo, nome){
   const n = (typeof moduliConta === "function") ? moduliConta(r, tipo) : (r.moduli && r.moduli[tipo] ? 1 : 0);
   return n ? `<input type="checkbox" class="mq on" ${n > 1 ? `data-n="${n}"` : ""} title="${n > 1 ? n + ' moduli salvati (' + nome + '): clic per l\'elenco' : nome + ' compilata: clic per aprirla'}" onclick="event.preventDefault();apriModuli('${r.id}','${tipo}')">`
-           : `<input type="checkbox" class="mq" tabindex="-1" title="${nome} non compilata" onclick="event.preventDefault()">`;
+           : `<input type="checkbox" class="mq" title="${nome} non compilata: clic per crearne una nuova" onclick="event.preventDefault();apriModuli('${r.id}','${tipo}')">`;
 }
 function renderHistoryTab(){
   const all = Object.values(state.leadsHistory);
