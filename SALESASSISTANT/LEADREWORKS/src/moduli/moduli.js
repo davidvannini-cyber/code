@@ -100,10 +100,10 @@
     const base = {
       data: oggi(), luogo: d.zona || "", spettabile: spezzaNome(d.nome).cognome, nome: spezzaNome(d.nome).nome,
       via, civico: civ, localita: d.zona || "", telefono: fisso, cellulare: mobile, email: d.email || "",
-      prodotto: d.prodotto || "", note: d.note || ""
+      prodotto: d.prodotto || ""   // le note del lead sono interne: non si importano mai nei moduli (li vede il cliente)
     };
     const p1 = { data: base.data, luogo: base.luogo, spettabile: base.spettabile, nome: base.nome, via, civico: civ, localita: base.localita,
-      tel: fisso, cell: mobile, email: base.email, i_via: via, i_civico: civ, i_localita: base.localita, note: base.note };
+      tel: fisso, cell: mobile, email: base.email, i_via: via, i_civico: civ, i_localita: base.localita };
     return chiave === "quotazione" ? base : (function(){ const o = {}; Object.keys(p1).forEach(k => o["p1_" + k] = p1[k]); o.p2_data_firma = ""; return o; })();
   }
 
@@ -217,7 +217,7 @@
   const tipoNome = t => t === "preventivo" ? "Preventivo YM" : "Quotazione Indicativa YM";
 
   // ---- Schermate
-  function statoTipo(r, tipo){ const n = conta(r, tipo); return n === 0 ? "Nuovo · parte dai dati del lead" : (n === 1 ? "1 salvato · Apri" : n + " salvati · Apri l'elenco"); }
+  function statoTipo(r, tipo){ const n = conta(r, tipo); return n === 0 ? "Nuovo · parte dai dati del lead" : (n === 1 ? "1 salvato · Apri l'elenco" : n + " salvati · Apri l'elenco"); }
   function disegnaScelta(){
     ctx.tipo = null; const r = lead(), nome = ((r && r.dati_lead_input) || {}).nome || "";
     document.getElementById("mod-box").innerHTML = `
@@ -236,7 +236,7 @@
         <button class="pri" data-a="apri" data-n="${E(e.id)}">Apri</button><button class="sec" data-a="duplica" data-n="${E(e.id)}">Duplica</button><button class="dan" data-a="elimina" data-n="${E(e.id)}">Elimina</button></div>`;
     }).join("");
     document.getElementById("mod-box").innerHTML = `
-      <div class="mh"><button class="sec" data-a="scelta">← Scelta modulo</button><h3>${tipoNome(tipo)} · ${arr.length} salvati</h3><button class="sec" data-a="chiudi">Chiudi</button></div>
+      <div class="mh"><button class="sec" data-a="scelta">← Scelta modulo</button><h3>${tipoNome(tipo)} · ${arr.length} ${arr.length === 1 ? "salvato" : "salvati"}</h3><button class="sec" data-a="chiudi">Chiudi</button></div>
       <div class="mb"><div class="lt">${righe}</div></div>
       <div class="mf"><span id="mod-msg"></span><button class="pri" data-a="nuovo">+ Nuovo ${tipo === "preventivo" ? "preventivo" : "quotazione"}</button></div>`;
   }
@@ -276,7 +276,7 @@
   }
   function vaiTipo(tipo){
     const n = conta(lead(), tipo);
-    if (n === 0) apriNuovo(tipo); else if (n === 1) apriEsistente(tipo, lista(lead(), tipo)[0].id); else disegnaElenco(tipo);
+    if (n === 0) apriNuovo(tipo); else disegnaElenco(tipo);   // con almeno un modulo si apre sempre l'elenco
   }
   function duplica(tipo, eid){
     const arr = lista(lead(), tipo), e = arr.find(x => x.id === eid); if (!e) return;
