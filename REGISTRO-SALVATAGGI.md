@@ -334,3 +334,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-02 | `17e5bdb` | RILEVAZIONE-PREZZI (code-priv): Booking prezzo pieno sulle schede scontate, verificato su pagina vera (booking_parser.py, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 17e5bdb` |
 | 2026-11-02 | `92e527d` | RICERCA-ALLOGGI-ZONA (nuova cartella in code-priv): PARTENZA.md e lista alloggi Booking Pievepelago-Abetone, REGISTRO-SALVATAGGI.md | `git checkout 92e527d` |
 | 2026-11-02 | `08c0951` | RILEVAZIONE-PREZZI (code-priv): Booking prezzo = totale / notti vere del soggiorno (booking.py, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 08c0951` |
+| 2026-11-02 | `712eb0e` | RILEVAZIONE-PREZZI (code-priv): prezzo consigliato regola tassativa (-10% su tutti i 6 ospiti, senza 2 piu' bassi e il piu' alto, media) (mail.py, static/index.html, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 712eb0e` |
