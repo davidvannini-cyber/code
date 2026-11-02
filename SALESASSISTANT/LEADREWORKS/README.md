@@ -182,3 +182,10 @@ Il modulo si apre già compilato con i dati del lead (nome, telefono/cellulare, 
 - Provato in Chromium: precompilazione, scelta, salvataggio nel lead, due PDF scaricati con i campi giusti. **Non provato** sulla console vera sul Mac (la prova usa dati finti e pdf-lib da npm).
 
 **Tasti della finestra «Vedi»** (fascia blu in alto a destra, approvati il 2026-11-02): → CRM · → TEL · → SUGG (verde) · → MODULI · STAMPA · X. Freccia davanti al disegno e scritta sotto (senza punto in «SUGG»). Codice: `renderHistoryModal` (classi `.hm-lb`).
+
+**Moduli salvati nel lead (2026-11-02).**
+- *Elenco «Storico Lead»*: due colonne tra F.U. e Fine, **foglio con «i» = Quotazione indicativa**, **foglio con righe = Preventivo**. Quadratino bianco = non compilato; **verde `#D7F3F0` = compilato e cliccabile** (apre direttamente quel modulo). Non sono modificabili. Sono `input.mq` (stessa casella delle altre, quindi allineate per costruzione: misurato, scarto 0).
+- *Salvataggio automatico* a ogni modifica (campo di testo o casella), con la scritta «✓ Salvato automaticamente alle HH:MM». Si salva solo se tocchi qualcosa (aprire e chiudere non crea nulla). Formato nel lead: `r.moduli[tipo] = {v: valori, base: dati del lead al salvataggio, ts}`; il vecchio formato (solo valori) si legge ancora.
+- *Avviso dati cambiati*: se dopo il salvataggio cambiano dati del lead (telefono, email, indirizzo, zona…) compare una fascia gialla con le differenze. «Aggiorna questi campi» cambia solo quelli che non hai modificato tu nel modulo; «Ignora» lascia tutto e l'avviso non ricompare per quelle differenze. I campi scritti da te sono in arancione. La data non genera avvisi.
+- La scelta dei moduli (tasto MODULI della finestra Vedi) mostra «Salvata il … · Riprendi» oppure «Nuovo».
+- Fuori da questa versione (per scelta): più versioni per lead, esportazione in Excel/backup leggibile.
