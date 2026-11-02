@@ -340,3 +340,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-02 | `2dd6fc7` | RILEVAZIONE-PREZZI (code-priv): legenda verde «ospita anche N persone» (static/index.html), REGISTRO-SALVATAGGI.md | `git checkout 2dd6fc7` |
 | 2026-11-02 | `9e088df` | SALESASSISTANT/LEADREWORKS: compilazione moduli Quotazione Indicativa YM e Preventivo YM dalla finestra Vedi (src/moduli/*, lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 9e088df` |
 | 2026-11-02 | `8fd6c11` | SALESASSISTANT/LEADREWORKS: tasti della finestra Vedi con freccia e scritta (CRM, TEL, SUGG, MODULI, STAMPA, X) (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 8fd6c11` |
+| 2026-11-02 | `1a8ce76` | SALESASSISTANT/LEADREWORKS: tasti Vedi tutti quadrati 56x56 (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout 1a8ce76` |
