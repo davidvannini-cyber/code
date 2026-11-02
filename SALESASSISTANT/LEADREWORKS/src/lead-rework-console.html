@@ -2948,7 +2948,7 @@ function autoBackupInfo(){
 
 function mq(r, tipo, nome){
   const n = (typeof moduliConta === "function") ? moduliConta(r, tipo) : (r.moduli && r.moduli[tipo] ? 1 : 0);
-  return n ? `<input type="checkbox" class="mq on" ${n > 1 ? `data-n="${n}"` : ""} title="${n > 1 ? n + ' moduli salvati (' + nome + '): clic per l\'elenco' : nome + ' compilata: clic per aprirla'}" onclick="event.preventDefault();apriModuli('${r.id}','${tipo}')">`
+  return n ? `<input type="checkbox" class="mq on" data-n="${n}" title="${n > 1 ? n + ' moduli salvati (' + nome + '): clic per l\'elenco' : '1 modulo salvato (' + nome + '): clic per l\'elenco'}" onclick="event.preventDefault();apriModuli('${r.id}','${tipo}')">`
            : `<input type="checkbox" class="mq" title="${nome} non compilata: clic per crearne una nuova" onclick="event.preventDefault();apriModuli('${r.id}','${tipo}')">`;
 }
 function renderHistoryTab(){
