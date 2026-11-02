@@ -180,3 +180,5 @@ Il modulo si apre già compilato con i dati del lead (nome, telefono/cellulare, 
 - PDF vuoti: `src/moduli/*.pdf`; copia incorporata in `src/moduli/moduli-modelli.js` (la console gira da `file://`, dove `fetch()` non legge i PDF). **Se cambi un PDF** (stessi nomi dei campi) lancia `python3 src/moduli/costruisci-modelli.py`.
 - Dopo la modifica: aggiorna la pagina della console (Cmd+R); l'estensione Chrome non cambia.
 - Provato in Chromium: precompilazione, scelta, salvataggio nel lead, due PDF scaricati con i campi giusti. **Non provato** sulla console vera sul Mac (la prova usa dati finti e pdf-lib da npm).
+
+**Tasti della finestra «Vedi»** (fascia blu in alto a destra, approvati il 2026-11-02): → CRM · → TEL · → SUGG (verde) · → MODULI · STAMPA · X. Freccia davanti al disegno e scritta sotto (senza punto in «SUGG»). Codice: `renderHistoryModal` (classi `.hm-lb`).
