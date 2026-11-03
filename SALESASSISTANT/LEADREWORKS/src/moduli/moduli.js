@@ -200,8 +200,9 @@
     const box = document.getElementById("mod-box"); if (!box) return;
     box.querySelectorAll("[data-k]").forEach(el => { ctx.valori[el.dataset.k] = el.type === "checkbox" ? el.checked : el.value; });
   }
-  function msg(t, err){ const e = document.getElementById("mod-msg"); if (e){ e.textContent = t; e.style.color = err ? "#b91c1c" : "#475569"; } }
-  function segnaSalvato(){ msg("✓ Salvato automaticamente alle " + new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})); }
+  function msg(t, err, dettaglio){ const e = document.getElementById("mod-msg"); if (e){ e.textContent = t; e.title = dettaglio || ""; e.style.color = err ? "#b91c1c" : "#475569"; } }
+  function oraSalvato(){ return "✓ Salvato " + new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}); }
+  function segnaSalvato(){ msg(oraSalvato()); }
   function salvaNelLead(){
     const r = lead(); if (!r) return;
     r.moduli = r.moduli || {};
@@ -260,10 +261,10 @@
       <div class="mb"><div class="tt"><span class="nu" title="Numero del documento (si genera da solo)">N. ${E(ctx.eid)}</span>
         <label style="flex:1">Titolo (facoltativo, per riconoscerlo nell'elenco)<input type="text" data-titolo="1" value="${E(ctx.titolo || "")}" placeholder="es. Poltroncina curvilinea, Variante con pedana…"></label></div>
         ${banner()}${sez}</div>
-      <div class="mf"><span id="mod-msg">${ctx.ts ? "✓ Salvato il " + fmtTs(ctx.ts) : "Si salva da solo a ogni modifica."}</span>
+      <div class="mf"><span id="mod-msg">${ctx.ts ? "✓ Salvato " + fmtTs(ctx.ts).replace(" alle ", " ") : ""}</span>
         <button class="sec" data-a="rileggi" title="Rimette i dati del lead nei campi (cancella quello che hai scritto in questo modulo)">Ricarica dal lead</button>
         <button class="sec" data-a="cartella" title="Sceglie la cartella dove salvare i PDF">Cartella PDF…</button>
-        <button class="pri" data-a="scarica">Scarica PDF</button><span id="mod-dir" style="flex-basis:100%;font-size:11.5px;color:#64748b"></span></div>`;
+        <button class="pri" data-a="scarica">Scarica PDF</button></div>`;
     mostraCartella();
   }
   function apriNuovo(tipo){
@@ -322,10 +323,10 @@
       return await scegliCartella();
     } catch (e) { return null; }   // annullato o negato: si scarica nel modo normale
   }
-  async function mostraCartella(){
-    const el = document.getElementById("mod-dir"); if (!el) return;
+  async function mostraCartella(){   // niente testo a video: il nome della cartella sta nel suggerimento del tasto «Cartella PDF…»
+    const bt = document.querySelector('#mod-box [data-a=cartella]'); if (!bt) return;
     let h = null; try { h = window.showDirectoryPicker ? await kvGet("cartella") : null; } catch (e) {}
-    el.textContent = !window.showDirectoryPicker ? "Cartella PDF: non disponibile in questo browser (il PDF va nei Download)" : (h ? "Cartella PDF: " + h.name : "Cartella PDF: non scelta (te la chiedo al primo PDF)");
+    bt.title = !window.showDirectoryPicker ? "Questo browser non permette di scegliere la cartella: il PDF va nei Download" : (h ? "Cartella dei PDF: " + h.name + " (clic per cambiarla)" : "Sceglie la cartella dove salvare i PDF (te la chiedo anche al primo PDF)");
   }
 
   async function scarica(){
@@ -359,7 +360,9 @@
       }
       if (!dove) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([out], { type: "application/pdf" })); a.download = nomeFile; document.body.appendChild(a); a.click(); a.remove(); }
       mostraCartella();
-      msg("✓ Salvato. " + (dove ? "PDF salvato nella cartella «" + dove + "»: " + nomeFile : "PDF scaricato nei Download (cartella non scelta o non disponibile).") + (mancanti.length ? " Campi non trovati nel modulo: " + mancanti.join(", ") : ""), mancanti.length > 0);
+      const eid = ctx && ctx.eid;
+      msg(mancanti.length ? "PDF fatto, ma mancano campi nel modulo: " + mancanti.join(", ") : (dove ? "✓ PDF salvato" : "✓ PDF scaricato"), mancanti.length > 0, dove ? "Cartella «" + dove + "»: " + nomeFile : nomeFile + " (nei Download)");
+      if (!mancanti.length) setTimeout(() => { if (ctx && ctx.eid === eid) msg(oraSalvato()); }, 3000);   // la scritta sparisce da sola
     } catch (e) { msg("Errore: " + e.message, true); }
   }
 
@@ -383,7 +386,7 @@
       else if (a === "elimina") { b.dataset.a = "elimina-ok"; b.textContent = "Sicuro? Elimina"; }
       else if (a === "elimina-ok") elimina(ctx.tipo, n);
       else if (a === "scarica") scarica();
-      else if (a === "cartella") { if (window.showDirectoryPicker) scegliCartella().then(() => { mostraCartella(); msg("✓ Cartella scelta: i prossimi PDF andranno lì."); }).catch(() => {}); else msg("Questo browser non permette di scegliere la cartella: il PDF va nei Download.", true); }
+      else if (a === "cartella") { if (window.showDirectoryPicker) scegliCartella().then(() => { mostraCartella(); msg("✓ Cartella scelta"); }).catch(() => {}); else msg("Questo browser non permette di scegliere la cartella: il PDF va nei Download.", true); }
       else if (a === "aggiorna" || a === "ignora") {
         leggiForm();
         calcolaDiff().forEach(x => { if (a === "aggiorna" && !x.toccato) ctx.valori[x.k] = x.nuovo || ""; ctx.base[x.k] = x.nuovo; });
