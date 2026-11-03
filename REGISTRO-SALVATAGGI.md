@@ -349,3 +349,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-02 | `f6e918b` | SALESASSISTANT/LEADREWORKS: clic sui quadratini apre sempre l'elenco; note del lead non importate nei moduli (src/moduli/moduli.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout f6e918b` |
 | 2026-11-02 | `1c79c90` | SALESASSISTANT/LEADREWORKS: quadratino verde mostra sempre il numero dei moduli, anche 1 (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 1c79c90` |
 | 2026-11-02 | `72fd447` | SALESASSISTANT/LEADREWORKS: intestazioni colonne moduli ordinano i lead (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 72fd447` |
+| 2026-11-03 | `e5450b8` | LEADREWORKS: clic sulla data nello Storico evidenzia la riga in giallo (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout e5450b8` |

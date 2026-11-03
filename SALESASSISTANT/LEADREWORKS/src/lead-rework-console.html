@@ -187,6 +187,9 @@
   .tbl-scroll{overflow:auto;max-height:calc(100vh - 150px);}
   .tbl-storico tr.riga-sel td{background:#dbeafe !important;}
   .tbl-storico tr.riga-sel td:first-child{box-shadow:inset 4px 0 0 #2563eb;}
+  /* evidenziatore: clic sulla data della riga (si toglie con un altro clic); vince sull'azzurro della riga selezionata */
+  .tbl-storico tr.riga-giallo td{background:#fff176 !important;}
+  .tbl-storico td.c-data{cursor:pointer;}
   .tbl-storico thead th{position:sticky;top:0;z-index:2;background:var(--card,#fff);box-shadow:0 1px 0 var(--border);}
   .tbl-storico .crm-dot{display:inline-block;width:12px;height:12px;border:1.5px solid #6b7280;border-radius:50%;vertical-align:middle;box-sizing:border-box;position:relative;}
   .tbl-storico .crm-dot.on{border-color:#6b7280;}
@@ -2601,6 +2604,15 @@ function filteredHistoryList(crmOverride){
   });
 }
 
+/* Evidenziatore giallo: clic sulla data della riga nello Storico. Resta salvato nel lead (anche nei backup). */
+async function toggleEvidenziato(id){
+  const r = state.leadsHistory[id];
+  if (!r) return;
+  r.evidenziato = !r.evidenziato;
+  await dbSet("leads", state.leadsHistory);
+  render();
+}
+
 async function toggleAttivita(id, canale){
   const r = state.leadsHistory[id];
   if (!r) return;
@@ -3051,8 +3063,8 @@ function renderHistoryTab(){
         </tr></thead>
         <tbody>
           ${filtered.map(r => { const at = r.attivita || {}; const ck = (c, t) => `<td class="ck"><input type="checkbox" ${at[c]?'checked':''} onchange="toggleAttivita('${r.id}','${c}')" title="${t}"></td>`; return `
-            <tr data-id="${r.id}" class="${state.historyHighlight === r.id ? 'riga-sel' : ''}">
-              <td title="${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}">${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit'})}<span class="ora">, ${new Date(r.data_creazione).toLocaleString('it-IT', {hour:'2-digit',minute:'2-digit'})}</span></td>
+            <tr data-id="${r.id}" class="${state.historyHighlight === r.id ? 'riga-sel' : ''}${r.evidenziato ? ' riga-giallo' : ''}">
+              <td class="c-data" onclick="toggleEvidenziato('${r.id}')" title="${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}">${new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit'})}<span class="ora">, ${new Date(r.data_creazione).toLocaleString('it-IT', {hour:'2-digit',minute:'2-digit'})}</span></td>
               <td class="ck"><span class="crm-dot${leadFromCrm(r)?' on':''}" role="img" aria-label="${leadFromCrm(r) ? 'Importato dal CRM' : 'Non importato dal CRM'}" title="${leadFromCrm(r) ? 'Importato dal CRM' : 'Non importato dal CRM'}"></span></td>
               <td title="${escapeHtml((statoById(r.stato_lead) ? statoById(r.stato_lead).label : String(r.stato_lead)) + ' · ' + (r.dati_lead_input.prodotto || ''))}"><span class="nome-link" onclick="openHistoryItem('${r.id}')">${escapeHtml(r.dati_lead_input.nome || '—')}</span></td>
               <td class="c-prod">${escapeHtml(r.dati_lead_input.prodotto || '—')}</td>
