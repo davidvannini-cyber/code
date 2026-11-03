@@ -262,7 +262,9 @@
         ${banner()}${sez}</div>
       <div class="mf"><span id="mod-msg">${ctx.ts ? "✓ Salvato il " + fmtTs(ctx.ts) : "Si salva da solo a ogni modifica."}</span>
         <button class="sec" data-a="rileggi" title="Rimette i dati del lead nei campi (cancella quello che hai scritto in questo modulo)">Ricarica dal lead</button>
-        <button class="pri" data-a="scarica">Scarica PDF</button></div>`;
+        <button class="sec" data-a="cartella" title="Sceglie la cartella dove salvare i PDF">Cartella PDF…</button>
+        <button class="pri" data-a="scarica">Scarica PDF</button><span id="mod-dir" style="flex-basis:100%;font-size:11.5px;color:#64748b"></span></div>`;
+    mostraCartella();
   }
   function apriNuovo(tipo){
     ctx.tipo = tipo; ctx.eid = nuovoNumero(); ctx.titolo = ""; ctx.valori = valoriDaLead(tipo, ctx.eid); ctx.base = Object.assign({}, ctx.valori); ctx.ts = null; ctx.nuovo = true;
@@ -297,7 +299,37 @@
     if (cambiato && typeof render === "function") render();   // aggiorna i quadratini nell'elenco
   }
 
+  // ---- Cartella dei PDF: la console ricorda SOLO quale cartella è (il puntatore, pochi byte). I PDF non restano mai nel programma.
+  function idbApri(){ return new Promise((ok, ko) => { const r = indexedDB.open("lead-rework-moduli", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); }); }
+  async function kvGet(k){ const db = await idbApri(); return new Promise((ok, ko) => { const q = db.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ko(q.error); }); }
+  async function kvSet(k, v){ const db = await idbApri(); return new Promise((ok, ko) => { const t = db.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = () => ok(); t.onerror = () => ko(t.error); }); }
+  async function kvDel(k){ const db = await idbApri(); return new Promise((ok, ko) => { const t = db.transaction("kv", "readwrite"); t.objectStore("kv").delete(k); t.oncomplete = () => ok(); t.onerror = () => ko(t.error); }); }
+  async function scegliCartella(){
+    const h = await window.showDirectoryPicker({ id: "moduli-yesmobility", mode: "readwrite", startIn: "documents" });
+    try { await kvSet("cartella", h); } catch (e) {}
+    return h;
+  }
+  // Restituisce la cartella pronta all'uso, oppure null (API assente, scelta annullata, accesso negato).
+  async function cartellaPronta(){
+    if (!window.showDirectoryPicker) return null;
+    try {
+      let h = null; try { h = await kvGet("cartella"); } catch (e) {}
+      if (h) {
+        let p = await h.queryPermission({ mode: "readwrite" });
+        if (p !== "granted") p = await h.requestPermission({ mode: "readwrite" });
+        if (p === "granted") return h;
+      }
+      return await scegliCartella();
+    } catch (e) { return null; }   // annullato o negato: si scarica nel modo normale
+  }
+  async function mostraCartella(){
+    const el = document.getElementById("mod-dir"); if (!el) return;
+    let h = null; try { h = window.showDirectoryPicker ? await kvGet("cartella") : null; } catch (e) {}
+    el.textContent = !window.showDirectoryPicker ? "Cartella PDF: non disponibile in questo browser (il PDF va nei Download)" : (h ? "Cartella PDF: " + h.name : "Cartella PDF: non scelta (te la chiedo al primo PDF)");
+  }
+
   async function scarica(){
+    const cartella = await cartellaPronta();   // per prima cosa: la scelta della cartella richiede il clic appena fatto
     leggiForm(); salvaNelLead(); segnaSalvato();
     try {
       msg("Preparo il PDF…");
@@ -319,9 +351,15 @@
       form.updateFieldAppearances(font);
       const out = await pdf.save();
       const nome = String((lead().dati_lead_input || {}).nome || "cliente").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "_");
-      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([out], { type: "application/pdf" }));
-      a.download = MODULI[ctx.tipo].file + "_" + ctx.eid + "_" + (nome || "cliente") + ".pdf"; document.body.appendChild(a); a.click(); a.remove();
-      msg("✓ Salvato. PDF scaricato." + (mancanti.length ? " Campi non trovati nel modulo: " + mancanti.join(", ") : ""), mancanti.length > 0);
+      const nomeFile = MODULI[ctx.tipo].file + "_" + ctx.eid + "_" + (nome || "cliente") + ".pdf";
+      let dove = "";
+      if (cartella) {
+        try { const fh = await cartella.getFileHandle(nomeFile, { create: true }); const w = await fh.createWritable(); await w.write(out); await w.close(); dove = cartella.name; }
+        catch (e) { try { await kvDel("cartella"); } catch (x) {} }   // cartella sparita o senza permesso: la dimentico e scarico nel modo normale
+      }
+      if (!dove) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([out], { type: "application/pdf" })); a.download = nomeFile; document.body.appendChild(a); a.click(); a.remove(); }
+      mostraCartella();
+      msg("✓ Salvato. " + (dove ? "PDF salvato nella cartella «" + dove + "»: " + nomeFile : "PDF scaricato nei Download (cartella non scelta o non disponibile).") + (mancanti.length ? " Campi non trovati nel modulo: " + mancanti.join(", ") : ""), mancanti.length > 0);
     } catch (e) { msg("Errore: " + e.message, true); }
   }
 
@@ -345,6 +383,7 @@
       else if (a === "elimina") { b.dataset.a = "elimina-ok"; b.textContent = "Sicuro? Elimina"; }
       else if (a === "elimina-ok") elimina(ctx.tipo, n);
       else if (a === "scarica") scarica();
+      else if (a === "cartella") { if (window.showDirectoryPicker) scegliCartella().then(() => { mostraCartella(); msg("✓ Cartella scelta: i prossimi PDF andranno lì."); }).catch(() => {}); else msg("Questo browser non permette di scegliere la cartella: il PDF va nei Download.", true); }
       else if (a === "aggiorna" || a === "ignora") {
         leggiForm();
         calcolaDiff().forEach(x => { if (a === "aggiorna" && !x.toccato) ctx.valori[x.k] = x.nuovo || ""; ctx.base[x.k] = x.nuovo; });

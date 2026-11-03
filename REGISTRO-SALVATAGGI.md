@@ -351,3 +351,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-02 | `72fd447` | SALESASSISTANT/LEADREWORKS: intestazioni colonne moduli ordinano i lead (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 72fd447` |
 | 2026-11-03 | `e5450b8` | LEADREWORKS: clic sulla data nello Storico evidenzia la riga in giallo (lead-rework-console.html), REGISTRO-SALVATAGGI.md | `git checkout e5450b8` |
 | 2026-11-03 | `0e02207` | SALESASSISTANT/LEADREWORKS: PDF moduli, tolto il limite di 100 caratteri dai campi (src/moduli/moduli.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout 0e02207` |
+| 2026-11-03 | `933acc5` | SALESASSISTANT/LEADREWORKS: PDF dei moduli salvato in una cartella scelta (src/moduli/moduli.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout 933acc5` |
