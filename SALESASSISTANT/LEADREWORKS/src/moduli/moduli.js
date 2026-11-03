@@ -310,7 +310,10 @@
         const v = ctx.valori[k]; let f;
         try { f = form.getField(k); } catch (e) { mancanti.push(k); return; }
         if (f instanceof PDFLib.PDFCheckBox) { v ? f.check() : f.uncheck(); }
-        else f.setText(String(v || ""));
+        else {
+          if (f.getMaxLength && f.getMaxLength() !== undefined) f.setMaxLength(undefined);   // il PDF limita molti campi a 100 caratteri: qui non serve
+          f.setText(String(v || ""));
+        }
       });
       const font = await pdf.embedFont(PDFLib.StandardFonts.Helvetica);
       form.updateFieldAppearances(font);
