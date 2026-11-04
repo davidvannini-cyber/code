@@ -2677,7 +2677,7 @@ const EXPORT_COLS = [
   { k:"Lavorato",         w:10, pdf:1.4, flag:true, v:r => r.lavorato ? "Sì" : "No" },
   { k:"Follow up",        w:10, pdf:1.4, flag:true, v:r => r.followup ? "Sì" : "No" },
   { k:"Chiuso",           w:10, pdf:1.2, flag:true, v:r => r.chiuso ? "Sì" : "No" },
-  { k:"Note",             w:40, pdf:4,   v:r => r.note_ym || "" }
+  { k:"Note",             w:34, pdf:4,   v:r => r.note_ym || "" }
 ];
 /* Scelta delle colonne: si apre cliccando «Esporta Excel» / «Esporta PDF», una scelta salvata per ciascun formato (solo comodità, nel browser). */
 const EXPORT_COLS_DEFAULT = ["Data","Cliente","Telefono","Email","Zona","Prodotto","Stato","CRM","ID CRM","Telefonata","NR","WhatsApp","Email inviata","Lavorato","Follow up","Chiuso","Note"];
@@ -2805,18 +2805,66 @@ async function eseguiExcel(cols, crm){
   });
   head.height = 22;
   const thin = { style:"thin", color:{ argb:"FFE2E8F0" } };
+  // Note YM: nel foglio principale solo un'anteprima di una riga + freccia, che porta al testo completo nel foglio «Note YM»
+  const noteCol = COLS.findIndex(c => c.k === "Note");
+  const conNote = [];   // indici (in righe/recs) dei lead che hanno del testo
+  if (noteCol >= 0) righe.forEach((riga, ri) => { if (String(riga[noteCol] || "").trim()) conNote.push(ri); });
+  const NOTE_SHEET = "Note YM", NOTE_PRIMA_RIGA = 4;
+  // collegamento a una cella precisa di un altro foglio: funzione HYPERLINK (il collegamento «classico» della libreria Excel viene scritto con l'indirizzo doppio)
+  const linkInterno = (foglio, cella, testo) => ({ formula:'HYPERLINK("#\'' + foglio + '\'!' + cella + '","' + String(testo).replace(/"/g, '""') + '")', result:String(testo) });
+  const anteprima = t => { const u = String(t).replace(/\s+/g, " ").trim(); return (u.length > 30 ? u.slice(0, 30).trimEnd() + "…" : u) + "  →"; };
   righe.forEach((riga, ri) => {
     const row = ws.getRow(4 + ri);
     riga.forEach((val, i) => {
       const c = COLS[i], cell = row.getCell(i + 1);
-      cell.value = val;
+      const nota = (i === noteCol) ? conNote.indexOf(ri) : -1;
+      if (nota >= 0) {
+        cell.value = linkInterno(NOTE_SHEET, "A" + (NOTE_PRIMA_RIGA + nota), anteprima(val));
+        cell.font = { color:{ argb:"FF1D4ED8" }, underline:true };
+      } else cell.value = (i === noteCol) ? "" : val;
       cell.border = { top:thin, bottom:thin, left:thin, right:thin };
-      cell.alignment = { vertical:"top", horizontal:c.flag ? "center" : "left", wrapText:(c.k === "Note" || c.k === "Stato") };
+      cell.alignment = { vertical:"top", horizontal:c.flag ? "center" : "left", wrapText:(c.k === "Stato") };
       cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:exportRowColor(recs[ri]) } };
       if (c.flag && val === "Sì") cell.font = { bold:true, color:{ argb:"FF12324F" } };
       else if (c.flag) cell.font = { color:{ argb:"FF9CA3AF" } };
     });
   });
+  if (conNote.length) {
+    const wn = wb.addWorksheet(NOTE_SHEET, { views:[{ state:"frozen", ySplit:3 }], pageSetup:{ orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0 } });
+    wn.columns = [{ width:17 }, { width:26 }, { width:16 }, { width:18 }, { width:90 }];
+    wn.mergeCells(1, 1, 1, 5);
+    const tn = wn.getCell(1, 1);
+    tn.value = "Note YM — testo completo · " + conNote.length + " lead";
+    tn.font = { bold:true, size:14, color:{ argb:"FF12324F" } };
+    wn.getRow(1).height = 24;
+    wn.mergeCells(2, 1, 2, 5);
+    const hn = wn.getCell(2, 1);
+    hn.value = "Clic sul nome del cliente per tornare alla sua riga nell'elenco.";
+    hn.font = { italic:true, size:10, color:{ argb:"FF6B7280" } };
+    ["Data", "Cliente", "Telefono", "Zona", "Note"].forEach((h, i) => {
+      const cell = wn.getRow(3).getCell(i + 1);
+      cell.value = h; cell.font = { bold:true, color:{ argb:"FFFFFFFF" } };
+      cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:"FF12324F" } };
+      cell.alignment = { vertical:"middle", horizontal:"left" };
+    });
+    wn.getRow(3).height = 22;
+    conNote.forEach((ri, k) => {
+      const r = recs[ri], d = r.dati_lead_input || {}, row = wn.getRow(NOTE_PRIMA_RIGA + k);
+      const dati = [
+        new Date(r.data_creazione).toLocaleString('it-IT', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}),
+        linkInterno("Storico Lead", "A" + (4 + ri), d.nome || "(senza nome)"),
+        d.telefono1 || "", d.zona || "", String(r.note_ym || "")
+      ];
+      dati.forEach((val, i) => {
+        const cell = row.getCell(i + 1);
+        cell.value = val;
+        cell.border = { top:thin, bottom:thin, left:thin, right:thin };
+        cell.alignment = { vertical:"top", horizontal:"left", wrapText:(i === 4) };
+        cell.fill = { type:"pattern", pattern:"solid", fgColor:{ argb:exportRowColor(r) } };
+        if (i === 1) cell.font = { color:{ argb:"FF1D4ED8" }, underline:true };
+      });
+    });
+  }
   ws.autoFilter = { from:{ row:3, column:1 }, to:{ row:3 + Math.max(righe.length, 1), column:nc } };
   const buf = await wb.xlsx.writeBuffer();
   downloadBlob(new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), exportFileName("xlsx"));

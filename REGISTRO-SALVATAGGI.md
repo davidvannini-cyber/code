@@ -353,3 +353,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-03 | `0e02207` | SALESASSISTANT/LEADREWORKS: PDF moduli, tolto il limite di 100 caratteri dai campi (src/moduli/moduli.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout 0e02207` |
 | 2026-11-03 | `933acc5` | SALESASSISTANT/LEADREWORKS: PDF dei moduli salvato in una cartella scelta (src/moduli/moduli.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout 933acc5` |
 | 2026-11-03 | `8a0aefa` | SALESASSISTANT/LEADREWORKS: piede dei moduli con un solo messaggio breve (src/moduli/moduli.js, README.md), REGISTRO-SALVATAGGI.md | `git checkout 8a0aefa` |
+| 2026-11-04 | `77551ea` | SALESASSISTANT/LEADREWORKS: esportazione Excel, Note YM in un foglio secondario con collegamenti alla riga (lead-rework-console.html, README.md), REGISTRO-SALVATAGGI.md | `git checkout 77551ea` |
