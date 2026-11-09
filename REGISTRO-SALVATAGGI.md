@@ -357,3 +357,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-09 | `1015f93` | SALESASSISTANT/AGENTE-VOCALE: piano dell'agente vocale (PIANO.md, solo documento), REGISTRO-SALVATAGGI.md | `git checkout 1015f93` |
 | 2026-11-09 | `706e656` | SALESASSISTANT: agente vocale di richiamo lead (AGENTE-VOCALE/, LEADREWORKS tasto AI, RUBRICA-ANDROID 1.6, README, HANDOFF), REGISTRO-SALVATAGGI.md | `git checkout 706e656` |
 | 2026-11-09 | `7c30e90` | SALESASSISTANT rinominata SALESASSISTANT_0911 (copia di riserva, lavoro in code-priv), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout 7c30e90` |
+| 2026-11-09 | `fedd9b9` | SALESASSISTANT_0911 tornata a SALESASSISTANT (copia di riserva ferma), workflow app Rubrica e CLAUDE.md riallineati, REGISTRO-SALVATAGGI.md | `git checkout fedd9b9` |
