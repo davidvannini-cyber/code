@@ -82,3 +82,8 @@ Da riallineare nel bundle: i commenti in `Contents/MacOS/avvia` citano ancora le
 
 ## 11. Manuale utente (2026-10-09)
 Cartella `MANUALE UTENTE/`: manuale completo in PDF, due layout scelti dall'utente (**C** barra laterale orizzontale, **E** editoriale verticale), con copertina, indice cliccabile, icona «Indice» su ogni pagina, infografiche e schermate numerate. Copre Console, estensione Chrome, Suggerimenti Vendita, app Android, manutenzione e appendici. Per rigenerarlo e per le regole di scrittura e di grafica: `MANUALE UTENTE/LINEE-GUIDA-GENERAZIONE-PDF.md` (comando unico: `bash _sorgenti/genera_manuale.sh`). I 5 campioni di layout sono in `layout-proposte/`. Da rivedere quando cambiano Console, menu, pannello o app Android (tabella nelle linee guida).
+
+## 12. Agente vocale di richiamo lead (2026-11-09)
+Cartella `AGENTE-VOCALE/`: `SPECIFICA.md` (decisioni di David, dati e prompt), `COME-USARE.md` (installazione e uso), `PROVE-FASE-0.md` (prove T1–T6 da fare con hardware vero), `orchestratore/` (servizio Python sul Mac: stati, audio jack↔AI↔cuffie, passaggio al responsabile, motori voce), `IDEA-SUGGERITORE-A-VOCE.md` (idea scartata per ora).
+Tocca anche: `LEADREWORKS/src/agente-ai/` + tasto AI nella Console; app Android 1.6 (`StatoChiamata.kt`, nuovo permesso «Stato del telefono», stato su ntfy `<codice>-stato`).
+Provato: logica con motore/telefono finti (22 prove) e Console in Chromium. **Non provato:** telefono, Lyber, cavo, cuffie, ElevenLabs, compilazione dell'APK. Da fare: Fase 0, poi scheduler (Fase 3) e analisi post-chiamata (Fase 2).

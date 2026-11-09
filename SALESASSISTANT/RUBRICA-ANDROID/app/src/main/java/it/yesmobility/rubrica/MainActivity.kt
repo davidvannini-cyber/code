@@ -69,6 +69,8 @@ class MainActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 33) l.add(Manifest.permission.POST_NOTIFICATIONS)
         // Serve al comando «Termina» del Mac (chiude la chiamata in corso sul telefono).
         if (Build.VERSION.SDK_INT >= 28) l.add(Manifest.permission.ANSWER_PHONE_CALLS)
+        // Serve all'agente vocale per riferire al Mac lo stato della linea (occupata / libera).
+        l.add(Manifest.permission.READ_PHONE_STATE)
         return l.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }.toTypedArray()
     }
 
@@ -107,6 +109,7 @@ class MainActivity : Activity() {
         Prefs.setTopic(this, codice)
         if (permessiDaChiedere().isNotEmpty()) chiediPermessi()
         startForegroundService(Intent(this, NtfyService::class.java))
+        StatoChiamata.osserva(this)
         aggiorna()
     }
 

@@ -3265,6 +3265,7 @@ function renderHistoryModal(id){
             <span class="hm-ib hm-lb" title="${d.crm_lead_id ? 'Apri questo lead nel CRM' : 'Apri l\'elenco lead del CRM (ID non ancora collegato)'}" onclick="openCrmFromHistory('${r.id}')"><span class="hm-ico">${icon('arrowRight',{size:13,noMargin:true})}${icon('contactCard',{size:15,noMargin:true})}</span><span class="hm-txt">CRM</span></span>
             <span class="hm-ib hm-lb" title="Invia a telefono" onclick="sendHistoryToPhone('${r.id}')"><span class="hm-ico">${icon('arrowRight',{size:13,noMargin:true})}${icon('phone',{size:15,noMargin:true})}</span><span class="hm-txt">TEL</span></span>
             <span class="hm-ib hm-lb hm-pri" title="Invia a Suggerimenti Vendita" onclick="exportHistoryItemToSuggerimentiVendita('${r.id}')"><span class="hm-ico">${icon('arrowRight',{size:13,noMargin:true})}${icon('bulb',{size:15,noMargin:true})}</span><span class="hm-txt">SUGG</span></span>
+            <span class="hm-ib hm-lb" title="Chiama con l'agente vocale AI" onclick="agenteAiChiama('${r.id}')"><span class="hm-ico">${icon('arrowRight',{size:13,noMargin:true})}${icon('phone',{size:15,noMargin:true})}</span><span class="hm-txt">AI</span></span>
             <span class="hm-ib hm-lb" title="Compila moduli (Quotazione indicativa / Preventivo)" onclick="apriModuli('${r.id}')"><span class="hm-ico">${icon('arrowRight',{size:13,noMargin:true})}${icon('clipboard',{size:15,noMargin:true})}</span><span class="hm-txt">MODULI</span></span>
             <span class="hm-ib hm-lb" title="Stampa" onclick="printHistoryModal()"><span class="hm-ico">${icon('print',{size:15,noMargin:true})}</span><span class="hm-txt">STAMPA</span></span>
             <span class="hm-ib hm-lb" title="Chiudi" onclick="closeHistoryModal()">${icon('close',{size:15,noMargin:true})}</span>
@@ -3606,5 +3607,6 @@ init();
 })();
 </script>
 <script src="moduli/moduli.js"></script>
+<script src="agente-ai/agente-ai.js"></script>
 </body>
 </html>

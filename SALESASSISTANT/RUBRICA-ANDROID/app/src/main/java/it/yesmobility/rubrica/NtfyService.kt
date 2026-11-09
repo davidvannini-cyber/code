@@ -51,6 +51,7 @@ class NtfyService : Service() {
         } else {
             startForeground(1, n)
         }
+        StatoChiamata.osserva(this)
         if (!attivo) {
             attivo = true
             thread = Thread { ciclo() }.also { it.isDaemon = true; it.start() }
@@ -101,21 +102,21 @@ class NtfyService : Service() {
             val corpo = m.optString("message")
             val o = try { JSONObject(corpo) } catch (e: Exception) { return }
             // Comando dal Mac (tasto «Termina» del pannello): chiude la chiamata in corso.
-            if (o.optString("azione") == "termina") { terminaChiamata(t); return }
+            if (o.optString("azione") == "termina") { terminaChiamata(t, o.optString("id")); return }
             val lead = Lead(
                 o.optString("nome").trim(), o.optString("cognome").trim(),
                 o.optString("telefono").trim(), o.optString("email").trim()
             )
             if (lead.telefono.isEmpty()) return
             // Senza il campo "azione" si salva soltanto: la chiamata parte solo se il Mac lo chiede.
-            gestisci(lead, o.optString("azione", "salva") == "chiama")
+            gestisci(lead, o.optString("azione", "salva") == "chiama", o.optString("id"))
         } catch (e: Exception) {
             Prefs.aggiungiLog(this, "Errore: " + (e.message ?: e.javaClass.simpleName))
         }
     }
 
     /** Chiude la chiamata in corso sul telefono (richiede il permesso «Rispondi alle chiamate»). */
-    private fun terminaChiamata(tempo: Long) {
+    private fun terminaChiamata(tempo: Long, id: String) {
         // Un vecchio messaggio riletto dopo un riavvio dell'ascolto non deve chiudere una chiamata nuova.
         if (tempo > 0 && System.currentTimeMillis() / 1000 - tempo > 30) {
             Prefs.aggiungiLog(this, "Comando «termina» scaduto, ignorato")
@@ -134,12 +135,13 @@ class NtfyService : Service() {
             @Suppress("DEPRECATION")
             val chiusa = tm.endCall()
             Prefs.aggiungiLog(this, if (chiusa) "Chiamata terminata dal Mac" else "Termina chiamata: nessuna chiamata da chiudere (o non chiudibile da qui)")
+            if (id.isNotEmpty()) StatoChiamata.invia(this, if (chiusa) "termina_eseguito" else "termina_non_riuscito", id)
         } catch (e: Exception) {
             Prefs.aggiungiLog(this, "Termina chiamata non riuscito: " + (e.message ?: e.javaClass.simpleName))
         }
     }
 
-    private fun gestisci(lead: Lead, chiama: Boolean) {
+    private fun gestisci(lead: Lead, chiama: Boolean, idChiamata: String = "") {
         val numero = Contatti.normalizza(lead.telefono)
         Prefs.setUltimoNumero(this, numero)
         val esito = try {
@@ -158,8 +160,17 @@ class NtfyService : Service() {
             Prefs.aggiungiLog(this, lead.nomeCompleto + " " + numero + " — " + esito)
             return
         }
+        // Chiamata chiesta dall'agente vocale: il Mac manda un «id» e vuole sapere come va.
+        if (idChiamata.isNotEmpty()) {
+            StatoChiamata.idChiamata = idChiamata
+            StatoChiamata.invia(this, "ricevuto", idChiamata)
+        }
         val intent = Lyber.intentChiamata(this, numero)
         val partita = intent != null && avviaDalloSfondo(intent)
+        if (idChiamata.isNotEmpty()) {
+            StatoChiamata.invia(this, if (partita) "lyber_aperta" else "non_partita", idChiamata)
+            if (!partita) StatoChiamata.idChiamata = ""
+        }
         Prefs.aggiungiLog(
             this,
             lead.nomeCompleto + " " + numero + " — " + esito + " — " +
