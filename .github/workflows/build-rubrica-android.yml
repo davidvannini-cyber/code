@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, "claude/**"]
     paths:
-      - "SALESASSISTANT_0911/RUBRICA-ANDROID/**"
+      - "SALESASSISTANT/RUBRICA-ANDROID/**"
       - ".github/workflows/build-rubrica-android.yml"
   workflow_dispatch:
 
@@ -24,10 +24,10 @@ jobs:
         with:
           gradle-version: "8.10.2"
       - name: Compila l'APK
-        working-directory: SALESASSISTANT_0911/RUBRICA-ANDROID
+        working-directory: SALESASSISTANT/RUBRICA-ANDROID
         run: gradle --no-daemon assembleDebug
       - name: Rinomina l'APK
-        run: cp SALESASSISTANT_0911/RUBRICA-ANDROID/app/build/outputs/apk/debug/app-debug.apk RubricaYesMobility.apk
+        run: cp SALESASSISTANT/RUBRICA-ANDROID/app/build/outputs/apk/debug/app-debug.apk RubricaYesMobility.apk
       - name: Pubblica l'APK nella release
         uses: softprops/action-gh-release@v2
         with:
