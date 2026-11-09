@@ -7,6 +7,8 @@ come provare e pubblicare, decisioni già prese, cose già tentate e fallite, st
 
 **Progetto RILEVAZIONE-PREZZI** (da novembre 2026 si lavora nel repository **privato `code-priv`**, cartella `RILEVAZIONE-PREZZI/`; qui resta una copia ferma; prezzi di Booking e Airbnb attorno a Pievepelago, pagina `prezziaffitti.vannini.online`): **prima di lavorarci leggi `RILEVAZIONE-PREZZI/CLAUDE.md`** (architettura, dove gira sull'M1, decisioni, limiti, lavoro da fare).
 
+**Progetto SALESASSISTANT** (Lead Rework, Suggerimenti Vendita, app Rubrica Android, agente vocale): da novembre 2026 si lavora nel repository **privato `code-priv`**, cartella `SALESASSISTANT/`. Qui resta solo una **copia di riserva ferma** (`SALESASSISTANT_0911/`, stato del 9 novembre 2026): non modificarla.
+
 Esiste anche un progetto in un repository **privato** separato (`tv-player`): non è in questo repository; se David lo nomina, il suo clone locale sta in `tv-player/` (ignorato da git).
 
 **Comandi di David** (`/promemoria`, `/restore`, e quelli futuri): vivono in `COMANDI/` (comando + `istruzioni/` + **un solo PDF** `COMANDI-ISTRUZIONI.pdf`). Quando crei o cambi un comando segui `COMANDI/README.md` (scrivi in `COMANDI/`, lancia `node COMANDI/costruisci.mjs`, committa anche il PDF).
