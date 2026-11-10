@@ -64,7 +64,17 @@ export interface EdgeFilletFeature extends FeatureBase {
   amount: number;
 }
 
-export type Feature = PrimitiveFeature | SketchExtrudeFeature | BooleanFeature | EdgeFilletFeature;
+// A ready-made triangle mesh opened from a .3mf made by another program. It is
+// shown, moved, coloured and exported as STL, but it is not a CAD solid: no
+// booleans, fillets or STEP export on it.
+export interface MeshImportFeature extends FeatureBase {
+  type: "meshImport";
+  bodyId: string;
+  positions: number[];
+  indices: number[];
+}
+
+export type Feature = PrimitiveFeature | SketchExtrudeFeature | BooleanFeature | EdgeFilletFeature | MeshImportFeature;
 
 export interface MeshData {
   positions: Float32Array;

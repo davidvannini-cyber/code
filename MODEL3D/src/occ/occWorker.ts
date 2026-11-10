@@ -7,9 +7,11 @@ import type {
   Feature,
   PlaneKind,
   BodyResult,
-  CornerTreatment
+  CornerTreatment,
+  MeshImportFeature
 } from "./types";
 import { applySketchCorners } from "../utils/sketchCorners";
+import { meshToBody, type MeshBodyData } from "../utils/meshBody";
 
 let oc: any = null;
 
@@ -430,8 +432,20 @@ function friendlyError(e: any): string {
 
 let lastShapesById = new Map<string, any>();
 
+// Imported meshes are grouped into faces once (that is slow for big files) and remembered.
+const meshBodyCache = new Map<string, { key: string; data: MeshBodyData }>();
+function importedMeshBody(f: MeshImportFeature): MeshBodyData {
+  const key = `${f.positions.length}:${f.indices.length}`;
+  const hit = meshBodyCache.get(f.id);
+  if (hit && hit.key === key) return hit.data;
+  const data = meshToBody(f.positions, f.indices);
+  meshBodyCache.set(f.id, { key, data });
+  return data;
+}
+
 function rebuild(features: Feature[], placements: Record<string, number[]>): { bodies: BodyResult[]; warnings: string[] } {
   const shapes = new Map<string, any>();
+  const meshBodies = new Map<string, MeshBodyData>();
   const consumed = new Set<string>();
   const treatmentFaces = new Map<string, any[]>();
   const warnings: string[] = [];
@@ -439,12 +453,18 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
   for (const f of features) {
     if (!f.active) continue;
     try {
-      if (f.type === "primitive") {
+      if (f.type === "meshImport") {
+        meshBodies.set(f.bodyId, importedMeshBody(f));
+      } else if (f.type === "primitive") {
         shapes.set(f.bodyId, makePrimitive(f.primType, f.params));
       } else if (f.type === "sketchExtrude") {
         shapes.set(f.bodyId, extrudeSketch(f.points, f.plane, f.offset, f.height, f.corners, warnings));
       } else if (f.type === "edgeFillet") {
         const src = shapes.get(f.sourceId);
+        if (!src && meshBodies.has(f.sourceId)) {
+          warnings.push(`Raccordo/smusso "${f.label}" non possibile: un modello importato da .3mf non è un solido CAD.`);
+          continue;
+        }
         if (!src) {
           warnings.push(`Raccordo/smusso "${f.label}" saltato: corpo di origine mancante.`);
           continue;
@@ -456,6 +476,10 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
       } else if (f.type === "boolean") {
         const rawA = shapes.get(f.inputA);
         const rawB = shapes.get(f.inputB);
+        if (meshBodies.has(f.inputA) || meshBodies.has(f.inputB)) {
+          warnings.push(`Operazione booleana "${f.label}" non possibile: un modello importato da .3mf non è un solido CAD.`);
+          continue;
+        }
         if (!rawA || !rawB) {
           warnings.push(`Operazione booleana "${f.label}" saltata: corpo di origine mancante.`);
           continue;
@@ -487,6 +511,10 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
     } catch (e: any) {
       warnings.push(`Errore triangolazione corpo ${bodyId}: ${e?.message ?? e}`);
     }
+  }
+
+  for (const [bodyId, m] of meshBodies.entries()) {
+    bodies.push({ bodyId, mesh: { positions: m.positions, indices: m.indices }, edges: [], faceRanges: m.faceRanges, treatmentFaces: [] });
   }
 
   return { bodies, warnings };

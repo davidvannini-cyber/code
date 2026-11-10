@@ -55,7 +55,7 @@ function FeatureParams({ feature }: { feature: Feature }) {
 
   return (
     <div className="feature-params">
-      <span className="hint-text muted">{feature.op}</span>
+      <span className="hint-text muted">{feature.type === "meshImport" ? `importato (${feature.indices.length / 3} triangoli)` : feature.op}</span>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { Euler, Matrix4, Quaternion, Vector3 } from "three";
 import { occClient } from "./occ/occClient";
-import { write3MF, read3MFProject } from "./io/threeMF";
+import { write3MF, read3MFProject, read3MFMeshes } from "./io/threeMF";
+import { writeStlBinary } from "./io/stl";
 import { clearAutosave, readAutosave, writeAutosave, type AutosaveEntry } from "./io/autosave";
 import type { BooleanOp, PrimitiveType, PlaneKind, Feature, LiveBody, Placement, ShapeExportRef, CornerTreatment } from "./occ/types";
 import { IDENTITY_PLACEMENT } from "./occ/types";
@@ -97,6 +98,7 @@ interface EditorState {
   engineReady: boolean;
   busy: boolean;
   logs: string[];
+  fitViewToken: number; // goes up when the view must frame all bodies (after opening a file)
   sceneBackground: SceneBackground;
   setSceneBackground: (bg: SceneBackground) => void;
   activeCard: RailCard;
@@ -225,6 +227,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   engineReady: false,
   busy: false,
   logs: [],
+  fitViewToken: 0,
   sceneBackground: "dark",
   setSceneBackground: (bg) => set({ sceneBackground: bg }),
   activeCard: null,
@@ -678,6 +681,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
     set({ busy: true });
     try {
+      const hasMesh = get().features.some((f) => f.type === "meshImport" && f.active);
+      if (hasMesh) {
+        // Imported meshes are not CAD solids: STL is written straight from the meshes.
+        if (format === "step") {
+          get().log("STEP non disponibile con modelli importati da .3mf (non sono solidi CAD): usa Esporta STL.");
+          return;
+        }
+        const matrices = bodies.map((b) => ({ body: b, matrix: matrixFor(placements[b.bodyId] ?? IDENTITY_PLACEMENT) }));
+        downloadBlob(writeStlBinary(matrices), "model3d.stl", "model/stl");
+        get().log("Esportato model3d.stl");
+        return;
+      }
       const shapes: ShapeExportRef[] = bodies.map((b) => ({ bodyId: b.bodyId, matrix: matrixFor(placements[b.bodyId] ?? IDENTITY_PLACEMENT) }));
       const { data, filename, mime } = await occClient.exportFile(format, shapes);
       downloadBlob(data, filename, mime);
@@ -754,7 +769,27 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const buf = new Uint8Array(await file.arrayBuffer());
       const project = read3MFProject(buf);
       if (!project) {
-        get().log("File .3mf non creato da MODEL3D: importazione non supportata in questa versione.");
+        // A .3mf made by another program (slicer, Thingiverse, other CAD): load its meshes.
+        const meshes = read3MFMeshes(buf);
+        const features: Feature[] = [];
+        const colors: Record<string, string> = {};
+        const placements: Record<string, Placement> = {};
+        for (const m of meshes) {
+          const id = nextFeatureId();
+          features.push({ id, active: true, label: m.name, type: "meshImport", bodyId: id, positions: m.positions, indices: m.indices });
+          colors[id] = "#9aa7b8";
+          placements[id] = IDENTITY_PLACEMENT;
+        }
+        set({ placements, colors, undoStack: [], redoStack: [], selectedBodyId: null, autosaveOffer: null, autosaveReady: true });
+        await applyFeatures(set, get, features);
+        set((s: EditorState) => ({ fitViewToken: s.fitViewToken + 1 }));
+        const shown = get().bodies.length;
+        const tris = meshes.reduce((n, m) => n + m.indices.length / 3, 0);
+        get().log(
+          shown > 0
+            ? `Aperto ${file.name} (importato da un altro programma): ${shown} ${shown === 1 ? "oggetto" : "oggetti"}, ${tris} triangoli. Non è un solido CAD: sposta, ruota, colora ed esporta STL; niente booleane, raccordi o STEP.`
+            : `Il file ${file.name} è stato letto ma non è comparso nessun oggetto.`
+        );
         return;
       }
       set({ placements: project.placements, colors: project.colors, undoStack: [], redoStack: [], selectedBodyId: null, autosaveOffer: null, autosaveReady: true });
