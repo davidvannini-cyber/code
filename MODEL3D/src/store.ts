@@ -37,6 +37,14 @@ const defaultColorByType: Record<PrimitiveType, string> = {
 
 const DEFAULT_SHAPE_PARAMS: SketchShapeParams = { cx: 0, cy: 0, width: 20, height: 20, radius: 10, radiusX: 14, radiusY: 8, sides: 6 };
 
+export type ViewFace = "front" | "back" | "right" | "left" | "top" | "bottom";
+export interface ViewRequest {
+  id: number;
+  kind: "fit" | "face";
+  face?: ViewFace;
+  dir?: [number, number, number]; // fit: look from this direction (default: keep the current one)
+}
+
 let featureCounter = 0;
 const nextFeatureId = () => `f_${Date.now()}_${featureCounter++}`;
 let pendingCounter = 0;
@@ -98,7 +106,9 @@ interface EditorState {
   engineReady: boolean;
   busy: boolean;
   logs: string[];
-  fitViewToken: number; // goes up when the view must frame all bodies (after opening a file)
+  // Asks the viewport to move the camera (frame everything / look at one face of the scene).
+  viewRequest: ViewRequest | null;
+  requestView: (r: Omit<ViewRequest, "id">) => void;
   sceneBackground: SceneBackground;
   setSceneBackground: (bg: SceneBackground) => void;
   activeCard: RailCard;
@@ -227,7 +237,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   engineReady: false,
   busy: false,
   logs: [],
-  fitViewToken: 0,
+  viewRequest: null,
+  requestView: (r) => set((s) => ({ viewRequest: { ...r, id: (s.viewRequest?.id ?? 0) + 1 } })),
   sceneBackground: "dark",
   setSceneBackground: (bg) => set({ sceneBackground: bg }),
   activeCard: null,
@@ -782,7 +793,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         }
         set({ placements, colors, undoStack: [], redoStack: [], selectedBodyId: null, autosaveOffer: null, autosaveReady: true });
         await applyFeatures(set, get, features);
-        set((s: EditorState) => ({ fitViewToken: s.fitViewToken + 1 }));
+        get().requestView({ kind: "fit", dir: [1, 0.8, 1] });
         const shown = get().bodies.length;
         const tris = meshes.reduce((n, m) => n + m.indices.length / 3, 0);
         get().log(

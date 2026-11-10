@@ -1306,3 +1306,104 @@ input, select {
 }
 
 .pos-pills.empty .pos-pill { opacity: .5; }
+
+/* ---------- Cubo di navigazione (in alto a destra) ---------- */
+.viewcube-wrap {
+  position: absolute;
+  top: 54px;
+  right: 14px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.viewcube-stage {
+  --vc: 46px;
+  width: 92px;
+  height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 320px;
+  border-radius: 50%;
+  background: rgba(22, 24, 29, .55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.viewcube {
+  position: relative;
+  width: var(--vc);
+  height: var(--vc);
+  transform-style: preserve-3d;
+  transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+}
+
+.vc-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 4px;
+  background: rgba(120, 132, 150, .78);
+  color: #fff;
+  font: 600 8px var(--font);
+  letter-spacing: .04em;
+  cursor: pointer;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.vc-face:hover, .vc-face:active { background: rgba(61, 127, 224, .95); }
+.vc-front  { transform: translateZ(calc(var(--vc) / 2)); }
+.vc-back   { transform: rotateY(180deg) translateZ(calc(var(--vc) / 2)); }
+.vc-right  { transform: rotateY(90deg) translateZ(calc(var(--vc) / 2)); }
+.vc-left   { transform: rotateY(-90deg) translateZ(calc(var(--vc) / 2)); }
+.vc-top    { transform: rotateX(90deg) translateZ(calc(var(--vc) / 2)); background: rgba(150, 162, 180, .85); }
+.vc-bottom { transform: rotateX(-90deg) translateZ(calc(var(--vc) / 2)); background: rgba(90, 100, 116, .85); }
+
+.viewcube-fit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(22, 24, 29, .78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--text);
+  font: 500 11px var(--font);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.viewcube-fit:hover { background: rgba(61, 127, 224, .9); }
+
+@media (pointer: coarse) {
+  .viewcube-wrap { top: 58px; right: 14px; gap: 8px; }
+  .viewcube-stage { --vc: 64px; width: 128px; height: 128px; perspective: 440px; }
+  .vc-face { font-size: 11px; }
+  .viewcube-fit { font-size: 14px; padding: 9px 16px; gap: 8px; }
+  .viewcube-fit svg { width: 24px; height: 24px; }
+}
+
+/* Bozza B: cubo piccolo senza cerchio, tasto "Mostra tutto" tondo a sinistra, in riga */
+.viewcube-wrap[data-layout="b"] { flex-direction: row-reverse; align-items: center; gap: 4px; }
+.viewcube-wrap[data-layout="b"] .viewcube-stage { --vc: 40px; width: 72px; height: 72px; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; perspective: 260px; }
+.viewcube-wrap[data-layout="b"] .viewcube-fit { width: 38px; height: 38px; padding: 0; justify-content: center; border-radius: 50%; }
+.viewcube-wrap[data-layout="b"] .viewcube-fit span { display: none; }
+
+/* Bozza C: una sola capsula verticale (stile barra laterale) con cubo sopra e tasto sotto */
+.viewcube-wrap[data-layout="c"] { gap: 0; padding: 8px 8px 6px; border-radius: 34px; background: rgba(22, 24, 29, .78); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 8px 30px rgba(0, 0, 0, .4); }
+.viewcube-wrap[data-layout="c"] .viewcube-stage { --vc: 44px; width: 78px; height: 78px; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.viewcube-wrap[data-layout="c"] .viewcube-fit { background: none; backdrop-filter: none; -webkit-backdrop-filter: none; width: 100%; justify-content: center; border-top: 1px solid rgba(255,255,255,.12); border-radius: 0 0 24px 24px; padding: 7px 4px 2px; }
+.viewcube-wrap[data-layout="c"] .viewcube-fit:hover { background: none; color: #6aa0ff; }
+.viewcube-wrap[data-layout="c"] .viewcube-fit span { display: none; }

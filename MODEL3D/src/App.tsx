@@ -6,6 +6,7 @@ import { QuickButtons } from "./components/QuickButtons";
 import { RestoreBanner } from "./components/RestoreBanner";
 import { TopBar } from "./components/TopBar";
 import { HistoryStrip } from "./components/HistoryStrip";
+import { ViewCube } from "./components/ViewCube";
 import { IconSprite } from "./components/icons/IconSprite";
 import { useEditorStore } from "./store";
 
@@ -59,6 +60,7 @@ export default function App() {
       <QuickButtons />
       <RestoreBanner />
       <HistoryStrip />
+      <ViewCube />
 
       {logs.length > 0 && (
         <div className="log-toast">

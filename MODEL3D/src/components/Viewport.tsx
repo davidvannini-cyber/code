@@ -6,43 +6,8 @@ import { useEditorStore } from "../store";
 import { SceneMesh } from "./SceneMesh";
 import { BodyGizmo } from "./BodyGizmo";
 import { PendingShapesRenderer } from "./PendingShapesRenderer";
+import { ViewController } from "./ViewController";
 import { IDENTITY_PLACEMENT } from "../occ/types";
-
-// Frames all bodies when the store asks for it (after opening a file from another
-// program, whose model can be far away, huge or tiny compared with the default view).
-function FitView() {
-  const token = useEditorStore((s) => s.fitViewToken);
-  const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
-  const controls = useThree((s) => s.controls) as { target: THREE.Vector3; update: () => void } | null;
-  const invalidate = useThree((s) => s.invalidate);
-  useEffect(() => {
-    if (token === 0) return;
-    const { bodies, placements } = useEditorStore.getState();
-    const box = new THREE.Box3();
-    const v = new THREE.Vector3();
-    for (const b of bodies) {
-      const p = placements[b.bodyId] ?? IDENTITY_PLACEMENT;
-      const m = new THREE.Matrix4().compose(new THREE.Vector3(...p.position), new THREE.Quaternion().setFromEuler(new THREE.Euler(...p.rotation)), new THREE.Vector3(...p.scale));
-      const pos = b.mesh.positions;
-      for (let i = 0; i < pos.length; i += 3) box.expandByPoint(v.set(pos[i], pos[i + 1], pos[i + 2]).applyMatrix4(m));
-    }
-    if (box.isEmpty()) return;
-    const center = box.getCenter(new THREE.Vector3());
-    const radius = Math.max(box.getSize(new THREE.Vector3()).length() / 2, 1);
-    const dist = (radius / Math.sin((camera.fov * Math.PI) / 360)) * 1.15;
-    camera.position.copy(center).add(new THREE.Vector3(1, 0.8, 1).normalize().multiplyScalar(dist));
-    camera.near = Math.max(dist / 1000, 0.01);
-    camera.far = Math.max(5000, dist * 20);
-    camera.updateProjectionMatrix();
-    if (controls) {
-      controls.target.copy(center);
-      controls.update();
-    }
-    camera.lookAt(center);
-    invalidate();
-  }, [token, camera, controls, invalidate]);
-  return null;
-}
 
 // Apple Pencil (pointerType "pen") draws and selects but never orbits the view,
 // so fingers stay free for rotate/zoom/pan and a resting hand can't turn the scene.
@@ -193,7 +158,7 @@ export function Viewport() {
         />
       )}
 
-      <FitView />
+      <ViewController />
       <PenGuard orbitEnabled={orbitEnabled} />
       <OrbitControls
         enabled={orbitEnabled}
