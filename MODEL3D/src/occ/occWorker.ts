@@ -418,6 +418,54 @@ function faceIndexOf(shape: any, face: any): number {
   return -1;
 }
 
+// Pushes/pulls a flat face of `src` along its outward normal by `distance` mm:
+// > 0 fuses a prism onto the face, < 0 cuts the prism out of the solid.
+function faceExtrude(src: any, faceIndex: number, distance: number): any {
+  if (Math.abs(distance) < 1e-6) return src;
+  const { positions, indices, faceRanges } = shapeToMesh(src);
+  const range = faceRanges[faceIndex];
+  if (!range || range[1] === 0) throw new Error(`faccia ${faceIndex} non trovata`);
+  // Outward normal from the face's own triangles (shapeToMesh already respects the face orientation).
+  const normals: number[][] = [];
+  const sum = [0, 0, 0];
+  for (let t = range[0]; t < range[0] + range[1]; t++) {
+    const a = indices[t * 3] * 3, b = indices[t * 3 + 1] * 3, c = indices[t * 3 + 2] * 3;
+    const u = [positions[b] - positions[a], positions[b + 1] - positions[a + 1], positions[b + 2] - positions[a + 2]];
+    const v = [positions[c] - positions[a], positions[c + 1] - positions[a + 1], positions[c + 2] - positions[a + 2]];
+    const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+    const len = Math.hypot(n[0], n[1], n[2]);
+    if (len < 1e-12) continue;
+    const un = [n[0] / len, n[1] / len, n[2] / len];
+    normals.push(un);
+    sum[0] += n[0]; sum[1] += n[1]; sum[2] += n[2];
+  }
+  const total = Math.hypot(sum[0], sum[1], sum[2]);
+  if (normals.length === 0 || total < 1e-12) throw new Error("faccia senza area");
+  const normal = [sum[0] / total, sum[1] / total, sum[2] / total];
+  if (!normals.every((n) => n[0] * normal[0] + n[1] * normal[1] + n[2] * normal[2] > 0.999)) {
+    throw new Error("la faccia è curva: si può estrudere solo una faccia piana");
+  }
+
+  const explorer = construct(oc, "TopExp_Explorer", [src, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE]);
+  let face: any = null;
+  for (let i = 0; explorer.More(); explorer.Next(), i++) {
+    if (i === faceIndex) {
+      face = call(oc.TopoDS, "Face", [explorer.Current()]);
+      break;
+    }
+  }
+  if (!face) throw new Error(`faccia ${faceIndex} non trovata`);
+
+  const vec = construct(oc, "gp_Vec", [normal[0] * distance, normal[1] * distance, normal[2] * distance]);
+  const prism = call(construct(oc, "BRepPrimAPI_MakePrism", [face, vec, false, true]), "Shape", []);
+  const result = booleanOp(distance > 0 ? "union" : "subtract", src, prism);
+  if (!result || call(result, "IsNull", [])) throw new Error("risultato nullo");
+  // Not merged with ShapeUpgrade_UnifySameDomain: in this WASM build it returns wrong
+  // geometry (altered sizes/volumes) and even crashed the page on concave faces. The
+  // price is that faces flush with each other stay split (one click selects one piece).
+  return result;
+}
+
 // ---------- rebuild (parametric history replay) ----------
 
 // A failed OCCT operation throws a C++ exception; Safari reports it as an
@@ -472,6 +520,18 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
         const treated = edgeTreatment(src, f.edgeIndex, f.kind, f.amount);
         shapes.set(f.bodyId, treated.shape);
         treatmentFaces.set(f.bodyId, treated.generated);
+        consumed.add(f.sourceId);
+      } else if (f.type === "faceExtrude") {
+        const src = shapes.get(f.sourceId);
+        if (!src && meshBodies.has(f.sourceId)) {
+          warnings.push(`Estrusione faccia "${f.label}" non possibile: un modello importato da .3mf non è un solido CAD.`);
+          continue;
+        }
+        if (!src) {
+          warnings.push(`Estrusione faccia "${f.label}" saltata: corpo di origine mancante.`);
+          continue;
+        }
+        shapes.set(f.bodyId, faceExtrude(src, f.faceIndex, f.distance));
         consumed.add(f.sourceId);
       } else if (f.type === "boolean") {
         const rawA = shapes.get(f.inputA);

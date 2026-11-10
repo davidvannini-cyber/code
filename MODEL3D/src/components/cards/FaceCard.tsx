@@ -23,6 +23,8 @@ export function FaceCard() {
   const features = useEditorStore((s) => s.features);
   const placements = useEditorStore((s) => s.placements);
   const layFaceOnPlane = useEditorStore((s) => s.layFaceOnPlane);
+  const startFaceExtrude = useEditorStore((s) => s.startFaceExtrude);
+  const busy = useEditorStore((s) => s.busy);
 
   const info = useMemo(() => {
     if (!selectedFace || selectedBodyId) return null;
@@ -35,6 +37,7 @@ export function FaceCard() {
   // The face made by a fillet/chamfer: say which and how big.
   const body = bodies.find((b) => b.bodyId === selectedFace?.bodyId);
   const treatment = features.find((x) => x.bodyId === body?.bodyId);
+  const isImported = features.some((x) => x.bodyId === body?.bodyId && x.type === "meshImport"); // not a CAD solid
   const isTreatmentFace = !!selectedFace && !!body?.treatmentFaces.includes(selectedFace.faceIndex) && treatment?.type === "edgeFillet";
 
   const rows: [string, string][] = isTreatmentFace && treatment?.type === "edgeFillet"
@@ -58,6 +61,11 @@ export function FaceCard() {
             <span>{value}</span>
           </div>
         ))}
+        {info.planar && !isImported && (
+          <button className="primary-btn" disabled={busy} onClick={startFaceExtrude}>
+            Estrudi faccia
+          </button>
+        )}
         {info.planar && (
           <button className="ghost-btn full" onClick={() => layFaceOnPlane()}>
             Appoggia sul piano

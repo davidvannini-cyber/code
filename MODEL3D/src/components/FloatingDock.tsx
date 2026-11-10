@@ -9,6 +9,7 @@ import { FloorCard } from "./cards/FloorCard";
 import { BodiesCard } from "./cards/BodiesCard";
 import { ParamsCard } from "./cards/ParamsCard";
 import { FaceCard } from "./cards/FaceCard";
+import { FaceExtrudeCard } from "./cards/FaceExtrudeCard";
 import { SelectionOverlay } from "./SelectionOverlay";
 
 // Everything chosen from the left rail, plus the sizes / face details of the
@@ -37,6 +38,7 @@ export function FloatingDock() {
         {activeCard === "mate" && <MateCard />}
         {activeCard === "floor" && <FloorCard />}
         {activeCard === "bodies" && <BodiesCard />}
+        <FaceExtrudeCard />
         <ParamsCard />
         <FaceCard />
       </div>

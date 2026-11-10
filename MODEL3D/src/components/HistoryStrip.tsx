@@ -53,6 +53,17 @@ function FeatureParams({ feature }: { feature: Feature }) {
     );
   }
 
+  if (feature.type === "faceExtrude") {
+    return (
+      <div className="feature-params">
+        <label className="hint-text">
+          distanza (mm)
+          <NumberInput step={1} min={-1e6} value={feature.distance} onValue={(v) => updateFeatureParams(feature.id, { distance: v })} />
+        </label>
+      </div>
+    );
+  }
+
   return (
     <div className="feature-params">
       <span className="hint-text muted">{feature.type === "meshImport" ? `importato (${feature.indices.length / 3} triangoli)` : feature.op}</span>

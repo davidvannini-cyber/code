@@ -6,7 +6,7 @@ import { writeStlBinary } from "./io/stl";
 import { clearAutosave, readAutosave, writeAutosave, type AutosaveEntry } from "./io/autosave";
 import type { BooleanOp, PrimitiveType, PlaneKind, Feature, LiveBody, Placement, ShapeExportRef, CornerTreatment } from "./occ/types";
 import { IDENTITY_PLACEMENT } from "./occ/types";
-import { faceFrame, layFacePlacement, matePlacement } from "./utils/faceMate";
+import { faceFrame, faceInfo, layFacePlacement, matePlacement } from "./utils/faceMate";
 import { generateShapePoints, type SketchShapeKind, type SketchShapeParams } from "./utils/sketchShapes";
 
 export type SceneBackground = "dark" | "light";
@@ -84,7 +84,8 @@ function collectDependents(id: string, features: Feature[]): Set<string> {
       if (toDelete.has(f.id)) continue;
       const dependsOnDeleted =
         (f.type === "boolean" && (toDelete.has(f.inputA) || toDelete.has(f.inputB))) ||
-        (f.type === "edgeFillet" && toDelete.has(f.sourceId));
+        (f.type === "edgeFillet" && toDelete.has(f.sourceId)) ||
+        (f.type === "faceExtrude" && toDelete.has(f.sourceId));
       if (dependsOnDeleted) {
         toDelete.add(f.id);
         changed = true;
@@ -213,6 +214,11 @@ interface EditorState {
   filletKind: "fillet" | "chamfer";
   filletAmount: number;
   pickFilletEdge: (bodyId: string, edgeIndex: number) => void;
+  // --- Estrudi faccia: push/pull of a flat face of a solid (edits live, like the fillet) ---
+  faceExtrudeEditId: string | null;
+  startFaceExtrude: () => void;
+  setFaceExtrudeDistance: (distance: number) => void;
+  endFaceExtrude: () => void;
   startFilletTool: () => void;
   cancelFilletTool: () => void;
   pickFilletCorner: (shapeId: string, cornerIndex: number) => void;
@@ -274,7 +280,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       // Leaving the sketch card ends any free-hand drafting in progress.
       const draftReset = next !== "sketch" ? { drafting: false, draftPoints: [], draftPressures: [], draftClosed: false } : {};
       // The floor tool starts as soon as its card opens and ends when another card does.
-      return { activeCard: next, floorPickActive: next === "floor", ...(next === "floor" ? { selectedBodyId: null } : {}), ...mateReset, ...draftReset };
+      return { activeCard: next, faceExtrudeEditId: null, floorPickActive: next === "floor", ...(next === "floor" ? { selectedBodyId: null } : {}), ...mateReset, ...draftReset };
     }),
 
   features: [],
@@ -336,7 +342,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const prev = undoStack[undoStack.length - 1];
     const current = takeSnapshot(get());
     lastEditKey = "";
-    set({ undoStack: undoStack.slice(0, -1), redoStack: [...redoStack, current], placements: prev.placements, colors: prev.colors, filletEditId: null, extrudeEditId: null });
+    set({ undoStack: undoStack.slice(0, -1), redoStack: [...redoStack, current], placements: prev.placements, colors: prev.colors, filletEditId: null, extrudeEditId: null, faceExtrudeEditId: null });
     if (prev.features !== current.features) applyFeatures(set, get, prev.features);
   },
 
@@ -346,7 +352,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const next = redoStack[redoStack.length - 1];
     const current = takeSnapshot(get());
     lastEditKey = "";
-    set({ redoStack: redoStack.slice(0, -1), undoStack: [...undoStack, current], placements: next.placements, colors: next.colors, filletEditId: null, extrudeEditId: null });
+    set({ redoStack: redoStack.slice(0, -1), undoStack: [...undoStack, current], placements: next.placements, colors: next.colors, filletEditId: null, extrudeEditId: null, faceExtrudeEditId: null });
     if (next.features !== current.features) applyFeatures(set, get, next.features);
   },
 
@@ -358,6 +364,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ selectedBodyId: null, selectedFace: null });
     if (s.drafting) set({ drafting: false, draftPoints: [], draftPressures: [], draftClosed: false });
     if (s.extrudePickActive || s.extrudeEditId) get().cancelExtrudeTool();
+    if (s.faceExtrudeEditId) set({ faceExtrudeEditId: null });
     if (s.filletPickActive || s.filletEditId || s.filletTargetShapeId) get().cancelFilletTool();
     if (s.booleanPick) get().cancelBooleanPick();
     if (s.mateActive) get().cancelMateTool();
@@ -604,6 +611,49 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }));
     commit(set, get, [...features, feature]);
   },
+
+  faceExtrudeEditId: null,
+  startFaceExtrude: () => {
+    const { selectedFace, bodies, placements, features } = get();
+    if (!selectedFace) return;
+    const body = bodies.find((b) => b.bodyId === selectedFace.bodyId);
+    const info = body ? faceInfo(body, selectedFace.faceIndex, placements[body.bodyId] ?? IDENTITY_PLACEMENT) : null;
+    if (!body || !info) return;
+    if (!info.planar) {
+      get().log("Si può estrudere solo una faccia piana.");
+      return;
+    }
+    if (features.some((f) => f.bodyId === body.bodyId && f.type === "meshImport")) {
+      get().log("Un modello importato da .3mf non è un solido CAD: non si può estrudere una faccia.");
+      return;
+    }
+    const id = nextFeatureId();
+    const count = features.filter((f) => f.type === "faceExtrude").length + 1;
+    const feature: Feature = {
+      id,
+      active: true,
+      label: `estrusione_faccia_${count}`,
+      type: "faceExtrude",
+      bodyId: id,
+      sourceId: body.bodyId,
+      faceIndex: selectedFace.faceIndex,
+      distance: 10
+    };
+    // The result stays where the source body was placed, with the same colour.
+    set((s) => ({
+      placements: { ...s.placements, [id]: s.placements[body.bodyId] ?? IDENTITY_PLACEMENT },
+      colors: { ...s.colors, [id]: s.colors[body.bodyId] ?? "#4f8dfd" },
+      faceExtrudeEditId: id,
+      selectedFace: null,
+      selectedBodyId: null
+    }));
+    commit(set, get, [...features, feature]);
+  },
+  setFaceExtrudeDistance: (distance) => {
+    const id = get().faceExtrudeEditId;
+    if (id) get().updateFeatureParams(id, { distance });
+  },
+  endFaceExtrude: () => set({ faceExtrudeEditId: null }),
 
   setFilletKind: (kind) => {
     set({ filletKind: kind });

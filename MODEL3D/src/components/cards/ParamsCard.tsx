@@ -45,6 +45,9 @@ function fieldsFor(feature: Feature, update: (id: string, patch: Record<string, 
   if (feature.type === "edgeFillet") {
     return [{ key: "amount", label: feature.kind === "fillet" ? "Raccordo" : "Smusso", value: feature.amount, min: 0.1, apply: (v) => update(feature.id, { amount: v }) }];
   }
+  if (feature.type === "faceExtrude") {
+    return [{ key: "distance", label: "Estrusione faccia", value: feature.distance, min: -1e6, apply: (v) => update(feature.id, { distance: v }) }];
+  }
   return [];
 }
 
@@ -62,7 +65,7 @@ export function ParamsCard() {
   let current = features.find((f) => f.bodyId === selectedBodyId);
   while (current && chain.length < 20) {
     chain.unshift(current);
-    const src: string | null = current.type === "edgeFillet" ? current.sourceId : null;
+    const src: string | null = current.type === "edgeFillet" || current.type === "faceExtrude" ? current.sourceId : null;
     current = src ? features.find((f) => f.bodyId === src) : undefined;
   }
   const groups = chain.map((f) => ({ feature: f, fields: fieldsFor(f, updateFeatureParams) })).filter((g) => g.fields.length > 0);

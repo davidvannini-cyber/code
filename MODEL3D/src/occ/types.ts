@@ -64,6 +64,17 @@ export interface EdgeFilletFeature extends FeatureBase {
   amount: number;
 }
 
+// Pushes/pulls one flat face of a solid along its normal: distance > 0 adds material,
+// distance < 0 digs into the solid. Like a fillet it consumes its source body;
+// faceIndex is the index of the face in the worker's face order (faceRanges).
+export interface FaceExtrudeFeature extends FeatureBase {
+  type: "faceExtrude";
+  bodyId: string;
+  sourceId: string;
+  faceIndex: number;
+  distance: number;
+}
+
 // A ready-made triangle mesh opened from a .3mf made by another program. It is
 // shown, moved, coloured and exported as STL, but it is not a CAD solid: no
 // booleans, fillets or STEP export on it.
@@ -74,7 +85,7 @@ export interface MeshImportFeature extends FeatureBase {
   indices: number[];
 }
 
-export type Feature = PrimitiveFeature | SketchExtrudeFeature | BooleanFeature | EdgeFilletFeature | MeshImportFeature;
+export type Feature = PrimitiveFeature | SketchExtrudeFeature | BooleanFeature | EdgeFilletFeature | FaceExtrudeFeature | MeshImportFeature;
 
 export interface MeshData {
   positions: Float32Array;
