@@ -7,7 +7,8 @@ export function IOCard() {
   const busy = useEditorStore((s) => s.busy);
   const bodyCount = useEditorStore((s) => s.bodies.length);
   const saveProject = useEditorStore((s) => s.saveProject);
-  const loadProject = useEditorStore((s) => s.loadProject);
+  const requestNew = useEditorStore((s) => s.requestNew);
+  const requestOpen = useEditorStore((s) => s.requestOpen);
   const exportModel = useEditorStore((s) => s.exportModel);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const disabled = !engineReady || busy;
@@ -16,6 +17,9 @@ export function IOCard() {
     <div className="card io-card">
       <div className="card-head">Progetto</div>
       <div className="card-body">
+        <button className="menu-item" disabled={disabled} onClick={requestNew}>
+          <Icon name="plus" size={16} /> Nuovo progetto
+        </button>
         <button className="menu-item" disabled={disabled} onClick={saveProject}>
           <Icon name="save" size={16} /> Salva progetto (.3mf)
         </button>
@@ -36,7 +40,7 @@ export function IOCard() {
           style={{ display: "none" }}
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) loadProject(file);
+            if (file) requestOpen(file);
             e.target.value = "";
           }}
         />

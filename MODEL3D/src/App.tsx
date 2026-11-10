@@ -7,6 +7,7 @@ import { RestoreBanner } from "./components/RestoreBanner";
 import { TopBar } from "./components/TopBar";
 import { HistoryStrip } from "./components/HistoryStrip";
 import { ViewCube } from "./components/ViewCube";
+import { UnsavedDialog } from "./components/UnsavedDialog";
 import { IconSprite } from "./components/icons/IconSprite";
 import { useEditorStore } from "./store";
 
@@ -61,6 +62,7 @@ export default function App() {
       <RestoreBanner />
       <HistoryStrip />
       <ViewCube />
+      <UnsavedDialog />
 
       {logs.length > 0 && (
         <div className="log-toast">

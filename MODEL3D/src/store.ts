@@ -45,6 +45,25 @@ export interface ViewRequest {
   dir?: [number, number, number]; // fit: look from this direction (default: keep the current one)
 }
 
+export type PendingAction = { kind: "new" } | { kind: "open"; file: File };
+
+// What the last saved/opened .3mf contained, as a signature of the saved content
+// (features + position/colour of each of their bodies). Compared by content, so an
+// undo back to the saved state counts as saved again.
+type ProjectLike = { features: Feature[]; placements: Record<string, Placement>; colors: Record<string, string> };
+const signatureOf = (s: ProjectLike): string => {
+  const ids = s.features.map((f) => f.bodyId);
+  return JSON.stringify([s.features, ids.map((id) => s.placements[id] ?? null), ids.map((id) => s.colors[id] ?? null)]);
+};
+let savedSignature: string | null = null;
+const markSaved = (s: ProjectLike) => {
+  savedSignature = signatureOf(s);
+};
+function hasUnsavedWork(s: ProjectLike): boolean {
+  if (s.features.length === 0) return false;
+  return savedSignature === null || signatureOf(s) !== savedSignature;
+}
+
 let featureCounter = 0;
 const nextFeatureId = () => `f_${Date.now()}_${featureCounter++}`;
 let pendingCounter = 0;
@@ -217,8 +236,14 @@ interface EditorState {
   pickForBoolean: (id: string) => void;
 
   exportModel: (format: "stl" | "step") => Promise<void>;
-  saveProject: () => Promise<void>;
+  saveProject: () => Promise<boolean>; // true = saved (or shared) for real
   loadProject: (file: File) => Promise<void>;
+  newProject: () => Promise<void>;
+  // New / Open: if the work is not saved yet, the user is asked first (UnsavedDialog).
+  pendingAction: PendingAction | null;
+  requestNew: () => void;
+  requestOpen: (file: File) => void;
+  resolvePending: (choice: "save" | "discard" | "cancel") => Promise<void>;
 
   // --- Salvataggio: file (.3mf) e copia automatica nel browser ---
   lastSavedAt: number | null; // last .3mf saved
@@ -736,18 +761,67 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           // files only: a title/text would be saved by "Salva su File" as an extra .txt
           await navigator.share({ files: [file] });
           set({ lastSavedAt: Date.now() });
+          markSaved({ features, placements, colors });
           get().log("Progetto condiviso/salvato: progetto.3mf");
-          return;
+          return true;
         } catch (e: any) {
-          if (e?.name === "AbortError") return; // closed the sheet without choosing
+          if (e?.name === "AbortError") return false; // closed the sheet without choosing
         }
       }
       downloadBlob(data, "progetto.3mf", "model/3mf");
       set({ lastSavedAt: Date.now() });
+      markSaved({ features, placements, colors });
       get().log("Progetto salvato come progetto.3mf");
+      return true;
     } catch (e: any) {
       get().log(`Errore salvataggio: ${e?.message ?? e}`);
+      return false;
     }
+  },
+
+  pendingAction: null,
+  requestNew: () => {
+    if (hasUnsavedWork(get())) set({ pendingAction: { kind: "new" }, activeCard: null });
+    else void get().newProject();
+  },
+  requestOpen: (file) => {
+    if (hasUnsavedWork(get())) set({ pendingAction: { kind: "open", file }, activeCard: null });
+    else void get().loadProject(file);
+  },
+  resolvePending: async (choice) => {
+    const action = get().pendingAction;
+    if (!action) return;
+    if (choice === "cancel") {
+      set({ pendingAction: null });
+      return;
+    }
+    // If saving fails or the share sheet is closed, the question stays open.
+    if (choice === "save" && !(await get().saveProject())) return;
+    set({ pendingAction: null });
+    if (action.kind === "new") await get().newProject();
+    else await get().loadProject(action.file);
+  },
+
+  newProject: async () => {
+    get().clearSelection();
+    clearAutosave();
+    savedSignature = null;
+    set({
+      placements: {},
+      colors: {},
+      undoStack: [],
+      redoStack: [],
+      selectedBodyId: null,
+      selectedFace: null,
+      pendingShapes: [],
+      autosaveOffer: null,
+      autosaveReady: true,
+      lastSavedAt: null,
+      autosavedAt: null,
+      activeCard: null
+    });
+    await applyFeatures(set, get, []);
+    get().log("Nuovo progetto vuoto.");
   },
 
   // Called (debounced) after every change: keeps a copy of the project in the browser.
@@ -765,6 +839,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   restoreAutosave: () => {
     const offer = get().autosaveOffer;
     if (!offer) return;
+    savedSignature = null;
     set({ autosaveOffer: null, autosaveReady: true, placements: offer.project.placements, colors: offer.project.colors, undoStack: [], redoStack: [], selectedBodyId: null });
     applyFeatures(set, get, offer.project.features);
     get().log("Lavoro ripristinato dalla copia automatica.");
@@ -791,6 +866,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           colors[id] = "#9aa7b8";
           placements[id] = IDENTITY_PLACEMENT;
         }
+        savedSignature = null; // a file from another program is not a MODEL3D project yet
         set({ placements, colors, undoStack: [], redoStack: [], selectedBodyId: null, autosaveOffer: null, autosaveReady: true });
         await applyFeatures(set, get, features);
         get().requestView({ kind: "fit", dir: [1, 0.8, 1] });
@@ -804,7 +880,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         return;
       }
       set({ placements: project.placements, colors: project.colors, undoStack: [], redoStack: [], selectedBodyId: null, autosaveOffer: null, autosaveReady: true });
-      applyFeatures(set, get, project.features);
+      await applyFeatures(set, get, project.features);
+      markSaved(get()); // just opened from a file: nothing new to save yet
       get().log(`Progetto caricato da ${file.name}`);
     } catch (e: any) {
       get().log(`Errore caricamento: ${e?.message ?? e}`);

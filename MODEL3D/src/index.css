@@ -1393,3 +1393,35 @@ input, select {
   .viewcube-fit { padding: 10px 4px 4px; border-radius: 0 0 34px 34px; }
   .viewcube-fit svg { width: 28px; height: 28px; }
 }
+
+/* ---------- Finestra «Il lavoro non è salvato» ---------- */
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.modal-card {
+  width: min(380px, calc(100vw - 32px));
+  padding: 18px 18px 14px;
+  border-radius: 20px;
+  background: rgba(28, 29, 33, .96);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .55);
+  color: var(--text);
+  font-family: var(--font);
+}
+.modal-card h3 { margin: 0 0 8px; font-size: 15px; }
+.modal-card p { margin: 0 0 14px; font-size: 12.5px; line-height: 1.4; color: var(--text-dim); }
+.modal-actions { display: flex; flex-direction: column; gap: 6px; }
+.modal-actions .primary-btn, .modal-actions .ghost-btn { width: 100%; padding: 8px 10px; font-size: 13px; border-radius: 999px; }
+.ghost-btn.danger { color: var(--danger); border-color: rgba(217, 117, 111, .5); }
+@media (pointer: coarse) {
+  .modal-card h3 { font-size: 19px; }
+  .modal-card p { font-size: 16px; }
+  .modal-actions .primary-btn, .modal-actions .ghost-btn { padding: 14px 12px; font-size: 17px; }
+}
