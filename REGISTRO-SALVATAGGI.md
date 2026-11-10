@@ -358,3 +358,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-09 | `706e656` | SALESASSISTANT: agente vocale di richiamo lead (AGENTE-VOCALE/, LEADREWORKS tasto AI, RUBRICA-ANDROID 1.6, README, HANDOFF), REGISTRO-SALVATAGGI.md | `git checkout 706e656` |
 | 2026-11-09 | `7c30e90` | SALESASSISTANT rinominata SALESASSISTANT_0911 (copia di riserva, lavoro in code-priv), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout 7c30e90` |
 | 2026-11-09 | `fedd9b9` | SALESASSISTANT_0911 tornata a SALESASSISTANT (copia di riserva ferma), workflow app Rubrica e CLAUDE.md riallineati, REGISTRO-SALVATAGGI.md | `git checkout fedd9b9` |
+| 2026-11-10 | `71ec72c` (code-priv) | Agente vocale: nuova struttura di Francesca, tono, formule varie, trascrizioni (file + Note YM). Ripristino: nel repository code-priv `git checkout 71ec72c` | `git checkout 71ec72c` (in code-priv) |
