@@ -11,21 +11,11 @@ const FACES: { face: ViewFace; label: string }[] = [
 
 // Floating 3D cube, top right. It turns like the scene (ViewController writes its
 // transform); a click on a face moves the view to look at the scene from that side.
-// The button under it frames everything that is on the platform.
-// Layout: provvisorio, scelto da ?cubo=a|b|c nell'indirizzo (per confrontare le bozze).
-function layoutFromUrl(): string {
-  try {
-    const v = new URLSearchParams(window.location.search).get("cubo");
-    return v === "b" || v === "c" ? v : "a";
-  } catch {
-    return "a";
-  }
-}
-
+// The button under it (icon only) frames everything that is on the platform.
 export function ViewCube() {
   const requestView = useEditorStore((s) => s.requestView);
   return (
-    <div className="viewcube-wrap" data-layout={layoutFromUrl()}>
+    <div className="viewcube-wrap">
       <div className="viewcube-stage">
         <div id="viewcube-3d" className="viewcube">
           {FACES.map(({ face, label }) => (
@@ -35,12 +25,11 @@ export function ViewCube() {
           ))}
         </div>
       </div>
-      <button className="viewcube-fit" title="Mostra tutto (inquadra il contenuto della piattaforma)" onClick={() => requestView({ kind: "fit" })}>
+      <button className="viewcube-fit" aria-label="Mostra tutto" title="Mostra tutto (inquadra il contenuto della piattaforma)" onClick={() => requestView({ kind: "fit" })}>
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4" />
           <rect x="9" y="9" width="6" height="6" rx="1" />
         </svg>
-        <span>Mostra tutto</span>
       </button>
     </div>
   );
