@@ -418,6 +418,13 @@ function faceIndexOf(shape: any, face: any): number {
   return -1;
 }
 
+// An operation can leave nothing (a cut as deep as the solid, an intersection that
+// does not overlap): such a shape has no faces and cannot be meshed.
+function hasFaces(shape: any): boolean {
+  const explorer = construct(oc, "TopExp_Explorer", [shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE]);
+  return !!explorer.More();
+}
+
 // Pushes/pulls a flat face of `src` along its outward normal by `distance` mm:
 // > 0 fuses a prism onto the face, < 0 cuts the prism out of the solid.
 function faceExtrude(src: any, faceIndex: number, distance: number): any {
@@ -459,7 +466,9 @@ function faceExtrude(src: any, faceIndex: number, distance: number): any {
   const vec = construct(oc, "gp_Vec", [normal[0] * distance, normal[1] * distance, normal[2] * distance]);
   const prism = call(construct(oc, "BRepPrimAPI_MakePrism", [face, vec, false, true]), "Shape", []);
   const result = booleanOp(distance > 0 ? "union" : "subtract", src, prism);
-  if (!result || call(result, "IsNull", [])) throw new Error("risultato nullo");
+  if (!result || call(result, "IsNull", []) || !hasFaces(result)) {
+    throw new Error("lo scavo è profondo quanto il solido (o di più) e non lascerebbe niente: riduci la distanza");
+  }
   // Not merged with ShapeUpgrade_UnifySameDomain: in this WASM build it returns wrong
   // geometry (altered sizes/volumes) and even crashed the page on concave faces. The
   // price is that faces flush with each other stay split (one click selects one piece).
@@ -561,6 +570,10 @@ function rebuild(features: Feature[], placements: Record<string, number[]>): { b
   for (const [bodyId, shape] of shapes.entries()) {
     if (consumed.has(bodyId)) continue;
     try {
+      if (!hasFaces(shape)) {
+        warnings.push("Un'operazione ha lasciato un oggetto vuoto (nessun volume): omesso. Premi Annulla o cambia i valori.");
+        continue;
+      }
       const { positions, indices, faceRanges } = shapeToMesh(shape);
       if (positions.length === 0 || indices.length === 0) {
         warnings.push(`Corpo ${bodyId} senza mesh valida: omesso.`);
