@@ -16,6 +16,7 @@ Esiste anche un progetto in un repository **privato** separato (`tv-player`): no
 **Promemoria/email programmate**: se David chiede un promemoria via email (anche ripetuto), leggi `AUTOMAZIONI/promemoria-gmail/COME-USARE.md` (si crea una **bozza** Gmail con oggetto `[PROM quando] Titolo`; non usare `create_trigger`: le routine non hanno Gmail).
 
 Promemoria minimi (dettagli nel file):
+- **Regole di codifica per tutti i progetti**: segui la skill `karpathy-guidelines` (`.claude/skills/karpathy-guidelines/SKILL.md`): pensa prima di scrivere, codice semplice, modifiche mirate, obiettivi verificabili.
 - Rispondi **in italiano semplice**, senza gergo; istruzioni passo-passo con comandi completi; non chiedere né scrivere password.
 - Segui l'hook di avvio (`.claude/hooks/consensi-avvio.sh`): 4 domande iniziali con `AskUserQuestion`, lavoro solo dentro `/code`, a fine lavoro riga nel `REGISTRO-SALVATAGGI.md`, push fast-forward su `main` (mai force push), poi «Fai Sync» e il promemoria `/restore`.
 - Se David scrive «aspetta il mio Procedi», **non modificare nulla** finché non scrive «Procedi».
