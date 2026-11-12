@@ -42,6 +42,22 @@ EOF
 # --- Elenchi progetto / cartella / stato (calcolati al momento dell'avvio) ---
 cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || exit 0
 
+# --- Domanda aggiuntiva SOLO per repository nuovi (senza la skill karpathy-guidelines) ---
+# I repository già esistenti hanno la skill, quindi per loro la domanda non compare.
+if [ ! -f .claude/skills/karpathy-guidelines/SKILL.md ]; then
+cat <<'EOF'
+
+DOMANDA AGGIUNTIVA (questo repository NON ha ancora la skill karpathy-guidelines):
+Falla con AskUserQuestion SUBITO DOPO la scelta 3 (sicurezza) e PRIMA del promemoria /restore (scelta 4).
+Domanda Sì/No: "Installo la skill karpathy-guidelines (regole di codifica) in questo repository?"
+   - SÌ: crea .claude/skills/karpathy-guidelines/SKILL.md scaricandolo da
+     https://raw.githubusercontent.com/davidvannini-cyber/code/main/.claude/skills/karpathy-guidelines/SKILL.md
+     e aggiungi in CLAUDE.md (crealo se manca) la riga:
+     "- **Regole di codifica**: segui la skill `karpathy-guidelines` (`.claude/skills/karpathy-guidelines/SKILL.md`): pensa prima di scrivere, codice semplice, modifiche mirate, obiettivi verificabili."
+   - NO: non fare nulla.
+EOF
+fi
+
 echo
 echo "ELENCHI ATTUALI DEL REPOSITORY (da usare nelle scelte 1 e 2)."
 echo
