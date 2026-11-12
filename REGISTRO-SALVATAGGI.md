@@ -368,3 +368,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-12 | `489fc45` | Installata la skill karpathy-guidelines per tutti i progetti (.claude/skills/karpathy-guidelines/SKILL.md, CLAUDE.md), REGISTRO-SALVATAGGI.md | `git checkout 489fc45` |
 | 2026-11-12 | `a9cbf94` | Skill karpathy-guidelines copiata anche in code-priv, tv-player, mmnds-backup, re-launch-mmnds (nessun file cambiato in questo repository), REGISTRO-SALVATAGGI.md | `git checkout a9cbf94` |
 | 2026-11-12 | `d4d2912` | Hook di avvio: domanda sulla skill karpathy-guidelines solo nei repository nuovi (.claude/hooks/consensi-avvio.sh), REGISTRO-SALVATAGGI.md | `git checkout d4d2912` |
+| 2026-11-12 | `cf6900c` | Comando per collegare l'hook di avvio a un repository nuovo (.claude/installa-in-nuovo-repo.sh), REGISTRO-SALVATAGGI.md | `git checkout cf6900c` |
