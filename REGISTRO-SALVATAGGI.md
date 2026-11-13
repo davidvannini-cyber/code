@@ -370,3 +370,4 @@ Ogni riga è una pubblicazione su `main`. Per guardare lo stato PRIMA di un salv
 | 2026-11-12 | `d4d2912` | Hook di avvio: domanda sulla skill karpathy-guidelines solo nei repository nuovi (.claude/hooks/consensi-avvio.sh), REGISTRO-SALVATAGGI.md | `git checkout d4d2912` |
 | 2026-11-12 | `cf6900c` | Comando per collegare l'hook di avvio a un repository nuovo (.claude/installa-in-nuovo-repo.sh), REGISTRO-SALVATAGGI.md | `git checkout cf6900c` |
 | 2026-11-13 | `1af027f` | Nuovo comando /inizio: lancia l'hook di avvio a mano (COMANDI/inizio.md, COMANDI/istruzioni/inizio.md, .claude/commands/inizio.md, COMANDI-ISTRUZIONI.pdf), REGISTRO-SALVATAGGI.md | `git checkout 1af027f` |
+| 2026-11-13 | `a8d7d56` | PROVA su branch: SALESASSISTANT rinominata SALESASSISTANT_OLD, tolto il workflow app Rubrica (l'APK arriva da code-priv), CLAUDE.md, REGISTRO-SALVATAGGI.md | `git checkout a8d7d56` |
