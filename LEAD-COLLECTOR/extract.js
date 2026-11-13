@@ -99,9 +99,19 @@ function extractLead(mail, ownAddresses = []) {
 
 // Tabella con una riga per lead (celle separate da tab o da 3+ spazi): ogni riga con una cella-email è un lead.
 const FULL_EMAIL = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+const HEADER_LINE = /^\s*(da|from|a|to|cc|ccn|bcc|oggetto|subject|data|date|inviato|sent|rispondi a|reply-to)\s*:/i;
+// Testo scritto prima della tabella (senza intestazioni di inoltro): diventa il messaggio di ogni lead.
+function introText(lines) {
+  const kept = lines
+    .map(l => l.replace(/[​-‏⁠﻿]/g, '').replace(/ /g, ' ').replace(/<(mailto|tel):[^>]*>/gi, '').replace(/\s*<https?:[^>]*>/gi, '').replace(/^[\s>*•|\-]+/, '').replace(/\*+/g, '').trim())
+    .filter(l => !HEADER_LINE.test(l));
+  return kept.join('\n').replace(/\n{2,}/g, '\n\n').trim();
+}
 function extractRows(text, own, skip) {
   const out = [];
-  for (const raw of text.split(/\r?\n/)) {
+  const all = text.split(/\r?\n/);
+  let first = -1;
+  for (const [n, raw] of all.entries()) {
     const cells = raw.split(/\t+| {3,}/).map(c => c.replace(/[\u200b-\u200f\u2060\ufeff]/g, '').replace(/\u00a0/g, ' ').trim()).filter(Boolean);
     if (cells.length < 3 || cells.length > 8) continue;
     const emailCell = cells.find(c => FULL_EMAIL.test(c));
@@ -113,8 +123,10 @@ function extractRows(text, own, skip) {
     const others = rest.filter(c => c !== phoneCell);
     const multi = others.filter(looksName);
     const name = multi.length ? multi[multi.length - 1] : others[others.length - 1] || '';
+    if (first < 0) first = n;
     out.push({ name, email, phone: phoneCell ? clean(phoneCell) : '', company: '', city: others.find(c => c !== name) || '', message: '', extra: {} });
   }
+  if (out.length) out.intro = introText(all.slice(0, first));
   return out;
 }
 
@@ -151,6 +163,7 @@ function extractColumnar(text, own, skip) {
     out.push({ name, email: lines[i], phone: phoneCell ? clean(phoneCell) : '', company: '', city: others.find(c => c !== name) || '', message: '', extra: {} });
   }
   if (!withPhone) return [];                                  // se nessun record ha un telefono non è questo formato
+  out.intro = introText(lines.slice(0, Math.max(0, idx[0] - a)));
   return out;
 }
 
@@ -160,7 +173,7 @@ function extractLeads(mail, ownAddresses = []) {
   let rows = extractRows(one._text, one._own, one._skip);
   if (!rows.length) rows = extractColumnar(one._text, one._own, one._skip);
   const strip = ({ _text, _skip, _own, ...l }) => l;
-  return rows.length ? rows : [strip(one)];
+  return rows.length ? rows.map(r => ({ ...r, message: rows.intro || '' })) : [strip(one)];
 }
 
 module.exports = { extractLead, extractLeads };

@@ -244,7 +244,16 @@ info@yesmobility.it <mailto:info@yesmobility.it>
 > Da: Mario Rossi <mario@esempio.it>
 > Oggetto: FW: Lead Facebook
 >
-> Da gestire con Whatsapp.
+> Da gestire con Whatsapp, altrimenti https://www.esempio.it <https://www.esempio.it/> se vogliono un prezzo.
+>
+> Motivo: contatti che non rispondono.
+>
+> k.
+>
+> From: Mario Rossi <mario@esempio.it>
+> Date: Friday, 18 September 2026 at 10:14
+> To: Commerciale <commerciale@esempio.it>
+> Subject: Lead Facebook
 >
 > cella
 > 3331112223
@@ -276,5 +285,8 @@ info@yesmobility.it <mailto:info@yesmobility.it>
     ['Dario Quattro', 'dario.quattro@esempio.it', '333 11 12 225', 'Moriondo torinese'],
     ['Elena Cinque', 'elena.cinque@esempio.it', '3331112226', 'Manfredonia'],
   ]);
+  // il testo della email (senza intestazioni e senza il link ripetuto) è il messaggio di ogni lead
+  const msg = 'Da gestire con Whatsapp, altrimenti https://www.esempio.it se vogliono un prezzo.\n\nMotivo: contatti che non rispondono.\n\nk.';
+  assert(r.leads.every(l => l.message === msg), JSON.stringify(r.leads.map(l => l.message)));
   console.log('OK9');
 }
