@@ -39,3 +39,23 @@ Nota: il server va ospitato dove resta acceso (VPS, Render, Fly…); la modalit�
 ## App con icona (macOS)
 `Lead Collector.app` (nella cartella LEAD-COLLECTOR): un doppio clic avvia il server in background, senza Terminale, e apre `http://localhost:3000`. In fondo alla pagina il pulsante **⏻ Chiudi Lead Collector** ferma il server e chiude la scheda del browser (Chrome/Safari).
 Per metterla sulla scrivania: tieni premuti **Opzione+Cmd** e trascina l'app sulla scrivania (crea un alias). Le impostazioni restano nel file `.env`; eventuali errori sono in `data/server.log`.
+
+## Dopo ogni modifica: far girare il codice nuovo sul Mac (procedura di David)
+Il server legge il codice **solo quando parte**: dopo un Sync il vecchio programma resta in memoria e continua a lavorare con il codice vecchio (è successo il 13/11/2026: «ne importa solo uno» anche con la correzione già scaricata). Passi, in ordine:
+1. **Fai Sync** (icona sulla scrivania).
+2. **Ferma il vecchio programma** (il pulsante «⏻ Chiudi» non sempre basta). Nel Terminale, deve stampare `fermo`:
+   `pkill -f "node server.js"; sleep 2; pgrep -fl "node server.js" || echo "fermo"`
+3. **Riapri Lead Collector** con l'icona.
+4. **Cancella dalla pagina le righe sbagliate** importate prima (la `×` rossa). Una email già letta non viene riletta da sola.
+5. **Rimetti l'email da leggere**: in Gmail segnala come *non letta* l'email, oppure inoltrala di nuovo (arriva come nuova); in alternativa incollala a mano in «Aggiungi a mano una email». Dopo un minuto premi **Aggiorna**.
+
+### Se qualcosa non va, controllare (cartella `data/` dentro LEAD-COLLECTOR)
+- `data/server.log`: `tail -n 30 data/server.log`. Righe `IMAP uid N: ...` dicono cosa è successo a ogni email (aggiunti / duplicato / mittente non autorizzato / nessun dato di contatto trovato).
+- `data/last-email.txt`: il testo esatto dell'ultima email letta (tab come `→`). Serve per riprodurre il problema: copiarlo in un test (con dati **inventati**, il repository è pubblico) e correggere `extract.js`.
+- Verificare che il Mac abbia il codice nuovo: `git log --oneline -3` nella cartella `code`.
+- Prova di lettura sul Mac con l'ultima email: `node -e "const {extractLeads}=require('./extract');const t=require('fs').readFileSync('data/last-email.txt','utf8').split('\n\n').slice(1).join('\n\n');const r=extractLeads({from:'x',subject:'x',text:t},['info@yesmobility.it']);console.log(r.length, r.map(l=>l.name).join(' | '))"` (dalla cartella LEAD-COLLECTOR).
+
+### Per chi modifica il codice
+- Provare con `npm test`; per un formato di email nuovo aggiungere un caso in `test/parser.test.js` con dati inventati.
+- Una tabella di contatti (una riga per lead, oppure una cella per riga) dà un lead per contatto; il testo scritto prima della tabella (senza intestazioni di inoltro) va nel campo Messaggio di ogni lead.
+- Tolleranze volute in `extractColumnar`: telefono mancante o sostituito da un carattere isolato, parola-etichetta (`cella`, `tel`…) al posto della città, ultimo record senza città.
