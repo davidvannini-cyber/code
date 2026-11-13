@@ -120,6 +120,7 @@ function extractRows(text, own, skip) {
 
 // Tabella con una cella per riga (tipico del testo semplice): [città, telefono, email, nome] ripetuti.
 // Ogni email isolata su una riga ne ancora un record; le righe prima/dopo l'email sono le altre celle.
+const JUNK_CELL = /^(cella|cell|cellulare|tel|telefono|phone|mobile)$/i;
 function extractColumnar(text, own, skip) {
   const HEADER = /^\s*(da|from|a|to|cc|ccn|bcc|oggetto|subject|data|date|inviato|sent|rispondi a|reply-to)\s*:/i;
   const lines = text.split(/\r?\n/)
@@ -135,17 +136,21 @@ function extractColumnar(text, own, skip) {
   while (idx[idx.length - 1] + 1 + b < lines.length && lines[idx[idx.length - 1] + 1 + b] && b < g - 1) b++;
   const a = g - b;
   const out = [];
+  let withPhone = 0;
   for (const i of idx) {
     const cells = lines.slice(i - a, i + b + 1);
     if (cells.length !== a + b + 1 || cells.some(c => !c)) return [];
-    const rest = cells.filter((c, k) => k !== a);
+    // parole-etichetta ("cella", "tel"...) finite per errore nella tabella: non sono dati
+    const rest = cells.filter((c, k) => k !== a && !JUNK_CELL.test(c));
     const phoneCell = rest.find(c => !/[A-Za-zÀ-ÿ]/.test(c) && normPhone(c));
-    if (!phoneCell) return [];
-    const others = rest.filter(c => c !== phoneCell);
+    if (phoneCell) withPhone++;
+    // scarta anche i caratteri isolati (es. "i" scritta al posto del telefono)
+    const others = rest.filter(c => c !== phoneCell && c.length > 1);
     const multi = others.filter(looksName);
     const name = multi.length ? multi[multi.length - 1] : others[others.length - 1] || '';
-    out.push({ name, email: lines[i], phone: clean(phoneCell), company: '', city: others.find(c => c !== name) || '', message: '', extra: {} });
+    out.push({ name, email: lines[i], phone: phoneCell ? clean(phoneCell) : '', company: '', city: others.find(c => c !== name) || '', message: '', extra: {} });
   }
+  if (!withPhone) return [];                                  // se nessun record ha un telefono non è questo formato
   return out;
 }
 

@@ -14,6 +14,8 @@ function start() {
       host: IMAP_HOST, port: +(process.env.IMAP_PORT || 993), secure: process.env.IMAP_SECURE !== 'false',
       auth: { user: IMAP_USER.trim(), pass: IMAP_PASS.replace(/\s+/g, '') }, logger: false,
     });
+    // senza questo, una connessione che cade ("Unexpected close") ferma tutto il server
+    client.on('error', e => console.error('IMAP connessione:', e.message));
     try {
       await client.connect();
       const lock = await client.getMailboxLock(process.env.IMAP_FOLDER || 'INBOX');

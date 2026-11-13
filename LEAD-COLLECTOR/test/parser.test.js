@@ -232,3 +232,49 @@ Tel: +39 050 791 7337 <tel:+390507917337>
   assert.deepStrictEqual([l.name, l.email, l.phone, l.city, l.message], ['Vito', 'vito.latartara@gmail.com', '3287220261', '', 'consulenza'], JSON.stringify(l));
   console.log('OK9');
 }
+{
+  // una cella per riga: telefono sostituito da "i", parola "cella" al posto della città, ultimo record senza città (dati inventati)
+  delete require.cache[require.resolve('../ingest')];
+  delete require.cache[require.resolve('../extract')];
+  const t = `Ufficio
+info@yesmobility.it <mailto:info@yesmobility.it>
+
+> Inizio messaggio inoltrato:
+>
+> Da: Mario Rossi <mario@esempio.it>
+> Oggetto: FW: Lead Facebook
+>
+> Da gestire con Whatsapp.
+>
+> cella
+> 3331112223
+> anna.uno@esempio.it
+> Anna Uno Di Test
+> Vicenza
+> 3331112224
+> bruno.due@esempio.it
+> Bruno Due
+> Corciano
+> i
+> carla.tre@esempio.it
+> Carla Tre
+> Moriondo torinese
+> 333 11 12 225
+> dario.quattro@esempio.it
+> Dario Quattro
+> Manfredonia
+> 3331112226
+> elena.cinque@esempio.it
+> Elena Cinque
+>`;
+  const r = require('../ingest').ingest({ subject: 'Fwd: Lead', from: 'Ufficio <info@yesmobility.it>', text: t, messageId: '<real2>' });
+  assert(r.added && r.count === 5, JSON.stringify(r));
+  assert.deepStrictEqual(r.leads.map(l => [l.name, l.email, l.phone, l.city]), [
+    ['Anna Uno Di Test', 'anna.uno@esempio.it', '3331112223', ''],
+    ['Bruno Due', 'bruno.due@esempio.it', '3331112224', 'Vicenza'],
+    ['Carla Tre', 'carla.tre@esempio.it', '', 'Corciano'],
+    ['Dario Quattro', 'dario.quattro@esempio.it', '333 11 12 225', 'Moriondo torinese'],
+    ['Elena Cinque', 'elena.cinque@esempio.it', '3331112226', 'Manfredonia'],
+  ]);
+  console.log('OK9');
+}
