@@ -1,5 +1,5 @@
 #!/bin/bash
-# Allinea questo Mac con GitHub (repository "code" e repository privato "code-priv"). Funziona su qualsiasi Mac: trova da solo la cartella "code".
+# Allinea questo Mac con GitHub (repository "code" e repository privati "code-priv" e "OLD"). Funziona su qualsiasi Mac: trova da solo la cartella "code".
 # Se va tutto bene: mostra "Fatto", aspetta 3 secondi e chiude la finestra.
 # Se c'è un errore: la finestra resta aperta così puoi leggere il messaggio.
 
@@ -33,6 +33,18 @@ else
   echo "Scarico code-priv (prima volta) in: $PRIV"
   git clone https://github.com/davidvannini-cyber/code-priv "$PRIV" \
     || errore "non riesco a scaricare code-priv. Serve l'accesso a GitHub da questo Mac (stesso account del repository privato)."
+fi
+
+# 3b) Allinea anche il repository PRIVATO "OLD" (copie di riserva; cartella accanto a "code"; se manca la scarica).
+OLDREPO="$(dirname "$CARTELLA")/OLD"
+echo ""
+if [ -d "$OLDREPO/.git" ]; then
+  echo "Cartella privata: $OLDREPO"
+  (cd "$OLDREPO" && git pull --ff-only) || errore "il sync di OLD non è riuscito. Non è stato cambiato nulla."
+else
+  echo "Scarico OLD (prima volta) in: $OLDREPO"
+  git clone https://github.com/davidvannini-cyber/OLD "$OLDREPO" \
+    || errore "non riesco a scaricare OLD. Serve l'accesso a GitHub da questo Mac (stesso account del repository privato)."
 fi
 
 echo ""

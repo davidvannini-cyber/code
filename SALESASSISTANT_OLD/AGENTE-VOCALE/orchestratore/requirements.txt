@@ -1,2 +1,0 @@
-sounddevice>=0.4.6
-elevenlabs>=1.50

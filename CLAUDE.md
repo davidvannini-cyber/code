@@ -7,7 +7,7 @@ come provare e pubblicare, decisioni già prese, cose già tentate e fallite, st
 
 **Progetto RILEVAZIONE-PREZZI** (da novembre 2026 si lavora nel repository **privato `code-priv`**, cartella `RILEVAZIONE-PREZZI/`; qui resta una copia ferma; prezzi di Booking e Airbnb attorno a Pievepelago, pagina `prezziaffitti.vannini.online`): **prima di lavorarci leggi `RILEVAZIONE-PREZZI/CLAUDE.md`** (architettura, dove gira sull'M1, decisioni, limiti, lavoro da fare).
 
-**Progetto SALESASSISTANT** (Lead Rework, Suggerimenti Vendita, app Rubrica Android, agente vocale): da novembre 2026 si lavora nel repository **privato `code-priv`**, cartella `SALESASSISTANT/`. Qui resta solo una **copia di riserva ferma** (`SALESASSISTANT_OLD/`, stato del 9 novembre 2026): non modificarla.
+**Progetto SALESASSISTANT** (Lead Rework, Suggerimenti Vendita, app Rubrica Android, agente vocale): da novembre 2026 si lavora nel repository **privato `code-priv`**, cartella `SALESASSISTANT/`. Qui **non c'è più**: la copia di riserva ferma (stato del 9 novembre 2026) sta nel repository privato `OLD`, cartella `SALESASSISTANT_OLD/`; non modificarla.
 
 Esiste anche un progetto in un repository **privato** separato (`tv-player`): non è in questo repository; se David lo nomina, il suo clone locale sta in `tv-player/` (ignorato da git).
 
@@ -22,6 +22,6 @@ Promemoria minimi (dettagli nel file):
 - Se David scrive «aspetta il mio Procedi», **non modificare nulla** finché non scrive «Procedi».
 - La pagina web normale **non deve cambiare** quando si aggiungono funzioni per altri dispositivi (isolale: `/auto`, app separata).
 - Prima di pubblicare lancia le prove (`M3U-PLAYER-WEB/STATO-PROGETTO.md` §14); dichiara sempre cosa non hai potuto provare (Fire TV vera, auto, siti esterni).
-- Il «Sync» di David = icona sulla scrivania che lancia `Sync.command` (`git pull --ff-only` di tutto il repo **e anche del repository privato `code-priv`**, cartella accanto a `code`): digli «Fai Sync», non comandi git a mano.
+- Il «Sync» di David = icona sulla scrivania che lancia `Sync.command` (`git pull --ff-only` di tutto il repo **e anche dei repository privati `code-priv` e `OLD`**, cartelle accanto a `code`): digli «Fai Sync», non comandi git a mano.
 - Pubblicare il sito = `git pull` + `npx wrangler deploy` **dal Mac dell'utente** (due cose diverse: spiegalo sempre).
 - Repository **pubblico**: mai segreti, email o ID di account nei file.
